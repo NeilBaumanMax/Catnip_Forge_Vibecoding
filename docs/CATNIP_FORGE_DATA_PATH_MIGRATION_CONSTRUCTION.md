@@ -1,6 +1,6 @@
 # Catnip Forge 客户数据路径迁移施工文档
 
-更新日期：2026-07-25  
+更新日期：2026-07-25
 施工分支：`qwen_vision_attachments`
 
 ## 1. 目标
@@ -67,3 +67,13 @@ Electron 默认会根据 `package.json.name` 计算 `userData`。当前主进程
 - DeepSeek/Qwen Key 仍保存在软件包内部的 `resources`，不迁入 `%APPDATA%`。
 - 用户主动选择的工程目录和 Agent 主动修改的外部工程不属于应用数据目录迁移。
 - Windows Prefetch、CrashDump、Defender 等系统文件不由应用控制，不在本次改名范围。
+
+## 7. 本轮落地结果
+
+- 新增 `electron/src/main/bootstrap.ts`，成为 Electron 唯一主入口。
+- bootstrap 在加载原 `index.ts` 及 logger/session/Agent 等模块前调用 `configureCatnipUserDataPath()`。
+- 新客户的 Electron/Chromium 与业务数据统一写入 `%APPDATA%\@Catnip_Forge\electron`。
+- 首次升级发现旧 `%APPDATA%\@vibeide\electron` 时逐层复制普通目录与文件，跳过锁文件和符号链接；旧目录保留、不自动删除，迁移 marker 使二次启动不覆盖新数据。
+- Hardboard 当前短路径改为 `C:\Catnip_Forge\hardboard`；仅在旧路径确认为 junction 时做安全清理，普通目录不删除。
+- 新增 `npm.cmd --prefix electron run verify:data-paths`，使用隔离临时 `appData` 验证旧会话/附件迁移、瞬时文件过滤、重复启动不覆盖、bootstrap 主入口和 Hardboard 新路径。
+- Runtime/Electron typecheck 与专项路径测试通过。本轮尚未重新打包；`win-unpacked` 仍需用户明确要求后更新。

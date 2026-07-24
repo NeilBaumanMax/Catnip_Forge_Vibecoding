@@ -22,8 +22,9 @@ function resolveShortHardboardRoot(hardboardRoot: string): string {
 
   // Use a path WITHOUT Chinese characters to avoid GCC/linker encoding issues.
   // Chinese username paths (刘天凯) get garbled when passed through CMake→GCC→ld.exe.
-  const aliasRoot = 'C:\\vibeide-hw';
+  const aliasRoot = 'C:\\Catnip_Forge';
   const aliasHardboard = path.join(aliasRoot, 'hardboard');
+  const legacyAliasRoot = 'C:\\vibeide-hw';
 
   try {
     fs.mkdirSync(aliasRoot, { recursive: true });
@@ -42,16 +43,29 @@ function resolveShortHardboardRoot(hardboardRoot: string): string {
     if (!fs.existsSync(aliasHardboard)) {
       fs.symlinkSync(resolved, aliasHardboard, 'junction');
     }
+    cleanupLegacyAlias(legacyAliasRoot);
     return aliasHardboard;
   } catch {
     // Fallback: try TEMP if C:\ is not writable
     try {
-      const tmpAlias = path.join(process.env.TEMP || 'C:\\tmp', 'vibeide-hw', 'hardboard');
+      const tmpAlias = path.join(process.env.TEMP || 'C:\\tmp', 'Catnip_Forge', 'hardboard');
       fs.mkdirSync(path.dirname(tmpAlias), { recursive: true });
       return resolved;
     } catch {
       return resolved;
     }
+  }
+}
+
+function cleanupLegacyAlias(legacyRoot: string): void {
+  const legacyHardboard = path.join(legacyRoot, 'hardboard');
+  try {
+    if (!fs.existsSync(legacyHardboard)) return;
+    if (!fs.lstatSync(legacyHardboard).isSymbolicLink()) return;
+    fs.rmdirSync(legacyHardboard);
+    if (fs.readdirSync(legacyRoot).length === 0) fs.rmdirSync(legacyRoot);
+  } catch {
+    // Never let legacy cleanup block the new, valid alias.
   }
 }
 

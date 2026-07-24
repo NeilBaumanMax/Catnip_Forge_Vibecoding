@@ -1,11 +1,13 @@
 # 施工日志
 
-## 2026-07-25 — Catnip Forge 客户数据路径迁移开工
+## 2026-07-25 — Catnip Forge 客户数据路径迁移
 
 - 目标路径固定为 `%APPDATA%\@Catnip_Forge\electron` 和 `C:\Catnip_Forge\hardboard`，新客户不再创建 `@vibeide` / `C:\vibeide-hw`。
 - 先建立 [CATNIP_FORGE_DATA_PATH_MIGRATION_CONSTRUCTION](CATNIP_FORGE_DATA_PATH_MIGRATION_CONSTRUCTION.md)，再修改 bootstrap、旧数据迁移和 Hardboard 短路径。
 - 已有 `%APPDATA%\@vibeide\electron` 数据采用非破坏性首次复制，新目录已存在时不覆盖；旧目录留作安全备份。
-- 本轮先修改工程、测试并提交本地 Git，不自动重建 `win-unpacked`。
+- Electron 主入口改为 bootstrap，保证 logger、session、附件和 Chromium 初始化前完成 `userData` 重定向；迁移跳过进程锁与符号链接。
+- Hardboard 新建 `C:\Catnip_Forge\hardboard` junction，旧 junction 只在确认是符号链接后安全清理。
+- Runtime/Electron typecheck 与隔离 `verify:data-paths` 通过；本轮先提交工程，不自动重建 `win-unpacked`。
 
 ## 2026-07-25 — Qwen 视觉与聊天附件第一阶段落地
 

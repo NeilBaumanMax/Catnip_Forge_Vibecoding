@@ -63,6 +63,8 @@ for (const entry of [
   '\\assets\\splash-cat.png',
   '\\assets\\splash-leaf.png',
   '\\assets\\splash-logo.png',
+  '\\dist\\main\\bootstrap.js',
+  '\\dist\\main\\user-data-path.js',
   '\\dist\\main\\skill-manager.js',
   '\\dist\\main\\attachment-bridge.js',
   '\\dist\\main\\attachment-store.js',

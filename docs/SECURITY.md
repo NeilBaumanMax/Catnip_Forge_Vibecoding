@@ -4,6 +4,8 @@
 
 账号、密码、API key、cookie、浏览器 profile 和运行态数据只留在本机，不进入 GitHub。
 
+Windows 成品的聊天记录、附件、日志、浏览器状态和 Agent 配置统一位于 `%APPDATA%\@Catnip_Forge\electron`。从旧版本升级时，`%APPDATA%\@vibeide\electron` 仅作为迁移来源并保留备份，不自动递归删除。
+
 ## 允许写入 Git 的内容
 
 - 源码。

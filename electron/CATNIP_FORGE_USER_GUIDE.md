@@ -136,7 +136,11 @@ Catnip Forge 中文全称为“Catnip 硬件智能开发平台”，英文定位
 
 ### 软件更新后找不到旧对话
 
-历史对话保存在当前 Windows 用户的数据目录中，不在便携软件目录内。只更换软件目录通常不会删除对话；更换 Windows 用户或清理应用数据后无法自动恢复。
+历史对话保存在 `%APPDATA%\@Catnip_Forge\electron`，不在便携软件目录内。新版首次发现旧 `%APPDATA%\@vibeide\electron` 时会复制旧数据且保留旧目录作为备份；更换 Windows 用户或清理两个应用数据目录后无法自动恢复。
+
+### 如何彻底清理本机数据
+
+先退出 Catnip Forge，再删除便携软件目录和 `%APPDATA%\@Catnip_Forge\electron`。如果电脑使用过旧版本，还可在确认新数据无误后删除 `%APPDATA%\@vibeide\electron`；使用过硬件编译时可同时清理 `C:\Catnip_Forge`。API Key 位于便携软件目录的 `resources` 中，不在 AppData。
 
 ### 如何让 Agent 真正执行操作
 

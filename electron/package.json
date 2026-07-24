@@ -2,7 +2,7 @@
   "name": "@vibeide/electron",
   "version": "1.0.0-7201",
   "private": true,
-  "main": "dist/main/index.js",
+  "main": "dist/main/bootstrap.js",
   "scripts": {
     "dev": "node node_modules/concurrently/dist/bin/concurrently.js \"npm run dev:renderer\" \"npm run dev:electron\"",
     "desktop": "node node_modules/cross-env/src/bin/cross-env.js ELECTRON_DEV=1 node node_modules/concurrently/dist/bin/concurrently.js \"npm run dev:renderer -- --port 5173 --strictPort\" \"npm run dev:electron\"",
@@ -31,7 +31,8 @@
     "verify:software-assistant-ui": "node scripts/verify_software_assistant_ui.cjs",
     "verify:task-queue": "node node_modules/electron/cli.js scripts/verify_agent_task_queue.cjs",
     "verify:serial-monitor": "npm run build:main && node scripts/verify_serial_monitor_session.cjs",
-    "verify:qwen-attachments": "npm run build:main && node node_modules/electron/cli.js scripts/verify_qwen_attachments.cjs"
+    "verify:qwen-attachments": "npm run build:main && node node_modules/electron/cli.js scripts/verify_qwen_attachments.cjs",
+    "verify:data-paths": "npm run build:main && node node_modules/electron/cli.js scripts/verify_catnip_data_paths.cjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

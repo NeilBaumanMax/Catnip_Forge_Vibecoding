@@ -28,6 +28,7 @@ Runtime MCP Server
 职责：
 
 - 创建品牌启动窗口和隐藏的主窗口；真实加载节点驱动启动进度，主窗口 `ready-to-show` 后完成双窗口切换。
+- 通过最早执行的 bootstrap 把 Windows 客户数据根目录固定为 `%APPDATA%\@Catnip_Forge\electron`，再加载日志、会话、Agent 和 Chromium；旧 `@vibeide` 数据只做非破坏性首次迁移。
 - 暴露 CDP 端口 `9230`。
 - 管理右侧 `WebContentsView` 浏览页和 tabs。
 - 提供 Renderer 到 Worker 的 IPC。
@@ -39,6 +40,7 @@ Runtime MCP Server
 关键文件：
 
 - `electron/src/main/index.ts`：应用启动、Splash/主窗口切换、CDP、生命周期。
+- `electron/src/main/bootstrap.ts` / `user-data-path.ts`：在其他主进程模块初始化前设置 Catnip Forge 客户数据目录，并执行旧目录安全迁移。
 - `electron/assets/splash.html`：不依赖 Renderer bundle 的品牌启动页，使用随包 `splash-*.png` 素材并响应主进程进度更新。
 - `electron/src/main/gateway.ts`：IPC 注册，唯一入口。
 - `electron/src/main/browser-view.ts`：右侧 WebContentsView tabs、持久 session、bounds 同步。

@@ -16,7 +16,7 @@
 
 ## 持久化与迁移
 
-开发版存储在 `runtime/claude-session/session.json`；Windows 成品存储在 `%APPDATA%/@vibeide/electron/runtime-data/claude-session/session.json`。
+开发版存储在 `runtime/claude-session/session.json`；Windows 成品存储在 `%APPDATA%/@Catnip_Forge/electron/runtime-data/claude-session/session.json`。
 
 v2 数据包含：
 
