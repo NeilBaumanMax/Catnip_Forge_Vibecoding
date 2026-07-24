@@ -1,6 +1,6 @@
-# 奥德赛1.0.0-7201 Hardboard Vibecoding Agent Guide
+# Catnip Forge Hardboard Vibecoding Agent Guide
 
-奥德赛1.0.0-7201 当前定位为 ESP-IDF 硬件 vibecoding IDE。Agent 写代码、调用 ESP-IDF、解释错误；右侧 BrowserView 用于文档、网页、工作台文件和调试页面。仓库和内部工程代号仍为 `vibeide`。
+Catnip Forge 当前定位为 ESP-IDF 硬件 vibecoding IDE。Agent 写代码、调用 ESP-IDF、解释错误；右侧提供仓库、串口监视器、任务管理器和编辑器，浏览器工作台前端入口暂时隐藏。仓库和内部工程代号仍为 `vibeide`。
 
 ## 目录
 
@@ -27,7 +27,7 @@
 4. 新工程或 target 不确定：`hardboard.idf_set_target`
 5. 编译：`hardboard.idf_build`
 6. 烧录：`hardboard.idf_flash`
-7. 运行验证：`hardboard.serial_capture`
+7. 运行验证：优先用共享会话的 `hardboard.serial_status/open/read/wait`；一次性兼容采集可用 `hardboard.serial_capture`
 8. 需要清理时：`hardboard.idf_clean`
 9. 需要擦除芯片时：`hardboard.idf_erase_flash`
 
@@ -62,9 +62,10 @@ Windows `E:\Agent\vibeide\vibeide` 和当前 `win-unpacked` 下已完成：
 
 - 随包 Python 固定为 `resources/runtime/python/Scripts/python.exe`，`pyserial 3.5` 可导入；不依赖系统 Python 或旧 `C:\Users\HP\...` venv。
 - `touch_hello` 针对 Waveshare ESP32-S3-Touch-AMOLED-1.8 编译成功并烧录到 `COM5`，触摸按钮后串口输出 `hello`。
-- `hardboard.serial_capture` 用于 SSH/Agent 下非交互抓取串口日志，替代需要 TTY 的 `idf.py monitor`。
-- 打包产物正式名使用 `奥德赛1.0.0-7201`。
+- Agent 通过 Runtime MCP 控制 Electron 唯一共享串口会话，支持状态、打开、关闭、发送、增量读取、等待和清空；`hardboard.serial_capture` 在应用内优先复用共享会话。
+- 打包产物正式入口为 `Catnip Forge.exe`。
 - 打包版冷构建 `hello_world_esp32s3` 已验证 1047/1047 成功。
 - Electron 内置串口助手已验证能够枚举 COM5、打开并关闭释放端口；它支持文本/HEX 双向收发，不包含数值趋势图。
+- 共享会话已完成无硬件模拟回归；由于当次没有连接开发板，Agent 与真实 ESP 的交替收发、等待输出和断线恢复尚未实机验收。
 
 不要假装编译或烧录成功。只有 hardboard 工具返回 exitCode 0，才可以报告成功。

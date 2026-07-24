@@ -41,7 +41,7 @@
 4. `hardboard.idf_set_target`：新工程或 target 不确定时执行，默认 `esp32s3`。
 5. `hardboard.idf_build`：编译。
 6. `hardboard.idf_flash`：烧录，必须传入真实端口。
-7. `hardboard.serial_capture`：烧录后非交互读取串口日志，验证固件实际运行；SSH/Agent 场景不要依赖 `idf.py monitor`。
+7. 运行验证优先使用共享串口工具：`hardboard.serial_status` 查看当前会话，按需 `serial_open`，用 `serial_read` 或 `serial_wait` 获取真实输出；一次性兼容流程仍可调用 `hardboard.serial_capture`。
 8. `hardboard.idf_clean`：需要清理构建缓存时执行。
 9. `hardboard.idf_erase_flash`：用户明确要求擦除芯片时执行。
 
@@ -66,20 +66,21 @@
 - “写好了”只代表文件已创建。
 - “编译通过”必须来自 `hardboard.idf_build` exitCode 0。
 - “烧录成功”必须来自 `hardboard.idf_flash` exitCode 0，并且输出包含写入和校验信息。
-- “运行正常”必须来自 `hardboard.serial_capture` 的串口日志，或用户能看到的等价硬件输出。
+- “运行正常”必须来自 `hardboard.serial_read`、`hardboard.serial_wait`、`hardboard.serial_capture` 的真实串口日志，或用户能看到的等价硬件输出。
 - 不能因为生成了代码或看起来合理就报告硬件验证成功。
 
 ## 串口监视器测试
 
-- IDE 前端的串口监视器在右侧 `监视器` 标签，不等同于 `hardboard.serial_capture` 一次性抓日志。
+- IDE 前端的串口监视器在右侧 `监视器` 标签。它和 Agent MCP 共用 Electron 主进程中的唯一会话；不要另外启动第二个串口进程抢占同一 COM 口。
 - 测试 IDE 监视器时，先确认板子正在用 `COM3`/`115200` 持续输出文本。
-- 曲线测试推荐固件每行输出一个可解析数字，例如 `sin:0.7071`；前端曲线会提取每行最后一个数字。
-- 如果命令行 `hardboard.serial_capture COM3 5 115200` 能收到数据，但 IDE 监视器收不到，要继续查 Electron 主进程 `hardboard:serialStart` 和渲染进程 `hardboard:serial-data` IPC。
+- Agent 可使用 `hardboard.serial_open`、`serial_write`、`serial_read`、`serial_wait`、`serial_clear` 和 `serial_close`；Agent 打开/关闭/发送/清空会同步显示在监视器界面。
+- `hardboard.serial_capture` 在应用内会复用相同端口与波特率的共享会话；当前会话配置冲突时应报告冲突，不得抢占或静默切换。
+- 原数值趋势图已经删除，不要再用曲线作为验收标准。
 
 ## 已验证基线
 
-- Windows `C:\vibeide` 下 ESP-IDF 5.4.3 可用。
-- `runtime/hardboard/projects/hello_world_esp32s3` 已完成 set-target/build。
-- ESP32-S3 板子在 `COM3` 烧录成功。
-- 打包产物正式名使用 `奥德赛1.0.0-7201`，目录仍是 `win-unpacked`。
+- 当前唯一施工目录为 `E:\Agent\vibeide\vibeide`，ESP-IDF 5.4.3 可用。
+- `runtime/hardboard/projects/touch_hello` 已在 COM5 完成编译、烧录和 `hello` 串口输出验证；COM3/COM7 属于历史设备记录。
+- 打包产物正式入口为 `Catnip Forge.exe`，目录仍是 `win-unpacked`。
 - 打包版 runtime 已验证 compact JSON 输出不会溢出 Agent；`hardboard\projects\wifi_connect_fmai` 的打包版 build/flash/serial 均已通过，串口能抓到连续 `sin:<number>` 数据。
+- Agent/UI 共享串口会话已通过无硬件模拟回归；真实 ESP 上的 Agent 交替收发与断线恢复尚待有设备时验收。

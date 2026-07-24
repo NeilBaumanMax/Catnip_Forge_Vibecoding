@@ -57,6 +57,7 @@
 - 后端固定使用随包 `runtime/python/Scripts/python.exe` 的 `pyserial`，同一个子进程负责读取与写入，字节经主进程 IPC 双向传递。
 - Windows 设备枚举优先使用 UTF-8 PowerShell/CIM；权限不足或返回空时自动回退到 `serial.tools.list_ports`，避免安装后串口下拉为空。
 - 页面保留传统串口助手的熟悉布局：左侧为接收区和发送区，右侧为串口配置、接收区配置、发送区配置。原数值趋势图、数字采样和跨行缓存已删除。
+- Electron 主进程持有唯一共享串口会话；UI 通过 IPC、Agent 通过 Runtime MCP 与本机鉴权桥接操作同一会话。Agent 打开/关闭会同步配置和按钮状态，Agent 发送显示来源标记，Agent 清空会同步清空接收区。
 - 支持波特率、数据位、停止位、校验位、文本/HEX 收发、GBK/UTF-8/ASCII/Latin1，以及不追加/LF/CRLF 行尾。
 - 重开端口前等待旧 Python 子进程退出，降低 COM 独占释放竞态；端口被其他程序占用时输出可读中文提示。
 - 串口页不再强制 WinForms 浅色。布局保持不变，颜色、卡片材质、圆角、主次按钮、危险操作和连接状态使用 `apple.less` 主题变量，随应用内浅色/深色选择适配。
@@ -88,7 +89,8 @@
 - `electron/src/renderer/components/BrowserPanel.tsx`：四页面交互、任务清除、双向串口助手、编辑器标签和右键菜单。
 - `electron/src/renderer/components/WorkspacePanel.tsx`：Skill/工程资源卡片与资源管理器入口；主动调用入口位于左侧对话输入区。
 - `electron/src/main/gateway.ts` / `preload/index.ts`：受限文件夹打开和硬件 IPC。
-- `electron/src/main/hardboard.ts`：真实双向串口服务、设备枚举回退、Runtime 历史清理与 Build/Flash 桥接。
+- `electron/src/main/hardboard.ts`：真实双向串口底层、设备枚举回退、Runtime 历史清理与 Build/Flash 桥接。
+- `electron/src/main/serial-monitor-session.ts` / `serial-monitor-controller.ts` / `serial-monitor-bridge.ts`：唯一共享会话、缓冲与统计、本机随机令牌桥接。
 - `runtime/src/eventbus/event-store.ts`：EventBus 与 `.log` 物理清理。
 
 ## 验收
@@ -102,4 +104,4 @@ npm.cmd --prefix electron run verify:version
 git diff --check
 ```
 
-界面验收至少确认：只有一个 Electron 主窗口；仓库页 Skills 位于首位，硬件工程与参考代码默认折叠，点击任意一栏后两栏同步展开且工具栏对齐，展开后文件条目仍可打开；打包版 Skills 路径包含 `resources/agent/skills` 且可由资源管理器打开，打开结果不挤压仓库标题；Build/Flash 刷新按钮和语义状态胶囊存在；清除前后的任务行数归零；监视器没有趋势图且左侧收发/右侧配置布局不变；应用内浅色/深色切换后控件可读且重载保持；外观按钮可拖动、重载保持位置、窗口缩放不越界，浮层在四个象限均不超出视口；外观按钮不遮挡编辑器字号工具条；COM 设备可枚举、打开后可关闭释放；编辑器右键菜单贴近指针；标签关闭按钮可见且有 hover/focus 反馈。
+界面验收至少确认：只有一个 Electron 主窗口；仓库页 Skills 位于首位，硬件工程与参考代码默认折叠，点击任意一栏后两栏同步展开且工具栏对齐，展开后文件条目仍可打开；打包版 Skills 路径包含 `resources/agent/skills` 且可由资源管理器打开，打开结果不挤压仓库标题；Build/Flash 刷新按钮和语义状态胶囊存在；清除前后的任务行数归零；监视器没有趋势图且左侧收发/右侧配置布局不变；Agent 打开/关闭/发送/清空能同步到监视器；应用内浅色/深色切换后控件可读且重载保持；外观按钮可拖动、重载保持位置、窗口缩放不越界，浮层在四个象限均不超出视口；外观按钮不遮挡编辑器字号工具条；COM 设备可枚举、打开后可关闭释放；编辑器右键菜单贴近指针；标签关闭按钮可见且有 hover/focus 反馈。

@@ -9,7 +9,7 @@
 - 内部工程代号：`vibeide`。
 - 当前本机工作目录：`E:\Agent\vibeide\vibeide`（Windows 实机）。
 - 当前远端真相源：remote `origin` = `git@github.com:NeilBaumanMax/Catnip-Forge.git`；当前施工分支：`main`。提交号和远端跟踪状态必须通过本地 Git 动态查询，不在接力文档中固化旧 HEAD。
-- `main` 在既有任务串行化、编辑器和 Runtime EventBus 基线上完成 Apple 风格界面、目录型 Skill、正文多 Skill 引用、可缩放对话输入区、任务清除、内置双向串口助手、随包 Python/MCP 修复、应用内持久化主题和可拖动“猫薄荷”软件助手。本轮维护本地 Git，不推送远端。
+- `main` 在既有任务串行化、编辑器和 Runtime EventBus 基线上完成 Apple 风格界面、目录型 Skill、正文多 Skill 引用、可缩放对话输入区、任务清除、Agent/UI 共享双向串口助手、随包 Python/MCP 修复、应用内持久化主题和可拖动“猫薄荷”软件助手。本轮维护本地 Git，不推送远端。
 - 旧 GitHub/历史源：`git@github.com:howtion0/vibeide.git`、`git@github.com:howtio/vibeide.git` 仍可能出现在历史日志或迁移文档中，不再作为当前同步目标。
 
 ## 当前版本和验证
@@ -177,11 +177,13 @@
 - `COM9` 打开失败，Windows 返回串口超时。
 - 后续应给串口工具增加明确的 reset/open 时序选项，例如 `none`、`rts`、`idf-monitor`，并在 UI 上把”端口已打开但无数据”显示清楚。
 
+以上三项仅是 0.1 历史测试记录，不是当前 Agent 共享串口控制的未完成实现。当前源码已由 Electron 主进程唯一持有串口会话，并向 UI 与 Runtime MCP 同步状态；真实 ESP 设备上的 reset/console 差异仍属于后续实机兼容性验收。
+
 ## 当前 UI 状态
 
 - 顶部可见页签：仓库、监视器、任务管理器、编辑器。
 - 工作台：前端入口已隐藏；React 内部逻辑、IPC、`WebContentsView` 和主进程后端暂时保留，避免贸然删除早期链路。
-- 监视器：使用随包 Python 的真实双向 `pyserial` 服务；左侧为接收/发送区，右侧为串口/接收/发送配置，支持文本与 HEX；数值趋势图已删除。
+- 监视器：使用随包 Python 的真实双向 `pyserial` 服务；Electron 主进程持有唯一共享会话，UI 与 Agent MCP 均可查询、打开、关闭、发送、读取、等待输出和清空缓冲。左侧为接收/发送区，右侧为串口/接收/发送配置，支持文本与 HEX；Agent 发送会标记来源，数值趋势图已删除。
 - 主布局：左侧默认 34%，支持拖动、键盘微调、宽度持久化以及收起/展开对话区。
 - Agent 对话：同一时间只运行一个活动任务；执行中“追加要求”会在当前任务下一执行点继续处理，“排队”才建立独立后续任务。标题显示空闲/执行中/暂停，状态条显示追加与排队数量，输入框支持 `Shift+Enter` 换行。
 - 可读性：界面已放弃像素风；中文正文使用系统字体，代码和日志使用等宽字体，基础正文 15px，控件和元信息同步增大并提高对比度。
@@ -313,7 +315,7 @@ Electron UI -> Gateway -> Worker -> Agent -> Runtime MCP -> Electron Chromium / 
 
 1. 对编辑器新建、重命名、回收站删除、字号持久化和打包版离线语法高亮执行一轮 Windows UI smoke，重点覆盖已打开标签的路径同步。
 2. 根据启动和包体实测决定是否拆分 Monaco 语言资源；当前完整 Worker 已本地打包。
-3. 修复 `hardboard:serial` 的 reset/open 时序和 UI 状态呈现。
-4. 给任务管理器补一条 Windows packaged runtime smoke，覆盖 build/flash/serial 三个入口。
+3. 有真实开发板后验证 Agent/UI 共享串口的收发、等待输出、断线恢复以及不同 ESP32 console/reset 策略。
+4. 给任务管理器补一条 Windows packaged runtime smoke，覆盖 build/flash/serial 三个入口；共享会话无硬件 mock 已通过。
 5. 发布 `1.0.0-7201` Windows 包后，新建对应版本报告；旧版本报告继续保留为历史实测。
 6. 在 ESP-IDF 真实编译测试通过后，补全 `WINDOWS_0_1_TEST_REPORT.md` 的中文路径修复验证项。

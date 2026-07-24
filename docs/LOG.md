@@ -1,5 +1,13 @@
 # 施工日志
 
+## 2026-07-25 — Agent 共享串口文档漂移修复
+
+- README、架构、接力、开发进度、Hardboard 和 Apple UI 施工文档统一到 Electron 唯一共享串口会话。
+- Hardboard Skill 改为优先使用 `serial_status/open/read/wait`，保留 `serial_capture` 兼容路径；删除已经失效的数值趋势图验收说明。
+- Runtime 硬件指南和软件助手知识母版补齐 Agent MCP 控制、UI 同步、本机外部占用边界和无硬件/真实设备验收差异。
+- 0.1 包的 COM7/COM8 无输出和 reset/open 建议继续作为历史事实保留，不再混入当前实现的“下一步”。
+- 本轮仅修正文档和 Skill 说明，不修改串口实现、不连接真实 COM 设备、不执行打包。
+
 ## 2026-07-25 — Agent 串口监视器控制
 
 - 新增 Electron 共享串口会话、环形事件缓冲和本机令牌桥接。

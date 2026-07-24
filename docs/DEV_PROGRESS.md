@@ -180,7 +180,7 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 ## 下一步
 
 1. 在目标 Windows 10/11 机器上执行最终人工分发验收，重点确认 SmartScreen 提示、真实 API Key、Agent 连续对话和 USB-UART 驱动。
-2. 修复 `hardboard:serial` reset/open 时序，并补 packaged build/flash/serial smoke。
+2. 有真实 ESP/USB-UART 设备后验收 Agent/UI 共享串口的实际收发、断线恢复和端口占用提示，并补 packaged build/flash/serial smoke；当前无硬件模拟回归已通过。
 3. 在 Windows 上继续用真实 Agent 对话压测任务、会话和 Claude Code CLI 的模型侧续聊效果。
 4. 验证编辑器新建、重命名、回收站删除、标签路径同步和打包版离线语法高亮。
 5. 根据启动和包体实测决定是否拆分 Monaco 语言资源。

@@ -155,6 +155,7 @@ find <project> -path '*/build' -prune -o -type f -print
 - 当前硬件工程 `runtime/hardboard/projects/touch_hello` 面向 Waveshare ESP32-S3-Touch-AMOLED-1.8；已编译、烧录 COM5，并验证触摸按钮输出 `hello`。
 - 内置串口助手通过 CIM + pyserial fallback 枚举设备，支持完整串口参数与文本/HEX 双向收发；重开前等待旧子进程退出。
 - Agent 动态 MCP 配置已补齐 `mcp` 参数，开发模式通过 `ELECTRON_RUN_AS_NODE=1` 启动 stdio 服务。
+- 2026-07-25 起 Electron 主进程持有唯一共享串口会话；Agent 通过 `hardboard.serial_status/open/close/write/read/wait/clear` 控制同一会话，`serial_capture` 在应用内优先复用它。无开发板模拟测试已通过，真实设备联调仍需后续验收。
 
 ## 历史 0.1 接力状态
 
@@ -219,6 +220,6 @@ Windows 打包配置包含 `runtime/hardboard`，但排除 ESP-IDF 自带 `examp
   - 前端入口在右侧 `监视器` 标签。
   - 已有 COM、波特率、数据位、停止位、校验位和字符编码选择。
   - 已有文本/HEX 双向收发和 LF/CRLF 行尾；原数值曲线已按用户反馈删除。
-  - 后续要补 Electron smoke，直接调用主进程串口监视器并等待真实 `serial-data` IPC。
+  - Agent/UI 共享会话、状态同步、来源标记和无硬件模拟测试已完成；后续有开发板时补真实收发、断线恢复和 packaged smoke。
 - 为 ESP32-C3/ESP32-C6 增加示例、target、真实设备记录。
 - 增加固件归档工具，把 `.bin/.elf/.map/flasher_args.json` 复制到 `runtime/hardboard/firmware`。

@@ -16,8 +16,8 @@ Worker / Orchestrator
 Agent (Claude Code)
   ↓ MCP stdio
 Runtime MCP Server
-  ↓ Playwright CDP
-Electron Chromium / WebContentsView
+  ├─ Playwright CDP → Electron Chromium / WebContentsView
+  └─ 鉴权 loopback RPC → Electron 共享串口会话 → pyserial → COM
 ```
 
 ## Electron 层
@@ -32,6 +32,7 @@ Electron Chromium / WebContentsView
 - 提供 Renderer 到 Worker 的 IPC。
 - 通过 `task:status` 向 Renderer 暴露当前活动任务、暂停状态、追加要求数和独立排队数。
 - 桥接浏览器录制、回放、编辑器目录读取和受限文件操作。
+- 持有唯一共享串口会话，并通过仅监听 `127.0.0.1`、每次启动随机令牌鉴权的桥接服务向 Runtime MCP 提供控制。
 
 关键文件：
 
@@ -43,6 +44,9 @@ Electron Chromium / WebContentsView
 - `electron/src/main/workbench.ts`：提供 Agent 工作区、硬件工程、参考代码和 Skills 四个受控根目录及编辑器文件系统边界；仓库概览前端不展示 Agent 工作区卡片。打包资源通过 `getAgentDir()`、`getResourcesDir()`、`getHardboardDir()` 解析，Skills 位于 `resources/agent/skills`。
 - `electron/src/main/skill-manager.ts`：把固定 `resources/agent/skills/<id>` 整目录部署到 Agent 工作区 `.claude/skills`；树哈希覆盖主文档与支持文件，并保留历史扁平 Markdown 兼容、清单式安全清理、同名冲突保护和仓库页 CRUD。
 - `electron/src/main/hardboard.ts`：硬件设备枚举、真实 `pyserial` 双向串口服务、Runtime EventBus、日志历史清理、Build/Flash 的 IPC 桥接。
+- `electron/src/main/serial-monitor-session.ts`：共享串口状态机、环形事件缓冲、收发统计、增量读取和等待匹配。
+- `electron/src/main/serial-monitor-controller.ts`：把现有 `pyserial` 子进程接入唯一共享会话。
+- `electron/src/main/serial-monitor-bridge.ts`：供 Runtime MCP 使用的本机鉴权 RPC；URL 和令牌只注入动态 MCP 环境。
 - `electron/src/main/paths.ts`：开发版与 packaged 环境的资源、Runtime、Agent 和 API key 路径解析。
 - `electron/src/main/first-run.ts`：校验并保存 DeepSeek API Key；无 Key 时通过 Preload/IPC 向 Renderer 提供首次启动状态，Renderer 显示阻塞式配置窗口。保存成功后主进程调度一次 `app.relaunch()`，先走统一退出清理再自动重启，使 Agent 从新进程读取 Key。
 - `electron/src/main/agent.ts`：Claude Agent 进程、动态 MCP 配置和生命周期管理。
@@ -54,7 +58,7 @@ Electron Chromium / WebContentsView
 - `electron/src/renderer/components/ChatPanel.tsx`：左侧历史会话栏与右侧 Agent 对话；支持新建、切换、收起，以及“⋯”菜单中的重命名、置顶和带确认删除，同时负责主要回复、执行过程和专业视图。
 - `electron/src/renderer/components/TaskProgress.tsx`：当前任务的紧凑运行仪表盘，挂在活动“执行过程”下方且只在 Agent 工作期间呈现，不再作为左栏独立面板。
 - `electron/src/renderer/components/MarkdownContent.tsx`：把 Agent Markdown 安全渲染为 React 节点，不执行原始 HTML，并限制外部链接协议。
-- `electron/src/renderer/components/BrowserPanel.tsx`：仓库、监视器、任务管理器和编辑器；工作台前端入口隐藏，但组件内部浏览器工作台实现保留。任务管理器负责工程/设备刷新、相对工程选择、Build/Flash 控制、语义状态胶囊、可直接清除的 EventBus 历史和最近任务结果；监视器提供文本/HEX 双向收发及完整串口参数；编辑器负责多根资源树、懒加载目录、等宽标签、Portal 右键菜单、字号持久化和保存状态同步。
+- `electron/src/renderer/components/BrowserPanel.tsx`：仓库、监视器、任务管理器和编辑器；工作台前端入口隐藏，但组件内部浏览器工作台实现保留。任务管理器负责工程/设备刷新、相对工程选择、Build/Flash 控制、语义状态胶囊、可直接清除的 EventBus 历史和最近任务结果；监视器提供文本/HEX 双向收发及完整串口参数，并同步 Agent 打开、关闭、发送和清空操作；编辑器负责多根资源树、懒加载目录、等宽标签、Portal 右键菜单、字号持久化和保存状态同步。
 - `electron/src/renderer/components/WorkspacePanel.tsx`：显示硬件工程、参考代码和 Skills 三类资源，不显示 Agent 生成卡片；Skills 卡片可新增、编辑、回收站删除、同步并查看源仓库可写/部署状态。
 - `electron/src/renderer/components/ChatPanel.tsx`：输入 `@` 或点击 Skills 按钮可在当前光标位置插入多个 `@skill-id`；发送时保留正文位置并传输结构化引用，历史消息原位渲染内联 Skill 标签。
 - `electron/src/renderer/styles/apple.less`：1.0.0-7201 最终视觉覆盖，使用 `data-theme="dark|light"` 定义显式主题令牌，并提供冷色材质、排版层级、圆角、可拖动助手浮层、反馈动效和 reduced-motion/reduced-transparency 适配。
