@@ -105,20 +105,32 @@ function detailLabel(message: ChatMessage): string {
   return '详情';
 }
 
-function skillReferencesFromText(text: string, skills: ManagedSkillSummary[]): SkillReference[] {
+function skillTokensFromText(text: string, skills: ManagedSkillSummary[]): SkillReference[] {
   const available = new Map(skills.filter((skill) => skill.deployed).map((skill) => [skill.id, skill]));
-  const seen = new Set<string>();
   const references: SkillReference[] = [];
   const pattern = /(^|[^a-z0-9._%+-])@([a-z0-9]+(?:-[a-z0-9]+)*)/gi;
   for (const match of text.matchAll(pattern)) {
     const id = match[2].toLowerCase();
     const skill = available.get(id);
     const start = (match.index ?? -1) + match[1].length;
-    if (start < 0 || seen.has(id)) continue;
-    seen.add(id);
+    if (start < 0) continue;
     references.push({ id, name: skill?.name ?? id, start, end: start + id.length + 1 });
   }
   return references;
+}
+
+function recognizedSkillTokensFromText(text: string, skills: ManagedSkillSummary[]): SkillReference[] {
+  const available = new Set(skills.filter((skill) => skill.deployed).map((skill) => skill.id));
+  return skillTokensFromText(text, skills).filter((reference) => available.has(reference.id));
+}
+
+function skillReferencesFromText(text: string, skills: ManagedSkillSummary[]): SkillReference[] {
+  const seen = new Set<string>();
+  return skillTokensFromText(text, skills).filter((reference) => {
+    if (seen.has(reference.id)) return false;
+    seen.add(reference.id);
+    return true;
+  });
 }
 
 function mentionAtCaret(text: string, caret: number): { start: number; query: string } | null {
@@ -146,6 +158,29 @@ function insertSkillAtCaret(text: string, selectionStart: number, selectionEnd: 
   };
 }
 
+function removeSkillAtBackspace(
+  text: string,
+  selectionStart: number,
+  selectionEnd: number,
+  skills: ManagedSkillSummary[],
+): { text: string; caret: number } | null {
+  if (selectionStart !== selectionEnd || selectionStart <= 0) return null;
+  const reference = recognizedSkillTokensFromText(text, skills).find((candidate) => {
+    const afterToken = selectionStart === candidate.end;
+    const afterInsertedSpace = selectionStart === candidate.end + 1 && text[candidate.end] === ' ';
+    const insideToken = selectionStart > candidate.start && selectionStart < candidate.end;
+    return afterToken || afterInsertedSpace || insideToken;
+  });
+  if (!reference) return null;
+  const removeEnd = selectionStart === reference.end + 1 && text[reference.end] === ' '
+    ? reference.end + 1
+    : reference.end;
+  return {
+    text: `${text.slice(0, reference.start)}${text.slice(removeEnd)}`,
+    caret: reference.start,
+  };
+}
+
 function UserMessageText({ message }: { message: ChatMessage }) {
   const references = [...(message.skillRefs ?? [])].sort((left, right) => left.start - right.start);
   if (!references.length) return <p className="chat-msg-text">{message.text}</p>;
@@ -162,7 +197,7 @@ function UserMessageText({ message }: { message: ChatMessage }) {
 }
 
 function ComposerHighlightedText({ text, skills }: { text: string; skills: ManagedSkillSummary[] }) {
-  const references = skillReferencesFromText(text, skills);
+  const references = recognizedSkillTokensFromText(text, skills);
   if (!references.length) return <>{text}</>;
   const parts: React.ReactNode[] = [];
   let cursor = 0;
@@ -538,6 +573,25 @@ export default function ChatPanel({
               highlight.scrollLeft = event.currentTarget.scrollLeft;
             }}
             onKeyDown={(event) => {
+              if (event.key === 'Backspace' && !event.nativeEvent.isComposing) {
+                const removed = removeSkillAtBackspace(
+                  input,
+                  event.currentTarget.selectionStart ?? 0,
+                  event.currentTarget.selectionEnd ?? 0,
+                  skills,
+                );
+                if (removed) {
+                  event.preventDefault();
+                  setInput(removed.text);
+                  setSkillPickerOpen(false);
+                  setSkillQuery('');
+                  requestAnimationFrame(() => {
+                    textareaRef.current?.focus();
+                    textareaRef.current?.setSelectionRange(removed.caret, removed.caret);
+                  });
+                  return;
+                }
+              }
               if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
                 event.preventDefault();
                 submit(taskStatus.busy ? 'guide' : 'auto');

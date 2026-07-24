@@ -94,6 +94,12 @@ async function main() {
       const skillMarkerHighlight = skillMarkers.length >= 2
         && skillMarkerStyles.every((style) => style.backgroundImage !== 'none' && parseFloat(style.borderRadius) > 0)
         && skillMarkerStyles[0].backgroundImage !== skillMarkerStyles[1].backgroundImage;
+      composer.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true }));
+      await waitFor(() => (composer.value.match(/@[a-z0-9-]+/g) || []).length === 1);
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const skillAtomicBackspace = composer.value === firstSkillText
+        && document.querySelectorAll('.chat-input-highlight .chat-inline-skill').length === 1
+        && document.activeElement === composer;
       const textareaValueSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
       textareaValueSetter.call(composer, '');
       composer.dispatchEvent(new Event('input', { bubbles: true }));
@@ -178,6 +184,7 @@ async function main() {
           && skillInlineMulti
           && skillMarkerHighlight
           && skillPickerReturnsFocus
+          && skillAtomicBackspace
           && !legacyProgressPanel
           && !idleDashboardVisible,
         before,
@@ -196,6 +203,7 @@ async function main() {
         skillInlineMulti,
         skillMarkerHighlight,
         skillPickerReturnsFocus,
+        skillAtomicBackspace,
         firstSkillText,
         secondSkillText,
         theme: document.documentElement.dataset.theme,
