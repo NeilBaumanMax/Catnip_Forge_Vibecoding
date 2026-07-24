@@ -4,12 +4,12 @@
 
 ## 当前事实
 
-- 当前日期：2026-07-21。
+- 当前日期：2026-07-25。
 - 正式产品名：`Catnip Forge`；中文全称：`Catnip 硬件智能开发平台`；英文定位：`Autonomous Hardware Development Agent`。
 - 内部工程代号：`vibeide`。
 - 当前本机工作目录：`E:\Agent\vibeide\vibeide`（Windows 实机）。
-- 当前 GitHub：`https://github.com/NeilBaumanMax/vibeide_Neil.git`；当前本机记录的 `origin/main` 位于 `5e6ba3b`。
-- 当前施工分支：`electron_design`。该分支在既有任务串行化、编辑器和 Runtime EventBus 基线上完成 Apple 风格界面、Skill/工程仓库、任务清除、内置双向串口助手、随包 Python/MCP 修复、应用内持久化主题和可拖动“猫薄荷”软件助手。本轮维护本地 Git，不推送远端。
+- 当前远端真相源：remote `origin` = `git@github.com:NeilBaumanMax/Catnip-Forge.git`；当前施工分支：`main`。提交号和远端跟踪状态必须通过本地 Git 动态查询，不在接力文档中固化旧 HEAD。
+- `main` 在既有任务串行化、编辑器和 Runtime EventBus 基线上完成 Apple 风格界面、目录型 Skill、正文多 Skill 引用、可缩放对话输入区、任务清除、内置双向串口助手、随包 Python/MCP 修复、应用内持久化主题和可拖动“猫薄荷”软件助手。本轮维护本地 Git，不推送远端。
 - 旧 GitHub/历史源：`git@github.com:howtion0/vibeide.git`、`git@github.com:howtio/vibeide.git` 仍可能出现在历史日志或迁移文档中，不再作为当前同步目标。
 
 ## 当前版本和验证
@@ -19,7 +19,7 @@
 - `win-unpacked` 只是构建输出名，不是运行时硬编码名称；分发压缩包的顶层目录可以重命名，但必须完整保留 exe、`resources`、DLL 等内部相对结构。推荐解压到路径较短的普通可写目录，避免 ESP-IDF 工具链遇到权限或长路径问题。
 - 首启窗口保存 Key 成功后必须保留“状态反馈 + 自动重启”链路：Renderer 显示正在重启，主进程 900ms 后 `app.relaunch()` 并走统一退出清理；不要恢复为需要用户手工重启的流程。
 - `verify:first-run-restart` 查找 CDP 目标时必须使用主界面标题 `Catnip Forge ·`，不能只匹配 `Catnip Forge`，否则重启时会误连标题为“Catnip Forge — 启动中”的 Splash。
-- `electron_design` 当前源码需以 Runtime/Electron typecheck、main/renderer build、Windows unpacked 打包和 `git diff --check` 作为提交门禁。当前版本已执行 Windows 打包、MCP handshake、随包 Python、ESP-IDF 冷构建及 COM5 串口回归；真实 Agent 长时间连续对话仍需持续观察。
+- `main` 当前源码需以 Runtime/Electron typecheck、main/renderer build、Windows unpacked 打包和 `git diff --check` 作为提交门禁。当前版本已执行 Windows 打包、发布资源校验、无 Key 首启及自动重启闭环、MCP handshake、随包 Python、ESP-IDF 冷构建及 COM5 串口回归；真实 Agent 长时间连续对话仍需持续观察。
 - 启动阶段由独立 `splashWindow` 承接，主窗口必须保持 `show: false` 直到 `ready-to-show`。启动页从实际显示起至少保留约 5 秒，进度按一次性时间线平滑推进并封顶 94%；工作区、开发环境、Renderer 节点更新真实阶段文案，最终 100% 必须同时等待主窗口真实就绪。`assets/splash.html` 与三张 `splash-*.png` 必须随包，不能恢复循环假进度或在启动页之前闪现主窗口。
 - 当前主题不再持续跟随 Windows/Electron 的 `prefers-color-scheme`。首次无记录时读取一次系统偏好，之后由“猫薄荷”助手标题栏选择并持久化；助手位置也独立持久化，可拖动避开编辑器字号工具条。
 - “猫薄荷”是独立的软件使用帮助通道：复用 `resources/apikey.txt`，直接调用 DeepSeek Chat Completions，不得改为占用左侧硬件 Agent 队列。系统提示只允许解释 Catnip Forge 操作，真实编译/烧录/文件修改必须引导到左侧 Agent。
@@ -38,7 +38,7 @@
 - 本机源码目录：`E:\Agent\vibeide\vibeide`
 - 目标打包 exe：`electron\dist-package\win-unpacked\Catnip Forge.exe`
 - 产线 API key：`resources\apikey.txt`（DeepSeek，与应用同目录，删包即删 key）
-- 仓库 remote：`https://github.com/NeilBaumanMax/vibeide_Neil.git`
+- 仓库 remote `origin`：`git@github.com:NeilBaumanMax/Catnip-Forge.git`
 - SSH key：`~/.ssh/id_ed25519`，已配置 `git config core.sshCommand` 绕过中文路径编码问题
 
 已通过（当前源码目录 `E:\Agent\vibeide\vibeide`，2026-07-17）：
@@ -63,7 +63,14 @@
 - `奥德赛0.4.0.7161.exe` PE 元数据：`ProductName=奥德赛0.4.0.7161`、`FileVersion=0.4.0.7161`、`ProductVersion=0.4.0.7161`
 - 本轮尚未重新执行 exe 启动和 ESP32-S3 实机闭环，详见 `docs/WINDOWS_0_4_0_7161_TEST_REPORT.md`
 
-下方 0.4.0-7171、0.4.0.7161、0.1.0 的记录均为历史验证事实；当前 1.0.0-7201 的验证以紧随其后的 2026-07-21 记录为准。
+下方 0.4.0-7171、0.4.0.7161、0.1.0 的记录均为历史验证事实；当前 1.0.0-7201 的最终成品验证以紧随其后的 2026-07-25 记录为准，2026-07-21 记录继续保留为历史迭代事实。
+
+已通过（Windows v1.0.0 最终成品重建，2026-07-25）：
+
+- 在 `E:\Agent\vibeide\vibeide` 的 `main` 分支执行 `npm.cmd --prefix electron run pack:win`，最终成品位于 `electron\dist-package\win-unpacked`，入口为 `Catnip Forge.exe`；目录共 36,985 个文件、`4,382,265,192` 字节。
+- `verify:version` 与 `verify:release` 通过：PE 版本为 `1.0.0.7201`，Node `v22.14.0`、Python 3.12.9/pyserial `3.5`、Claude Code `2.1.167`、12 个目录型 Skills 和 Playwright 完整，且不含真实 `resources/apikey.txt`。
+- `verify:first-run` 与 `verify:first-run-restart` 通过：首启配置、品牌资源、Skill 按钮、占位 Key 拒绝、保存一次性测试 Key 后自动拉起新进程均正常；结束后测试 Key 已清理，全部成品子进程已关闭。
+- 首次构建暴露 `_bundled/python` 只有 site-packages、缺少 Python 核心的问题；从本机已验证的历史便携包恢复 Python 3.12.9 核心后重新全量打包。打包脚本现会在清理旧成品前预检 Node、Python、pyserial 与 Playwright，缺失时明确失败。
 
 已通过（随包 Python、MCP、串口助手与触摸板回归，2026-07-21）：
 

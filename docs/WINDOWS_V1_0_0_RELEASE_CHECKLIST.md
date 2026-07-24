@@ -64,6 +64,8 @@ git diff --check
 
 2026-07-21 Catnip Forge 最终成品实测：目录共 `4,463,705,939` 字节；Node `v22.14.0`、Python 3.12/pyserial `3.5`、Claude Code `2.1.167` 和 Runtime health 均通过。成品实际启动后，窗口标题、左上角 26px 品牌图、首次配置窗口、英文定位、Playwright 资源和 Skills 按钮均通过 CDP 校验，占位 Key 被拒绝。首次保存一次性测试 Key 后应用自动拉起新进程，新进程实测 `apiKeyReady=true`、`firstRun=false` 且配置窗口消失；测试 Key 随后已清除。
 
+2026-07-25 从 `main` 重新全量生成最终成品：目录共 36,985 个文件、`4,382,265,192` 字节，入口 `Catnip Forge.exe` 的 PE 版本为 `1.0.0.7201`。`verify:version`、`verify:release`、`verify:first-run` 和 `verify:first-run-restart` 均通过；Node `v22.14.0`、Python 3.12.9/pyserial `3.5`、Claude Code `2.1.167`、Playwright 与 12 个目录型 Skills 完整，无真实 API Key。首启及保存一次性测试 Key 后自动重启闭环通过，测试 Key 和全部成品测试进程已清理。打包入口同时增加 `_bundled` 前置校验，缺少 Node、Python、pyserial 或 Playwright 时会在清理旧成品前失败。
+
 ## 使用边界
 
 - 目标系统为 Windows 10/11 x64。

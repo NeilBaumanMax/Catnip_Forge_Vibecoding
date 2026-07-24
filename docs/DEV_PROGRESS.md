@@ -15,7 +15,7 @@
 - [x] 新增 Catnip Forge 品牌启动界面：三张透明素材完整落地，工作区、开发环境、Renderer 与主窗口 ready 节点驱动真实阶段进度，完成后自动切换主窗口
 - [x] 新增启动页 CDP 烟测 `npm.cmd --prefix electron run verify:splash-ui`，覆盖素材加载、双语文案、系统字体栈、进度更新、窗口边界和截图验收
 - [x] 启动页改为从实际显示起至少保留约 5 秒，进度条逐帧平滑推进至 94%，并与主窗口真实 `ready-to-show` 双门槛协调后完成至 100%
-- [x] GitHub 仓库 `https://github.com/NeilBaumanMax/vibeide_Neil.git` 已作为当前接力源码仓库接入本机
+- [x] GitHub 远端真相源已统一为 remote `origin` = `git@github.com:NeilBaumanMax/Catnip-Forge.git`，当前施工分支为 `main`；提交号和跟踪状态由本地 Git 动态查询
 - [x] 当前唯一施工源码目录已统一为 Windows `E:\Agent\vibeide\vibeide`；旧 `C:\vibeide` 和 `E:\vibeide` 仅保留在历史迁移记录中
 - [x] README 已重写为 Catnip Forge 当前 Electron + Runtime + Agent 主线，`vibeide` 保留为仓库和内部工程代号
 - [x] 新文档体系已建立：INDEX / ARCHITECTURE / DEVELOPMENT / GITHUB_SYNC / REFACTOR_PLAN / SECURITY / HANDOFF
@@ -109,6 +109,8 @@
 - [x] 编辑器右键菜单通过 Portal 使用视口坐标贴近指针，关闭按钮补齐 hover/focus 反馈，字号控件改为圆角冷蓝按钮组
 - [x] 编辑器“从左侧资源管理器选择文件”空标签提示已从旧固定深蓝色切换为主题次级文字令牌，深色/浅色背景均保持可读
 - [x] 文档路径漂移已修正：当前 Windows 工作区统一为 `E:\Agent\vibeide\vibeide`，旧 Linux、`C:\vibeide`、`D:\vibeide` 和 `E:\vibeide` 路径仅作为历史迁移记录保留
+- [x] 2026-07-25 从 `main` 全量重建 Windows v1.0.0 便携成品到 `electron/dist-package/win-unpacked`：共 36,985 个文件、4,382,265,192 字节；版本、随包 Node/Python/pyserial/Claude Code、12 个目录型 Skills、无 Key 首启和保存测试 Key 后自动重启闭环均通过
+- [x] Windows 打包入口新增被忽略便携资源预检：缺少 Node、Python 核心、pyserial 或 Playwright 时在 electron-builder 清空旧成品前直接失败，避免生成表面成功但运行时不完整的目录
 - [x] `ARCHITECTURE.md` 已补齐 Runtime hardboard/eventbus/process/task/MCP 子系统和 Electron hardboard/paths/agent/first-run/tray/session-store 模块
 - [x] 删除已被 Electron 动态 MCP 配置取代的 `runtime/mcp-config.json`、孤立根 `package-lock.json`，并清理活动脚本中的旧 `coffecat` 名称和绝对路径
 - [x] 当前打包版已用 `touch_hello` / COM5 完成编译、烧录和串口 `hello` 输出验证；历史 v0.1.0 无输出问题不再作为当前阻塞项
@@ -165,7 +167,7 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 
 ## 下一步
 
-1. 完成 Windows v1.0.0 成品综合烟测和正式版本报告。
+1. 在目标 Windows 10/11 机器上执行最终人工分发验收，重点确认 SmartScreen 提示、真实 API Key、Agent 连续对话和 USB-UART 驱动。
 2. 修复 `hardboard:serial` reset/open 时序，并补 packaged build/flash/serial smoke。
 3. 在 Windows 上继续用真实 Agent 对话压测任务、会话和 Claude Code CLI 的模型侧续聊效果。
 4. 验证编辑器新建、重命名、回收站删除、标签路径同步和打包版离线语法高亮。

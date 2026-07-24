@@ -7,6 +7,20 @@ const versionInfo = JSON.parse(fs.readFileSync(path.join(electronRoot, '..', 'co
 const exePath = path.join(electronRoot, 'dist-package', 'win-unpacked', `${versionInfo.productName}.exe`);
 const builder = path.join(electronRoot, 'node_modules', 'electron-builder', 'cli.js');
 const stamp = path.join(electronRoot, 'scripts', 'stamp_win_exe_version.cjs');
+const requiredBundleSources = [
+  path.join(electronRoot, '..', '_bundled', 'nodejs', 'node.exe'),
+  path.join(electronRoot, '..', '_bundled', 'python', 'python.exe'),
+  path.join(electronRoot, '..', '_bundled', 'python', 'Lib', 'site-packages', 'serial'),
+  path.join(electronRoot, '..', '_bundled', 'playwright'),
+];
+const missingBundleSources = requiredBundleSources.filter((source) => !fs.existsSync(source));
+
+if (missingBundleSources.length) {
+  console.error('[pack:win] required ignored bundle sources are missing:');
+  missingBundleSources.forEach((source) => console.error(`  - ${path.relative(path.join(electronRoot, '..'), source)}`));
+  console.error('[pack:win] restore _bundled resources before rebuilding win-unpacked.');
+  process.exit(1);
+}
 
 const result = spawnSync(process.execPath, [builder, '--win', '--x64', '--dir'], {
   cwd: electronRoot,

@@ -1,5 +1,13 @@
 # 施工日志
 
+## 2026-07-25 — Windows v1.0.0 成品重建与文档漂移修正
+
+- Git 当前真相源统一记录为 remote `origin` = `git@github.com:NeilBaumanMax/Catnip-Forge.git`、分支 `main`；移除 README、进度和接力文档中把旧 `vibeide_Neil`、HTTPS、`electron_design` 或固定 HEAD 当作当前状态的表述。
+- 第一次 `pack:win` 虽由 electron-builder 返回成功，但 `verify:release` 发现随包 `resources/runtime/python/Scripts/python.exe` 缺失；根因是被 Git 忽略的 `_bundled/python` 仅剩 site-packages，没有 Python 核心文件。
+- 从本机已验证历史便携包恢复 Python 3.12.9 核心，确认 pyserial 3.5 后重新全量打包；打包脚本新增 Node、Python、pyserial 和 Playwright 前置检查，避免清空旧成品后生成运行时不完整的新目录。
+- 最终成品位于 `electron/dist-package/win-unpacked`，共 36,985 个文件、`4,382,265,192` 字节；`verify:version`、`verify:release`、无 Key 首启及保存测试 Key 后自动重启闭环均通过，测试 Key 与成品测试进程已清理。
+- 首启验证脚本新增 Renderer 异常详情输出，页面执行异常不再退化成缺少诊断信息的 `{}`。
+
 ## 2026-07-25 — Skill 正文插入交互与荧光标记
 
 - 保留 `+ Skills` 的完整列表，但取消复选框式连续多选；每次点选一个 Skill 后弹层立即关闭，输入焦点和光标回到插入项之后，需要更多 Skill 时再次打开列表。

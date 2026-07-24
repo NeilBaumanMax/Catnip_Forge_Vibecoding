@@ -59,6 +59,12 @@ async function main() {
       awaitPromise: true,
       returnByValue: true,
     });
+    if (evaluated.exceptionDetails) {
+      const detail = evaluated.exceptionDetails.exception?.description
+        || evaluated.exceptionDetails.text
+        || JSON.stringify(evaluated.exceptionDetails);
+      throw new Error(`packaged first-run evaluation failed: ${detail}`);
+    }
     const result = evaluated.result?.value;
     const ok = result?.modal && result?.skillButton && result?.firstRun && !result?.apiKeyReady
       && result?.playwrightReady && result?.placeholderRejected && /resources[\\/]apikey\.txt$/i.test(result?.keyPath || '');
