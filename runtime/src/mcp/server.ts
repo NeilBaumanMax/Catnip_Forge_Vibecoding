@@ -4,6 +4,7 @@ import { registerBrowserTools } from './browser.tool.js';
 import { registerStorageTools } from './storage.tool.js';
 import { registerHardboardTools } from './hardboard.tool.js';
 import { instrumentMcpToolEvents } from './tool-events.js';
+import { registerAttachmentTools } from './attachment.tool.js';
 
 export async function startMCPServer() {
   const server = new McpServer(
@@ -18,6 +19,7 @@ export async function startMCPServer() {
   registerBrowserTools(server);
   registerStorageTools(server);
   registerHardboardTools(server);
+  registerAttachmentTools(server);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

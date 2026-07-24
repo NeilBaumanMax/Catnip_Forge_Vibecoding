@@ -103,10 +103,20 @@ export function getClaudeBin(): string {
 
 /** API Key 文件路径 — 始终在 resources/ 下，与应用同目录 */
 export function getApiKeyPath(): string {
+  if (process.env.CATNIP_DEEPSEEK_API_KEY_PATH) return path.resolve(process.env.CATNIP_DEEPSEEK_API_KEY_PATH);
   if (isDev()) {
     return path.join(devProjectRoot(), 'apikey.txt');
   }
   return path.join(process.resourcesPath, 'apikey.txt');
+}
+
+/** Qwen 视觉 API Key 文件路径；可选，不影响 DeepSeek 主 Agent。 */
+export function getQwenApiKeyPath(): string {
+  if (process.env.CATNIP_QWEN_API_KEY_PATH) return path.resolve(process.env.CATNIP_QWEN_API_KEY_PATH);
+  if (isDev()) {
+    return path.join(devProjectRoot(), 'qwen-apikey.txt');
+  }
+  return path.join(process.resourcesPath, 'qwen-apikey.txt');
 }
 
 /** 猫薄荷软件助手的可维护产品知识手册；发布版位于 resources 根目录。 */

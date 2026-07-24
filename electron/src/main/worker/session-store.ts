@@ -33,6 +33,7 @@ export interface StoredChatMessage {
   error?: boolean;
   taskId?: string | null;
   skillRefs?: Array<{ id: string; name: string; start: number; end: number }>;
+  attachments?: Array<{ id: string; name: string; mimeType: string; size: number; kind: 'image' | 'pdf' | 'word' | 'powerpoint' | 'text'; textAvailable: boolean; warning?: string }>;
 }
 
 export interface ChatConversation extends ClaudeSessionState {
@@ -119,6 +120,17 @@ function normalizeMessage(message: StoredChatMessage): StoredChatMessage {
         .filter((ref) => ref && typeof ref.id === 'string' && typeof ref.name === 'string' && Number.isInteger(ref.start) && Number.isInteger(ref.end))
         .slice(0, 8)
         .map((ref) => ({ id: ref.id, name: ref.name, start: ref.start, end: ref.end }))
+      : undefined,
+    attachments: Array.isArray(message.attachments)
+      ? message.attachments.slice(0, 6).map((item) => ({
+        id: String(item.id || ''),
+        name: String(item.name || '').slice(0, 180),
+        mimeType: String(item.mimeType || ''),
+        size: Number(item.size) || 0,
+        kind: item.kind,
+        textAvailable: Boolean(item.textAvailable),
+        warning: item.warning ? String(item.warning).slice(0, 500) : undefined,
+      })).filter((item) => /^att_[a-f0-9]{32}$/.test(item.id))
       : undefined,
   };
 }

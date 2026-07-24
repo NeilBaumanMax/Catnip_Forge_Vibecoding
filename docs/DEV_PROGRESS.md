@@ -12,6 +12,8 @@
 
 ## 当前已落地
 
+- [x] 在 `qwen_vision_attachments` 分支完成 Qwen 视觉旁路与聊天附件第一阶段：DeepSeek 主开发模型保持不变，首启 Qwen Key 同屏选填；聊天支持图片/PDF/DOCX/PPTX/文本附件，Runtime MCP 可本地读取/搜索并按需调用 `vision.qwen_analyze`，调用状态进入 Agent“执行过程”
+- [x] 附件采用 Electron 主进程受控存储和会话绑定随机 ID；Qwen Key 只在主进程经随机令牌 loopback 桥接使用。离线 mock、Runtime/Electron typecheck、会话/队列/Skill 回归和 Renderer 生产构建通过；真实 Qwen、复杂文档页面视觉与 Windows 打包尚未验收
 - [x] 新增 Catnip Forge 品牌启动界面：三张透明素材完整落地，工作区、开发环境、Renderer 与主窗口 ready 节点驱动真实阶段进度，完成后自动切换主窗口
 - [x] 新增启动页 CDP 烟测 `npm.cmd --prefix electron run verify:splash-ui`，覆盖素材加载、双语文案、系统字体栈、进度更新、窗口边界和截图验收
 - [x] 启动页改为从实际显示起至少保留约 5 秒，进度条逐帧平滑推进至 94%，并与主窗口真实 `ready-to-show` 双门槛协调后完成至 100%

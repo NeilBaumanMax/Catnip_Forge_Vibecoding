@@ -2296,6 +2296,8 @@ select.nes-select {
 
 .startup-key-dialog {
   width: min(460px, calc(100vw - 40px));
+  max-height: calc(100vh - 40px);
+  overflow: auto;
   display: grid;
   gap: 12px;
   padding: 24px;
@@ -2384,6 +2386,59 @@ select.nes-select {
   animation: startup-key-spin 700ms linear infinite;
 }
 @keyframes startup-key-spin { to { transform: rotate(360deg); } }
+
+.chat-attachment-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 6px 0 2px;
+}
+
+.chat-input > .chat-attachment-cards {
+  padding: 8px 10px 0;
+  margin: 0;
+}
+
+.chat-attachment-card {
+  min-width: 170px;
+  max-width: 260px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ui-surface-raised) 88%, transparent);
+}
+
+.chat-attachment-card > span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--ui-accent);
+  background: color-mix(in srgb, var(--ui-accent) 13%, transparent);
+  font: 700 10px/1 var(--ui-font-mono);
+}
+
+.chat-attachment-card > div { min-width: 0; display: grid; gap: 3px; }
+.chat-attachment-card strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.chat-attachment-card small { color: var(--ui-text-tertiary); font-size: 9px; }
+.chat-attachment-card > button {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--ui-text-secondary);
+  background: transparent;
+  font-size: 17px;
+  cursor: pointer;
+}
+.chat-attachment-card > button:hover { color: var(--ui-red); background: color-mix(in srgb, var(--ui-red) 10%, transparent); }
+.chat-attachment-error { margin: 6px 10px 0; color: var(--ui-red); font-size: 10px; }
+.chat-attachment-button span { font-size: 15px; }
 
 @media (prefers-reduced-motion: reduce) {
   .startup-key-restarting::before { animation: none; border-color: var(--ui-accent); }

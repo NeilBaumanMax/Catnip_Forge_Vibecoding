@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { logger } from './worker/logger';
-import { getApiKeyPath, getRuntimeDir } from './paths';
+import { getApiKeyPath, getQwenApiKeyPath, getRuntimeDir } from './paths';
 
 /**
  * 首次启动检查 — 确保 App 所需环境就绪。
@@ -14,6 +14,7 @@ import { getApiKeyPath, getRuntimeDir } from './paths';
 
 export interface StartupStatus {
   apiKeyReady: boolean;
+  qwenApiKeyReady: boolean;
   playwrightReady: boolean;
   firstRun: boolean;
 }
@@ -21,6 +22,7 @@ export interface StartupStatus {
 /** 执行启动检查，返回系统状态 */
 export function checkStartupStatus(): StartupStatus {
   const apiKeyReady = checkApiKey();
+  const qwenApiKeyReady = checkQwenApiKey();
   const playwrightReady = checkPlaywright();
   const firstRun = !apiKeyReady;
 
@@ -28,7 +30,7 @@ export function checkStartupStatus(): StartupStatus {
     logger.info('first-run:detected', { apiKeyReady, playwrightReady });
   }
 
-  return { apiKeyReady, playwrightReady, firstRun };
+  return { apiKeyReady, qwenApiKeyReady, playwrightReady, firstRun };
 }
 
 /** 检查 API Key 是否存在 — 直接检查 resources/apikey.txt */
@@ -58,6 +60,25 @@ function isUsableApiKeyContent(content: string): boolean {
   return false;
 }
 
+function checkQwenApiKey(): boolean {
+  try {
+    const content = fs.readFileSync(getQwenApiKeyPath(), 'utf-8').trim();
+    return readNamedKey(content, 'QWEN_API_KEY').length > 12;
+  } catch {
+    return false;
+  }
+}
+
+function readNamedKey(content: string, name: string): string {
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const match = line.match(new RegExp(`^${name}\\s*=\\s*(.+)$`, 'i'));
+    return (match?.[1] || line).trim();
+  }
+  return '';
+}
+
 /** 检查 Playwright 浏览器是否存在 */
 function checkPlaywright(): boolean {
   // Runtime 浏览器资源随 extraResources 放在 runtime/playwright。
@@ -76,6 +97,8 @@ export function getApiKeyPromptData(): Record<string, unknown> {
     message: '首次使用需要配置 DeepSeek API Key',
     detail: '请粘贴你的 DeepSeek API Key 以启用 AI 采集功能。\n\nKey 仅保存在本地，不会上传。',
     keyPath: getApiKeyPath(),
+    qwenKeyPath: getQwenApiKeyPath(),
+    qwenOptional: true,
   };
 }
 
@@ -93,5 +116,36 @@ export function saveApiKey(key: string): boolean {
   } catch (err) {
     logger.error('first-run:apikey-save-failed', { error: String(err) });
     return false;
+  }
+}
+
+/** 首启同时保存 DeepSeek（必填）与 Qwen（选填）Key。 */
+export function saveStartupApiKeys(deepSeekKey: string, qwenKey = ''): { ok: boolean; qwenSaved: boolean } {
+  const normalizedQwen = qwenKey.trim().replace(/^QWEN_API_KEY\s*=\s*/i, '').trim();
+  // 先完成所有格式校验，避免可选 Key 写错时留下半完成的首启状态。
+  if (normalizedQwen && (normalizedQwen.length <= 12 || /your-key-here/i.test(normalizedQwen))) {
+    return { ok: false, qwenSaved: false };
+  }
+  if (!saveApiKey(deepSeekKey)) return { ok: false, qwenSaved: false };
+  if (!normalizedQwen) return { ok: true, qwenSaved: false };
+  try {
+    const keyPath = getQwenApiKeyPath();
+    fs.mkdirSync(path.dirname(keyPath), { recursive: true });
+    fs.writeFileSync(keyPath, `QWEN_API_KEY=${normalizedQwen}\n`, 'utf-8');
+    logger.info('first-run:apikey-saved', { keyPath, provider: 'qwen' });
+    return { ok: true, qwenSaved: true };
+  } catch (error) {
+    logger.error('first-run:apikey-save-failed', { error: String(error), provider: 'qwen' });
+    // Qwen 是可选增强能力，保存失败不能阻断必填 DeepSeek 的首启流程。
+    return { ok: true, qwenSaved: false };
+  }
+}
+
+export function readQwenApiKey(): string | null {
+  try {
+    const key = readNamedKey(fs.readFileSync(getQwenApiKeyPath(), 'utf-8'), 'QWEN_API_KEY');
+    return key.length > 12 ? key : null;
+  } catch {
+    return null;
   }
 }

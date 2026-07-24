@@ -7,9 +7,20 @@ export interface SkillReference {
   end: number;
 }
 
+export interface AttachmentReference {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  kind: 'image' | 'pdf' | 'word' | 'powerpoint' | 'text';
+  textAvailable: boolean;
+  warning?: string;
+}
+
 export interface AgentTaskInput {
   text: string;
   skillRefs: SkillReference[];
+  attachments: AttachmentReference[];
 }
 
 export interface ChatMessage {
@@ -22,6 +33,7 @@ export interface ChatMessage {
   error?: boolean;
   taskId?: string | null;
   skillRefs?: SkillReference[];
+  attachments?: AttachmentReference[];
 }
 
 export interface ChatConversationSummary {
@@ -67,9 +79,12 @@ export interface AgentTaskStatus {
 
 export interface StartupStatus {
   apiKeyReady: boolean;
+  qwenApiKeyReady: boolean;
   playwrightReady: boolean;
   firstRun: boolean;
   keyPath: string;
+  qwenKeyPath: string;
+  qwenOptional?: boolean;
   message?: string;
   detail?: string;
 }
@@ -269,7 +284,7 @@ export interface SerialMonitorSnapshot {
 
 export interface WindowAPI {
   getStartupStatus: () => Promise<StartupStatus>;
-  saveStartupApiKey: (key: string) => Promise<{ ok: boolean; restarting: boolean; status: Pick<StartupStatus, 'apiKeyReady' | 'playwrightReady' | 'firstRun'> }>;
+  saveStartupApiKey: (key: string, qwenKey?: string) => Promise<{ ok: boolean; qwenSaved: boolean; restarting: boolean; status: Pick<StartupStatus, 'apiKeyReady' | 'qwenApiKeyReady' | 'playwrightReady' | 'firstRun'> }>;
   askSoftwareAssistant: (messages: Array<Pick<SoftwareAssistantMessage, 'role' | 'content'>>) => Promise<{ ok: true; text: string }>;
   sendMessage: (request: AgentTaskInput, mode?: TaskSubmitMode, conversationId?: string, messageId?: string, timestamp?: number) => Promise<TaskSubmitResult & { message?: ChatMessage }>;
   onMessage: (cb: (msg: { id?: string; text: string; timestamp: number; kind?: ChatMessageKind; toolName?: string; error?: boolean; taskId?: string | null; conversationId?: string }) => void) => void;
@@ -301,6 +316,7 @@ export interface WindowAPI {
   renameWorkbenchEntry: (targetPath: string, nextName: string) => Promise<{ ok: boolean; path?: string; oldPath?: string; kind?: 'file' | 'dir'; error?: string }>;
   deleteWorkbenchEntry: (targetPath: string) => Promise<{ ok: boolean; path?: string; kind?: 'file' | 'dir'; error?: string }>;
   listManagedSkills: () => Promise<SkillManagerResult>;
+  pickChatAttachments: (conversationId: string) => Promise<{ attachments: AttachmentReference[] }>;
   getManagedSkill: (id: string) => Promise<{ ok: boolean; skill?: ManagedSkillDetail; error?: string }>;
   saveManagedSkill: (input: { id: string; name: string; description: string; body: string; originalId?: string }) => Promise<{ ok: boolean; skill?: ManagedSkillDetail; snapshot?: SkillManagerSnapshot; error?: string }>;
   deleteManagedSkill: (id: string) => Promise<{ ok: boolean; snapshot?: SkillManagerSnapshot; error?: string }>;

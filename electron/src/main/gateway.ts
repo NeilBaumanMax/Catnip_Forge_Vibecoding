@@ -27,6 +27,7 @@ import {
   subscribeSharedSerialState,
   writeSharedSerialMonitor,
 } from './serial-monitor-controller';
+import { pickChatAttachments, validateAttachmentReferences } from './attachment-store';
 
 export function startGateway(mainWindow: BrowserWindow): void {
   // Gateway 提供 pushUI 能力 — Worker 通过它推消息到 UI
@@ -91,14 +92,20 @@ export function startGateway(mainWindow: BrowserWindow): void {
       throw new Error('Agent 正在工作，完成或停止后才能切换历史对话');
     }
     if (!status.busy && targetConversationId !== store.activeConversationId) activateChatConversation(targetConversationId);
+    input.attachments = validateAttachmentReferences(targetConversationId, input.attachments);
     const message = appendChatMessage(targetConversationId, {
       id: messageId || randomUUID(),
       text: input.text,
       role: 'user',
       timestamp: timestamp || Date.now(),
       skillRefs: input.skillRefs,
+      attachments: input.attachments,
     });
     return { ...orch.submitTask(input, mode || 'auto', targetConversationId), message };
+  });
+
+  ipcMain.handle('chat:attachments:pick', async (_event, conversationId: string) => {
+    return pickChatAttachments(mainWindow, conversationId);
   });
 
   ipcMain.handle('chat:conversations:list', async () => listChatConversations());

@@ -9,6 +9,7 @@ import { logger } from './logger';
 import { isHtmlGameTask, validateCurrentPage } from './page-validator';
 import { appendClaudeSessionTurn, buildClaudeSessionContext, getClaudeSessionFile, listChatConversations } from './session-store';
 import { listManagedSkills } from '../skill-manager';
+import { buildAttachmentPromptContext, type AttachmentReference } from '../attachment-store';
 
 export type PushUIFn = (channel: string, data: unknown) => void;
 export type TaskSubmitMode = 'auto' | 'guide' | 'queue';
@@ -23,6 +24,7 @@ export interface SkillReference {
 export interface AgentTaskInput {
   text: string;
   skillRefs: SkillReference[];
+  attachments: AttachmentReference[];
 }
 
 export interface TaskSubmitResult {
@@ -38,6 +40,7 @@ interface QueuedTask {
   id: string;
   text: string;
   skillRefs: SkillReference[];
+  attachments: AttachmentReference[];
   conversationId: string;
 }
 
@@ -67,7 +70,20 @@ export function normalizeAgentTaskInput(input: string | AgentTaskInput): AgentTa
     seen.add(id);
     skillRefs.push({ id, name: skill.name, start, end });
   }
-  return { text, skillRefs };
+  const rawAttachments = typeof input === 'string' || !Array.isArray(input.attachments) ? [] : input.attachments;
+  if (rawAttachments.length > 6) throw new Error('一条消息最多包含 6 个附件');
+  const attachments = rawAttachments
+    .filter((item) => item && /^att_[a-f0-9]{32}$/.test(String(item.id || '')))
+    .map((item) => ({
+      id: String(item.id),
+      name: String(item.name || '').slice(0, 180),
+      mimeType: String(item.mimeType || ''),
+      size: Number(item.size) || 0,
+      kind: item.kind,
+      textAvailable: Boolean(item.textAvailable),
+      warning: item.warning ? String(item.warning).slice(0, 500) : undefined,
+    })) as AttachmentReference[];
+  return { text, skillRefs, attachments };
 }
 
 export class Orchestrator {
@@ -79,6 +95,7 @@ export class Orchestrator {
   private currentTaskId: string | null = null;
   private currentConversationId: string | null = null;
   private currentSkillRefs: SkillReference[] = [];
+  private currentAttachments: AttachmentReference[] = [];
   private invokedSkillIds = new Set<string>();
   private skillEnforcementAttempt = 0;
   private currentAgentTranscript = '';
@@ -113,7 +130,7 @@ export class Orchestrator {
     const input = normalizeAgentTaskInput(task);
     const text = input.text;
     const targetConversationId = conversationId || listChatConversations().activeConversationId;
-    const request: QueuedTask = { id: randomUUID(), text, skillRefs: input.skillRefs, conversationId: targetConversationId };
+    const request: QueuedTask = { id: randomUUID(), text, skillRefs: input.skillRefs, attachments: input.attachments, conversationId: targetConversationId };
 
     if (this.currentTask || this.turnInFlight || this.paused) {
       if (this.currentConversationId && this.currentConversationId !== targetConversationId) {
@@ -153,6 +170,7 @@ export class Orchestrator {
     this.currentTaskId = request.id;
     this.currentConversationId = request.conversationId;
     this.currentSkillRefs = request.skillRefs;
+    this.currentAttachments = request.attachments || [];
     this.invokedSkillIds = new Set();
     this.skillEnforcementAttempt = 0;
     this.currentAttempt = 0;
@@ -203,7 +221,10 @@ export class Orchestrator {
       effectiveTask,
       this.currentSkillRefs.map((ref) => ref.id),
     );
-    const promptWithHistory = `${sessionContext}\n\n${prompt}`;
+    const attachmentContext = this.currentConversationId
+      ? buildAttachmentPromptContext(this.currentConversationId, this.currentAttachments)
+      : '';
+    const promptWithHistory = `${sessionContext}\n\n${prompt}${attachmentContext ? `\n\n${attachmentContext}` : ''}`;
     logger.info('task:context', {
       skillsFound,
       explicitSkills,
@@ -494,6 +515,13 @@ export class Orchestrator {
         knownIds.add(ref.id);
         this.currentSkillRefs.push(ref);
       }
+      this.currentAttachments ||= [];
+      const knownAttachments = new Set(this.currentAttachments.map((item) => item.id));
+      for (const attachment of entry.attachments || []) {
+        if (knownAttachments.has(attachment.id)) continue;
+        knownAttachments.add(attachment.id);
+        this.currentAttachments.push(attachment);
+      }
     }
     this.pushUI('chat:message', {
       text: `[Worker] 正在应用 ${guidance.length} 条追加要求，继续当前任务...`,
@@ -717,6 +745,7 @@ export class Orchestrator {
     this.currentTaskId = null;
     this.currentConversationId = null;
     this.currentSkillRefs = [];
+    this.currentAttachments = [];
     this.invokedSkillIds = new Set();
     this.skillEnforcementAttempt = 0;
     this.currentAgentTranscript = '';

@@ -16,6 +16,7 @@
 
 ```text
 apikey.txt
+qwen-apikey.txt
 .env
 .local-secrets/
 .claude/
@@ -25,6 +26,7 @@ runtime/cookies/
 runtime/logs/
 runtime/recordings/
 runtime/workflows/
+runtime/attachments/
 workplaces/
 agent/logs/
 agent/screenshots/
@@ -53,7 +55,7 @@ electron/dist-package/
 
 ## API Key
 
-API Key 文件始终位于 `resources/apikey.txt`，与应用同目录。
+DeepSeek API Key 位于 `resources/apikey.txt`，选填的 Qwen API Key 位于 `resources/qwen-apikey.txt`，都与应用同目录。
 
 开发模式路径为项目根目录，生产模式路径为打包后的 `resources/` 目录。删除应用目录即删除 key。
 
@@ -63,7 +65,15 @@ API Key 文件始终位于 `resources/apikey.txt`，与应用同目录。
 DEEPSEEK_API_KEY=<your-key>
 ```
 
+Qwen 文件格式：
+
+```text
+QWEN_API_KEY=<your-key>
+```
+
 发布包只携带 `resources/apikey.txt.example` 占位模板，不携带 `resources/apikey.txt`。首次启动没有 Key 时，应用会显示阻塞式配置窗口；保存后只写入当前解压目录的 `resources/apikey.txt`。
+
+Qwen Key 仅由 Electron 主进程读取。Runtime MCP 通过只监听 `127.0.0.1`、每次启动随机令牌鉴权的桥接请求视觉分析，Renderer、聊天历史和 Agent 提示词中不得出现 Key。附件原文件属于本机运行态数据，不得提交或随源码分发；只有用户消息所引用的附件 ID 可以进入 Agent 上下文。
 
 分发前必须再次确认真实 Key 文件不存在。用户自行编辑模板或通过首次启动窗口保存都可以，但不得把保存过 Key 的目录再次压缩转发。
 

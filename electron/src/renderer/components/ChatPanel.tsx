@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import type { AgentTaskInput, AgentTaskStatus, ChatConversationSummary, ChatMessage, ManagedSkillSummary, SkillReference, TaskStep, TaskSubmitMode } from '../types';
+import type { AgentTaskInput, AgentTaskStatus, AttachmentReference, ChatConversationSummary, ChatMessage, ManagedSkillSummary, SkillReference, TaskStep, TaskSubmitMode } from '../types';
 import MarkdownContent from './MarkdownContent';
 import TaskProgress from './TaskProgress';
 import catnipForgeIcon from '../assets/catnip-forge.png';
@@ -199,7 +199,6 @@ function removeSkillAtBackspace(
 
 function UserMessageText({ message }: { message: ChatMessage }) {
   const references = [...(message.skillRefs ?? [])].sort((left, right) => left.start - right.start);
-  if (!references.length) return <p className="chat-msg-text">{message.text}</p>;
   const parts: React.ReactNode[] = [];
   let cursor = 0;
   references.forEach((reference) => {
@@ -209,7 +208,32 @@ function UserMessageText({ message }: { message: ChatMessage }) {
     cursor = reference.end;
   });
   if (cursor < message.text.length) parts.push(message.text.slice(cursor));
-  return <p className="chat-msg-text">{parts}</p>;
+  return (
+    <>
+      <p className="chat-msg-text">{parts}</p>
+      {message.attachments?.length ? <AttachmentCards attachments={message.attachments} /> : null}
+    </>
+  );
+}
+
+function AttachmentCards({ attachments, removable, onRemove }: { attachments: AttachmentReference[]; removable?: boolean; onRemove?: (id: string) => void }) {
+  return (
+    <div className="chat-attachment-cards">
+      {attachments.map((item) => (
+        <div className={`chat-attachment-card is-${item.kind}`} key={item.id} title={item.warning || item.mimeType}>
+          <span aria-hidden="true">{item.kind === 'image' ? '▧' : item.kind === 'pdf' ? 'PDF' : item.kind === 'word' ? 'W' : item.kind === 'powerpoint' ? 'P' : 'TXT'}</span>
+          <div><strong>{item.name}</strong><small>{formatFileSize(item.size)} · {item.textAvailable ? '文字已提取' : item.kind === 'image' ? '可视觉解析' : '等待解析'}</small></div>
+          {removable ? <button type="button" aria-label={`移除附件 ${item.name}`} onClick={() => onRemove?.(item.id)}>×</button> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
 function ComposerHighlightedText({ text, skills }: { text: string; skills: ManagedSkillSummary[] }) {
@@ -283,6 +307,9 @@ export default function ChatPanel({
   onToggleConversationPinned,
 }: Props) {
   const [input, setInput] = useState('');
+  const [attachments, setAttachments] = useState<AttachmentReference[]>([]);
+  const [attachmentError, setAttachmentError] = useState('');
+  const [attachmentPicking, setAttachmentPicking] = useState(false);
   const [professionalView, setProfessionalView] = useState(readProfessionalView);
   const [historyCollapsed, setHistoryCollapsed] = useState(readHistoryCollapsed);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -330,6 +357,10 @@ export default function ChatPanel({
   }, [composerHeight]);
 
   useEffect(() => () => composerResizeCleanupRef.current?.(), []);
+  useEffect(() => {
+    setAttachments([]);
+    setAttachmentError('');
+  }, [activeConversationId]);
 
   useEffect(() => {
     let active = true;
@@ -407,10 +438,12 @@ export default function ChatPanel({
   }, [messages]);
 
   const submit = (mode: TaskSubmitMode) => {
-    const text = input.trim();
+    const text = input.trim() || (attachments.length ? '请分析这些附件，并根据其中与当前任务相关的信息继续处理。' : '');
     if (!text) return;
-    onSend({ text, skillRefs: skillReferencesFromText(text, skills) }, mode);
+    onSend({ text, skillRefs: skillReferencesFromText(text, skills), attachments }, mode);
     setInput('');
+    setAttachments([]);
+    setAttachmentError('');
     setSkillPickerOpen(false);
     setSkillQuery('');
   };
@@ -601,6 +634,8 @@ export default function ChatPanel({
         <div ref={bottomRef} />
       </div>
       <form className="chat-input" onSubmit={handleSubmit}>
+        {attachments.length ? <AttachmentCards attachments={attachments} removable onRemove={(id) => setAttachments((current) => current.filter((item) => item.id !== id))} /> : null}
+        {attachmentError ? <div className="chat-attachment-error" role="alert">{attachmentError}</div> : null}
         <div
           ref={composerEditorRef}
           className="chat-composer-editor"
@@ -676,6 +711,29 @@ export default function ChatPanel({
           />
         </div>
         <div className="chat-input-actions">
+          <button
+            className="chat-attachment-button nes-btn"
+            type="button"
+            disabled={attachmentPicking || !activeConversationId || attachments.length >= 6}
+            title="添加图片、PDF、Word、PPT 或文本附件"
+            onClick={() => {
+              if (!activeConversationId) return;
+              setAttachmentPicking(true);
+              setAttachmentError('');
+              void window.electronAPI.pickChatAttachments(activeConversationId)
+                .then((result) => setAttachments((current) => {
+                  const known = new Set(current.map((item) => item.id));
+                  return [...current, ...result.attachments.filter((item) => !known.has(item.id))].slice(0, 6);
+                }))
+                .catch((error) => setAttachmentError(error instanceof Error ? error.message : String(error)))
+                .finally(() => {
+                  setAttachmentPicking(false);
+                  requestAnimationFrame(() => textareaRef.current?.focus());
+                });
+            }}
+          >
+            <span aria-hidden="true">📎</span> {attachmentPicking ? '读取中…' : `附件${attachments.length ? ` · ${attachments.length}` : ''}`}
+          </button>
           <div className="chat-skill-picker-wrap" ref={skillPickerRef}>
             <button
               className={`chat-skill-button nes-btn${skillPickerOpen ? ' is-active' : ''}`}
@@ -740,8 +798,8 @@ export default function ChatPanel({
               </div>
             ) : null}
           </div>
-          <button className="nes-btn is-primary" type="submit" disabled={!input.trim()}>{taskStatus.busy ? '追加要求' : '发送'}</button>
-          {taskStatus.busy ? <button className="nes-btn is-warning" type="button" disabled={!input.trim()} onClick={() => submit('queue')}>排队</button> : null}
+          <button className="nes-btn is-primary" type="submit" disabled={!input.trim() && !attachments.length}>{taskStatus.busy ? '追加要求' : '发送'}</button>
+          {taskStatus.busy ? <button className="nes-btn is-warning" type="button" disabled={!input.trim() && !attachments.length} onClick={() => submit('queue')}>排队</button> : null}
           {taskStatus.busy ? <button className="nes-btn is-error" type="button" onClick={onStop}>停止</button> : null}
         </div>
       </form>

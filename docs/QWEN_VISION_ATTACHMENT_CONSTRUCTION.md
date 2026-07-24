@@ -252,3 +252,36 @@ Runtime 对响应做大小限制和 schema 归一化。模型返回非 JSON 时�
 - 没有 Qwen Key、没有网络或视觉失败时，普通开发能力不受影响。
 - 施工文档、架构、开发进度、用户手册和发布检查口径同步。
 - 无 Key mock 测试通过；真实 API 和真实复杂文档的未验收边界清楚记录。
+
+## 12. 2026-07-25 本轮落地结果
+
+本轮已完成第一阶段可用闭环：
+
+- 首启窗口同屏填写 DeepSeek（必填）和 Qwen（选填）Key；Qwen 留空或保存失败不会阻断 DeepSeek 主链路。两份 Key 只由 Electron 主进程读写。
+- 聊天框支持通过附件按钮多选 PNG、JPG/JPEG、WEBP、PDF、DOCX、PPTX、TXT、Markdown 和 JSON；发送前可查看卡片并删除，发送后附件元数据随会话恢复。
+- 附件由主进程复制到受控会话目录，以随机附件 ID 访问；单文件上限 25 MB、单消息最多 6 个，拒绝任意路径、未知扩展名和跨会话引用。
+- TXT/Markdown/JSON、DOCX、PPTX 和简单文本型 PDF 支持本地文字提取、读取和搜索。
+- Runtime MCP 已增加 `attachment.status`、`attachment.inspect`、`attachment.read_text`、`attachment.search`、`vision.qwen_analyze`。
+- `vision.qwen_analyze` 经随机令牌保护的 `127.0.0.1` Electron 桥接调用 Qwen，Runtime 和 Renderer 均拿不到 Qwen Key。
+- Qwen 工具开始、完成或失败沿用 Agent 工具事件进入现有“执行过程”，并显示“正在调用千问视觉”等可读标签。
+
+本轮明确未宣称完成的能力：
+
+- 当前 Qwen 视觉只接受图片附件；PDF 页面渲染、扫描 PDF、Word 内嵌图片和 PPT 幻灯片视觉化留待下一阶段。
+- 当前通过文件选择器添加附件，拖放交互尚未实现。
+- PDF 本地提取是轻量、尽力而为的文本解析，不替代完整排版引擎；复杂、加密或扫描 PDF 可能没有可用文字。
+- 尚未实现视觉结果缓存、附件随会话删除、存储管理界面以及生产配置页中的地域/Base URL 切换。
+- 本轮只通过本地 Qwen mock 验证请求与结构化响应，没有使用真实 API Key、没有发生真实云端上传，也没有进行 Windows 打包。
+
+本轮验证通过：
+
+```powershell
+npm.cmd --prefix runtime run typecheck
+npm.cmd --prefix electron run typecheck
+npm.cmd --prefix electron run verify:qwen-attachments
+npm.cmd --prefix electron run verify:session
+npm.cmd --prefix electron run verify:task-queue
+npm.cmd --prefix electron run verify:skills
+npm.cmd --prefix electron run build:renderer
+git diff --check
+```

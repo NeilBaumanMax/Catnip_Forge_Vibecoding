@@ -140,6 +140,16 @@ function formatToolCall(name: string, input: unknown): string {
   if (name.includes('browser_screenshot') || name === 'browser.screenshot') {
     return '• Browser screenshot';
   }
+  if (name.includes('vision_qwen_analyze') || name === 'vision.qwen_analyze') {
+    const attachmentId = stringValue(data.attachmentId);
+    return `• 正在调用千问视觉${attachmentId ? ` · ${attachmentId}` : ''}`;
+  }
+  if (name.includes('attachment_read_text') || name === 'attachment.read_text') {
+    return `• 正在读取附件文字${stringValue(data.attachmentId) ? ` · ${stringValue(data.attachmentId)}` : ''}`;
+  }
+  if (name.includes('attachment_search') || name === 'attachment.search') {
+    return `• 正在搜索附件${stringValue(data.query) ? ` · ${stringValue(data.query)}` : ''}`;
+  }
   return `• Tool ${name}${Object.keys(data).length ? ` ${compactJson(data)}` : ''}`;
 }
 

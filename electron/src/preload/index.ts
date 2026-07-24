@@ -2,9 +2,10 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getStartupStatus: () => ipcRenderer.invoke('startup:status'),
-  saveStartupApiKey: (key: string) => ipcRenderer.invoke('startup:save-apikey', key),
+  saveStartupApiKey: (key: string, qwenKey?: string) => ipcRenderer.invoke('startup:save-apikey', key, qwenKey),
   askSoftwareAssistant: (messages: Array<{ role: 'user' | 'assistant'; content: string }>) => ipcRenderer.invoke('software-assistant:ask', messages),
-  sendMessage: (request: { text: string; skillRefs: Array<{ id: string; name: string; start: number; end: number }> }, mode?: 'auto' | 'guide' | 'queue', conversationId?: string, messageId?: string, timestamp?: number) => ipcRenderer.invoke('chat:send', request, mode, conversationId, messageId, timestamp),
+  sendMessage: (request: { text: string; skillRefs: Array<{ id: string; name: string; start: number; end: number }>; attachments?: Array<{ id: string; name: string; mimeType: string; size: number; kind: string; textAvailable: boolean; warning?: string }> }, mode?: 'auto' | 'guide' | 'queue', conversationId?: string, messageId?: string, timestamp?: number) => ipcRenderer.invoke('chat:send', request, mode, conversationId, messageId, timestamp),
+  pickChatAttachments: (conversationId: string) => ipcRenderer.invoke('chat:attachments:pick', conversationId),
   onMessage: (cb: (msg: { id?: string; text: string; timestamp: number; kind?: 'conversation' | 'progress' | 'detail' | 'status'; toolName?: string; error?: boolean; taskId?: string | null; conversationId?: string }) => void) => {
     ipcRenderer.on('chat:message', (_event, msg) => cb(msg));
   },
