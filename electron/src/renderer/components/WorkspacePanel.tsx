@@ -217,7 +217,7 @@ function renderResourceSection(
 
 export default function WorkspacePanel({ overview, onRefresh, onOpenItem, onEditItem }: Props) {
   const [folderFeedback, setFolderFeedback] = useState<{ message: string; detail: string; tone: 'pending' | 'success' | 'error' } | null>(null);
-  const [expandedResourceSections, setExpandedResourceSections] = useState<Set<string>>(() => new Set());
+  const [resourcesExpanded, setResourcesExpanded] = useState(false);
 
   const handleOpenFolder = async (folderPath: string) => {
     setFolderFeedback({ message: '正在打开目录…', detail: folderPath, tone: 'pending' });
@@ -238,15 +238,6 @@ export default function WorkspacePanel({ overview, onRefresh, onOpenItem, onEdit
       return;
     }
     onEditItem(item);
-  };
-
-  const toggleResourceSection = (sectionId: string) => {
-    setExpandedResourceSections((current) => {
-      const next = new Set(current);
-      if (next.has(sectionId)) next.delete(sectionId);
-      else next.add(sectionId);
-      return next;
-    });
   };
 
   const visibleSections = overview?.sections.filter((section) => section.id !== 'agent-generated') || [];
@@ -278,8 +269,8 @@ export default function WorkspacePanel({ overview, onRefresh, onOpenItem, onEdit
         {skillSection ? <SkillManager key={skillSection.id} onOpenFolder={(folderPath) => void handleOpenFolder(folderPath)} onRefreshWorkbench={onRefresh} /> : null}
         {resourceSections.map((section) => renderResourceSection(
           section,
-          expandedResourceSections.has(section.id),
-          () => toggleResourceSection(section.id),
+          resourcesExpanded,
+          () => setResourcesExpanded((current) => !current),
           handleOpenItem,
           (folderPath) => void handleOpenFolder(folderPath),
         ))}

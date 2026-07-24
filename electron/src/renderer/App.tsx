@@ -749,12 +749,13 @@ export default function App() {
       }
       toggles[0].click();
       window.setTimeout(() => {
-        const expanded = toggles[0]?.getAttribute('aria-expanded') === 'true';
+        const resourcesExpandedTogether = toggles.every((toggle) => toggle?.getAttribute('aria-expanded') === 'true');
+        const resourcesVisibleTogether = resourceSections.every((section) => Boolean(section.querySelector<HTMLButtonElement>('.workspace-item-button')));
         const button = resourceSections[0]?.querySelector<HTMLButtonElement>('.workspace-item-button');
-        if (!expanded || !button) {
+        if (!resourcesExpandedTogether || !resourcesVisibleTogether || !button) {
           void window.electronAPI.finishWorkbenchSmokeTest?.({
             ok: false,
-            error: '辅助资源展开后没有找到工作台项目按钮',
+            error: '辅助资源没有同步展开或缺少工作台项目按钮',
           });
           return;
         }

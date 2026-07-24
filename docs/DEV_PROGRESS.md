@@ -33,7 +33,7 @@
 - [x] 固定 `resources/agent/skills` 为唯一用户可维护 Skill 源仓库；12 个内置 Skill 已统一为 `<id>/SKILL.md` 独立目录，`scripts/references/assets` 支持文件随整目录部署
 - [x] Skill 同步清单升级为 v2 树哈希，覆盖标准化主文档、支持文件相对路径和内容；脚本变化能够进入下一次同步
 - [x] 仓库标签页新增 Skill 专用管理器，支持新增、编辑、回收站删除、打开单个目录、立即同步、支持文件数量及源仓库可写/部署状态
-- [x] 仓库页调整为 Skill 优先的信息层级：Skills 固定排在首位并获得更高主区域，硬件工程和参考代码默认独立折叠，标题行显示数量并支持键盘/辅助技术展开；工作台烟测覆盖默认状态、顺序、展开和真实文件点击
+- [x] 仓库页调整为 Skill 优先的信息层级：Skills 固定排在首位并获得更高主区域，硬件工程和参考代码默认折叠并共享开合状态，点击任意标题行都会同步展开两栏；工作台烟测覆盖默认状态、顺序、同步展开和真实文件点击
 - [x] Agent 提示词由整篇 Skill 内容注入改为显式调用与自动推荐分层；对话执行过程显示推荐与实际 Skill 工具调用，普通前端编译不再误触发 Hardboard
 - [x] 左侧对话输入区支持在正文光标位置插入多个 `@skill-id`；消息持久化保存引用位置，Orchestrator 强制逐个调用，遗漏时自动补一次并拒绝假成功
 - [x] Skill 选择器改为符合正文编辑习惯的单次插入：保留完整列表，每次选择后立即关闭并恢复输入焦点；`@skill-id` 在输入区和历史消息中使用稳定随机色的圆角荧光笔效果，并支持一次退格原子删除
@@ -110,7 +110,7 @@
 - [x] 编辑器右键菜单通过 Portal 使用视口坐标贴近指针，关闭按钮补齐 hover/focus 反馈，字号控件改为圆角冷蓝按钮组
 - [x] 编辑器“从左侧资源管理器选择文件”空标签提示已从旧固定深蓝色切换为主题次级文字令牌，深色/浅色背景均保持可读
 - [x] 文档路径漂移已修正：当前 Windows 工作区统一为 `E:\Agent\vibeide\vibeide`，旧 Linux、`C:\vibeide`、`D:\vibeide` 和 `E:\vibeide` 路径仅作为历史迁移记录保留
-- [x] 2026-07-25 从 `main` 全量重建 Windows v1.0.0 便携成品到 `electron/dist-package/win-unpacked`：共 36,985 个文件、4,382,268,476 字节；版本、随包 Node/Python/pyserial/Claude Code、12 个目录型 Skills、无 Key 首启和保存测试 Key 后自动重启闭环均通过
+- [x] 2026-07-25 从 `main` 全量重建 Windows v1.0.0 便携成品到 `electron/dist-package/win-unpacked`：共 36,985 个文件、4,382,268,512 字节；版本、随包 Node/Python/pyserial/Claude Code、12 个目录型 Skills、无 Key 首启和保存测试 Key 后自动重启闭环均通过
 - [x] Windows 打包入口新增被忽略便携资源预检：缺少 Node、Python 核心、pyserial 或 Playwright 时在 electron-builder 清空旧成品前直接失败，避免生成表面成功但运行时不完整的目录
 - [x] `ARCHITECTURE.md` 已补齐 Runtime hardboard/eventbus/process/task/MCP 子系统和 Electron hardboard/paths/agent/first-run/tray/session-store 模块
 - [x] 删除已被 Electron 动态 MCP 配置取代的 `runtime/mcp-config.json`、孤立根 `package-lock.json`，并清理活动脚本中的旧 `coffecat` 名称和绝对路径
