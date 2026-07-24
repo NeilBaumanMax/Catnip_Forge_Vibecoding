@@ -91,9 +91,18 @@ async function main() {
         && secondSkillText.indexOf('@') !== secondSkillText.lastIndexOf('@');
       const skillMarkers = [...document.querySelectorAll('.chat-input-highlight .chat-inline-skill')];
       const skillMarkerStyles = skillMarkers.map((marker) => getComputedStyle(marker));
+      const composerHighlightStyle = getComputedStyle(document.querySelector('.chat-input-highlight'));
       const skillMarkerHighlight = skillMarkers.length >= 2
         && skillMarkerStyles.every((style) => style.backgroundImage !== 'none' && parseFloat(style.borderRadius) > 0)
         && skillMarkerStyles[0].backgroundImage !== skillMarkerStyles[1].backgroundImage;
+      const skillMarkerLayoutSafe = skillMarkerStyles.every((style) =>
+        parseFloat(style.paddingLeft) === 0
+        && parseFloat(style.paddingRight) === 0
+        && parseFloat(style.marginLeft) === 0
+        && parseFloat(style.marginRight) === 0
+        && style.fontFamily === composerHighlightStyle.fontFamily
+        && style.fontSize === composerHighlightStyle.fontSize
+        && style.fontWeight === composerHighlightStyle.fontWeight);
       composer.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true }));
       await waitFor(() => (composer.value.match(/@[a-z0-9-]+/g) || []).length === 1);
       await new Promise((resolve) => requestAnimationFrame(resolve));
@@ -183,6 +192,7 @@ async function main() {
           && menuPlacementOk
           && skillInlineMulti
           && skillMarkerHighlight
+          && skillMarkerLayoutSafe
           && skillPickerReturnsFocus
           && skillAtomicBackspace
           && !legacyProgressPanel
@@ -202,6 +212,7 @@ async function main() {
         menuPlacementOk,
         skillInlineMulti,
         skillMarkerHighlight,
+        skillMarkerLayoutSafe,
         skillPickerReturnsFocus,
         skillAtomicBackspace,
         firstSkillText,
