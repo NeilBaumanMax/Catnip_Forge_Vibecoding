@@ -62,20 +62,30 @@ async function main() {
       const composerEditor = document.querySelector('.chat-composer-editor');
       const composerResizeHandle = document.querySelector('.chat-composer-resize-handle');
       if (!skillButton || !composer || !composerEditor || !composerResizeHandle) return { ok: false, reason: 'missing multi-skill composer controls' };
+      const originalComposerHeight = composerEditor.getBoundingClientRect().height;
+      composerResizeHandle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, button: 0, clientY: 200 }));
+      window.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientY: 600 }));
+      window.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientY: 600 }));
+      await waitFor(() => composerEditor.getBoundingClientRect().height <= 64);
       const initialComposerHeight = composerEditor.getBoundingClientRect().height;
       composerResizeHandle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, button: 0, clientY: 200 }));
       window.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientY: 152 }));
       window.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientY: 152 }));
       await waitFor(() => composerEditor.getBoundingClientRect().height >= initialComposerHeight + 40);
-      const expandedComposerHeight = composerEditor.getBoundingClientRect().height;
-      const highlightHeight = document.querySelector('.chat-input-highlight').getBoundingClientRect().height;
+      const expandedComposerRect = composerEditor.getBoundingClientRect();
+      const textareaRect = composer.getBoundingClientRect();
+      const highlightRect = document.querySelector('.chat-input-highlight').getBoundingClientRect();
+      const expandedComposerHeight = expandedComposerRect.height;
       const composerResizable = expandedComposerHeight > initialComposerHeight
-        && Math.abs(expandedComposerHeight - highlightHeight) < 1
+        && Math.abs(expandedComposerHeight - highlightRect.height) < 1
+        && Math.abs(expandedComposerHeight - textareaRect.height) < 1
+        && Math.abs(expandedComposerRect.top - textareaRect.top) < 1
+        && Math.abs(expandedComposerRect.bottom - textareaRect.bottom) < 1
         && Number(composerResizeHandle.getAttribute('aria-valuenow')) === Math.round(expandedComposerHeight);
       composerResizeHandle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, button: 0, clientY: 200 }));
-      window.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientY: 200 + expandedComposerHeight - initialComposerHeight }));
-      window.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientY: 200 + expandedComposerHeight - initialComposerHeight }));
-      await waitFor(() => Math.abs(composerEditor.getBoundingClientRect().height - initialComposerHeight) < 1);
+      window.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientY: 200 + expandedComposerHeight - originalComposerHeight }));
+      window.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientY: 200 + expandedComposerHeight - originalComposerHeight }));
+      await waitFor(() => Math.abs(composerEditor.getBoundingClientRect().height - originalComposerHeight) < 1);
       window.__vibeideChatSmokeStage = 'skill-controls-ready';
       skillButton.click();
       window.__vibeideChatSmokeStage = 'skill-picker-clicked';
@@ -228,8 +238,11 @@ async function main() {
         deleteConfirmed,
         menuPlacementOk,
         composerResizable,
+        originalComposerHeight,
         initialComposerHeight,
         expandedComposerHeight,
+        expandedTextareaHeight: textareaRect.height,
+        expandedHighlightHeight: highlightRect.height,
         skillInlineMulti,
         skillMarkerHighlight,
         skillMarkerLayoutSafe,

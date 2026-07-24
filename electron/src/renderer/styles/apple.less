@@ -911,9 +911,15 @@ body.is-resizing-chat-composer * {
 }
 
 .chat-input .chat-composer-editor textarea.nes-input {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 1;
   display: block;
+  width: 100%;
+  height: 100% !important;
+  min-height: 0;
+  max-height: none;
+  box-sizing: border-box;
   color: transparent !important;
   caret-color: var(--ui-text);
   background: transparent !important;
