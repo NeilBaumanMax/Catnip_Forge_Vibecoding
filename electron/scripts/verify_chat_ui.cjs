@@ -37,12 +37,21 @@ async function main() {
         const current = check();
         if (current) return Promise.resolve(current);
         return new Promise((resolve) => {
+          let timer;
           const observer = new MutationObserver(() => {
             const value = check();
             if (!value) return;
             observer.disconnect();
+            clearInterval(timer);
             resolve(value);
           });
+          timer = setInterval(() => {
+            const value = check();
+            if (!value) return;
+            observer.disconnect();
+            clearInterval(timer);
+            resolve(value);
+          }, 25);
           observer.observe(document.body, { childList: true, subtree: true, attributes: true, characterData: true });
         });
       };
@@ -61,18 +70,33 @@ async function main() {
       window.__vibeideChatSmokeStage = 'skill-options-ready';
       skillOptions[0].click();
       await waitFor(() => composer.value.includes('@'));
+      await waitFor(() => !document.querySelector('.chat-skill-picker'));
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const firstSkillFocusReturned = document.activeElement === composer;
       window.__vibeideChatSmokeStage = 'first-skill-inserted';
       const firstSkillText = composer.value;
-      skillOptions[1].click();
+      skillButton.click();
+      const secondSkillOptions = await waitFor(() => {
+        const options = [...document.querySelectorAll('.chat-skill-options button:not(:disabled)')];
+        return options.length >= 2 ? options : null;
+      });
+      secondSkillOptions[1].click();
       await waitFor(() => (composer.value.match(/@[a-z0-9-]+/g) || []).length >= 2);
+      await waitFor(() => !document.querySelector('.chat-skill-picker'));
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const skillPickerReturnsFocus = firstSkillFocusReturned && document.activeElement === composer;
       window.__vibeideChatSmokeStage = 'second-skill-inserted';
       const secondSkillText = composer.value;
       const skillInlineMulti = new Set(secondSkillText.match(/@[a-z0-9-]+/g) || []).size >= 2
         && secondSkillText.indexOf('@') !== secondSkillText.lastIndexOf('@');
+      const skillMarkers = [...document.querySelectorAll('.chat-input-highlight .chat-inline-skill')];
+      const skillMarkerStyles = skillMarkers.map((marker) => getComputedStyle(marker));
+      const skillMarkerHighlight = skillMarkers.length >= 2
+        && skillMarkerStyles.every((style) => style.backgroundImage !== 'none' && parseFloat(style.borderRadius) > 0)
+        && skillMarkerStyles[0].backgroundImage !== skillMarkerStyles[1].backgroundImage;
       const textareaValueSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
       textareaValueSetter.call(composer, '');
       composer.dispatchEvent(new Event('input', { bubbles: true }));
-      skillButton.click();
       window.__vibeideChatSmokeStage = 'skill-composer-cleaned';
       const legacyProgressPanel = Boolean(document.querySelector('.left-panel > .task-progress'));
       const idleDashboardVisible = Boolean(document.querySelector('.chat-task-dashboard'));
@@ -152,6 +176,8 @@ async function main() {
           && deleteConfirmed
           && menuPlacementOk
           && skillInlineMulti
+          && skillMarkerHighlight
+          && skillPickerReturnsFocus
           && !legacyProgressPanel
           && !idleDashboardVisible,
         before,
@@ -168,6 +194,8 @@ async function main() {
         deleteConfirmed,
         menuPlacementOk,
         skillInlineMulti,
+        skillMarkerHighlight,
+        skillPickerReturnsFocus,
         firstSkillText,
         secondSkillText,
         theme: document.documentElement.dataset.theme,

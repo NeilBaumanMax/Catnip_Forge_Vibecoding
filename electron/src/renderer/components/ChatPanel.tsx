@@ -27,6 +27,27 @@ interface ExecutionGroup {
 
 const PROFESSIONAL_VIEW_KEY = 'vibeide.chat.professionalView';
 const HISTORY_COLLAPSED_KEY = 'vibeide.chat.historyCollapsed';
+const SKILL_MARKER_COLORS = [
+  { fill: 'rgba(255, 214, 64, 0.58)', strong: 'rgba(255, 196, 0, 0.78)' },
+  { fill: 'rgba(93, 224, 171, 0.48)', strong: 'rgba(38, 190, 132, 0.72)' },
+  { fill: 'rgba(255, 139, 112, 0.50)', strong: 'rgba(246, 92, 70, 0.72)' },
+  { fill: 'rgba(91, 185, 255, 0.48)', strong: 'rgba(44, 139, 232, 0.72)' },
+  { fill: 'rgba(190, 137, 255, 0.48)', strong: 'rgba(144, 88, 230, 0.72)' },
+  { fill: 'rgba(255, 126, 190, 0.48)', strong: 'rgba(230, 72, 151, 0.72)' },
+] as const;
+
+function skillMarkerStyle(id: string): React.CSSProperties {
+  let hash = 2166136261;
+  for (const character of id) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  const color = SKILL_MARKER_COLORS[(hash >>> 0) % SKILL_MARKER_COLORS.length];
+  return {
+    '--skill-marker-fill': color.fill,
+    '--skill-marker-strong': color.strong,
+  } as React.CSSProperties;
+}
 
 function readProfessionalView(): boolean {
   try {
@@ -133,11 +154,34 @@ function UserMessageText({ message }: { message: ChatMessage }) {
   references.forEach((reference) => {
     if (reference.start < cursor || message.text.slice(reference.start, reference.end) !== `@${reference.id}`) return;
     if (reference.start > cursor) parts.push(message.text.slice(cursor, reference.start));
-    parts.push(<span className="chat-inline-skill" key={`${reference.id}:${reference.start}`} title={`Skill：${reference.name}`}>@{reference.id}</span>);
+    parts.push(<span className="chat-inline-skill" style={skillMarkerStyle(reference.id)} key={`${reference.id}:${reference.start}`} title={`Skill：${reference.name}`}>@{reference.id}</span>);
     cursor = reference.end;
   });
   if (cursor < message.text.length) parts.push(message.text.slice(cursor));
   return <p className="chat-msg-text">{parts}</p>;
+}
+
+function ComposerHighlightedText({ text, skills }: { text: string; skills: ManagedSkillSummary[] }) {
+  const references = skillReferencesFromText(text, skills);
+  if (!references.length) return <>{text}</>;
+  const parts: React.ReactNode[] = [];
+  let cursor = 0;
+  references.forEach((reference) => {
+    if (reference.start < cursor || text.slice(reference.start, reference.end) !== `@${reference.id}`) return;
+    if (reference.start > cursor) parts.push(text.slice(cursor, reference.start));
+    parts.push(
+      <span
+        className="chat-inline-skill"
+        style={skillMarkerStyle(reference.id)}
+        key={`${reference.id}:${reference.start}`}
+      >
+        @{reference.id}
+      </span>,
+    );
+    cursor = reference.end;
+  });
+  if (cursor < text.length) parts.push(text.slice(cursor));
+  return <>{parts}{text.endsWith('\n') ? '\u200b' : null}</>;
 }
 
 function ExecutionDetails({ group, professionalView }: { group: ExecutionGroup; professionalView: boolean }) {
@@ -316,7 +360,6 @@ export default function ChatPanel({
   const activeExecutionKey = taskStatus.activeTaskId ? `task:${taskStatus.activeTaskId}` : null;
   const activeConversation = conversations.find((conversation) => conversation.id === activeConversationId);
   const inputSkillRefs = useMemo(() => skillReferencesFromText(input, skills), [input, skills]);
-  const selectedSkillIds = useMemo(() => new Set(inputSkillRefs.map((reference) => reference.id)), [inputSkillRefs]);
   const visibleSkills = useMemo(() => {
     const query = skillQuery.trim().toLowerCase();
     if (!query) return skills;
@@ -470,28 +513,39 @@ export default function ChatPanel({
         <div ref={bottomRef} />
       </div>
       <form className="chat-input" onSubmit={handleSubmit}>
-        <textarea
-          ref={textareaRef}
-          className="nes-input"
-          rows={2}
-          value={input}
-          onChange={(event) => {
-            const next = event.target.value;
-            const mention = mentionAtCaret(next, event.target.selectionStart ?? next.length);
-            setInput(next);
-            if (mention) {
-              setSkillQuery(mention.query);
-              setSkillPickerOpen(true);
-            }
-          }}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
-              event.preventDefault();
-              submit(taskStatus.busy ? 'guide' : 'auto');
-            }
-          }}
-          placeholder={taskStatus.busy ? '输入对当前任务的追加要求；Shift+Enter 换行' : '描述要交给 Agent 的任务；Shift+Enter 换行'}
-        />
+        <div className="chat-composer-editor">
+          <div className="chat-input-highlight" aria-hidden="true">
+            <ComposerHighlightedText text={input} skills={skills} />
+          </div>
+          <textarea
+            ref={textareaRef}
+            className="nes-input"
+            rows={2}
+            value={input}
+            onChange={(event) => {
+              const next = event.target.value;
+              const mention = mentionAtCaret(next, event.target.selectionStart ?? next.length);
+              setInput(next);
+              if (mention) {
+                setSkillQuery(mention.query);
+                setSkillPickerOpen(true);
+              }
+            }}
+            onScroll={(event) => {
+              const highlight = event.currentTarget.previousElementSibling;
+              if (!(highlight instanceof HTMLElement)) return;
+              highlight.scrollTop = event.currentTarget.scrollTop;
+              highlight.scrollLeft = event.currentTarget.scrollLeft;
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+                event.preventDefault();
+                submit(taskStatus.busy ? 'guide' : 'auto');
+              }
+            }}
+            placeholder={taskStatus.busy ? '输入对当前任务的追加要求；Shift+Enter 换行' : '描述要交给 Agent 的任务；Shift+Enter 换行'}
+          />
+        </div>
         <div className="chat-input-actions">
           <div className="chat-skill-picker-wrap" ref={skillPickerRef}>
             <button
@@ -521,11 +575,10 @@ export default function ChatPanel({
                 className="chat-skill-picker"
                 role="listbox"
                 aria-label="选择要调用的 Skill"
-                aria-multiselectable="true"
               >
                 <div className="chat-skill-picker-head">
                   <strong>引用 Skill</strong>
-                  <span>可多选，插入当前光标位置</span>
+                  <span>选择后返回输入框，可再次插入</span>
                 </div>
                 {skillLoadError ? <p className="chat-skill-error">{skillLoadError}</p> : null}
                 <div className="chat-skill-options">
@@ -534,24 +587,23 @@ export default function ChatPanel({
                       key={skill.id}
                       type="button"
                       role="option"
-                      aria-selected={selectedSkillIds.has(skill.id)}
+                      aria-selected="false"
                       disabled={!skill.deployed}
                       onClick={() => {
-                        if (selectedSkillIds.has(skill.id)) return;
                         const textarea = textareaRef.current;
                         const selectionStart = textarea?.selectionStart ?? input.length;
                         const selectionEnd = textarea?.selectionEnd ?? selectionStart;
                         const next = insertSkillAtCaret(input, selectionStart, selectionEnd, skill.id);
                         setInput(next.text);
                         setSkillQuery('');
-                        setSkillPickerOpen(true);
+                        setSkillPickerOpen(false);
                         requestAnimationFrame(() => {
                           textareaRef.current?.focus();
                           textareaRef.current?.setSelectionRange(next.caret, next.caret);
                         });
                       }}
                     >
-                      <span><strong>{skill.name}</strong><code>@{skill.id}</code>{selectedSkillIds.has(skill.id) ? <em>已引用</em> : null}</span>
+                      <span><strong>{skill.name}</strong><code>@{skill.id}</code></span>
                       <small>{skill.deployed ? skill.description : '等待同步后可用'}</small>
                     </button>
                   )) : !skillLoadError ? <p className="chat-skill-empty">{skillQuery ? `没有匹配“${skillQuery}”的 Skill` : '暂无可用 Skill'}</p> : null}
