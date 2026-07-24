@@ -66,8 +66,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   stopSerialMonitor: () => ipcRenderer.invoke('hardboard:serialStop'),
   writeSerialMonitor: (data: string, mode: 'text' | 'hex', encoding: string) => ipcRenderer.invoke('hardboard:serialWrite', data, mode, encoding),
   getSerialMonitorStatus: () => ipcRenderer.invoke('hardboard:serialStatus'),
-  onSerialData: (cb: (chunk: { text: string; hex?: string; timestamp: number; stream: 'stdout' | 'stderr' }) => void) => {
+  clearSerialMonitor: () => ipcRenderer.invoke('hardboard:serialClear'),
+  onSerialData: (cb: (chunk: { seq: number; text: string; hex?: string; timestamp: number; stream: 'stdout' | 'stderr'; direction: 'rx' | 'tx' | 'system'; actor: 'ui' | 'agent' | 'system' }) => void) => {
     ipcRenderer.on('hardboard:serial-data', (_event, chunk) => cb(chunk));
+  },
+  onSerialState: (cb: (snapshot: unknown) => void) => {
+    ipcRenderer.on('hardboard:serial-state', (_event, snapshot) => cb(snapshot));
+  },
+  onSerialClear: (cb: (event: { actor: 'ui' | 'agent' | 'system'; lastSeq: number }) => void) => {
+    ipcRenderer.on('hardboard:serial-clear', (_event, result) => cb(result));
   },
   onSerialExit: (cb: (result: { code: number | null; signal: string | null }) => void) => {
     ipcRenderer.on('hardboard:serial-exit', (_event, result) => cb(result));

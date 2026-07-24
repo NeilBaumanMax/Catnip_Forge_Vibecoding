@@ -8,6 +8,7 @@ import { getChromeProfileDir, getResourcesDir, isDev } from './paths';
 import { checkStartupStatus, getApiKeyPromptData, saveApiKey } from './first-run';
 import { killAgent } from './agent';
 import { askSoftwareAssistant, type SoftwareAssistantMessage } from './software-assistant';
+import { startSerialMonitorBridge, stopSerialMonitorBridge } from './serial-monitor-bridge';
 
 app.commandLine.appendSwitch('remote-debugging-port', '9230');
 app.disableHardwareAcceleration();
@@ -173,6 +174,7 @@ async function shutdownApp(reason: string): Promise<void> {
   shutdownInFlight = (async () => {
     logger.warn('browser:view-event', { event: 'shutdown', reason });
     killAgent();
+    await stopSerialMonitorBridge();
     await flushBrowserStorage();
     clearSplashTimers();
 
@@ -298,7 +300,8 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  await startSerialMonitorBridge();
   createSplashWindow();
   createWindow();
 });

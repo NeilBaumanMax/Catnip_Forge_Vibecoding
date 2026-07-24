@@ -10,17 +10,23 @@ import { listBrowserRecordingSummaries, listBrowserRecordings, replayBrowserReco
 import { createWorkbenchEntry, deleteWorkbenchEntry, getWorkbenchOverview, listWorkbenchDirectory, openWorkbenchItem, readWorkbenchFile, renameWorkbenchEntry, writeWorkbenchFile } from './workbench';
 import { deleteManagedSkill, getManagedSkill, listManagedSkills, saveManagedSkill, syncManagedSkills } from './skill-manager';
 import {
-  isSerialMonitorRunning,
   clearHardboardRuntimeHistory,
   listHardboardDevices,
   readHardboardRuntimeEvents,
   readHardboardSourceFile,
   startHardboardBuild,
   startHardboardFlash,
-  startSerialMonitor,
-  stopSerialMonitor,
-  writeSerialMonitor,
 } from './hardboard';
+import {
+  clearSharedSerialMonitor,
+  readSharedSerialMonitor,
+  startSharedSerialMonitor,
+  stopSharedSerialMonitor,
+  subscribeSharedSerialClear,
+  subscribeSharedSerialEvents,
+  subscribeSharedSerialState,
+  writeSharedSerialMonitor,
+} from './serial-monitor-controller';
 
 export function startGateway(mainWindow: BrowserWindow): void {
   // Gateway 提供 pushUI 能力 — Worker 通过它推消息到 UI
@@ -56,6 +62,21 @@ export function startGateway(mainWindow: BrowserWindow): void {
 
   setBrowserTabsEmitter((tabs) => {
     mainWindow.webContents.send('browser:tabs', { tabs });
+  });
+
+  const unsubscribeSerialEvent = subscribeSharedSerialEvents((event) => {
+    if (!mainWindow.isDestroyed()) mainWindow.webContents.send('hardboard:serial-data', event);
+  });
+  const unsubscribeSerialState = subscribeSharedSerialState((snapshot) => {
+    if (!mainWindow.isDestroyed()) mainWindow.webContents.send('hardboard:serial-state', snapshot);
+  });
+  const unsubscribeSerialClear = subscribeSharedSerialClear((event) => {
+    if (!mainWindow.isDestroyed()) mainWindow.webContents.send('hardboard:serial-clear', event);
+  });
+  mainWindow.once('closed', () => {
+    unsubscribeSerialEvent();
+    unsubscribeSerialState();
+    unsubscribeSerialClear();
   });
 
   const orch = getOrchestrator(mainWindow, pushUI);
@@ -325,24 +346,24 @@ export function startGateway(mainWindow: BrowserWindow): void {
   });
 
   ipcMain.handle('hardboard:serialStart', async (_event, options: { port: string; baudRate: number; encoding: string }) => {
-    const result = await startSerialMonitor(options, (chunk) => {
-      mainWindow.webContents.send('hardboard:serial-data', chunk);
-    }, (exit) => {
-      mainWindow.webContents.send('hardboard:serial-exit', exit);
-    });
-    return { ...result, running: isSerialMonitorRunning() };
+    const result = await startSharedSerialMonitor(options, 'ui');
+    return { ...result, ...readSharedSerialMonitor() };
   });
 
   ipcMain.handle('hardboard:serialStop', async () => {
-    await stopSerialMonitor();
-    return { ok: true, running: false };
+    await stopSharedSerialMonitor('ui');
+    return { ok: true, ...readSharedSerialMonitor() };
   });
 
   ipcMain.handle('hardboard:serialWrite', async (_event, data: string, mode: 'text' | 'hex', encoding: string) => {
-    return writeSerialMonitor(data, mode, encoding);
+    return writeSharedSerialMonitor(data, mode, encoding, 'ui');
   });
 
   ipcMain.handle('hardboard:serialStatus', async () => {
-    return { running: isSerialMonitorRunning() };
+    return readSharedSerialMonitor();
+  });
+
+  ipcMain.handle('hardboard:serialClear', async () => {
+    return clearSharedSerialMonitor('ui');
   });
 }

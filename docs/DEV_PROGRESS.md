@@ -158,6 +158,17 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 1. Monaco 当前随 renderer 完整打包，产物体积增加；后续应按启动性能决定是否拆分语言包或延迟加载。
 2. Claude Code CLI 的真实模型续聊效果仍需 Windows 实机上用真实 Agent 调用确认；应用级 session context 与 `verify:session` 已作为可验证兜底。
 
+## 2026-07-25 — Agent 完全控制串口监视器
+
+- [x] Electron 主进程建立唯一共享串口会话，UI 与 Agent 不再各自争抢 COM 口。
+- [x] 增加状态、打开、关闭、发送、读取、等待和清空 7 个 MCP 工具。
+- [x] 原 `hardboard.serial_capture` 在应用内优先复用共享会话，保留独立 Runtime 降级路径。
+- [x] Agent 操作和端口配置实时同步到监视器 UI；Agent 发送内容带来源标记。
+- [x] 本机桥接仅监听 `127.0.0.1` 并使用每次启动随机令牌。
+- [x] 无开发板条件下完成模拟串口测试、Runtime/Electron 类型检查和 renderer 构建。
+- [ ] 真实 ESP/USB-UART 收发、驱动、重连和端口占用恢复，等有设备后验收。
+- 详细施工与验收边界见 [SERIAL_MONITOR_AGENT_CONTROL_CONSTRUCTION](SERIAL_MONITOR_AGENT_CONTROL_CONSTRUCTION.md)。
+
 ## 冻结兼容区
 
 - 网页操作录制/回放、workflow、网页爬虫、平台搜索预处理、隐藏工作台和旧 Python `coddecat` scaffold 自 2026-07-25 起暂不施工，也不作为近期发布阻塞项。

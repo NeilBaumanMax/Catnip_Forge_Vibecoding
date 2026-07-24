@@ -27,6 +27,8 @@
 
 ## 现有历史文档
 
+- [Agent 完全控制串口监视器](SERIAL_MONITOR_AGENT_CONTROL_CONSTRUCTION.md)：共享串口会话、本机鉴权桥接、Agent MCP 工具、UI 同步和无硬件测试边界。
+
 - [DEV_PROGRESS](DEV_PROGRESS.md)：历史开发进度，仍有参考价值。
 - [LOG](LOG.md)：持续施工日志，记录各阶段的关键变更、验证和 Git 边界。
 - [12_Docker_Windows_Smoke](12_Docker_Windows_Smoke.md)：Docker + Wine Windows 打包 smoke 方案。

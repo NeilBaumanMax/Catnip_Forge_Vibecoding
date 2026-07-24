@@ -243,6 +243,30 @@ export interface HardboardRuntimeLaunchResult {
   error?: string;
 }
 
+export interface SerialMonitorEvent {
+  seq: number;
+  text: string;
+  hex?: string;
+  timestamp: number;
+  stream: 'stdout' | 'stderr';
+  direction: 'rx' | 'tx' | 'system';
+  actor: 'ui' | 'agent' | 'system';
+}
+
+export interface SerialMonitorSnapshot {
+  running: boolean;
+  opening: boolean;
+  options: { port: string; baudRate: number; encoding: string; dataBits?: number; stopBits?: number; parity?: 'none' | 'odd' | 'even' } | null;
+  openedBy: 'ui' | 'agent' | 'system' | null;
+  openedAt: number | null;
+  lastSeq: number;
+  oldestSeq: number;
+  receivedBytes: number;
+  sentBytes: number;
+  lastError: string | null;
+  events: SerialMonitorEvent[];
+}
+
 export interface WindowAPI {
   getStartupStatus: () => Promise<StartupStatus>;
   saveStartupApiKey: (key: string) => Promise<{ ok: boolean; restarting: boolean; status: Pick<StartupStatus, 'apiKeyReady' | 'playwrightReady' | 'firstRun'> }>;
@@ -300,8 +324,11 @@ export interface WindowAPI {
   startSerialMonitor: (options: { port: string; baudRate: number; encoding: string; dataBits?: number; stopBits?: number; parity?: 'none' | 'odd' | 'even' }) => Promise<{ ok: boolean; running: boolean; error?: string }>;
   stopSerialMonitor: () => Promise<{ ok: boolean; running: boolean }>;
   writeSerialMonitor: (data: string, mode: 'text' | 'hex', encoding: string) => Promise<{ ok: boolean; error?: string }>;
-  getSerialMonitorStatus: () => Promise<{ running: boolean }>;
-  onSerialData: (cb: (chunk: { text: string; hex?: string; timestamp: number; stream: 'stdout' | 'stderr' }) => void) => void;
+  getSerialMonitorStatus: () => Promise<SerialMonitorSnapshot>;
+  clearSerialMonitor: () => Promise<SerialMonitorSnapshot>;
+  onSerialData: (cb: (chunk: SerialMonitorEvent) => void) => void;
+  onSerialState: (cb: (snapshot: SerialMonitorSnapshot) => void) => void;
+  onSerialClear: (cb: (event: { actor: 'ui' | 'agent' | 'system'; lastSeq: number }) => void) => void;
   onSerialExit: (cb: (result: { code: number | null; signal: string | null }) => void) => void;
   onBrowserTabs: (cb: (result: { tabs: BrowserTab[] }) => void) => void;
 }

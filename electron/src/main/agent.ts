@@ -17,6 +17,7 @@ import {
 } from './paths';
 import { buildAgentSystemPrompt } from './worker/context';
 import { ensureManagedSkillsDeployed } from './skill-manager';
+import { getSerialMonitorBridgeEnv } from './serial-monitor-bridge';
 
 const AGENT_DIR = getAgentDir();
 const AGENT_WORKSPACE_DIR = getAgentWorkspaceDir();
@@ -217,6 +218,7 @@ function buildMcpConfig(): { mcpServers: Record<string, unknown> } {
     CDP_PORT: '9230',
     RUNTIME_ROOT: runtimeDir,
     PLAYWRIGHT_BROWSERS_PATH: playwrightDir,
+    ...getSerialMonitorBridgeEnv(),
   };
 
   // 开发模式：tsx 直接跑 .ts

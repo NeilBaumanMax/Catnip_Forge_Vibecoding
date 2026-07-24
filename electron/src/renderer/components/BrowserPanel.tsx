@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom';
 import WorkspacePanel from './WorkspacePanel';
 import CodeEditor from './CodeEditor';
-import type { BrowserTab, HardboardDevice, HardboardRuntimeState, RecordingSummary, RuntimeEvent, WorkbenchItem, WorkbenchOverview } from '../types';
+import type { BrowserTab, HardboardDevice, HardboardRuntimeState, RecordingSummary, RuntimeEvent, SerialMonitorEvent, SerialMonitorSnapshot, WorkbenchItem, WorkbenchOverview } from '../types';
 
 interface Props {
   url: string;
@@ -26,6 +26,15 @@ interface Props {
 }
 
 type PanelMode = 'workbench' | 'repo' | 'monitor' | 'tasks' | 'editor';
+
+function formatSerialEvent(event: SerialMonitorEvent, receiveMode: 'text' | 'hex'): string {
+  if (event.direction === 'tx') {
+    const label = event.actor === 'agent' ? 'Agent 发送' : '发送';
+    return `\n[${label}] ${event.hex || event.text}\n`;
+  }
+  if (event.direction === 'system') return event.text;
+  return receiveMode === 'hex' ? `${event.hex || ''}${event.hex ? ' ' : ''}` : event.text;
+}
 type RuntimeCard = 'live' | 'full' | 'events';
 const UI_BUILD_LABEL = 'Catnip Forge · v1.0.0';
 const EDITOR_FONT_SIZE_KEY = 'vibeide.editor.fontSize';
@@ -404,13 +413,27 @@ export default function BrowserPanel({
   }, [serialReceiveMode]);
 
   useEffect(() => {
-    window.electronAPI?.getSerialMonitorStatus?.().then((result) => setSerialRunning(result.running));
+    const applySnapshot = (snapshot: SerialMonitorSnapshot, restoreEvents = false) => {
+      setSerialRunning(snapshot.running || snapshot.opening);
+      if (snapshot.options) {
+        setSerialPort(snapshot.options.port);
+        setSerialBaudRate(snapshot.options.baudRate);
+        setSerialEncoding(snapshot.options.encoding);
+        setSerialDataBits(snapshot.options.dataBits || 8);
+        setSerialStopBits(snapshot.options.stopBits || 1);
+        setSerialParity(snapshot.options.parity || 'none');
+      }
+      if (restoreEvents) {
+        setSerialText(snapshot.events.map((event) => formatSerialEvent(event, serialReceiveModeRef.current)).join('').slice(-30000));
+      }
+    };
+    window.electronAPI?.getSerialMonitorStatus?.().then((result) => applySnapshot(result, true));
     window.electronAPI?.onSerialData?.((chunk) => {
-      const displayed = chunk.stream === 'stdout' && serialReceiveModeRef.current === 'hex'
-        ? `${chunk.hex || ''}${chunk.hex ? ' ' : ''}`
-        : chunk.text;
+      const displayed = formatSerialEvent(chunk, serialReceiveModeRef.current);
       setSerialText((current) => `${current}${displayed}`.slice(-30000));
     });
+    window.electronAPI?.onSerialState?.((snapshot) => applySnapshot(snapshot));
+    window.electronAPI?.onSerialClear?.(() => setSerialText(''));
     window.electronAPI?.onSerialExit?.(() => {
       setSerialRunning(false);
     });
@@ -932,7 +955,7 @@ export default function BrowserPanel({
                 <span className={`serial-status${serialRunning ? ' serial-status--active' : ''}`} aria-live="polite">
                   <i aria-hidden="true" />{serialRunning ? `${serialPort} 已打开` : '串口未打开'}
                 </span>
-                <button className="serial-secondary-button" type="button" onClick={() => setSerialText('')}>清空接收区</button>
+                <button className="serial-secondary-button" type="button" onClick={() => void window.electronAPI?.clearSerialMonitor?.()}>清空接收区</button>
               </div>
             </fieldset>
 

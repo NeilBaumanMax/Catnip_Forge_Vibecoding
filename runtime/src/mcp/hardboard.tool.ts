@@ -14,6 +14,10 @@ import {
 } from '../hardboard.js';
 import { publishRuntimeEvent } from '../eventbus/index.js';
 import { RUNTIME_DIRS } from '../paths.js';
+import {
+  callSerialMonitorBridge,
+  type SerialMonitorBridgeSnapshot,
+} from '../hardboard/serial-monitor-client.js';
 
 const OUTPUT_TAIL_CHARS = 6000;
 
@@ -96,6 +100,57 @@ export function registerHardboardTools(server: McpServer) {
     return { content: [{ type: 'text', text: JSON.stringify(compactCommandResult(result), null, 2) }] };
   });
 
+  server.registerTool('hardboard.serial_status', {
+    description: '查看共享串口监视器的打开状态、端口配置、收发字节数和最近事件。',
+  }, async () => withSerialToolEvent('hardboard.serial_status', 'status'));
+
+  server.registerTool('hardboard.serial_open', {
+    description: '打开共享串口监视器。界面与 Agent 使用同一个串口会话，不会重复占用 COM 口。',
+    inputSchema: {
+      port: z.string().describe('串口端口，例如 COM3 或 /dev/ttyUSB0'),
+      baudRate: z.number().optional().describe('波特率，默认 115200'),
+      encoding: z.string().optional().describe('文本编码，默认 utf-8'),
+      dataBits: z.number().optional().describe('数据位，默认 8'),
+      stopBits: z.number().optional().describe('停止位，默认 1'),
+      parity: z.enum(['none', 'odd', 'even']).optional().describe('校验位，默认 none'),
+    },
+  }, async (input) => withSerialToolEvent('hardboard.serial_open', 'open', input));
+
+  server.registerTool('hardboard.serial_close', {
+    description: '关闭共享串口监视器。',
+  }, async () => withSerialToolEvent('hardboard.serial_close', 'close'));
+
+  server.registerTool('hardboard.serial_write', {
+    description: '向当前共享串口发送文本或 HEX 数据；发送记录会同步显示在串口监视器界面。',
+    inputSchema: {
+      data: z.string().describe('要发送的文本，或 HEX 字节，例如 48 65 6C 6C 6F'),
+      mode: z.enum(['text', 'hex']).optional().describe('发送模式，默认 text'),
+      encoding: z.string().optional().describe('文本编码，默认 utf-8'),
+    },
+  }, async (input) => withSerialToolEvent('hardboard.serial_write', 'write', input));
+
+  server.registerTool('hardboard.serial_read', {
+    description: '读取共享串口缓冲区；使用 sinceSeq 可只取某个序号之后的新事件。',
+    inputSchema: {
+      sinceSeq: z.number().optional().describe('只返回该序号之后的事件，默认 0'),
+      limit: z.number().optional().describe('最多返回事件数，默认 200，最大 1000'),
+    },
+  }, async (input) => withSerialToolEvent('hardboard.serial_read', 'read', input));
+
+  server.registerTool('hardboard.serial_wait', {
+    description: '等待串口收到指定文本或正则匹配内容，适合等待启动日志、READY 或测试响应。',
+    inputSchema: {
+      sinceSeq: z.number().optional().describe('只匹配该序号之后的新接收事件'),
+      text: z.string().optional().describe('要等待的普通文本'),
+      regex: z.string().optional().describe('要等待的 JavaScript 正则表达式，最长 256 字符'),
+      timeoutMs: z.number().optional().describe('等待毫秒数，默认 5000，最大 30000'),
+    },
+  }, async (input) => withSerialToolEvent('hardboard.serial_wait', 'wait', input));
+
+  server.registerTool('hardboard.serial_clear', {
+    description: '清空共享串口监视器的收发缓冲和统计；界面接收区会同步清空。',
+  }, async () => withSerialToolEvent('hardboard.serial_clear', 'clear'));
+
   server.registerTool('hardboard.serial_capture', {
     description: '非交互读取串口日志，用于验证 ESP32 程序实际运行状态；适合 SSH/Agent 场景替代 idf.py monitor',
     inputSchema: {
@@ -120,6 +175,17 @@ export function registerHardboardTools(server: McpServer) {
       const result = createHardboardSnapshot(projectDir || RUNTIME_DIRS.hardboardProjects, label || '');
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     }, projectDir || RUNTIME_DIRS.hardboardProjects);
+  });
+}
+
+async function withSerialToolEvent(
+  toolName: string,
+  method: string,
+  params: Record<string, unknown> = {},
+) {
+  return withToolEvent(toolName, async () => {
+    const result = await callSerialMonitorBridge<SerialMonitorBridgeSnapshot | Record<string, unknown>>(method, params);
+    return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
   });
 }
 

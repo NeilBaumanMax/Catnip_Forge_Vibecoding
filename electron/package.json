@@ -29,7 +29,8 @@
     "verify:splash-ui": "node scripts/verify_splash_ui.cjs",
     "verify:software-assistant-guide": "node node_modules/electron/cli.js scripts/verify_software_assistant_guide.cjs",
     "verify:software-assistant-ui": "node scripts/verify_software_assistant_ui.cjs",
-    "verify:task-queue": "node node_modules/electron/cli.js scripts/verify_agent_task_queue.cjs"
+    "verify:task-queue": "node node_modules/electron/cli.js scripts/verify_agent_task_queue.cjs",
+    "verify:serial-monitor": "npm run build:main && node scripts/verify_serial_monitor_session.cjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

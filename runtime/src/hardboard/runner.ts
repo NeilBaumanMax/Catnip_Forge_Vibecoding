@@ -20,6 +20,11 @@ import {
 import { parseHardboardOutput } from './parser.js';
 import { listProjectSourceFiles } from './project-files.js';
 import type { HardboardCommandResult, HardboardDevice, HardboardSnapshotResult } from './types.js';
+import {
+  callSerialMonitorBridge,
+  hasSerialMonitorBridge,
+  type SerialMonitorBridgeSnapshot,
+} from './serial-monitor-client.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -78,6 +83,9 @@ export async function runSerialCapture(
   version = DEFAULT_IDF_VERSION,
   source: RuntimeTaskSource = 'mcp',
 ): Promise<HardboardCommandResult> {
+  if (hasSerialMonitorBridge()) {
+    return runSharedSerialCapture(port, durationSeconds, baudRate, source);
+  }
   if (!port.trim()) throw new Error('缺少串口端口，例如 COM3 或 /dev/ttyUSB0');
   const python = resolvePython(version);
   if (!python) throw new Error('未找到 Python。Windows 打包版应包含 runtime/python/python.exe 或 ESP-IDF Python 环境');
@@ -143,6 +151,81 @@ export async function runSerialCapture(
     taskId: task.taskId,
     pid: result.pid,
   };
+}
+
+async function runSharedSerialCapture(
+  port: string,
+  durationSeconds: number,
+  baudRate: number,
+  source: RuntimeTaskSource,
+): Promise<HardboardCommandResult> {
+  if (!port.trim()) throw new Error('缺少串口端口，例如 COM3 或 /dev/ttyUSB0');
+  fs.mkdirSync(RUNTIME_DIRS.hardboardLogs, { recursive: true });
+  const safePort = port.replace(/[^a-zA-Z0-9._-]+/g, '-');
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const logPath = path.join(RUNTIME_DIRS.hardboardLogs, `serial-${safePort}-${stamp}.log`);
+  const task = createRuntimeTask({ source, kind: 'hardboard.serial', port, toolName: 'hardboard.serial_capture' });
+  const started = startRuntimeTask(task);
+  publishRuntimeEvent({
+    source,
+    kind: 'tool.started',
+    taskId: task.taskId,
+    toolName: 'hardboard.serial_capture',
+    payload: { port, baudRate, durationSeconds, sharedSession: true },
+  });
+  try {
+    const snapshot = await callSerialMonitorBridge<SerialMonitorBridgeSnapshot & { temporarySession?: boolean }>('capture', {
+      port,
+      baudRate,
+      encoding: 'utf-8',
+      durationMs: Math.max(1, durationSeconds) * 1000,
+    });
+    const stdout = snapshot.events.filter((event) => event.direction === 'rx').map((event) => event.text).join('');
+    const stderr = snapshot.events
+      .filter((event) => event.direction === 'system' && event.stream === 'stderr')
+      .map((event) => event.text)
+      .join('');
+    fs.writeFileSync(logPath, stdout, 'utf-8');
+    completeRuntimeTask(started, 0);
+    publishRuntimeEvent({
+      source,
+      kind: 'tool.completed',
+      taskId: task.taskId,
+      toolName: 'hardboard.serial_capture',
+      payload: { exitCode: 0, port, logPath, sharedSession: true, temporarySession: snapshot.temporarySession },
+    });
+    return {
+      command: 'shared-serial-monitor capture',
+      cwd: RUNTIME_DIRS.hardboardLogs,
+      exitCode: 0,
+      stdout,
+      stderr,
+      logPath,
+      taskId: task.taskId,
+      pid: null,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    failRuntimeTask(started, message);
+    publishRuntimeEvent({
+      source,
+      kind: 'tool.failed',
+      taskId: task.taskId,
+      toolName: 'hardboard.serial_capture',
+      message,
+      payload: { exitCode: 1, port, sharedSession: true },
+    });
+    return {
+      command: 'shared-serial-monitor capture',
+      cwd: RUNTIME_DIRS.hardboardLogs,
+      exitCode: 1,
+      stdout: '',
+      stderr: message,
+      logPath,
+      taskId: task.taskId,
+      pid: null,
+    };
+  }
 }
 
 export function createHardboardSnapshot(projectDir: string, label = ''): HardboardSnapshotResult {

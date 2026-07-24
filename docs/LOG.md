@@ -1,5 +1,15 @@
 # 施工日志
 
+## 2026-07-25 — Agent 串口监视器控制
+
+- 新增 Electron 共享串口会话、环形事件缓冲和本机令牌桥接。
+- Runtime MCP 新增 `serial_status/open/close/write/read/wait/clear`。
+- `serial_capture` 增加共享会话兼容路径，独立 CLI 场景继续使用原 pyserial 路径。
+- renderer 同步 Agent 打开/关闭/清空与配置变化，并显示 Agent 发送记录。
+- 新增 `verify:serial-monitor` 模拟传输测试；本轮没有连接、枚举或打开真实 COM 设备。
+- 验证通过：Runtime typecheck、Electron typecheck、renderer build、共享会话 mock verification。
+- 本轮按用户要求只修改工程并测试，不执行 Windows 打包。
+
 ## 2026-07-25 — 仓库页突出 Skills 与辅助资源折叠
 
 - 仓库页标题收敛为“Skills 仓库”，Skill 管理器固定排在首位并提高主区域最小高度；硬件工程和参考代码降为默认折叠的辅助区，避免工程文件列表占满首屏。
