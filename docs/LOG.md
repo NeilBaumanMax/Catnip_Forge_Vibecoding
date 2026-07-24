@@ -1,5 +1,13 @@
 # 施工日志
 
+## 2026-07-25 — Qwen 视觉与聊天附件开工
+
+- 从 `main` 的 `8be93ac1` 新建 `qwen_vision_attachments` 分支。
+- 先建立 [QWEN_VISION_ATTACHMENT_CONSTRUCTION](QWEN_VISION_ATTACHMENT_CONSTRUCTION.md)，再进入代码施工。
+- 方案固定为 DeepSeek 主开发 Agent 不变，Qwen 仅通过 MCP/本机鉴权桥接提供视觉证据。
+- 首启 DeepSeek Key 继续必填，Qwen Key 同屏选填；聊天框增加图片和文件附件，Qwen 调用必须进入现有“执行过程”。
+- 自动测试不使用真实 Key、不上传真实文件；真实 Qwen API 验收需用户后续明确授权。
+
 ## 2026-07-25 — Agent 共享串口文档漂移修复
 
 - README、架构、接力、开发进度、Hardboard 和 Apple UI 施工文档统一到 Electron 唯一共享串口会话。

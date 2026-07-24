@@ -28,6 +28,7 @@
 ## 现有历史文档
 
 - [Agent 完全控制串口监视器](SERIAL_MONITOR_AGENT_CONTROL_CONSTRUCTION.md)：共享串口会话、本机鉴权桥接、Agent MCP 工具、UI 同步和无硬件测试边界。
+- [Qwen 视觉与聊天附件](QWEN_VISION_ATTACHMENT_CONSTRUCTION.md)：DeepSeek 主 Agent 不变、Qwen 视觉旁路、双 Key 首启、附件 MCP、执行过程和无真实 Key 测试边界。
 
 - [DEV_PROGRESS](DEV_PROGRESS.md)：历史开发进度，仍有参考价值。
 - [LOG](LOG.md)：持续施工日志，记录各阶段的关键变更、验证和 Git 边界。
