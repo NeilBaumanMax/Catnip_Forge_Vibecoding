@@ -30,10 +30,11 @@
 - [x] 删除左栏独立“任务进度”步骤列表，改为跟随当前“执行过程”的紧凑运行仪表盘；只在 Agent 工作时显示，暂停或完成后自动隐藏
 - [x] Agent 对话升级为可持久化的多会话系统：左侧历史列表支持新建、切换、收起和确认删除，右侧恢复完整消息，关闭重启后保持
 - [x] 历史会话标签统一使用右侧“⋯”编辑菜单，支持原位重命名、持久化置顶/取消置顶和二次确认删除；成品界面烟测覆盖三项操作
-- [x] 固定 `resources/agent/skills` 为唯一用户可维护 Skill 源仓库；旧扁平 Markdown 与标准 `<id>/SKILL.md` 并存，Agent 启动前部署到工作区 `.claude/skills`
-- [x] 仓库标签页新增 Skill 专用管理器，支持新增、编辑、回收站删除、打开目录、立即同步及源仓库可写/部署状态
-- [x] Agent 提示词由整篇 Skill 内容注入改为原生命令推荐，对话执行过程显示推荐与实际 Skill 工具调用；普通前端编译不再误触发 Hardboard
-- [x] 左侧 Agent 对话输入区新增 Skills 选择器；选中 Skill 以标签呈现，发送时自动注入 `/skill-id`，用户无需手工输入命令
+- [x] 固定 `resources/agent/skills` 为唯一用户可维护 Skill 源仓库；12 个内置 Skill 已统一为 `<id>/SKILL.md` 独立目录，`scripts/references/assets` 支持文件随整目录部署
+- [x] Skill 同步清单升级为 v2 树哈希，覆盖标准化主文档、支持文件相对路径和内容；脚本变化能够进入下一次同步
+- [x] 仓库标签页新增 Skill 专用管理器，支持新增、编辑、回收站删除、打开单个目录、立即同步、支持文件数量及源仓库可写/部署状态
+- [x] Agent 提示词由整篇 Skill 内容注入改为显式调用与自动推荐分层；对话执行过程显示推荐与实际 Skill 工具调用，普通前端编译不再误触发 Hardboard
+- [x] 左侧对话输入区支持在正文光标位置插入多个 `@skill-id`；消息持久化保存引用位置，Orchestrator 强制逐个调用，遗漏时自动补一次并拒绝假成功
 - [x] 便携包无 Key 首启时显示应用内配置窗口；只随包分发 `apikey.txt.example`，真实 Key 保存到当前解压目录 `resources/apikey.txt`
 - [x] 首次保存 API Key 后显示“配置完成，正在重启”，由主进程自动 relaunch；用户无需手工关闭，重启后的 Agent 直接读取新 Key
 - [x] 旧单会话 `session.json` 自动迁移为 v2；选中历史会话的最近问答真实注入 Agent 提示词，切换时重置常驻进程防止工程上下文串线
@@ -87,10 +88,10 @@
 - [x] `agent/tools` 长期工具补齐 Windows `.cmd` / 跨平台 `.mjs` 入口
 - [x] hardboard runtime 打包版将随包目录通过 junction 映射到短路径 `C:\vibeide-hw\hardboard`，开发版继续使用工作区 `runtime/hardboard`，并支持相对项目路径
 - [x] `hardboard.idf_build` / `hardboard.idf_flash` 已改为 compact 输出，完整 stdout/stderr 写入 `runtime/hardboard/logs/*.log`
-- [x] `agent/skills/espidf_hardboard.md` 已补齐 docsDir/projectsDir、排除 build、先读 `main/CMakeLists.txt` 的文件定位规则
+- [x] `agent/skills/espidf-hardboard/SKILL.md` 已补齐 docsDir/projectsDir、排除 build、先读 `main/CMakeLists.txt` 的文件定位规则
 - [x] Runtime task / pid / eventbus / heartbeat / hardboard build-flash events 已接入任务管理器
 - [x] 编辑器页支持 Edge 风格等宽多文件标签；仓库页固定为四个受控仓库，每个仓库可在系统资源管理器中打开
-- [x] 修复 Windows packaged Skills 路径从 `win-unpacked/agent/skills` 漂移的问题，当前由 `getAgentDir()` 正确解析到 `resources/agent/skills`；成品已列出 12 个 Skills 文件并成功打开目录
+- [x] 修复 Windows packaged Skills 路径从 `win-unpacked/agent/skills` 漂移的问题，当前由 `getAgentDir()` 正确解析到 `resources/agent/skills`；成品按 12 个 Skill 文件夹呈现并可打开单个目录
 - [x] 仓库目录打开反馈改为短状态与悬停详情，标题正文可收缩、操作区限制宽度，长 ENOENT 不再把仓库标题挤成竖排
 - [x] 编辑器升级为 VS Code 风格两栏布局：左侧按仓库分组显示多根文件资源管理器并懒加载目录，右侧保留多文件标签、当前路径、保存状态和 Monaco 代码区
 - [x] Monaco、语言定义和 Worker 已随 Electron 本地打包；C/C++、CMake、Markdown、JSON、TypeScript 等文件支持语法高亮、行号、括号配色和代码缩略图
@@ -149,23 +150,21 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 
 ## 当前已知问题
 
-1. `tests/test_scaffold.py` 仍依赖旧 Python scaffold `src/coddecat`，与当前 Electron 主线不一致。
-2. Monaco 当前随 renderer 完整打包，产物体积增加；后续应按启动性能决定是否拆分语言包或延迟加载。
-3. `WebContentsView` 在 Linux/X11 下已增加无有效 bounds 隐藏保护，但仍需继续实机压测位置稳定性。
-4. Worker 层已接入统一搜索预处理，但平台识别仍应随新增平台继续扩展和压测。
-5. 个别 agent 规则文本仍使用旧词 `BrowserView`，语义上指的是“右侧浏览页层”。
-6. `pytest tests/` 当前仍因仓库缺少 `src/coddecat` 实现而在收集阶段失败，不属于本轮 runtime 改动回归。
-7. Runtime 录制/回放已接进 Electron 和 Agent，Electron UI 可命名和选择重放对象，但当前回放仍以 DOM 事件重放为主，复杂跨页流程还需继续压测。
-8. Claude Code CLI 的真实模型续聊效果仍需 Windows 实机上用真实 Agent 调用确认；应用级 session context 与 `verify:session` 已作为可验证兜底。
+1. Monaco 当前随 renderer 完整打包，产物体积增加；后续应按启动性能决定是否拆分语言包或延迟加载。
+2. Claude Code CLI 的真实模型续聊效果仍需 Windows 实机上用真实 Agent 调用确认；应用级 session context 与 `verify:session` 已作为可验证兜底。
+
+## 冻结兼容区
+
+- 网页操作录制/回放、workflow、网页爬虫、平台搜索预处理、隐藏工作台和旧 Python `coddecat` scaffold 自 2026-07-25 起暂不施工，也不作为近期发布阻塞项。
+- 相关早期文件不得删除。`tests/test_scaffold.py` 因缺少从未进入当前 Git 历史的 `src/coddecat` 而收集失败，只记录为历史兼容问题。
+- 完整保留和解冻规则见 [LEGACY_WEB_AUTOMATION_CONSTRUCTION](LEGACY_WEB_AUTOMATION_CONSTRUCTION.md)。
 
 ---
 
 ## 下一步
 
-1. 明确旧 Python scaffold 是否保留，统一测试口径。
-2. 在 Windows 上继续用真实 Agent 对话压测 Claude Code CLI 的模型侧续聊效果。
-3. 继续压测 Worker 搜索预处理在更多平台、更多自然语言表达下的稳定性。
-4. 继续验证右侧 `workbench + host + tabs` 模型的稳定性。
-5. 给更多平台补统一搜索 URL 工具和专项 workflow。
-6. 继续增强录制/回放在真实业务站点上的稳定性，补充跨页和异常恢复。
-7. 给工作流增加版本和结果校验策略，避免复用旧选择器失效。
+1. 完成 Windows v1.0.0 成品综合烟测和正式版本报告。
+2. 修复 `hardboard:serial` reset/open 时序，并补 packaged build/flash/serial smoke。
+3. 在 Windows 上继续用真实 Agent 对话压测任务、会话和 Claude Code CLI 的模型侧续聊效果。
+4. 验证编辑器新建、重命名、回收站删除、标签路径同步和打包版离线语法高亮。
+5. 根据启动和包体实测决定是否拆分 Monaco 语言资源。

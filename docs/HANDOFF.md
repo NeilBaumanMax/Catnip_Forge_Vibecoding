@@ -184,7 +184,7 @@
 - 编辑器空状态：标签栏提示、未打开路径和代码区说明使用主题文字令牌；旧版固定深蓝色不再覆盖深色主题。修复后 Electron typecheck、renderer build、Windows `pack:win` 与 `git diff --check` 已通过，并已启动成品复测。
 - 编辑器字号：底部提供减小、增大和重置，范围 10–24px，使用 `localStorage` 保存用户上次字号。
 - 编辑器文件管理：目录右键可新建文件/文件夹，文件和子目录可重命名或移到系统回收站，所有节点可刷新；新建、重命名和删除确认均使用软件内置对话框。主进程只允许操作工作台许可范围，禁止覆盖同名条目和修改资源管理器根目录。
-- 仓库：显示硬件工程、参考代码和 Skills，不显示“Agent 生成”及“导入文件夹”。左侧对话输入区提供 Skills 按钮，选中项以标签进入输入区并在发送时自动注入命令。
+- 仓库：显示硬件工程、参考代码和 Skills，不显示“Agent 生成”及“导入文件夹”。Skills 以独立目录进入编辑器资源管理器；左侧输入区支持在正文光标位置插入多个 `@skill-id`。
 
 ## 必读顺序
 
@@ -292,6 +292,14 @@ Electron UI -> Gateway -> Worker -> Agent -> Runtime MCP -> Electron Chromium / 
 - Agent 不直接碰 Playwright，不写脚本操作浏览器，浏览器操作必须走 MCP。
 - hardboard 工具调用优先使用相对路径：`hardboard\projects\<project>`。
 - 查 hardboard 工程文件不要扫 `build/**`，先读 `main/CMakeLists.txt` 的 `SRCS`。
+- Skill 源结构统一为 `agent/skills/<skill-id>/SKILL.md`；脚本和参考文件跟随同一目录部署。聊天正文中的多个 `@skill-id` 属于显式必调项，不能退回单选或只调用第一个。
+
+## 冻结兼容区
+
+- 网页录制/回放、workflow、网页爬虫、平台搜索预处理、隐藏浏览器工作台和旧 Python `coddecat` scaffold 暂不继续开发。
+- 上述早期能力全部保留，不删除源码、测试、配置、脚本或打包桥接；不要为了让全量 `pytest` 变绿而伪造或移除 `src/coddecat`。
+- 这些遗留项不作为当前 Windows v1.0.0、Agent、编辑器或 Hardboard 主线的发布阻塞项。
+- 详细施工边界见 [LEGACY_WEB_AUTOMATION_CONSTRUCTION](LEGACY_WEB_AUTOMATION_CONSTRUCTION.md)。
 
 ## 下一步建议
 

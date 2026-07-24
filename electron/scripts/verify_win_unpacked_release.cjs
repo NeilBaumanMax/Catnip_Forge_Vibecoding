@@ -34,7 +34,7 @@ assert(!distributionReadme.includes('Odyssey'), 'distribution README contains th
 
 const required = [
   'agent/node_modules/@anthropic-ai/claude-code/bin/claude.exe',
-  'agent/skills/espidf_hardboard.md',
+  'agent/skills/espidf-hardboard/SKILL.md',
   'electron/assets/icon.ico',
   'electron/assets/icon.png',
   'runtime/nodejs/node.exe',

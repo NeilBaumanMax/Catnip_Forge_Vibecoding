@@ -4,7 +4,7 @@ import BrowserPanel from './components/BrowserPanel';
 import MarkdownContent from './components/MarkdownContent';
 import catnipForgeIcon from './assets/catnip-forge.png';
 import catnipAssistantImage from './assets/catnip-assistant.png';
-import type { AgentTaskStatus, BrowserTab, ChatConversation, ChatConversationSummary, ChatMessage, ChatMessageKind, HardboardDevice, RecordingSummary, SoftwareAssistantMessage, StartupStatus, TaskStep, TaskSubmitMode, WorkbenchOverview } from './types';
+import type { AgentTaskInput, AgentTaskStatus, BrowserTab, ChatConversation, ChatConversationSummary, ChatMessage, ChatMessageKind, HardboardDevice, RecordingSummary, SoftwareAssistantMessage, StartupStatus, TaskStep, TaskSubmitMode, WorkbenchOverview } from './types';
 
 const LEFT_PANEL_WIDTH_KEY = 'vibeide.ui.leftPanelWidth';
 const APPEARANCE_THEME_KEY = 'vibeide.appearance.theme';
@@ -501,7 +501,9 @@ export default function App() {
     }
   }, [initializeChatHistory, refreshChatConversationList, refreshWorkbench]);
 
-  const handleSend = useCallback((text: string, mode: TaskSubmitMode = 'auto') => {
+  const handleSend = useCallback((task: string | AgentTaskInput, mode: TaskSubmitMode = 'auto') => {
+    const request = typeof task === 'string' ? { text: task, skillRefs: [] } : task;
+    const text = request.text;
     const conversationId = activeConversationIdRef.current;
     if (!conversationId) {
       setChatHistoryError('历史对话尚未加载完成，请稍后再试');
@@ -512,6 +514,7 @@ export default function App() {
       text,
       role: 'user',
       timestamp: Date.now(),
+      skillRefs: request.skillRefs,
     };
     setMessages(prev => [...prev, msg]);
     setChatConversations((current) => current
@@ -528,7 +531,7 @@ export default function App() {
 
     setSteps([]);
 
-    void window.electronAPI?.sendMessage(text, mode, conversationId, msg.id, msg.timestamp).then(() => {
+    void window.electronAPI?.sendMessage(request, mode, conversationId, msg.id, msg.timestamp).then(() => {
       void refreshChatConversationList();
     }).catch((error) => {
       setMessages(prev => [...prev, {

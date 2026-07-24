@@ -1,5 +1,17 @@
 export type ChatMessageKind = 'conversation' | 'progress' | 'detail' | 'status';
 
+export interface SkillReference {
+  id: string;
+  name: string;
+  start: number;
+  end: number;
+}
+
+export interface AgentTaskInput {
+  text: string;
+  skillRefs: SkillReference[];
+}
+
 export interface ChatMessage {
   id: string;
   text: string;
@@ -9,6 +21,7 @@ export interface ChatMessage {
   toolName?: string;
   error?: boolean;
   taskId?: string | null;
+  skillRefs?: SkillReference[];
 }
 
 export interface ChatConversationSummary {
@@ -120,7 +133,9 @@ export interface ManagedSkillSummary {
   name: string;
   description: string;
   sourcePath: string;
+  folderPath: string;
   sourceFormat: 'legacy' | 'standard';
+  supportFileCount: number;
   updatedAt: number;
   deployed: boolean;
   command: string;
@@ -232,7 +247,7 @@ export interface WindowAPI {
   getStartupStatus: () => Promise<StartupStatus>;
   saveStartupApiKey: (key: string) => Promise<{ ok: boolean; restarting: boolean; status: Pick<StartupStatus, 'apiKeyReady' | 'playwrightReady' | 'firstRun'> }>;
   askSoftwareAssistant: (messages: Array<Pick<SoftwareAssistantMessage, 'role' | 'content'>>) => Promise<{ ok: true; text: string }>;
-  sendMessage: (text: string, mode?: TaskSubmitMode, conversationId?: string, messageId?: string, timestamp?: number) => Promise<TaskSubmitResult & { message?: ChatMessage }>;
+  sendMessage: (request: AgentTaskInput, mode?: TaskSubmitMode, conversationId?: string, messageId?: string, timestamp?: number) => Promise<TaskSubmitResult & { message?: ChatMessage }>;
   onMessage: (cb: (msg: { id?: string; text: string; timestamp: number; kind?: ChatMessageKind; toolName?: string; error?: boolean; taskId?: string | null; conversationId?: string }) => void) => void;
   listChatConversations: () => Promise<{ activeConversationId: string; conversations: ChatConversationSummary[] }>;
   getChatConversation: (id?: string) => Promise<ChatConversation>;

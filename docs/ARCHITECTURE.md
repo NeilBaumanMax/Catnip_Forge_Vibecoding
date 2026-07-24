@@ -41,7 +41,7 @@ Electron Chromium / WebContentsView
 - `electron/src/main/browser-view.ts`：右侧 WebContentsView tabs、持久 session、bounds 同步。
 - `electron/src/main/browser-recorder.ts`：Electron 侧录制和回放。
 - `electron/src/main/workbench.ts`：提供 Agent 工作区、硬件工程、参考代码和 Skills 四个受控根目录及编辑器文件系统边界；仓库概览前端不展示 Agent 工作区卡片。打包资源通过 `getAgentDir()`、`getResourcesDir()`、`getHardboardDir()` 解析，Skills 位于 `resources/agent/skills`。
-- `electron/src/main/skill-manager.ts`：把固定 `resources/agent/skills` 源仓库中的标准目录和历史扁平 Markdown 统一部署到 Agent 工作区 `.claude/skills`；提供校验、清单式安全清理、同名冲突保护和仓库页 CRUD。
+- `electron/src/main/skill-manager.ts`：把固定 `resources/agent/skills/<id>` 整目录部署到 Agent 工作区 `.claude/skills`；树哈希覆盖主文档与支持文件，并保留历史扁平 Markdown 兼容、清单式安全清理、同名冲突保护和仓库页 CRUD。
 - `electron/src/main/hardboard.ts`：硬件设备枚举、真实 `pyserial` 双向串口服务、Runtime EventBus、日志历史清理、Build/Flash 的 IPC 桥接。
 - `electron/src/main/paths.ts`：开发版与 packaged 环境的资源、Runtime、Agent 和 API key 路径解析。
 - `electron/src/main/first-run.ts`：校验并保存 DeepSeek API Key；无 Key 时通过 Preload/IPC 向 Renderer 提供首次启动状态，Renderer 显示阻塞式配置窗口。保存成功后主进程调度一次 `app.relaunch()`，先走统一退出清理再自动重启，使 Agent 从新进程读取 Key。
@@ -56,7 +56,7 @@ Electron Chromium / WebContentsView
 - `electron/src/renderer/components/MarkdownContent.tsx`：把 Agent Markdown 安全渲染为 React 节点，不执行原始 HTML，并限制外部链接协议。
 - `electron/src/renderer/components/BrowserPanel.tsx`：仓库、监视器、任务管理器和编辑器；工作台前端入口隐藏，但组件内部浏览器工作台实现保留。任务管理器负责工程/设备刷新、相对工程选择、Build/Flash 控制、语义状态胶囊、可直接清除的 EventBus 历史和最近任务结果；监视器提供文本/HEX 双向收发及完整串口参数；编辑器负责多根资源树、懒加载目录、等宽标签、Portal 右键菜单、字号持久化和保存状态同步。
 - `electron/src/renderer/components/WorkspacePanel.tsx`：显示硬件工程、参考代码和 Skills 三类资源，不显示 Agent 生成卡片；Skills 卡片可新增、编辑、回收站删除、同步并查看源仓库可写/部署状态。
-- `electron/src/renderer/components/ChatPanel.tsx`：对话输入区提供 Skills 按钮和选择弹层；选中项以标签进入输入区，发送时自动注入对应 `/skill-id`，无需用户记忆或手工输入命令。
+- `electron/src/renderer/components/ChatPanel.tsx`：输入 `@` 或点击 Skills 按钮可在当前光标位置插入多个 `@skill-id`；发送时保留正文位置并传输结构化引用，历史消息原位渲染内联 Skill 标签。
 - `electron/src/renderer/styles/apple.less`：1.0.0-7201 最终视觉覆盖，使用 `data-theme="dark|light"` 定义显式主题令牌，并提供冷色材质、排版层级、圆角、可拖动助手浮层、反馈动效和 reduced-motion/reduced-transparency 适配。
 - `electron/src/renderer/components/CodeEditor.tsx`：基于 Monaco Editor 的代码区，按扩展名选择 C/C++、CMake、Markdown、JSON、TypeScript 等语言，使用内置 C/C++ 深色主题并接收用户字号设置。
 - `electron/src/renderer/monaco.ts`：本地 Monaco editor/json/css/html/typescript Worker 注册，保证开发版和打包版不依赖在线 CDN。
@@ -134,10 +134,10 @@ Electron Chromium / WebContentsView
 关键文件：
 
 - `agent/CLAUDE.md`：Agent 运行铁律。
-- `agent/skills/browser_guide.md`：浏览器操作规则。
-- `agent/skills/search_workflow.md`：搜索类任务规则。
-- `agent/skills/recording_workflow.md`：录制/回放规则。
-- `agent/skills/replay_workflow_tooling.md`：workflow 封装规则。
+- `agent/skills/browser-guide/SKILL.md`：浏览器操作规则。
+- `agent/skills/search-workflow/SKILL.md`：搜索类任务规则。
+- `agent/skills/recording-workflow/SKILL.md`：录制/回放规则。
+- `agent/skills/replay-workflow-tooling/SKILL.md`：workflow 封装规则。
 - `agent/tools/build_platform_search_url.mjs`：跨平台搜索 URL 构造。
 
 ## Runtime 层

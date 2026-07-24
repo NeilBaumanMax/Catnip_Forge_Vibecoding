@@ -11,6 +11,7 @@ async function main() {
     buildClaudeSessionContext,
     createChatConversation,
     deleteChatConversation,
+    getChatConversation,
     getClaudeSessionFile,
     listChatConversations,
     loadClaudeSession,
@@ -46,10 +47,15 @@ async function main() {
 
     appendChatMessage(first.id, {
       id: 'message-user-1',
-      text: '历史工程 A',
+      text: '历史工程 A @espidf-hardboard',
       role: 'user',
       timestamp: Date.now(),
+      skillRefs: [{ id: 'espidf-hardboard', name: 'ESP-IDF Hardboard Vibecoding', start: 7, end: 24 }],
     });
+    const restoredMessage = getChatConversation(first.id).messages.find((message) => message.id === 'message-user-1');
+    if (restoredMessage?.skillRefs?.[0]?.id !== 'espidf-hardboard' || restoredMessage.skillRefs[0].start !== 7) {
+      throw new Error('skill reference positions did not survive session persistence');
+    }
     const another = createChatConversation();
     appendChatMessage(another.id, {
       id: 'message-user-2',

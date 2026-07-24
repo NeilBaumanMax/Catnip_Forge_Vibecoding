@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { logger } from './logger';
 import { getResourcesDirFromWorker, getAgentDir, getAgentWorkspaceDir } from '../paths';
+import { listManagedSkills } from '../skill-manager';
 
 const PROJECT_ROOT = getResourcesDirFromWorker();
 const AGENT_DIR = getAgentDir();
@@ -10,6 +11,8 @@ const AGENT_WORKSPACE_DIR = getAgentWorkspaceDir();
 export interface TaskContext {
   prompt: string;
   skillsFound: string[];
+  explicitSkills: string[];
+  recommendedSkills: string[];
 }
 
 export function buildAgentSystemPrompt(): string {
@@ -37,14 +40,16 @@ export function buildAgentSystemPrompt(): string {
   ].filter(Boolean).join('\n');
 }
 
-export function buildContext(task: string): TaskContext {
+export function buildContext(task: string, explicitSkillIds: string[] = []): TaskContext {
   const startTime = Date.now();
-  const { content: skillsContent, files: skillsFound } = readSkills(task);
+  const { content: skillsContent, skillsFound, explicitSkills, recommendedSkills } = readSkills(task, explicitSkillIds);
 
-    logger.info('task:context', {
-      task: task.slice(0, 200),
+  logger.info('task:context', {
+    task: task.slice(0, 200),
     skillsCount: skillsFound.length,
     skillsFound,
+    explicitSkills,
+    recommendedSkills,
   });
 
   const platformRules = buildPlatformRules(task);
@@ -68,7 +73,7 @@ export function buildContext(task: string): TaskContext {
       : '',
     platformRules,
     '',
-    skillsContent ? `【建议技能】\n${skillsContent}` : '',
+    skillsContent,
   ].filter(Boolean).join('\n');
 
   logger.debug('task:context', {
@@ -76,7 +81,7 @@ export function buildContext(task: string): TaskContext {
     buildTimeMs: Date.now() - startTime,
   });
 
-  return { prompt, skillsFound };
+  return { prompt, skillsFound, explicitSkills, recommendedSkills };
 }
 
 function buildPlatformRules(task: string): string {
@@ -139,78 +144,96 @@ function readRules(): string {
   }
 }
 
-function readSkills(task: string): { content: string; files: string[] } {
-  const skillsDir = path.join(AGENT_DIR, 'skills');
+function readSkills(task: string, requestedIds: string[]): {
+  content: string;
+  skillsFound: string[];
+  explicitSkills: string[];
+  recommendedSkills: string[];
+} {
   try {
-    const allFiles = fs.readdirSync(skillsDir).filter((f) => f.endsWith('.md')).sort();
-    const files = selectSkillFiles(task, allFiles);
-    const commands = files.map((file) => `/${file.replace(/\.md$/i, '').replace(/_/g, '-')}`);
-    const content = commands.length
-      ? `根据任务需要优先调用这些已部署的原生 Skill：${commands.join('、')}。调用前简短说明选择原因；若 Skill 工具不可用，再按项目规则完成任务。`
-      : '';
-    return { content, files };
+    const available = listManagedSkills().skills.filter((skill) => skill.deployed);
+    const allIds = available.map((skill) => skill.id).sort();
+    const explicitSkills = [...new Set(requestedIds)].filter((id) => allIds.includes(id));
+    const recommendedSkills = selectSkillIds(task, allIds).filter((id) => !explicitSkills.includes(id));
+    const skillsFound = [...explicitSkills, ...recommendedSkills];
+    const sections: string[] = [];
+    if (explicitSkills.length) {
+      sections.push([
+        '【用户显式引用的 Skills】',
+        `用户在原始请求正文中按顺序引用了：${explicitSkills.map((id) => `@${id}`).join('、')}。`,
+        `必须逐个调用 Skill 工具加载这些技能：${explicitSkills.map((id) => `/${id}`).join('、')}。不能只调用第一个，也不能用自动推荐替换用户显式引用。`,
+        '调用完成后再执行对应任务步骤；若某个 Skill 无法加载，必须明确报告具体名称和原因。',
+      ].join('\n'));
+    }
+    if (recommendedSkills.length) {
+      sections.push([
+        '【自动建议的 Skills】',
+        `根据任务语义建议按需调用：${recommendedSkills.map((id) => `/${id}`).join('、')}。调用前简短说明选择原因。`,
+      ].join('\n'));
+    }
+    return { content: sections.join('\n\n'), skillsFound, explicitSkills, recommendedSkills };
   } catch {
     logger.warn('task:context', { error: 'Skills directory not found' });
-    return { content: '', files: [] };
+    return { content: '', skillsFound: [], explicitSkills: [], recommendedSkills: [] };
   }
 }
 
-function selectSkillFiles(task: string, allFiles: string[]): string[] {
+function selectSkillIds(task: string, allIds: string[]): string[] {
   const selected = new Set<string>();
   const needsBrowserGuide = /(打开|搜索|网页|浏览器|导航|采集|提取|抽取|抖音|淘宝|1688|b站|哔哩|html|游戏|browser|navigate|extract|crawl|scrape)/i.test(task);
   const needsSearchWorkflow = /(搜索|查找|搜一下|搜一搜|整理结果|整理视频|列出|最火|最热|top|排行|search|find)/i.test(task);
   const needsRecordingWorkflow = /(录制|回放|重放|播放录制|工作流|流程复用|保存流程|开始录制|停止录制)/i.test(task);
   const needsReplayTooling = /(优化重放|优化回放|信息捕获|封装成脚本|封装.*流程|下次.*调用|复用.*任务|保存成工具|workflow|工作流|重放.*提取|回放.*提取)/i.test(task);
   const needsHardboard = /(esp32|esp-idf|espidf|idf\.py|硬件|开发板|串口|烧录|刷机|固件|flash|monitor|esp32s3|esp32-s3|esp32c3|esp32-c3|(?:编译|build).{0,12}(?:固件|开发板|esp|idf)|(?:固件|开发板|esp|idf).{0,12}(?:编译|build))/i.test(task);
-  const add = (...files: string[]) => {
-    for (const file of files) {
-      if (allFiles.includes(file)) selected.add(file);
+  const add = (...ids: string[]) => {
+    for (const id of ids) {
+      if (allIds.includes(id)) selected.add(id);
     }
   };
 
   if (needsBrowserGuide) {
-    add('browser_guide.md');
+    add('browser-guide');
   }
 
   if (needsSearchWorkflow) {
-    add('search_workflow.md');
+    add('search-workflow');
   }
 
   if (needsRecordingWorkflow) {
-    add('recording_workflow.md');
+    add('recording-workflow');
   }
 
   if (needsReplayTooling) {
-    add('recording_workflow.md', 'replay_workflow_tooling.md', 'data_extract.md');
+    add('recording-workflow', 'replay-workflow-tooling', 'data-extract');
   }
 
   if (needsHardboard) {
-    add('espidf_hardboard.md');
+    add('espidf-hardboard');
   }
 
   if (isHtmlGameTask(task)) {
-    add('html_game_generation.md');
+    add('html-game-generation');
     return [...selected];
   }
 
   if (/1688/i.test(task)) {
-    add('1688_source_finding.md', 'data_extract.md');
+    add('1688-source-finding', 'data-extract');
   }
 
   if (/(b站|哔哩|bilibili)/i.test(task)) {
-    add('bilibili_search_workflow.md');
+    add('bilibili-search-workflow');
   }
 
   if (/淘宝|taobao/i.test(task)) {
-    add('taobao_listing.md', 'data_extract.md');
+    add('taobao-listing', 'data-extract');
   }
 
   if (/抖音|douyin/i.test(task)) {
-    add('douyin_product_rank.md', 'data_extract.md');
+    add('douyin-product-rank', 'data-extract');
   }
 
   if (/采集|提取|抽取|解析|理解页面|page/i.test(task)) {
-    add('data_extract.md', 'page_understanding.md');
+    add('data-extract', 'page-understanding');
   }
 
   return [...selected];

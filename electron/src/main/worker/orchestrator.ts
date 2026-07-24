@@ -8,9 +8,22 @@ import { ChatBuffer, ParsedChunk } from './chat-buffer';
 import { logger } from './logger';
 import { isHtmlGameTask, validateCurrentPage } from './page-validator';
 import { appendClaudeSessionTurn, buildClaudeSessionContext, getClaudeSessionFile, listChatConversations } from './session-store';
+import { listManagedSkills } from '../skill-manager';
 
 export type PushUIFn = (channel: string, data: unknown) => void;
 export type TaskSubmitMode = 'auto' | 'guide' | 'queue';
+
+export interface SkillReference {
+  id: string;
+  name: string;
+  start: number;
+  end: number;
+}
+
+export interface AgentTaskInput {
+  text: string;
+  skillRefs: SkillReference[];
+}
 
 export interface TaskSubmitResult {
   ok: boolean;
@@ -24,12 +37,37 @@ export interface TaskSubmitResult {
 interface QueuedTask {
   id: string;
   text: string;
+  skillRefs: SkillReference[];
   conversationId: string;
 }
 
 interface TaskContinuation {
-  kind: 'guidance' | 'validation' | 'resume';
+  kind: 'guidance' | 'validation' | 'resume' | 'skill-enforcement';
   text: string;
+}
+
+export function normalizeAgentTaskInput(input: string | AgentTaskInput): AgentTaskInput {
+  const text = (typeof input === 'string' ? input : input.text).trim();
+  if (!text) throw new Error('任务内容不能为空');
+  const available = new Map(listManagedSkills().skills.filter((skill) => skill.deployed).map((skill) => [skill.id, skill]));
+  const rawRefs = typeof input === 'string' || !Array.isArray(input.skillRefs) ? [] : input.skillRefs;
+  if (rawRefs.length > 8) throw new Error('一条消息最多显式引用 8 个 Skill');
+  const seen = new Set<string>();
+  const skillRefs: SkillReference[] = [];
+  for (const ref of rawRefs) {
+    const id = String(ref?.id || '').trim().toLowerCase();
+    const skill = available.get(id);
+    if (!skill) throw new Error(`Skill 未部署或不存在：@${id || 'unknown'}`);
+    const start = Number(ref.start);
+    const end = Number(ref.end);
+    if (!Number.isInteger(start) || !Number.isInteger(end) || start < 0 || end <= start || text.slice(start, end) !== `@${id}`) {
+      throw new Error(`Skill 引用位置无效：@${id}`);
+    }
+    if (seen.has(id)) continue;
+    seen.add(id);
+    skillRefs.push({ id, name: skill.name, start, end });
+  }
+  return { text, skillRefs };
 }
 
 export class Orchestrator {
@@ -40,11 +78,14 @@ export class Orchestrator {
   private currentTask: string | null = null;
   private currentTaskId: string | null = null;
   private currentConversationId: string | null = null;
+  private currentSkillRefs: SkillReference[] = [];
+  private invokedSkillIds = new Set<string>();
+  private skillEnforcementAttempt = 0;
   private currentAgentTranscript = '';
   private currentAttempt = 0;
   private observedAgentPid: number | null = null;
   private queuedTasks: QueuedTask[] = [];
-  private pendingGuidance: string[] = [];
+  private pendingGuidance: AgentTaskInput[] = [];
   private currentUserTurns: string[] = [];
   private turnInFlight = false;
   private paused = false;
@@ -68,11 +109,11 @@ export class Orchestrator {
     this.ensurePersistentAgent();
   }
 
-  submitTask(task: string, mode: TaskSubmitMode = 'auto', conversationId?: string): TaskSubmitResult {
-    const text = task.trim();
-    if (!text) throw new Error('任务内容不能为空');
+  submitTask(task: string | AgentTaskInput, mode: TaskSubmitMode = 'auto', conversationId?: string): TaskSubmitResult {
+    const input = normalizeAgentTaskInput(task);
+    const text = input.text;
     const targetConversationId = conversationId || listChatConversations().activeConversationId;
-    const request: QueuedTask = { id: randomUUID(), text, conversationId: targetConversationId };
+    const request: QueuedTask = { id: randomUUID(), text, skillRefs: input.skillRefs, conversationId: targetConversationId };
 
     if (this.currentTask || this.turnInFlight || this.paused) {
       if (this.currentConversationId && this.currentConversationId !== targetConversationId) {
@@ -89,7 +130,7 @@ export class Orchestrator {
         return this.submitResult('queued', request.id);
       }
 
-      this.pendingGuidance.push(text);
+      this.pendingGuidance.push(input);
       this.pushUI('chat:message', {
         text: `[Worker] 已追加到当前任务，将在当前执行步骤结束后继续处理（追加 ${this.pendingGuidance.length}）`,
         timestamp: Date.now(),
@@ -111,6 +152,9 @@ export class Orchestrator {
     this.currentTask = request.text;
     this.currentTaskId = request.id;
     this.currentConversationId = request.conversationId;
+    this.currentSkillRefs = request.skillRefs;
+    this.invokedSkillIds = new Set();
+    this.skillEnforcementAttempt = 0;
     this.currentAttempt = 0;
     this.currentAgentTranscript = '';
     this.currentUserTurns = [request.text];
@@ -151,12 +195,19 @@ export class Orchestrator {
       effectiveTask = `${task}\n\n【用户在执行过程中追加的要求】\n${continuation.text}\n\n继续当前任务，不要把追加要求当成独立任务；检查已有工作并在完成后统一汇报。`;
     } else if (continuation?.kind === 'resume') {
       effectiveTask = `${task}\n\n【恢复此前暂停的任务】\n${continuation.text}`;
+    } else if (continuation?.kind === 'skill-enforcement') {
+      effectiveTask = `${task}\n\n【显式 Skill 调用校验未通过】\n${continuation.text}\n\n先补齐缺失的 Skill 工具调用，再复核已经完成的工作；不要忽略任何用户正文中的 @Skill。`;
     }
     const { session, text: sessionContext } = buildClaudeSessionContext(this.currentConversationId);
-    const { prompt, skillsFound } = buildContext(effectiveTask);
+    const { prompt, skillsFound, explicitSkills, recommendedSkills } = buildContext(
+      effectiveTask,
+      this.currentSkillRefs.map((ref) => ref.id),
+    );
     const promptWithHistory = `${sessionContext}\n\n${prompt}`;
     logger.info('task:context', {
       skillsFound,
+      explicitSkills,
+      recommendedSkills,
       promptLength: promptWithHistory.length,
       sessionId: session.id,
       sessionTurns: session.turnCount,
@@ -178,9 +229,18 @@ export class Orchestrator {
       kind: 'detail',
       taskId: this.currentTaskId,
     });
-    if (skillsFound.length) {
+    if (explicitSkills.length) {
       this.pushUI('chat:message', {
-        text: `已根据任务推荐：${skillsFound.map((file) => `/${file.replace(/\.md$/i, '').replace(/_/g, '-')}`).join('、')}。Agent 将按需加载。`,
+        text: `用户显式引用：${explicitSkills.map((id) => `@${id}`).join('、')}。Agent 必须全部加载。`,
+        timestamp: Date.now(),
+        kind: 'detail',
+        toolName: 'Skill',
+        taskId: this.currentTaskId,
+      });
+    }
+    if (recommendedSkills.length) {
+      this.pushUI('chat:message', {
+        text: `自动建议：${recommendedSkills.map((id) => `@${id}`).join('、')}。Agent 将按需加载。`,
         timestamp: Date.now(),
         kind: 'detail',
         toolName: 'Skill',
@@ -356,6 +416,38 @@ export class Orchestrator {
       if (continued) return;
     }
 
+    if (code === 0) {
+      const missingSkills = this.currentSkillRefs
+        .map((ref) => ref.id)
+        .filter((id, index, all) => all.indexOf(id) === index && !this.invokedSkillIds.has(id));
+      if (missingSkills.length && this.skillEnforcementAttempt < 1) {
+        this.skillEnforcementAttempt += 1;
+        this.pushUI('chat:message', {
+          text: `[Worker] 检测到显式 Skill 尚未全部调用，正在补齐：${missingSkills.map((id) => `@${id}`).join('、')}`,
+          timestamp: Date.now(),
+          kind: 'progress',
+          toolName: 'Skill',
+          taskId: this.currentTaskId,
+        });
+        await this.runTask(task, {
+          kind: 'skill-enforcement',
+          text: `尚未观察到这些 Skill 工具调用：${missingSkills.map((id) => `/${id}`).join('、')}。`,
+        });
+        return;
+      }
+      if (missingSkills.length) {
+        code = 3;
+        this.pushUI('chat:message', {
+          text: `[Worker] 显式 Skill 调用未完成：${missingSkills.map((id) => `@${id}`).join('、')}。任务不能标记为成功。`,
+          timestamp: Date.now(),
+          kind: 'conversation',
+          toolName: 'Skill',
+          error: true,
+          taskId: this.currentTaskId,
+        });
+      }
+    }
+
     this.pushUI('chat:message', {
       text: code === 0 ? '[Agent] 任务完成' : `[Agent] 任务失败 (code: ${code})`,
       timestamp: Date.now(),
@@ -394,14 +486,22 @@ export class Orchestrator {
   private async continueWithPendingGuidance(task: string): Promise<boolean> {
     if (this.pendingGuidance.length === 0) return false;
     const guidance = this.pendingGuidance.splice(0);
-    this.currentUserTurns.push(...guidance);
+    this.currentUserTurns.push(...guidance.map((entry) => entry.text));
+    const knownIds = new Set(this.currentSkillRefs.map((ref) => ref.id));
+    for (const entry of guidance) {
+      for (const ref of entry.skillRefs) {
+        if (knownIds.has(ref.id)) continue;
+        knownIds.add(ref.id);
+        this.currentSkillRefs.push(ref);
+      }
+    }
     this.pushUI('chat:message', {
       text: `[Worker] 正在应用 ${guidance.length} 条追加要求，继续当前任务...`,
       timestamp: Date.now(),
       taskId: this.currentTaskId,
     });
     this.emitTaskStatus();
-    await this.runTask(task, { kind: 'guidance', text: guidance.map((entry, index) => `${index + 1}. ${entry}`).join('\n') });
+    await this.runTask(task, { kind: 'guidance', text: guidance.map((entry, index) => `${index + 1}. ${entry.text}`).join('\n') });
     return true;
   }
 
@@ -506,6 +606,14 @@ export class Orchestrator {
 
     if (p.type === 'tool_call' && p.toolName) {
       const tool = p.toolName;
+      if (tool === 'Skill') {
+        const input = p.toolInput && typeof p.toolInput === 'object' && !Array.isArray(p.toolInput)
+          ? p.toolInput as Record<string, unknown>
+          : {};
+        const value = [input.skill, input.name, input.command].find((candidate) => typeof candidate === 'string') as string | undefined;
+        const id = value?.trim().replace(/^\/|^@/, '');
+        if (id) this.invokedSkillIds.add(id);
+      }
       if (tool.includes('navigate') || tool.includes('goto')) {
         this.state.advanceTo('navigating');
       } else if (tool.includes('extract')) {
@@ -608,6 +716,9 @@ export class Orchestrator {
     this.currentTask = null;
     this.currentTaskId = null;
     this.currentConversationId = null;
+    this.currentSkillRefs = [];
+    this.invokedSkillIds = new Set();
+    this.skillEnforcementAttempt = 0;
     this.currentAgentTranscript = '';
     this.currentAttempt = 0;
     this.currentUserTurns = [];

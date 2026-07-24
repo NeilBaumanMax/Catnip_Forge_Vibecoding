@@ -40,7 +40,7 @@ Catnip Forge 中文全称为“Catnip 硬件智能开发平台”，英文定位
 1. 点击左侧 Agent 输入区附近的 `Skills` 按钮。
 2. 从弹出的列表中选择需要的 Skill。
 3. 被选中的 Skill 会作为标签进入输入区。
-4. 输入具体任务并发送，软件会自动把对应 Skill 交给 Agent，无需手工记忆 `/skill-id`。
+4. 输入具体任务时可在正文任意位置键入 `@` 搜索 Skill，或用输入区的 Skills 按钮在当前光标处插入；一条消息可以引用多个 `@skill-id`，软件会要求 Agent 全部加载。
 
 ### 管理 Skill
 

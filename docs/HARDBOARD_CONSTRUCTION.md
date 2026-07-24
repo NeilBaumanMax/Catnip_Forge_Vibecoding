@@ -204,8 +204,8 @@ Windows 打包配置包含 `runtime/hardboard`，但排除 ESP-IDF 自带 `examp
 
 ## Agent 开发规则
 
-- 硬件任务先读 `agent/skills/espidf_hardboard.md`。
-- `agent/skills/espidf_hardboard.md` 已写明：先 `hardboard.env_status`，用返回的 `docsDir/projectsDir`，不要猜当前 cwd。
+- 硬件任务先读 `agent/skills/espidf-hardboard/SKILL.md`。
+- `agent/skills/espidf-hardboard/SKILL.md` 已写明：先 `hardboard.env_status`，用返回的 `docsDir/projectsDir`，不要猜当前 cwd。
 - 新工程放在 `runtime/hardboard/projects/<project-name>`，不要直接改原始 example。
 - 查工程文件必须排除 `build/**`，并先读 `main/CMakeLists.txt` 定位真实源码。
 - 大改前调用 `hardboard.snapshot_create`。

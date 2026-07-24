@@ -1,5 +1,22 @@
 # 施工日志
 
+## 2026-07-25 — 目录型 Skill 与聊天正文多引用
+
+- 12 个内置 Skill 从顶层扁平 Markdown 迁移为 `<skill-id>/SKILL.md` 独立目录，文件资源管理器可继续展开 `scripts/`、`references/` 和 `assets/`；旧内容与 Git 历史保留。
+- Skill 管理器新增目录路径、支持文件数量和单 Skill“打开目录”；同步清单升级为 v2，树哈希覆盖主文档及全部支持文件，脚本不会在扫描或同步时自动执行。
+- 聊天框移除单个 `selectedSkill` 和句首 `/skill-id` 拼接，改为在当前光标位置插入多个 `@skill-id`；输入 `@` 可搜索，Skills 按钮支持连续选择。
+- 用户消息新增结构化 `skillRefs`，保存 ID、名称和正文 `start/end`；Gateway 重验部署状态及位置，对话历史将引用原位渲染为内联标签。
+- Orchestrator 区分用户显式 Skill 与自动建议，显式项按首次出现顺序全部加载；首轮遗漏时自动补一次，仍遗漏则显示错误并以 code 3 结束，不能假报成功。
+- 验证通过：Electron typecheck、main/renderer build、12 Skill 整树部署、多显式 Skill 顺序与位置、任务队列、会话、Hardboard 路由及真实 Renderer 双 `@Skill` 插入 smoke。
+
+## 2026-07-25 — 旧网页自动化与 Python scaffold 冻结保留
+
+- 用户确认网页操作录制/回放、workflow、网页爬虫、平台搜索脚本和旧 Python `coddecat` scaffold 暂不继续开发。
+- 这些能力开发较早，可能存在隐式引用，因此采用“冻结保留”而非删除：相关源码、测试、配置、脚本、隐藏工作台、CDP/Playwright 桥接均不得因当前不用而清理。
+- `tests/test_scaffold.py` 和 `pyproject.toml` 继续作为旧接口证据保留；当前 Git 历史没有 `src/coddecat` 实现，全量 `pytest` 的对应收集失败不计入当前主线回归。
+- 近期施工范围收敛到 Windows v1.0.0、ESP-IDF/串口/任务管理器、Agent/Skills/会话稳定性和 Monaco 编辑器。
+- 新增 [LEGACY_WEB_AUTOMATION_CONSTRUCTION](LEGACY_WEB_AUTOMATION_CONSTRUCTION.md) 作为冻结、兼容、测试与解冻规则的施工真相源。
+
 ## 2026-07-22 — 启动页 5 秒平滑时序
 
 - 启动页从 `ready-to-show` 后的实际显示时刻开始计时，至少展示约 5 秒；主窗口提前就绪不会造成启动页闪退，主窗口较慢时则继续等待真实就绪。

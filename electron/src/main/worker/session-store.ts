@@ -32,6 +32,7 @@ export interface StoredChatMessage {
   toolName?: string;
   error?: boolean;
   taskId?: string | null;
+  skillRefs?: Array<{ id: string; name: string; start: number; end: number }>;
 }
 
 export interface ChatConversation extends ClaudeSessionState {
@@ -113,6 +114,12 @@ function normalizeMessage(message: StoredChatMessage): StoredChatMessage {
     toolName: typeof message.toolName === 'string' ? message.toolName : undefined,
     error: Boolean(message.error) || undefined,
     taskId: typeof message.taskId === 'string' || message.taskId === null ? message.taskId : undefined,
+    skillRefs: Array.isArray(message.skillRefs)
+      ? message.skillRefs
+        .filter((ref) => ref && typeof ref.id === 'string' && typeof ref.name === 'string' && Number.isInteger(ref.start) && Number.isInteger(ref.end))
+        .slice(0, 8)
+        .map((ref) => ({ id: ref.id, name: ref.name, start: ref.start, end: ref.end }))
+      : undefined,
   };
 }
 

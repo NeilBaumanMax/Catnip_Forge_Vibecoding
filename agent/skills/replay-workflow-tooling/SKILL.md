@@ -27,7 +27,7 @@
 | 录制文件 | `../runtime/recordings/*.json` | 用户操作轨迹，只负责回放动作 |
 | Workflow | `../runtime/workflows/*.json` | 绑定“录制文件 + 提取规则 + 默认 workspace”，相当于可复用任务脚本 |
 | 任务结果 | `../workplaces/<name>/` 或 `storage.save(workspace, data)` | 保存抽取结果 |
-| 平台知识 | `skills/*.md` | 页面结构、字段说明、异常处理 |
+| 平台知识 | `skills/<skill-id>/SKILL.md` | 页面结构、字段说明、异常处理 |
 | Agent 工具 | `tools/*` | 只能做 URL 构造、文本处理、文件辅助；禁止操作浏览器 |
 
 ## 推荐命名

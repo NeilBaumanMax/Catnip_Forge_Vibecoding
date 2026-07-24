@@ -14,8 +14,8 @@ async function main() {
   for (const task of tasks) {
     const context = buildContext(task);
     assert(
-      context.skillsFound.includes('espidf_hardboard.md'),
-      `espidf_hardboard.md not loaded for: ${task}`,
+      context.skillsFound.includes('espidf-hardboard'),
+      `espidf-hardboard not loaded for: ${task}`,
     );
     assert(
       context.prompt.includes('hardboard'),

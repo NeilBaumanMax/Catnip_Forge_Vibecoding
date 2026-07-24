@@ -3,7 +3,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { ipcMain, BrowserWindow, shell } from 'electron';
 import { getOrchestrator } from './worker';
-import type { TaskSubmitMode } from './worker/orchestrator';
+import { normalizeAgentTaskInput, type AgentTaskInput, type TaskSubmitMode } from './worker/orchestrator';
 import { activateChatConversation, appendChatMessage, createChatConversation, deleteChatConversation, getChatConversation, listChatConversations, renameChatConversation, setChatConversationPinned } from './worker/session-store';
 import { activateTab, closeTab, listTabs, openTabUrl, setBrowserTabsEmitter, setBrowserViewBoundsFromRenderer } from './browser-view';
 import { listBrowserRecordingSummaries, listBrowserRecordings, replayBrowserRecording, replayLatestBrowserRecording, startBrowserRecording, stopBrowserRecording } from './browser-recorder';
@@ -61,7 +61,8 @@ export function startGateway(mainWindow: BrowserWindow): void {
   const orch = getOrchestrator(mainWindow, pushUI);
 
   // 聊天 — 委托 Worker
-  ipcMain.handle('chat:send', async (_event, text: string, mode?: TaskSubmitMode, conversationId?: string, messageId?: string, timestamp?: number) => {
+  ipcMain.handle('chat:send', async (_event, request: string | AgentTaskInput, mode?: TaskSubmitMode, conversationId?: string, messageId?: string, timestamp?: number) => {
+    const input = normalizeAgentTaskInput(request);
     const store = listChatConversations();
     const targetConversationId = conversationId || store.activeConversationId;
     const status = orch.getTaskStatus();
@@ -71,11 +72,12 @@ export function startGateway(mainWindow: BrowserWindow): void {
     if (!status.busy && targetConversationId !== store.activeConversationId) activateChatConversation(targetConversationId);
     const message = appendChatMessage(targetConversationId, {
       id: messageId || randomUUID(),
-      text,
+      text: input.text,
       role: 'user',
       timestamp: timestamp || Date.now(),
+      skillRefs: input.skillRefs,
     });
-    return { ...orch.submitTask(text, mode || 'auto', targetConversationId), message };
+    return { ...orch.submitTask(input, mode || 'auto', targetConversationId), message };
   });
 
   ipcMain.handle('chat:conversations:list', async () => listChatConversations());

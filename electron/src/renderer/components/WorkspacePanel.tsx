@@ -30,12 +30,12 @@ function isBrowserRunnable(item: WorkbenchItem): boolean {
 }
 
 function isEditable(item: WorkbenchItem): boolean {
-  return item.kind === 'file' && /(?:CMakeLists\.txt|\.c|\.h|\.cpp|\.hpp|\.S|\.md|\.json|\.txt|\.yaml|\.yml)$/i.test(item.name);
+  return item.kind === 'file' && /(?:CMakeLists\.txt|\.(?:c|h|cpp|hpp|S|md|mdx|json|jsonc|txt|yaml|yml|toml|js|mjs|cjs|ts|py|sh|ps1|cmd|bat))$/i.test(item.name);
 }
 
 const EMPTY_SKILL: ManagedSkillDetail = {
   id: '', name: '', description: '', body: '# 使用说明\n\n请描述 Agent 应遵循的步骤、边界和验收标准。',
-  sourcePath: '', sourceFormat: 'standard', updatedAt: 0, deployed: false, command: '',
+  sourcePath: '', folderPath: '', sourceFormat: 'standard', supportFileCount: 0, updatedAt: 0, deployed: false, command: '',
 };
 
 function SkillManager({ onOpenFolder, onRefreshWorkbench }: { onOpenFolder: (folderPath: string) => void; onRefreshWorkbench: () => void }) {
@@ -125,9 +125,10 @@ function SkillManager({ onOpenFolder, onRefreshWorkbench }: { onOpenFolder: (fol
             <div className="skill-manager-state" title={skill.deployed ? 'Agent 已可用' : '等待同步'}>{skill.deployed ? '✓' : '○'}</div>
             <div className="skill-manager-copy">
               <div><strong>{skill.name}</strong><code>{skill.command}</code>{skill.sourceFormat === 'legacy' ? <em>兼容格式</em> : null}</div>
-              <p>{skill.description}</p>
+              <p>{skill.description}{skill.supportFileCount ? ` · ${skill.supportFileCount} 个支持文件` : ''}</p>
             </div>
             <div className="skill-manager-row-actions">
+              <button type="button" className="nes-btn" onClick={() => onOpenFolder(skill.folderPath)}>打开目录</button>
               <button type="button" className="nes-btn" onClick={() => void editSkill(skill)}>编辑</button>
               <button type="button" className="nes-btn is-error" disabled={busy} onClick={() => void deleteSkill(skill)}>删除</button>
             </div>

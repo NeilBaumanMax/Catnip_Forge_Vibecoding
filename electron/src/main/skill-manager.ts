@@ -14,7 +14,9 @@ export interface ManagedSkillSummary {
   name: string;
   description: string;
   sourcePath: string;
+  folderPath: string;
   sourceFormat: 'legacy' | 'standard';
+  supportFileCount: number;
   updatedAt: number;
   deployed: boolean;
   command: string;
@@ -46,7 +48,7 @@ interface SkillDocument {
 }
 
 interface ManagedManifest {
-  version: 1;
+  version: 1 | 2;
   syncedAt: number;
   skills: Record<string, { sourcePath: string; hash: string }>;
 }
@@ -121,7 +123,7 @@ function sourceEntries(): Array<{ id: string; file: string; format: 'legacy' | '
 function readManifest(): ManagedManifest | null {
   try {
     const parsed = JSON.parse(fs.readFileSync(MANIFEST_FILE, 'utf-8')) as ManagedManifest;
-    return parsed?.version === 1 && parsed.skills ? parsed : null;
+    return (parsed?.version === 1 || parsed?.version === 2) && parsed.skills ? parsed : null;
   } catch {
     return null;
   }
@@ -151,19 +153,51 @@ function copySupportTree(source: string, target: string): void {
   if (stats.isFile()) fs.copyFileSync(source, target);
 }
 
+function supportFiles(entry: { file: string; format: 'legacy' | 'standard' }): string[] {
+  if (entry.format === 'legacy') return [];
+  const root = path.dirname(entry.file);
+  const files: string[] = [];
+  const visit = (current: string) => {
+    for (const child of fs.readdirSync(current, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      if (child.name === 'SKILL.md' || child.name.startsWith('.')) continue;
+      const absolute = path.join(current, child.name);
+      if (child.isSymbolicLink()) continue;
+      if (child.isDirectory()) visit(absolute);
+      else if (child.isFile()) files.push(absolute);
+    }
+  };
+  visit(root);
+  return files;
+}
+
+function hashSkillTree(entry: { file: string; format: 'legacy' | 'standard' }, normalizedText: string): string {
+  const hash = crypto.createHash('sha256');
+  hash.update('SKILL.md\0');
+  hash.update(normalizedText);
+  const root = path.dirname(entry.file);
+  for (const file of supportFiles(entry)) {
+    hash.update(`\0${path.relative(root, file).split(path.sep).join('/')}\0`);
+    hash.update(fs.readFileSync(file));
+  }
+  return hash.digest('hex');
+}
+
 export function listManagedSkills(): SkillManagerSnapshot {
   const manifest = readManifest();
   const deployedIds = new Set(Object.keys(manifest?.skills || {}));
   const skills = sourceEntries().map((entry) => {
-    const stats = fs.statSync(entry.file);
+    const supports = supportFiles(entry);
+    const updatedAt = [entry.file, ...supports].reduce((latest, file) => Math.max(latest, fs.statSync(file).mtimeMs), 0);
     const doc = parseSkill(fs.readFileSync(entry.file, 'utf-8'), entry.id);
     return {
       id: entry.id,
       name: doc.name,
       description: doc.description,
       sourcePath: entry.file,
+      folderPath: entry.format === 'standard' ? path.dirname(entry.file) : SOURCE_DIR,
       sourceFormat: entry.format,
-      updatedAt: Math.round(stats.mtimeMs),
+      supportFileCount: supports.length,
+      updatedAt: Math.round(updatedAt),
       deployed: deployedIds.has(entry.id) && fs.existsSync(path.join(DEPLOY_DIR, entry.id, 'SKILL.md')),
       command: `/${entry.id}`,
     } satisfies ManagedSkillSummary;
@@ -229,7 +263,7 @@ export async function deleteManagedSkill(id: string): Promise<{ ok: true; id: st
 export function syncManagedSkills(): SkillManagerSnapshot {
   fs.mkdirSync(DEPLOY_DIR, { recursive: true });
   const previous = readManifest();
-  const next: ManagedManifest = { version: 1, syncedAt: Date.now(), skills: {} };
+  const next: ManagedManifest = { version: 2, syncedAt: Date.now(), skills: {} };
   const activeIds = new Set<string>();
 
   for (const entry of sourceEntries()) {
@@ -254,7 +288,7 @@ export function syncManagedSkills(): SkillManagerSnapshot {
     fs.renameSync(stagingDir, targetDir);
     next.skills[id] = {
       sourcePath: entry.file,
-      hash: crypto.createHash('sha256').update(normalizedText).digest('hex'),
+      hash: hashSkillTree(entry, normalizedText),
     };
   }
 

@@ -44,64 +44,35 @@
 
 ## 阶段 2：旧 Python scaffold 决策
 
-问题：
+状态：冻结保留，暂不施工。
 
-- `tests/test_scaffold.py` 依赖 `src/coddecat`，但当前仓库没有这个目录。
-- `pyproject.toml` 与当前 Electron 主线不匹配。
+2026-07-25 决策：
 
-选项：
-
-1. 删除旧 Python scaffold 测试和 package 配置，只保留 Python 辅助脚本。
-2. 恢复 `src/coddecat` 作为独立 scaffold 子系统。
-3. 把 Python package 改成仅服务 `scripts/normalize.py` / `scripts/reporter.py` 的辅助包。
-
-建议：
-
-- 短期：把 `tests/test_scaffold.py` 标记为 legacy 或移入 `tests/legacy/`。
-- 中期：删除 `pyproject.toml` 里的 `coddecat` package 叙事，改成工具脚本依赖说明。
+- `tests/test_scaffold.py`、`pyproject.toml`、YAML 配置和相关辅助脚本全部保留，不删除、不移动、不重写。
+- 当前 Git 历史没有 `src/coddecat` 实现，不能凭遗留测试反向伪造整套实现。
+- 全量 `pytest` 的收集失败不作为 Electron / Agent / Hardboard 主线回归或发布阻塞。
+- 只有用户明确要求恢复旧 Python scaffold 时，才重新盘点其来源、接口和迁移方案。
 
 验收：
 
-- `pytest tests/test_project.py` 通过。
-- 全量测试口径明确，不再把旧 scaffold 失败误判为 Electron 主线失败。
+- 旧文件保持原样可追溯。
+- 主线文档和测试报告明确区分冻结兼容区与当前产品回归。
+- 详细规则见 [LEGACY_WEB_AUTOMATION_CONSTRUCTION](LEGACY_WEB_AUTOMATION_CONSTRUCTION.md)。
 
 ## 阶段 3：录制/回放边界统一
 
-问题：
+状态：冻结保留，暂不施工。
 
-- Electron 侧有 `browser-recorder.ts`，直接在 WebContents 注入脚本。
-- Runtime 侧也有 `record.ts` / `replay.ts`，通过 MCP 和 Playwright CDP 操作。
-
-建议：
-
-- UI 手动录制可以保留 Electron 侧实现。
-- Agent 任务录制、回放、workflow 长期以 Runtime MCP 为准。
-- 文档明确两者格式是否兼容。
-- 如果不兼容，新增转换层或统一 JSON schema。
-
-验收：
-
-- `browser.recording_*` 和 UI Start/Stop Rec 的结果能被同一套 workflow 复用，或文档明确不可复用。
+- Electron 与 Runtime 两套既有录制/回放实现都保留，当前不统一格式、不补转换层、不扩展复杂跨页流程。
+- 隐藏工作台、`WebContentsView`、CDP、Playwright 和相关桥接不得因“当前不用”而删除。
+- 主线改动触及共享模块时只做保持兼容所需的最小调整。
 
 ## 阶段 4：Runtime 工作流产品化
 
-目标：
+状态：冻结保留，暂不施工。
 
-- workflow 支持版本号。
-- workflow 支持 selector 校验。
-- workflow 支持样本输出和失败原因。
-- workflow 可展示在工作台并一键执行。
-
-建议新增：
-
-- `examples/workflows/`：可提交的示例 workflow。
-- `runtime/src/workflow-runner.ts`：执行和校验集中管理。
-- `runtime/src/workflow-schema.ts`：统一 schema。
-
-验收：
-
-- 可以录制一个站内搜索流程，保存为 workflow，然后重启应用后继续执行。
-- workflow 失败时有明确错误：录制失败、selector 失效、登录态缺失、页面跳转异常。
+- 暂不增加 workflow 版本、selector 校验、示例流程、爬虫或平台搜索脚本。
+- 既有 workflow 数据格式和入口保留，等待用户明确解冻后再制定产品化方案。
 
 ## 阶段 5：Windows 开发体验
 

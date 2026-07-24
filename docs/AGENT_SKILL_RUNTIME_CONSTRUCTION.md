@@ -1,48 +1,91 @@
-# Agent Skill 源仓库、部署与仓库页管理
+# Agent Skill 目录、正文引用与多调用施工文档
 
-## 目标
+## 当前基线
 
-Catnip Forge Skill 只有一个用户可维护源仓库：开发版为 `agent/skills`，Windows 成品为 `win-unpacked/resources/agent/skills`。该路径不迁移，也不隐藏复制为第二份用户源数据。
+Catnip Forge Skill 只有一个用户可维护源仓库：
 
-Claude Code 原生技能目录位于 Agent 工作区的 `.claude/skills/<skill-id>/SKILL.md`。应用在 Agent 启动前把源仓库标准化部署到该目录，仓库页负责展示、编辑、新增、删除和手动同步。
+- 开发版：`agent/skills`
+- Windows 成品：`win-unpacked/resources/agent/skills`
+
+每个 Skill 必须以独立文件夹呈现，入口固定为 `<skill-id>/SKILL.md`。脚本、参考资料和素材与入口放在同一目录树中。Claude Code 原生部署目录为 Agent 工作区的 `.claude/skills/<skill-id>`。
+
+```text
+agent/skills/<skill-id>/
+├── SKILL.md
+├── scripts/       可选；Skill 专用脚本
+├── references/    可选；补充规范和资料
+└── assets/        可选；模板、图片等资源
+```
+
+2026-07-25 已将 12 个内置 Skill 从顶层扁平 Markdown 迁移为标准目录。迁移保留原文件内容和 Git 历史，不删除早期能力。
 
 ## 数据流
 
 ```text
-resources/agent/skills                  用户可编辑、产品随包源仓库
-        ↓ skill-manager 标准化/同步
-runtime-data/agent-workspace/.claude/skills/<id>/SKILL.md
-        ↓ Claude Code 原生发现与按需加载
+resources/agent/skills/<id>/            用户可编辑源目录
+        ↓ skill-manager 整目录校验、树哈希和同步
+runtime-data/agent-workspace/.claude/skills/<id>/
+        ↓ Claude Code 原生发现
+聊天正文任意位置 @skill-id
+        ↓ text + skillRefs[{ id, name, start, end }]
+Gateway / Orchestrator
+        ↓ 显式 Skill 按正文首次出现顺序全部加载
 Agent Skill tool
-        ↓ structured tool event
+        ↓ requested / invoked 校验
 对话“执行过程”中的技能条目
 ```
 
-开发模式中的对应路径是 `agent/skills` → `runtime/agent-workspace/.claude/skills`。
+开发模式对应 `agent/skills` → `runtime/agent-workspace/.claude/skills`。
 
-## 源格式兼容
+## 目录与同步规则
 
-- 新建 Skill 使用标准目录：`<skill-id>/SKILL.md`。
-- 历史 `*.md` 扁平文件继续读取，文件名中的下划线部署时转换为连字符命令，例如 `espidf_hardboard.md` → `/espidf-hardboard`。
-- 部署文件统一补齐 YAML frontmatter 的 `name` 和 `description`，源文件路径不改变。
-- 标准目录中的支持文件随同部署；顶层隐藏文件和符号链接不复制。
+1. Skill ID 只允许小写字母、数字和连字符，最长 64 字符；文件夹名必须与 ID 一致。
+2. `SKILL.md` 的 YAML frontmatter 至少包含 `name` 和 `description`，正文不能为空且不超过 100KB。
+3. 同步复制除顶层隐藏文件和符号链接外的整个 Skill 目录；支持文件不限于 Markdown，可以包含 `.py`、`.mjs`、`.ts`、`.ps1`、`.cmd`、`.sh`、JSON、YAML 和素材。
+4. 同步清单版本为 v2，哈希覆盖标准化后的 `SKILL.md` 和所有支持文件的相对路径及内容。脚本或参考资料变化必须反映为新的树哈希。
+5. 支持文件只会复制和编辑，不会在扫描、同步或预览时执行。脚本只能在 Agent 已调用对应 Skill 后，通过可见工具调用执行。
+6. 同名非 Catnip Forge 管理目标不得覆盖；删除源 Skill 时进入系统回收站，并只撤销清单中由 Catnip Forge 管理的部署项。
+7. 旧扁平 `*.md` 解析能力继续保留为兼容入口，但内置 Skill 和新建 Skill 均使用标准目录；同 ID 标准目录优先。
+
+## 文件资源管理器
+
+- 编辑器的 Skills 根节点直接展示 `<skill-id>` 文件夹，按需展开 `SKILL.md`、`scripts/`、`references/` 和 `assets/`。
+- Monaco 可直接维护 Markdown、JSON/YAML、JavaScript/TypeScript、Python、Shell、PowerShell 和 CMD 等文本脚本。
+- Skill 管理器负责名称、描述、主指令、新建、回收站删除、同步和打开单个 Skill 目录；复杂脚本继续使用统一工程编辑器，不建立第二套代码编辑器。
+- Skill 列表显示支持文件数量，修改任一支持文件后下一次同步和 Agent 启动都会部署最新目录树。
+
+## 聊天正文内引用
+
+聊天框不再维护单一 `selectedSkill`，也不再把一个 `/skill-id` 强制拼在句首。用户可在正文任意位置输入或插入多个引用：
+
+```text
+请先检查工程 @espidf-hardboard，再整理结果 @data-extract。
+```
+
+交互规则：
+
+1. 输入 `@` 会打开 Skill 搜索；底部 `Skills` 按钮也会从当前光标位置插入。
+2. 一条消息最多显式引用 8 个 Skill；不同 Skill 可以同时出现。
+3. 发送消息时保留原始正文，并额外传输 `skillRefs`，记录每个引用的 ID、名称和 `start/end` 位置。
+4. 对话历史继续显示原文位置，已识别引用以安全的内联标签呈现；重启恢复时位置不丢失。
+5. 未部署、已删除或位置与正文不一致的引用由主进程拒绝，不能静默降级。
+6. 同一 Skill 多次出现时保留正文，但实际加载一次；加载顺序取首次出现顺序。
+7. 旧 `/skill-id` 文本仍可作为普通 Agent 命令使用，但新 UI 的正式协议是结构化 `@skill-id`。
+
+## 显式调用与自动推荐
+
+- 用户正文中的 `@skill-id` 是显式要求，必须全部调用，优先级高于自动推荐。
+- 自动路由仍可按任务语义推荐多个 Skill，但会单独显示“自动建议”，不能覆盖或替代显式引用。
+- Orchestrator 分别记录显式请求和实际 `Skill` 工具调用。Agent 首轮结束时若仍有显式 Skill 未调用，会自动补一次纠正 turn。
+- 纠正后仍未调用的 Skill 会以用户可见错误显示，任务使用退出码 `3`，不能标记为成功。
+- 追加要求和排队任务各自携带结构化 Skill 引用；追加到当前任务的新 Skill 会合并进当前必调集合，队列任务保持自己的引用顺序。
 
 ## 安全边界
 
-- Skill ID 只允许小写字母、数字和连字符，最长 64 字符。
-- Skill 名称、触发描述和正文不能为空，正文限制 100KB。
-- 同步清单 `.odyssey-managed.json` 是为兼容既有部署保留的内部文件名，只记录 Catnip Forge 管理的部署项；清理时只删除清单中的失效项，不碰用户自行放入 Agent 工作区的其他原生 Skill。
-- 若目标存在非 Catnip Forge 管理的同名 Skill，同步中止并显示冲突，不覆盖。
-- 仓库页删除源 Skill 时进入系统回收站，随后撤销对应部署。
-- 安装目录不可写时，仓库页明确显示“源仓库只读”，禁止新增/保存；不静默改写到别的目录。
-
-## 前端行为
-
-仓库标签页不再显示“Agent 生成”卡片，聚焦硬件工程、参考代码与 Skills。左侧 Agent 对话输入区提供 Skills 按钮：点击后列出已部署 Skill，选择项会以标签进入输入区；发送消息时软件自动注入对应 `/skill-id`，发送后清除选择。用户不需要记忆或手工输入命令，直接描述任务时仍可由 Agent 自动选择。
-
-Skills 区域显示固定源路径和可写状态、源 Skill 数量与已部署数量、名称/描述/原生命令/格式，以及新建、编辑、删除、打开目录和立即同步操作。
-
-保存后自动同步。任务路由只负责显示“推荐了哪个 Skill”，不再把整份 Skill 文档塞进提示词；Claude Code 实际调用 `Skill` 工具时，在对话的“执行过程”中标为“技能”。
+- Renderer 只负责生成可见引用，Gateway 和 Orchestrator 必须重新校验部署状态、数量与正文位置。
+- Skill 引用不能携带路径，不能绕过合法 ID 规则，也不能直接触发脚本。
+- 用户消息持久化保存引用元数据；Agent 工具日志不写入用户消息正文。
+- 同步目标冲突、目录不可写或支持文件复制失败必须明确报错，不得改写到其他隐藏目录。
 
 ## 验证
 
@@ -51,9 +94,13 @@ npm.cmd --prefix electron run typecheck
 npm.cmd --prefix electron run build:main
 npm.cmd --prefix electron run build:renderer
 npm.cmd --prefix electron run verify:skills
+npm.cmd --prefix electron run verify:task-queue
+npm.cmd --prefix electron run verify:session
 npm.cmd --prefix electron run verify:hardboard
+npm.cmd --prefix electron run smoke:chat-ui
+git diff --check
 ```
 
-`verify:skills` 检查固定源路径、12 个随包 Skill 的原生部署/frontmatter、普通前端编译不误触发 Hardboard，以及 ESP32 任务仍能推荐 `/espidf-hardboard`。
+`verify:skills` 覆盖 12 个目录型 Skill、frontmatter、支持文件整树部署、显式多 Skill 顺序、正文位置校验、自动 Hardboard 推荐和普通前端编译不误触发 Hardboard。
 
-原生 Skill 目录和发现行为依据 [Claude Code Skills 官方文档](https://code.claude.com/docs/en/slash-commands)。
+`smoke:chat-ui` 在真实 Renderer 中从 Skill 选择器连续插入两个不同的 `@skill-id`，确认它们同时存在于输入框且位于正文中。

@@ -16,8 +16,8 @@ async function main() {
     const context = buildContext(task);
     assert.equal(isHtmlGameTask(task), true, `not detected as html game: ${task}`);
     assert(
-      context.skillsFound.includes('html_game_generation.md'),
-      `html_game_generation.md not loaded for: ${task}`,
+      context.skillsFound.includes('html-game-generation'),
+      `html-game-generation not loaded for: ${task}`,
     );
     assert(
       context.prompt.includes('先创建最小可运行 HTML 骨架'),

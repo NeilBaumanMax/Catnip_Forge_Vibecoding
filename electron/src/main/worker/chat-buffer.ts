@@ -129,6 +129,10 @@ function formatToolCall(name: string, input: unknown): string {
     const title = stringValue(data.title ?? data.task ?? data.description) || name;
     return `• ${name}: ${title}`;
   }
+  if (name === 'Skill') {
+    const skill = stringValue(data.skill ?? data.name ?? data.command).replace(/^\/|^@/, '') || '(unknown skill)';
+    return `• Skill @${skill}`;
+  }
   if (name.includes('browser_navigate') || name === 'browser.navigate') {
     const url = stringValue(data.url) || '(unknown url)';
     return `• Browser navigate ${url}`;

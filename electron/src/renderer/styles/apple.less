@@ -953,10 +953,31 @@ body.is-resizing-panels .panel-divider::before {
 .chat-skill-options button > span { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .chat-skill-options strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
 .chat-skill-options code { flex-shrink: 0; color: var(--ui-accent); font-size: 10px; }
+.chat-skill-options em {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--ui-green);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+}
 .chat-skill-options small { overflow: hidden; color: var(--ui-text-secondary); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .chat-skill-error,
 .chat-skill-empty { margin: 0; padding: 12px; color: var(--ui-text-secondary); font-size: 11px; }
 .chat-skill-error { color: var(--ui-red); }
+
+.chat-inline-skill {
+  display: inline;
+  padding: 1px 5px 2px;
+  color: var(--ui-accent);
+  background: color-mix(in srgb, var(--ui-accent) 12%, var(--ui-fill));
+  border: 1px solid color-mix(in srgb, var(--ui-accent) 32%, var(--ui-separator));
+  border-radius: 6px;
+  font-family: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.92em;
+  font-weight: 700;
+  white-space: nowrap;
+}
 
 .chat-task-dashboard {
   width: min(96%, 560px);
@@ -2100,6 +2121,23 @@ select.nes-select {
 :root[data-theme="dark"] .app { background: radial-gradient(circle at 84% -20%, rgba(10, 132, 255, 0.12), transparent 36%), var(--ui-canvas); }
 :root[data-theme="dark"] .nes-btn { background: rgba(74, 74, 78, 0.7) !important; }
 :root[data-theme="dark"] .nes-btn:hover:not(:disabled) { background: rgba(88, 88, 92, 0.86) !important; }
+:root[data-theme="dark"] .browser-panel .workbench-mode-tabs .nes-btn {
+  color: var(--ui-text-secondary) !important;
+  background: transparent !important;
+}
+:root[data-theme="dark"] .browser-panel .workbench-mode-tabs .nes-btn:hover:not(:disabled) {
+  color: var(--ui-text) !important;
+  background: rgb(var(--context-rgb) / 0.16) !important;
+}
+:root[data-theme="dark"] .browser-panel .workbench-mode-tabs .nes-btn.is-primary,
+:root[data-theme="dark"] .browser-panel .workbench-mode-tabs .nes-btn.is-primary:hover:not(:disabled) {
+  color: #fff !important;
+  background: color-mix(in srgb, rgb(var(--context-strong-rgb)) 58%, #343438) !important;
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--context-rgb) / 0.72),
+    inset 0 -2px 0 rgb(var(--context-rgb) / 0.9),
+    0 1px 5px rgba(0, 0, 0, 0.28) !important;
+}
 :root[data-theme="dark"] .nes-input,
 :root[data-theme="dark"] .nes-select,
 :root[data-theme="dark"] input,

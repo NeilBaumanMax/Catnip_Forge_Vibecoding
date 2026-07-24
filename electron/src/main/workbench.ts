@@ -313,8 +313,8 @@ export function getWorkbenchOverview(): WorkbenchOverview {
         description: 'Agent skills、工具说明和可编辑 Markdown',
         folderPath: SKILLS_DIR,
         items: listFilesRecursive(SKILLS_DIR, {
-          limit: 16,
-          include: /\.(md|json|txt)$/i,
+          limit: 32,
+          include: /\.(md|mdx|json|jsonc|txt|yaml|yml|toml|js|mjs|cjs|ts|py|sh|ps1|cmd|bat)$/i,
           category: 'skill',
         }),
         emptyText: '还没有 skills 文件',

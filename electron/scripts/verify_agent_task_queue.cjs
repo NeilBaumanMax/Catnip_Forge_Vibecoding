@@ -13,6 +13,9 @@ async function main() {
     pushUI: (channel, data) => events.push({ channel, data }),
     currentTask: null,
     currentTaskId: null,
+    currentSkillRefs: [],
+    invokedSkillIds: new Set(),
+    skillEnforcementAttempt: 0,
     currentAgentTranscript: '',
     currentAttempt: 0,
     queuedTasks: [],
@@ -91,8 +94,8 @@ async function main() {
   orchestrator.currentTask = null;
   orchestrator.currentTaskId = null;
   orchestrator.turnInFlight = true;
-  orchestrator.pendingGuidance = ['不要遗漏这一项'];
-  orchestrator.queuedTasks = [{ id: 'queued-after-stop', text: '不应再执行' }];
+  orchestrator.pendingGuidance = [{ text: '不要遗漏这一项', skillRefs: [] }];
+  orchestrator.queuedTasks = [{ id: 'queued-after-stop', text: '不应再执行', skillRefs: [], conversationId: 'test' }];
   orchestrator.stop();
   assert.equal(orchestrator.pendingGuidance.length, 0);
   assert.equal(orchestrator.queuedTasks.length, 0);

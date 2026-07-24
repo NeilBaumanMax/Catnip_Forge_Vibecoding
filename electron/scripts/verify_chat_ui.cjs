@@ -5,7 +5,7 @@ async function cdpCall(socket, id, method, params = {}) {
     const timer = setTimeout(() => {
       socket.removeEventListener('message', onMessage);
       reject(new Error(`CDP ${method} 超时`));
-    }, 15000);
+    }, 30000);
     const onMessage = (event) => {
       const message = JSON.parse(String(event.data));
       if (message.id !== id) return;
@@ -48,6 +48,32 @@ async function main() {
       };
       const button = [...document.querySelectorAll('button')].find((item) => item.textContent?.trim() === '专业视图');
       if (!button) return { ok: false, reason: 'missing professional view button' };
+      const skillButton = [...document.querySelectorAll('button')].find((item) => item.textContent?.trim().startsWith('＋ Skills'));
+      const composer = document.querySelector('.chat-input textarea');
+      if (!skillButton || !composer) return { ok: false, reason: 'missing multi-skill composer controls' };
+      window.__vibeideChatSmokeStage = 'skill-controls-ready';
+      skillButton.click();
+      window.__vibeideChatSmokeStage = 'skill-picker-clicked';
+      const skillOptions = await waitFor(() => {
+        const options = [...document.querySelectorAll('.chat-skill-options button:not(:disabled)')];
+        return options.length >= 2 ? options : null;
+      });
+      window.__vibeideChatSmokeStage = 'skill-options-ready';
+      skillOptions[0].click();
+      await waitFor(() => composer.value.includes('@'));
+      window.__vibeideChatSmokeStage = 'first-skill-inserted';
+      const firstSkillText = composer.value;
+      skillOptions[1].click();
+      await waitFor(() => (composer.value.match(/@[a-z0-9-]+/g) || []).length >= 2);
+      window.__vibeideChatSmokeStage = 'second-skill-inserted';
+      const secondSkillText = composer.value;
+      const skillInlineMulti = new Set(secondSkillText.match(/@[a-z0-9-]+/g) || []).size >= 2
+        && secondSkillText.indexOf('@') !== secondSkillText.lastIndexOf('@');
+      const textareaValueSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+      textareaValueSetter.call(composer, '');
+      composer.dispatchEvent(new Event('input', { bubbles: true }));
+      skillButton.click();
+      window.__vibeideChatSmokeStage = 'skill-composer-cleaned';
       const legacyProgressPanel = Boolean(document.querySelector('.left-panel > .task-progress'));
       const idleDashboardVisible = Boolean(document.querySelector('.chat-task-dashboard'));
       const historySidebar = Boolean(document.querySelector('.chat-history'));
@@ -55,11 +81,13 @@ async function main() {
       const visibleMessagesBefore = document.querySelectorAll('.chat-msg, .chat-execution').length;
       const historyBefore = document.querySelectorAll('.chat-history-item').length;
       const listBefore = await window.electronAPI.listChatConversations();
+      window.__vibeideChatSmokeStage = 'history-loaded';
       const original = listBefore.conversations.find((item) => item.id === listBefore.activeConversationId);
       if (!original) return { ok: false, reason: 'missing active conversation summary' };
       let activeMore = document.querySelector('.chat-history-item.is-active .chat-history-more');
       if (!activeMore) return { ok: false, reason: 'missing active conversation menu button' };
       activeMore.click();
+      window.__vibeideChatSmokeStage = 'history-menu-clicked';
       const renameAction = await waitFor(() => [...document.querySelectorAll('.chat-history-menu button')].find((item) => item.textContent?.trim() === '重命名'));
       if (!renameAction) return { ok: false, reason: 'missing rename action' };
       const firstMenu = document.querySelector('.chat-history-item:first-child .chat-history-menu');
@@ -123,6 +151,7 @@ async function main() {
           && pinToggled
           && deleteConfirmed
           && menuPlacementOk
+          && skillInlineMulti
           && !legacyProgressPanel
           && !idleDashboardVisible,
         before,
@@ -138,6 +167,9 @@ async function main() {
         pinToggled,
         deleteConfirmed,
         menuPlacementOk,
+        skillInlineMulti,
+        firstSkillText,
+        secondSkillText,
         theme: document.documentElement.dataset.theme,
         readyState: document.readyState,
       };
@@ -146,7 +178,11 @@ async function main() {
     try {
       evaluated = await cdpCall(socket, 1, 'Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
     } catch (error) {
-      const probe = await cdpCall(socket, 2, 'Runtime.evaluate', { expression: `({ stage: window.__vibeideChatSmokeStage, ready: document.readyState, items: document.querySelectorAll('.chat-history-item').length, moreDisabled: document.querySelector('.chat-history-item.is-active .chat-history-more')?.disabled, expanded: document.querySelector('.chat-history-item.is-active .chat-history-more')?.getAttribute('aria-expanded'), menus: document.querySelectorAll('.chat-history-menu').length })`, returnByValue: true });
+      const probe = await cdpCall(socket, 2, 'Runtime.evaluate', {
+        expression: `(async () => ({ stage: window.__vibeideChatSmokeStage, ready: document.readyState, items: document.querySelectorAll('.chat-history-item').length, moreDisabled: document.querySelector('.chat-history-item.is-active .chat-history-more')?.disabled, expanded: document.querySelector('.chat-history-item.is-active .chat-history-more')?.getAttribute('aria-expanded'), menus: document.querySelectorAll('.chat-history-menu').length, picker: Boolean(document.querySelector('.chat-skill-picker')), options: document.querySelectorAll('.chat-skill-options button').length, pickerError: document.querySelector('.chat-skill-error')?.textContent, skillResult: await window.electronAPI.listManagedSkills() }))()`,
+        returnByValue: true,
+        awaitPromise: true,
+      });
       throw new Error(`${error instanceof Error ? error.message : String(error)}; probe=${JSON.stringify(probe.result?.value)}`);
     }
     const result = evaluated.result?.value;

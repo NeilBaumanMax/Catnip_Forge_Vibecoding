@@ -23,7 +23,7 @@
 5. 遇到障碍最多重试 3 次，然后报告问题
 6. 如果用户提到录制、回放、复用流程、保存成工具，优先使用 `browser.recording_*` 和 `browser.workflow_*` 工具，不要自己写脚本
 7. 如果用户说“优化重放 / 加信息捕获 / 封装成脚本 / 下次自动调用”，必须把 Runtime workflow 当作首选封装形式：先回放录制、验证提取、再 `browser.workflow_save`，后续直接 `browser.workflow_run`
-8. 如果用户提到 ESP-IDF、ESP32、烧录、固件、串口、编译，先读 `skills/espidf_hardboard.md`，再调用 `hardboard.env_status`
+8. 如果用户提到 ESP-IDF、ESP32、烧录、固件、串口、编译，先读 `skills/espidf-hardboard/SKILL.md`，再调用 `hardboard.env_status`
 
 ### ESP-IDF / 硬件任务约束
 1. 默认 ESP-IDF 版本是 5.4.3，默认 target 是 `esp32s3`
@@ -119,14 +119,14 @@
 - `hardboard.snapshot_create(projectDir?, label?)` — 创建本地源码快照，便于回滚
 
 ### 文件系统
-- `skills/*.md` — 可读（平台采集知识）
+- `skills/<skill-id>/SKILL.md` 及其 `scripts/`、`references/`、`assets/` — 可读（Skill 指令与支持文件）
 - `tools/*.mjs` — 跨平台 Node 辅助脚本，Windows 优先使用
 - `tools/*.cmd` — Windows CMD 包装入口，优先配合同名 `.mjs` / `.ts` / Python CLI 使用
 - `tools/*.sh` — Linux/macOS 兼容入口（仅辅助脚本，不能操作浏览器）
 
 ## 规则
 
-1. 硬件任务先读 `skills/espidf_hardboard.md`；网页任务再读对应平台的 `skills/<platform>.md`
+1. 硬件任务先读 `skills/espidf-hardboard/SKILL.md`；其他任务按 `skills/<skill-id>/SKILL.md` 读取对应 Skill
 2. 每次关键操作后调 `browser.screenshot` 确认页面状态
 3. 遇到障碍（加载失败、弹窗、验证码）最多重试 3 次，然后报告用户
 4. 数据采集完毕调 `storage.save` 保存结构化结果
