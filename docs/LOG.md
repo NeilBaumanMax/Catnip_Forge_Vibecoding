@@ -7,7 +7,9 @@
 - 已有 `%APPDATA%\@vibeide\electron` 数据采用非破坏性首次复制，新目录已存在时不覆盖；旧目录留作安全备份。
 - Electron 主入口改为 bootstrap，保证 logger、session、附件和 Chromium 初始化前完成 `userData` 重定向；迁移跳过进程锁与符号链接。
 - Hardboard 新建 `C:\Catnip_Forge\hardboard` junction，旧 junction 只在确认是符号链接后安全清理。
-- Runtime/Electron typecheck 与隔离 `verify:data-paths` 通过；本轮先提交工程，不自动重建 `win-unpacked`。
+- Runtime/Electron typecheck 与隔离 `verify:data-paths` 通过。
+- 按用户要求重新完整构建 `electron/dist-package/win-unpacked`；关闭仅属于旧成品的锁定进程后，electron-builder、PE 版本写入、`verify:version` 与 `verify:release` 全部通过。
+- 新成品共 36,991 个文件、`4,382,346,009` 字节，版本 `1.0.0.7201`；不含 DeepSeek/Qwen 真实 Key。隐藏启动验证确认 Electron 使用 `%APPDATA%\@Catnip_Forge\electron`，验证进程与临时目录已清理。
 
 ## 2026-07-25 — Qwen 视觉与聊天附件第一阶段落地
 

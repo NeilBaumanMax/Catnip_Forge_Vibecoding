@@ -76,4 +76,6 @@ Electron 默认会根据 `package.json.name` 计算 `userData`。当前主进程
 - 首次升级发现旧 `%APPDATA%\@vibeide\electron` 时逐层复制普通目录与文件，跳过锁文件和符号链接；旧目录保留、不自动删除，迁移 marker 使二次启动不覆盖新数据。
 - Hardboard 当前短路径改为 `C:\Catnip_Forge\hardboard`；仅在旧路径确认为 junction 时做安全清理，普通目录不删除。
 - 新增 `npm.cmd --prefix electron run verify:data-paths`，使用隔离临时 `appData` 验证旧会话/附件迁移、瞬时文件过滤、重复启动不覆盖、bootstrap 主入口和 Hardboard 新路径。
-- Runtime/Electron typecheck 与专项路径测试通过。本轮尚未重新打包；`win-unpacked` 仍需用户明确要求后更新。
+- Runtime/Electron typecheck 与专项路径测试通过。
+- 已按用户要求完整重建 `electron/dist-package/win-unpacked`；`verify:version`、`verify:release` 均通过，成品共 36,991 个文件、`4,382,346,009` 字节。
+- 隐藏启动成品 EXE 后，Electron 子进程参数确认使用 `--user-data-dir="%APPDATA%\@Catnip_Forge\electron"`；测试进程与临时目录已清理。

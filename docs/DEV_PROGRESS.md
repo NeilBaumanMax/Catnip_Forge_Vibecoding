@@ -93,6 +93,7 @@
 - [x] `agent/tools` 长期工具补齐 Windows `.cmd` / 跨平台 `.mjs` 入口
 - [x] hardboard runtime 打包版将随包目录通过 junction 映射到短路径 `C:\Catnip_Forge\hardboard`，开发版继续使用工作区 `runtime/hardboard`，并支持相对项目路径
 - [x] Windows 客户数据根目录在 bootstrap 阶段固定为 `%APPDATA%\@Catnip_Forge\electron`；旧 `@vibeide` 数据首次非破坏性复制，新安装不再创建旧路径
+- [x] 2026-07-25 客户路径迁移后重新完整构建 `win-unpacked`：共 36,991 个文件、4,382,346,009 字节；版本/发布门禁通过，成品启动参数确认使用 `%APPDATA%\@Catnip_Forge\electron`
 - [x] `hardboard.idf_build` / `hardboard.idf_flash` 已改为 compact 输出，完整 stdout/stderr 写入 `runtime/hardboard/logs/*.log`
 - [x] `agent/skills/espidf-hardboard/SKILL.md` 已补齐 docsDir/projectsDir、排除 build、先读 `main/CMakeLists.txt` 的文件定位规则
 - [x] Runtime task / pid / eventbus / heartbeat / hardboard build-flash events 已接入任务管理器
