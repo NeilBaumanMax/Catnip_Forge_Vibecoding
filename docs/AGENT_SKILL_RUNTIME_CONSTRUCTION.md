@@ -53,6 +53,7 @@ Agent Skill tool
 - Monaco 可直接维护 Markdown、JSON/YAML、JavaScript/TypeScript、Python、Shell、PowerShell 和 CMD 等文本脚本。
 - Skill 管理器负责名称、描述、主指令、新建、回收站删除、同步和打开单个 Skill 目录；复杂脚本继续使用统一工程编辑器，不建立第二套代码编辑器。
 - Skill 列表显示支持文件数量，修改任一支持文件后下一次同步和 Agent 启动都会部署最新目录树。
+- 对话输入区的 Skill 选择列表中，蓝色 `@skill-id` 使用不小于 12px、字重不低于 600 的可读样式；长 ID 使用省略号收缩，不得靠缩小字号塞入一行。
 
 ## 聊天正文内引用
 

@@ -1047,7 +1047,17 @@ body.is-resizing-chat-composer * {
 .chat-skill-options button:disabled { opacity: 0.48; }
 .chat-skill-options button > span { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .chat-skill-options strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
-.chat-skill-options code { flex-shrink: 0; color: var(--ui-accent); font-size: 10px; }
+.chat-skill-options code {
+  min-width: 0;
+  overflow: hidden;
+  flex-shrink: 1;
+  color: var(--ui-accent);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .chat-skill-options em {
   flex-shrink: 0;
   margin-left: auto;

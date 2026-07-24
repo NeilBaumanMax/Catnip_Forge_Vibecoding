@@ -93,6 +93,11 @@ async function main() {
         const options = [...document.querySelectorAll('.chat-skill-options button:not(:disabled)')];
         return options.length >= 2 ? options : null;
       });
+      const skillReferenceStyle = getComputedStyle(skillOptions[0].querySelector('code'));
+      const skillReferenceFontSize = skillReferenceStyle.fontSize;
+      const skillReferenceFontWeight = skillReferenceStyle.fontWeight;
+      const skillReferenceReadable = parseFloat(skillReferenceFontSize) >= 12
+        && Number(skillReferenceFontWeight) >= 600;
       window.__vibeideChatSmokeStage = 'skill-options-ready';
       skillOptions[0].click();
       await waitFor(() => composer.value.includes('@'));
@@ -217,6 +222,7 @@ async function main() {
           && deleteConfirmed
           && menuPlacementOk
           && composerResizable
+          && skillReferenceReadable
           && skillInlineMulti
           && skillMarkerHighlight
           && skillMarkerLayoutSafe
@@ -243,6 +249,9 @@ async function main() {
         expandedComposerHeight,
         expandedTextareaHeight: textareaRect.height,
         expandedHighlightHeight: highlightRect.height,
+        skillReferenceReadable,
+        skillReferenceFontSize,
+        skillReferenceFontWeight,
         skillInlineMulti,
         skillMarkerHighlight,
         skillMarkerLayoutSafe,
