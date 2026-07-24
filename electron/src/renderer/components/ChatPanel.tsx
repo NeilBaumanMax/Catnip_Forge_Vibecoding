@@ -27,6 +27,9 @@ interface ExecutionGroup {
 
 const PROFESSIONAL_VIEW_KEY = 'vibeide.chat.professionalView';
 const HISTORY_COLLAPSED_KEY = 'vibeide.chat.historyCollapsed';
+const COMPOSER_HEIGHT_KEY = 'vibeide.chat.composerHeight';
+const COMPOSER_MIN_HEIGHT = 64;
+const COMPOSER_MAX_HEIGHT = 320;
 const SKILL_MARKER_COLORS = [
   { fill: 'rgba(255, 214, 64, 0.58)', strong: 'rgba(255, 196, 0, 0.78)' },
   { fill: 'rgba(93, 224, 171, 0.48)', strong: 'rgba(38, 190, 132, 0.72)' },
@@ -103,6 +106,19 @@ function detailLabel(message: ChatMessage): string {
   if (message.toolName === 'Skill') return '技能';
   if (message.toolName) return '工具';
   return '详情';
+}
+
+function clampComposerHeight(value: number): number {
+  return Math.min(COMPOSER_MAX_HEIGHT, Math.max(COMPOSER_MIN_HEIGHT, Math.round(value)));
+}
+
+function readComposerHeight(): number {
+  try {
+    const stored = Number(window.localStorage.getItem(COMPOSER_HEIGHT_KEY));
+    return Number.isFinite(stored) && stored > 0 ? clampComposerHeight(stored) : COMPOSER_MIN_HEIGHT;
+  } catch {
+    return COMPOSER_MIN_HEIGHT;
+  }
 }
 
 function skillTokensFromText(text: string, skills: ManagedSkillSummary[]): SkillReference[] {
@@ -277,10 +293,13 @@ export default function ChatPanel({
   const [skillPickerOpen, setSkillPickerOpen] = useState(false);
   const [skillQuery, setSkillQuery] = useState('');
   const [skillLoadError, setSkillLoadError] = useState('');
+  const [composerHeight, setComposerHeight] = useState(readComposerHeight);
   const cancelRenameRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const composerEditorRef = useRef<HTMLDivElement>(null);
   const skillPickerRef = useRef<HTMLDivElement>(null);
+  const composerResizeCleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -301,6 +320,16 @@ export default function ChatPanel({
       // The preference remains active for this session.
     }
   }, [historyCollapsed]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(COMPOSER_HEIGHT_KEY, String(composerHeight));
+    } catch {
+      // The resized height remains active for this session.
+    }
+  }, [composerHeight]);
+
+  useEffect(() => () => composerResizeCleanupRef.current?.(), []);
 
   useEffect(() => {
     let active = true;
@@ -384,6 +413,30 @@ export default function ChatPanel({
     setInput('');
     setSkillPickerOpen(false);
     setSkillQuery('');
+  };
+
+  const startComposerResize = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.currentTarget.focus();
+    composerResizeCleanupRef.current?.();
+    const startY = event.clientY;
+    const startHeight = composerEditorRef.current?.getBoundingClientRect().height ?? composerHeight;
+    const onPointerMove = (pointerEvent: PointerEvent) => {
+      setComposerHeight(clampComposerHeight(startHeight + startY - pointerEvent.clientY));
+    };
+    const cleanup = () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', cleanup);
+      window.removeEventListener('pointercancel', cleanup);
+      document.body.classList.remove('is-resizing-chat-composer');
+      composerResizeCleanupRef.current = null;
+    };
+    composerResizeCleanupRef.current = cleanup;
+    document.body.classList.add('is-resizing-chat-composer');
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', cleanup);
+    window.addEventListener('pointercancel', cleanup);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -548,7 +601,29 @@ export default function ChatPanel({
         <div ref={bottomRef} />
       </div>
       <form className="chat-input" onSubmit={handleSubmit}>
-        <div className="chat-composer-editor">
+        <div
+          ref={composerEditorRef}
+          className="chat-composer-editor"
+          style={{ height: composerHeight }}
+        >
+          <div
+            className="chat-composer-resize-handle"
+            role="separator"
+            aria-label="调整输入框高度"
+            aria-orientation="horizontal"
+            aria-valuemin={COMPOSER_MIN_HEIGHT}
+            aria-valuemax={COMPOSER_MAX_HEIGHT}
+            aria-valuenow={composerHeight}
+            tabIndex={0}
+            onPointerDown={startComposerResize}
+            onKeyDown={(event) => {
+              if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+              event.preventDefault();
+              setComposerHeight((current) => clampComposerHeight(current + (event.key === 'ArrowUp' ? 16 : -16)));
+            }}
+          >
+            <span aria-hidden="true" />
+          </div>
           <div className="chat-input-highlight" aria-hidden="true">
             <ComposerHighlightedText text={input} skills={skills} />
           </div>

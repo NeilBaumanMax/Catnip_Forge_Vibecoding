@@ -837,14 +837,57 @@ body.is-resizing-panels .panel-divider::before {
 .chat-composer-editor {
   position: relative;
   min-height: 64px;
+  max-height: 320px;
   overflow: hidden;
   background: var(--ui-control-bg);
   border-radius: 9px;
 }
 
+.chat-composer-resize-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  width: 100%;
+  height: 10px;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.chat-composer-resize-handle span {
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  width: 42px;
+  height: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ui-text-tertiary) 48%, transparent);
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity 120ms ease-out, background-color 120ms ease-out;
+}
+
+.chat-composer-editor:hover .chat-composer-resize-handle span,
+.chat-composer-resize-handle:focus-visible span,
+body.is-resizing-chat-composer .chat-composer-resize-handle span {
+  opacity: 1;
+}
+
+.chat-composer-resize-handle:hover span,
+.chat-composer-resize-handle:focus-visible span {
+  background: color-mix(in srgb, var(--ui-accent) 60%, transparent);
+}
+
+body.is-resizing-chat-composer,
+body.is-resizing-chat-composer * {
+  cursor: ns-resize !important;
+  user-select: none !important;
+}
+
 .chat-input .chat-composer-editor textarea.nes-input,
 .chat-input-highlight {
   width: 100%;
+  height: 100%;
   min-height: 64px;
   padding: 9px 10px;
   border-radius: 9px;
