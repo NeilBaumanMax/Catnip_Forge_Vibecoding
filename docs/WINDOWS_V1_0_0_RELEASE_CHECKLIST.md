@@ -66,6 +66,8 @@ git diff --check
 
 2026-07-25 从 `main` 重新全量生成最终成品：目录共 36,985 个文件、`4,382,268,512` 字节，入口 `Catnip Forge.exe` 的 PE 版本为 `1.0.0.7201`。`verify:version`、`verify:release`、`verify:first-run` 和 `verify:first-run-restart` 均通过；Node `v22.14.0`、Python 3.12.9/pyserial `3.5`、Claude Code `2.1.167`、Playwright 与 12 个目录型 Skills 完整，无真实 API Key。首启及保存一次性测试 Key 后自动重启闭环通过，测试 Key 和全部成品测试进程已清理。打包入口同时增加 `_bundled` 前置校验，缺少 Node、Python、pyserial 或 Playwright 时会在清理旧成品前失败；仓库页后续更新为 Skills 优先、硬件工程与参考代码默认折叠并同步开合，已重新打入同一成品目录。
 
+2026-07-25 从 `qwen_vision_attachments` 再次完整重建当前成品：目录共 36,991 个文件、`4,382,346,009` 字节，PE 版本仍为 `1.0.0.7201`。`verify:version` 与扩展后的 `verify:release` 通过，DeepSeek/Qwen 真实 Key 均未入包，Qwen 附件桥接、Runtime MCP、Electron bootstrap 和 Catnip user-data path 文件均已随包。隐藏启动确认 Electron 使用 `%APPDATA%\@Catnip_Forge\electron`；本轮未使用真实 Qwen Key，测试进程和临时目录均已清理。
+
 ## 使用边界
 
 - 目标系统为 Windows 10/11 x64。

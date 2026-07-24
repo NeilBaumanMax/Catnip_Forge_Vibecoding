@@ -23,7 +23,7 @@
 - 当前 `win-unpacked` 已在客户路径迁移实现后完整重建，并通过 `verify:version` 与扩展后的 `verify:release`；发布门禁同时确认 DeepSeek/Qwen 真实 Key 均未打入成品，并检查附件主进程桥接、Runtime MCP、bootstrap 与 user-data path 文件确实随包。
 - 2026-07-25 成品共 36,991 个文件、`4,382,346,009` 字节；隐藏启动时 Electron 子进程参数确认 `--user-data-dir` 指向 `%APPDATA%\@Catnip_Forge\electron`，测试进程已清理。
 - `verify:first-run-restart` 查找 CDP 目标时必须使用主界面标题 `Catnip Forge ·`，不能只匹配 `Catnip Forge`，否则重启时会误连标题为“Catnip Forge — 启动中”的 Splash。
-- `main` 当前源码需以 Runtime/Electron typecheck、main/renderer build、Windows unpacked 打包和 `git diff --check` 作为提交门禁。当前版本已执行 Windows 打包、发布资源校验、无 Key 首启及自动重启闭环、MCP handshake、随包 Python、ESP-IDF 冷构建及 COM5 串口回归；真实 Agent 长时间连续对话仍需持续观察。
+- 当前施工分支源码需以 Runtime/Electron typecheck、main/renderer build、Windows unpacked 打包和 `git diff --check` 作为提交门禁。当前版本已执行 Windows 打包与发布资源校验；无 Key 首启及自动重启闭环、MCP handshake、随包 Python、ESP-IDF 冷构建及 COM5 串口回归来自同版本既有基线验证，真实 Qwen 联网服务和 Agent 长时间连续对话仍需持续观察。
 - 启动阶段由独立 `splashWindow` 承接，主窗口必须保持 `show: false` 直到 `ready-to-show`。启动页从实际显示起至少保留约 5 秒，进度按一次性时间线平滑推进并封顶 94%；工作区、开发环境、Renderer 节点更新真实阶段文案，最终 100% 必须同时等待主窗口真实就绪。`assets/splash.html` 与三张 `splash-*.png` 必须随包，不能恢复循环假进度或在启动页之前闪现主窗口。
 - 当前主题不再持续跟随 Windows/Electron 的 `prefers-color-scheme`。首次无记录时读取一次系统偏好，之后由“猫薄荷”助手标题栏选择并持久化；助手位置也独立持久化，可拖动避开编辑器字号工具条。
 - “猫薄荷”是独立的软件使用帮助通道：复用 `resources/apikey.txt`，直接调用 DeepSeek Chat Completions，不得改为占用左侧硬件 Agent 队列。系统提示只允许解释 Catnip Forge 操作，真实编译/烧录/文件修改必须引导到左侧 Agent。
@@ -68,9 +68,9 @@
 - `奥德赛0.4.0.7161.exe` PE 元数据：`ProductName=奥德赛0.4.0.7161`、`FileVersion=0.4.0.7161`、`ProductVersion=0.4.0.7161`
 - 本轮尚未重新执行 exe 启动和 ESP32-S3 实机闭环，详见 `docs/WINDOWS_0_4_0_7161_TEST_REPORT.md`
 
-下方 0.4.0-7171、0.4.0.7161、0.1.0 的记录均为历史验证事实；当前 1.0.0-7201 的最终成品验证以紧随其后的 2026-07-25 记录为准，2026-07-21 记录继续保留为历史迭代事实。
+下方各版本和早期 1.0.0-7201 记录均为历史验证事实；当前成品真相以本文“当前版本和验证”小节及 `CATNIP_FORGE_DATA_PATH_MIGRATION_CONSTRUCTION.md` 为准。
 
-已通过（Windows v1.0.0 最终成品重建，2026-07-25）：
+历史已通过（Windows v1.0.0 `main` 基线成品重建，2026-07-25）：
 
 - 在 `E:\Agent\vibeide\vibeide` 的 `main` 分支执行 `npm.cmd --prefix electron run pack:win`，最终成品位于 `electron\dist-package\win-unpacked`，入口为 `Catnip Forge.exe`；目录共 36,985 个文件、`4,382,268,512` 字节。
 - `verify:version` 与 `verify:release` 通过：PE 版本为 `1.0.0.7201`，Node `v22.14.0`、Python 3.12.9/pyserial `3.5`、Claude Code `2.1.167`、12 个目录型 Skills 和 Playwright 完整，且不含真实 `resources/apikey.txt`。

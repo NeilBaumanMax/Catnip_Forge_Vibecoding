@@ -19,8 +19,8 @@ GitHub
 ## 已完成
 
 - GitHub SSH 访问已验证。
-- 当前施工分支为 `main`，版本为 `1.0.0-7201`。提交号和远端跟踪状态属于动态事实，必须以本地 `git log -1`、`git branch -vv` 和 `git remote -v` 为准，不再把历史 HEAD 写成当前值。
-- 本轮只维护本地 Git，不执行远端推送。需要同步时由用户明确决定并运行 `git push origin main`。
+- 当前施工分支为 `qwen_vision_attachments`（基于 `main`），版本为 `1.0.0-7201`。提交号和远端跟踪状态属于动态事实，必须以本地 `git log -1`、`git branch -vv` 和 `git remote -v` 为准，不再把历史 HEAD 写成当前值。
+- 本轮只维护本地 Git，不执行远端推送。需要同步时由用户明确指定目标分支后再执行 `git push`，不得把当前施工分支默认推入 `main`。
 - `electron_fix_neil` 早期推送曾因 GitHub HTTPS 连接重置失败；远端分支事实不能根据本地分支存在与否推断，必须以成功的 `git push` 或远端查询结果为准。
 - Windows SSH 已连通。
 - `C:\vibeide`、`E:\vibeide` 与 `E:\vibeide-0.1-win-unpacked` 是历史同步目标；当前唯一施工目录为 `E:\Agent\vibeide\vibeide`，不得再将旧目录描述为当前同步状态。

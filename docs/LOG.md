@@ -1,5 +1,12 @@
 # 施工日志
 
+## 2026-07-25 — 完整打包后的施工文档漂移修正
+
+- 以本地 Git 动态结果为准，将 README、GitHub 同步、开发进度、Apple UI 和任务管理器施工文档的当前施工分支统一为 `qwen_vision_attachments`（基于 `main`）。
+- 将开发进度中的旧打包状态修正为完整打包与发布门禁已通过；真实 Qwen 联网服务和复杂文档页面视觉仍明确保留为未验收边界。
+- 接力文档不再把早期 `main` 成品的 36,985 个文件误标为当前最终记录；当前成品以 36,991 个文件、`4,382,346,009` 字节及 Catnip user-data 启动验证为准，旧数据作为历史事实保留。
+- Windows v1.0.0 发布检查表追加当前分支成品记录，不覆盖早期打包、首启和硬件验证历史。
+
 ## 2026-07-25 — Catnip Forge 客户数据路径迁移
 
 - 目标路径固定为 `%APPDATA%\@Catnip_Forge\electron` 和 `C:\Catnip_Forge\hardboard`，新客户不再创建 `@vibeide` / `C:\vibeide-hw`。
