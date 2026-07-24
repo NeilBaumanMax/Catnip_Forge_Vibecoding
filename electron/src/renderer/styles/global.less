@@ -1797,6 +1797,15 @@ body.is-resizing-panels * {
   border-color: var(--nes-border) !important;
 }
 
+.workspace-resource-section {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.workspace-resource-section.is-expanded {
+  min-height: 220px;
+}
+
 .workspace-section-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -1805,6 +1814,91 @@ body.is-resizing-panels * {
   color: var(--nes-white);
   background: var(--nes-navy);
   border-bottom: 4px solid var(--nes-border);
+}
+
+.workspace-resource-header {
+  padding: 0;
+}
+
+.workspace-resource-toggle {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 13px 14px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.workspace-resource-toggle:hover,
+.workspace-resource-toggle:focus-visible {
+  background: color-mix(in srgb, var(--nes-blue) 22%, transparent);
+  outline: none;
+}
+
+.workspace-resource-chevron {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: #93c5fd;
+  font-family: "Noto Sans SC", "Microsoft YaHei UI", sans-serif;
+  font-size: 24px;
+  line-height: 1;
+  transform: rotate(0deg);
+  transition: transform 160ms ease-out;
+}
+
+.workspace-resource-section.is-expanded .workspace-resource-chevron {
+  transform: rotate(90deg);
+}
+
+.workspace-resource-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.workspace-resource-copy strong {
+  font-size: 13px;
+}
+
+.workspace-resource-copy span {
+  overflow: hidden;
+  color: #cbd5e1;
+  font-size: 10px;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-resource-count,
+.workspace-resource-action {
+  color: #cbd5e1;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.workspace-resource-count {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+}
+
+.workspace-resource-action {
+  min-width: 32px;
+  color: #93c5fd;
+  text-align: right;
+}
+
+.workspace-resource-tools {
+  padding: 0 14px 12px 44px;
 }
 
 .workspace-section-header h3 {
@@ -1933,7 +2027,7 @@ body.is-resizing-panels * {
 
 .skill-manager {
   grid-column: 1 / -1;
-  min-height: 280px;
+  min-height: 360px;
 }
 
 .skill-manager-header {
@@ -2063,6 +2157,12 @@ body.is-resizing-panels * {
   .skill-manager-status code { grid-column: 1 / -1; }
   .skill-manager-row { grid-template-columns: 26px minmax(0, 1fr); }
   .skill-manager-row-actions { grid-column: 2; }
+  .workspace-resource-toggle { grid-template-columns: 20px minmax(0, 1fr) auto; }
+  .workspace-resource-count { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-resource-chevron { transition: none; }
 }
 
 .task-manager-panel {

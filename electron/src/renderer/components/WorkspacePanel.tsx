@@ -151,20 +151,42 @@ function SkillManager({ onOpenFolder, onRefreshWorkbench }: { onOpenFolder: (fol
   );
 }
 
-function renderSection(section: WorkbenchSection, onOpenItem: (item: WorkbenchItem) => void, onOpenFolder: (folderPath: string) => void) {
+function renderResourceSection(
+  section: WorkbenchSection,
+  expanded: boolean,
+  onToggle: () => void,
+  onOpenItem: (item: WorkbenchItem) => void,
+  onOpenFolder: (folderPath: string) => void,
+) {
+  const contentId = `workspace-resource-${section.id}`;
   return (
-    <section key={section.id} className="workspace-section nes-container is-rounded">
-      <div className="workspace-section-header">
-        <div>
-          <h3>{section.title}</h3>
-          <p>{section.description}</p>
-        </div>
-        <div className="workspace-section-tools">
+    <section
+      key={section.id}
+      className={`workspace-section workspace-resource-section is-${expanded ? 'expanded' : 'collapsed'} nes-container is-rounded`}
+      data-workbench-resource={section.id}
+    >
+      <div className="workspace-section-header workspace-resource-header">
+        <button
+          className="workspace-resource-toggle"
+          type="button"
+          aria-expanded={expanded}
+          aria-controls={contentId}
+          onClick={onToggle}
+        >
+          <span className="workspace-resource-chevron" aria-hidden="true">›</span>
+          <span className="workspace-resource-copy">
+            <strong>{section.title}</strong>
+            <span>{section.description}</span>
+          </span>
+          <span className="workspace-resource-count">{section.items.length} 项</span>
+          <span className="workspace-resource-action">{expanded ? '收起' : '展开'}</span>
+        </button>
+        {expanded ? <div className="workspace-section-tools workspace-resource-tools">
           <code>{section.folderPath}</code>
           <button className="nes-btn workspace-open-folder" type="button" onClick={() => onOpenFolder(section.folderPath)}>在资源管理器中打开</button>
-        </div>
+        </div> : null}
       </div>
-      <div className="workspace-items">
+      <div className="workspace-items" id={contentId} hidden={!expanded}>
         {section.items.length ? section.items.map((item: WorkbenchItem) => (
           <button
             key={item.path}
@@ -195,6 +217,7 @@ function renderSection(section: WorkbenchSection, onOpenItem: (item: WorkbenchIt
 
 export default function WorkspacePanel({ overview, onRefresh, onOpenItem, onEditItem }: Props) {
   const [folderFeedback, setFolderFeedback] = useState<{ message: string; detail: string; tone: 'pending' | 'success' | 'error' } | null>(null);
+  const [expandedResourceSections, setExpandedResourceSections] = useState<Set<string>>(() => new Set());
 
   const handleOpenFolder = async (folderPath: string) => {
     setFolderFeedback({ message: '正在打开目录…', detail: folderPath, tone: 'pending' });
@@ -217,13 +240,26 @@ export default function WorkspacePanel({ overview, onRefresh, onOpenItem, onEdit
     onEditItem(item);
   };
 
+  const toggleResourceSection = (sectionId: string) => {
+    setExpandedResourceSections((current) => {
+      const next = new Set(current);
+      if (next.has(sectionId)) next.delete(sectionId);
+      else next.add(sectionId);
+      return next;
+    });
+  };
+
+  const visibleSections = overview?.sections.filter((section) => section.id !== 'agent-generated') || [];
+  const skillSection = visibleSections.find((section) => section.id === 'skills');
+  const resourceSections = visibleSections.filter((section) => section.id !== 'skills');
+
   return (
     <div className="workspace-panel">
       <div className="workspace-hero">
         <div>
           <span className="workspace-eyebrow">Skill Repository</span>
-          <h2>Skills 与工程资源</h2>
-          <p>集中管理 Skills、硬件工程和参考代码。Skill 保存后会自动部署到 Agent 工作区，并出现在左侧对话输入区的 Skills 选择器中。</p>
+          <h2>Skills 仓库</h2>
+          <p>优先管理 Agent Skills。Skill 保存后会自动部署到 Agent 工作区，并出现在左侧对话输入区的 Skills 选择器中；硬件工程和参考代码可在下方按需展开。</p>
         </div>
         <div className="workspace-actions">
           {folderFeedback ? (
@@ -239,9 +275,14 @@ export default function WorkspacePanel({ overview, onRefresh, onOpenItem, onEdit
         </div>
       </div>
       <div className="workspace-grid">
-        {overview?.sections.filter((section) => section.id !== 'agent-generated').map((section) => section.id === 'skills'
-          ? <SkillManager key={section.id} onOpenFolder={(folderPath) => void handleOpenFolder(folderPath)} onRefreshWorkbench={onRefresh} />
-          : renderSection(section, handleOpenItem, (folderPath) => void handleOpenFolder(folderPath)))}
+        {skillSection ? <SkillManager key={skillSection.id} onOpenFolder={(folderPath) => void handleOpenFolder(folderPath)} onRefreshWorkbench={onRefresh} /> : null}
+        {resourceSections.map((section) => renderResourceSection(
+          section,
+          expandedResourceSections.has(section.id),
+          () => toggleResourceSection(section.id),
+          handleOpenItem,
+          (folderPath) => void handleOpenFolder(folderPath),
+        ))}
       </div>
     </div>
   );

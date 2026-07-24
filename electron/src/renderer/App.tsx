@@ -734,15 +734,32 @@ export default function App() {
 
     workbenchSmokeTriggered.current = true;
     window.setTimeout(() => {
-      const button = document.querySelector<HTMLButtonElement>('.workspace-item-button');
-      if (!button) {
+      const skillManager = document.querySelector<HTMLElement>('.skill-manager');
+      const resourceSections = [...document.querySelectorAll<HTMLElement>('[data-workbench-resource]')];
+      const toggles = resourceSections.map((section) => section.querySelector<HTMLButtonElement>('.workspace-resource-toggle'));
+      const skillComesFirst = Boolean(skillManager && resourceSections[0]
+        && (skillManager.compareDocumentPosition(resourceSections[0]) & Node.DOCUMENT_POSITION_FOLLOWING));
+      const resourcesDefaultCollapsed = toggles.length > 0 && toggles.every((toggle) => toggle?.getAttribute('aria-expanded') === 'false');
+      if (!skillComesFirst || !resourcesDefaultCollapsed || !toggles[0]) {
         void window.electronAPI.finishWorkbenchSmokeTest?.({
           ok: false,
-          error: '没有找到工作台项目按钮',
+          error: '仓库页未保持 Skills 优先或辅助资源默认折叠',
         });
         return;
       }
-      button.click();
+      toggles[0].click();
+      window.setTimeout(() => {
+        const expanded = toggles[0]?.getAttribute('aria-expanded') === 'true';
+        const button = resourceSections[0]?.querySelector<HTMLButtonElement>('.workspace-item-button');
+        if (!expanded || !button) {
+          void window.electronAPI.finishWorkbenchSmokeTest?.({
+            ok: false,
+            error: '辅助资源展开后没有找到工作台项目按钮',
+          });
+          return;
+        }
+        button.click();
+      }, 100);
     }, 500);
   }, [workbench]);
 

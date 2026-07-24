@@ -27,6 +27,7 @@
 - 悬浮入口必须使用 `catnip-assistant.png` 的透明全身形象完整呈现：默认 144px、`object-fit: contain`、无圆形背景与头像式裁切；角色本体承担点击和拖动入口。标题栏“− / ＋”以 16px 调节至 96–208px，尺寸写入 `vibeide.assistant.size`。
 - Windows packaged 工作台资源不得用 `win-unpacked/<资源>` 手工拼接：Skills 通过 `getAgentDir()` 指向 `resources/agent/skills`，文档和硬件分别通过 `getResourcesDir()` / `getHardboardDir()` 解析。工作台允许范围是明确仓库，不包含整个安装根目录。
 - `resources/agent/skills` 是唯一用户维护源仓库；`skill-manager.ts` 在 Agent 启动前把它标准化部署到用户数据下的 `agent-workspace/.claude/skills`。仓库页 Skill 管理器负责 CRUD/同步，不能把源路径改到 `%APPDATA%`。
+- 仓库页当前以 Skills 为主：Skill 管理器固定在首位，硬件工程与参考代码默认分别折叠；折叠标题行必须保留项目数量、`aria-expanded` 状态和键盘操作，展开后才显示路径、打开目录入口与文件列表。
 - 本轮继续加固任务生命周期：turn 完成后的页面验收、恢复和异常回调均校验原 `taskId`，停止或队列切换后的旧异步回调不会再完成新任务或复活旧任务；任务队列烟测已覆盖取消竞态及停止清空两类等待项。
 - Agent 对话当前采用双层呈现：用户回复直接显示并安全渲染 Markdown，PID/工具/诊断/心跳按任务折叠；“专业视图”可自动展开全部过程。工具日志不再混入持久化 Agent 回复摘要，旧版整段日志刷屏不应恢复。
 - 左栏旧“任务进度”步骤面板已取消；运行状态只在 Agent 工作时以紧凑仪表盘显示于当前“执行过程”下方，暂停或完成后不保留占位。
@@ -67,7 +68,7 @@
 
 已通过（Windows v1.0.0 最终成品重建，2026-07-25）：
 
-- 在 `E:\Agent\vibeide\vibeide` 的 `main` 分支执行 `npm.cmd --prefix electron run pack:win`，最终成品位于 `electron\dist-package\win-unpacked`，入口为 `Catnip Forge.exe`；目录共 36,985 个文件、`4,382,265,192` 字节。
+- 在 `E:\Agent\vibeide\vibeide` 的 `main` 分支执行 `npm.cmd --prefix electron run pack:win`，最终成品位于 `electron\dist-package\win-unpacked`，入口为 `Catnip Forge.exe`；目录共 36,985 个文件、`4,382,268,476` 字节。
 - `verify:version` 与 `verify:release` 通过：PE 版本为 `1.0.0.7201`，Node `v22.14.0`、Python 3.12.9/pyserial `3.5`、Claude Code `2.1.167`、12 个目录型 Skills 和 Playwright 完整，且不含真实 `resources/apikey.txt`。
 - `verify:first-run` 与 `verify:first-run-restart` 通过：首启配置、品牌资源、Skill 按钮、占位 Key 拒绝、保存一次性测试 Key 后自动拉起新进程均正常；结束后测试 Key 已清理，全部成品子进程已关闭。
 - 首次构建暴露 `_bundled/python` 只有 site-packages、缺少 Python 核心的问题；从本机已验证的历史便携包恢复 Python 3.12.9 核心后重新全量打包。打包脚本现会在清理旧成品前预检 Node、Python、pyserial 与 Playwright，缺失时明确失败。

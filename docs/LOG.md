@@ -1,11 +1,19 @@
 # 施工日志
 
+## 2026-07-25 — 仓库页突出 Skills 与辅助资源折叠
+
+- 仓库页标题收敛为“Skills 仓库”，Skill 管理器固定排在首位并提高主区域最小高度；硬件工程和参考代码降为默认折叠的辅助区，避免工程文件列表占满首屏。
+- 两个辅助区可独立展开/收起，标题行显示项目数量、方向和状态文字；提供 `aria-expanded` / `aria-controls`、完整标题行点击区域、焦点反馈及减少动态效果适配。
+- 工作台 smoke 新增信息层级断言：先确认 Skills 位于辅助资源之前、所有辅助区默认折叠，再展开第一个资源区并点击真实文件。
+- Electron typecheck、Renderer 生产构建、`git diff --check` 与隔离工作台 smoke 通过。
+- 关闭锁定旧 exe 的本项目成品进程后，Windows v1.0.0 已重新全量打包到原 `win-unpacked` 目录；发布校验通过，最终共 36,985 个文件、`4,382,268,476` 字节。
+
 ## 2026-07-25 — Windows v1.0.0 成品重建与文档漂移修正
 
 - Git 当前真相源统一记录为 remote `origin` = `git@github.com:NeilBaumanMax/Catnip-Forge.git`、分支 `main`；移除 README、进度和接力文档中把旧 `vibeide_Neil`、HTTPS、`electron_design` 或固定 HEAD 当作当前状态的表述。
 - 第一次 `pack:win` 虽由 electron-builder 返回成功，但 `verify:release` 发现随包 `resources/runtime/python/Scripts/python.exe` 缺失；根因是被 Git 忽略的 `_bundled/python` 仅剩 site-packages，没有 Python 核心文件。
 - 从本机已验证历史便携包恢复 Python 3.12.9 核心，确认 pyserial 3.5 后重新全量打包；打包脚本新增 Node、Python、pyserial 和 Playwright 前置检查，避免清空旧成品后生成运行时不完整的新目录。
-- 最终成品位于 `electron/dist-package/win-unpacked`，共 36,985 个文件、`4,382,265,192` 字节；`verify:version`、`verify:release`、无 Key 首启及保存测试 Key 后自动重启闭环均通过，测试 Key 与成品测试进程已清理。
+- 最终成品位于 `electron/dist-package/win-unpacked`，共 36,985 个文件、`4,382,268,476` 字节；`verify:version`、`verify:release`、无 Key 首启及保存测试 Key 后自动重启闭环均通过，测试 Key 与成品测试进程已清理。
 - 首启验证脚本新增 Renderer 异常详情输出，页面执行异常不再退化成缺少诊断信息的 `{}`。
 
 ## 2026-07-25 — Skill 正文插入交互与荧光标记
