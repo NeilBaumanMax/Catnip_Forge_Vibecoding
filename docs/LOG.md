@@ -8,7 +8,8 @@
 - 聊天框新增图片和文档多选、发送前附件卡片及历史恢复；附件由 Electron 主进程受控保存并绑定会话随机 ID。
 - Runtime MCP 新增附件检查、文字读取/搜索和 `vision.qwen_analyze`；Qwen Key 留在主进程，经随机令牌 loopback 桥接代发，调用进入现有“执行过程”。
 - 本地提取覆盖 TXT/Markdown/JSON、DOCX、PPTX 和简单文本型 PDF；本轮视觉只覆盖图片，复杂/扫描文档页面渲染、拖放、缓存与清理留待后续。
-- Runtime/Electron typecheck、Qwen 本地 mock、会话、任务队列、Skill 回归、Renderer 生产构建和 `git diff --check` 通过。未使用真实 Key、未上传真实文件、未执行 Windows 打包。
+- Runtime/Electron typecheck、Qwen 本地 mock、会话、任务队列、Skill 回归、Renderer 生产构建和 `git diff --check` 通过。未使用真实 Key、未上传真实文件。
+- 功能提交后按用户要求重建 `electron/dist-package/win-unpacked`；版本 `1.0.0.7201`，发布校验通过。发布门禁新增 Qwen Key 与附件桥接/MCP 文件检查，成品不含 DeepSeek/Qwen 真实 Key。
 
 ## 2026-07-25 — Agent 共享串口文档漂移修复
 

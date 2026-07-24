@@ -271,7 +271,7 @@ Runtime 对响应做大小限制和 schema 归一化。模型返回非 JSON 时�
 - 当前通过文件选择器添加附件，拖放交互尚未实现。
 - PDF 本地提取是轻量、尽力而为的文本解析，不替代完整排版引擎；复杂、加密或扫描 PDF 可能没有可用文字。
 - 尚未实现视觉结果缓存、附件随会话删除、存储管理界面以及生产配置页中的地域/Base URL 切换。
-- 本轮只通过本地 Qwen mock 验证请求与结构化响应，没有使用真实 API Key、没有发生真实云端上传，也没有进行 Windows 打包。
+- 本轮只通过本地 Qwen mock 验证请求与结构化响应，没有使用真实 API Key、没有发生真实云端上传。功能提交后已按用户要求重建 Windows `win-unpacked`，但尚未用真实 Qwen 服务做联网验收。
 
 本轮验证通过：
 
@@ -283,5 +283,8 @@ npm.cmd --prefix electron run verify:session
 npm.cmd --prefix electron run verify:task-queue
 npm.cmd --prefix electron run verify:skills
 npm.cmd --prefix electron run build:renderer
+npm.cmd --prefix electron run pack:win
+npm.cmd --prefix electron run verify:version
+npm.cmd --prefix electron run verify:release
 git diff --check
 ```

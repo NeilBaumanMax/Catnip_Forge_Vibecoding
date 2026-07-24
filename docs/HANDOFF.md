@@ -9,7 +9,7 @@
 - 内部工程代号：`vibeide`。
 - 当前本机工作目录：`E:\Agent\vibeide\vibeide`（Windows 实机）。
 - 当前远端真相源：remote `origin` = `git@github.com:NeilBaumanMax/Catnip-Forge.git`；当前施工分支：`qwen_vision_attachments`，基于 `main`。提交号和远端跟踪状态必须通过本地 Git 动态查询，不在接力文档中固化旧 HEAD。
-- 当前分支在既有主线之上增加 Qwen 视觉旁路和聊天附件第一阶段；DeepSeek 主开发模型不变。本轮维护本地 Git，不推送远端，也不执行 Windows 打包。
+- 当前分支在既有主线之上增加 Qwen 视觉旁路和聊天附件第一阶段；DeepSeek 主开发模型不变。本轮维护本地 Git、不推送远端，Windows `electron/dist-package/win-unpacked` 已从该分支重新构建。
 - 旧 GitHub/历史源：`git@github.com:howtion0/vibeide.git`、`git@github.com:howtio/vibeide.git` 仍可能出现在历史日志或迁移文档中，不再作为当前同步目标。
 
 ## 当前版本和验证
@@ -20,6 +20,7 @@
 - 首启窗口保存 Key 成功后必须保留“状态反馈 + 自动重启”链路：Renderer 显示正在重启，主进程 900ms 后 `app.relaunch()` 并走统一退出清理；不要恢复为需要用户手工重启的流程。
 - 首启现在同时显示 DeepSeek 必填 Key 与 Qwen 选填 Key。Qwen 留空或本地保存失败不能阻断 DeepSeek；`resources/qwen-apikey.txt` 只供 Electron 主进程使用，不得注入 Renderer、Agent 提示词、日志或 Git。
 - 聊天附件由 Electron 主进程复制到 runtime-data 的会话目录，以随机附件 ID 绑定当前会话；Runtime MCP 只能经本机随机令牌桥接读取。当前图片可按需调用 Qwen，PDF/DOCX/PPTX 先走本地文字提取；复杂文档页面视觉尚未实现。
+- 当前 `win-unpacked` 已通过 `verify:version` 与扩展后的 `verify:release`；发布门禁同时确认 DeepSeek/Qwen 真实 Key 均未打入成品，并检查附件主进程桥接与 Runtime MCP 文件确实随包。
 - `verify:first-run-restart` 查找 CDP 目标时必须使用主界面标题 `Catnip Forge ·`，不能只匹配 `Catnip Forge`，否则重启时会误连标题为“Catnip Forge — 启动中”的 Splash。
 - `main` 当前源码需以 Runtime/Electron typecheck、main/renderer build、Windows unpacked 打包和 `git diff --check` 作为提交门禁。当前版本已执行 Windows 打包、发布资源校验、无 Key 首启及自动重启闭环、MCP handshake、随包 Python、ESP-IDF 冷构建及 COM5 串口回归；真实 Agent 长时间连续对话仍需持续观察。
 - 启动阶段由独立 `splashWindow` 承接，主窗口必须保持 `show: false` 直到 `ready-to-show`。启动页从实际显示起至少保留约 5 秒，进度按一次性时间线平滑推进并封顶 94%；工作区、开发环境、Renderer 节点更新真实阶段文案，最终 100% 必须同时等待主窗口真实就绪。`assets/splash.html` 与三张 `splash-*.png` 必须随包，不能恢复循环假进度或在启动页之前闪现主窗口。

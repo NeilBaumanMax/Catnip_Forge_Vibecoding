@@ -24,6 +24,7 @@ const assistantGuide = fs.readFileSync(assistantGuidePath, 'utf-8');
 assert(assistantGuide.includes('# Catnip Forge 软件使用手册'), 'software assistant guide title drifted');
 assert(assistantGuide.includes('## 12. 回答边界'), 'software assistant guide is incomplete');
 assert(!fs.existsSync(path.join(resources, 'apikey.txt')), 'release must not contain a real apikey.txt');
+assert(!fs.existsSync(path.join(resources, 'qwen-apikey.txt')), 'release must not contain a real qwen-apikey.txt');
 const keyExample = fs.readFileSync(path.join(resources, 'apikey.txt.example'), 'utf-8');
 const keyLines = keyExample.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith('#'));
 assert.deepEqual(keyLines, ['DEEPSEEK_API_KEY=sk-your-key-here'], 'API key example must contain only the documented placeholder');
@@ -42,6 +43,8 @@ const required = [
   'runtime/python/Lib/site-packages/serial',
   'runtime/dist/index.js',
   'runtime/dist/mcp/server.js',
+  'runtime/dist/mcp/attachment.tool.js',
+  'runtime/dist/attachment/client.js',
   'runtime/playwright/chromium-1223',
   'runtime/hardboard/esptools/esp-idf-v5.4.3/esp-idf',
   'config/version.json',
@@ -61,6 +64,8 @@ for (const entry of [
   '\\assets\\splash-leaf.png',
   '\\assets\\splash-logo.png',
   '\\dist\\main\\skill-manager.js',
+  '\\dist\\main\\attachment-bridge.js',
+  '\\dist\\main\\attachment-store.js',
   '\\dist\\renderer\\index.html',
 ]) {
   assert(asarEntries.has(entry), `app.asar missing ${entry}`);
@@ -99,7 +104,8 @@ console.log(JSON.stringify({
   nodeVersion,
   python: `pyserial ${pythonResult}`,
   claudeVersion,
-  apiKeyBundled: false,
+  deepSeekApiKeyBundled: false,
+  qwenApiKeyBundled: false,
 }, null, 2));
 
 function run(command, args, cwd = packageRoot) {
