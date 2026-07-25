@@ -79,6 +79,7 @@ async function main() {
           welcome: popover?.querySelector('.software-assistant-message--assistant')?.textContent,
           textarea: Boolean(popover?.querySelector('textarea')),
           actionButtons: popover?.querySelectorAll('.software-assistant-actions button').length || 0,
+          onboardingButton: Boolean(popover?.querySelector('[aria-label="打开新手教程"]')),
           sizeAdjusted,
         };
       })()`,
@@ -89,7 +90,7 @@ async function main() {
     const rect = result?.rect;
     const inViewport = rect && rect.left >= 0 && rect.top >= 0
       && rect.right <= result.viewport.width && rect.bottom <= result.viewport.height;
-    if (!result?.triggerImageLoaded || !result?.fullBodyTrigger || !result?.popoverVisible || !result?.textarea || result?.actionButtons !== 5 || !result?.sizeAdjusted
+    if (!result?.triggerImageLoaded || !result?.fullBodyTrigger || !result?.popoverVisible || !result?.textarea || result?.actionButtons !== 6 || !result?.onboardingButton || !result?.sizeAdjusted
       || result?.title !== '猫薄荷' || !result?.welcome?.includes('Catnip Forge') || !inViewport) {
       throw new Error(`software assistant UI verification failed: ${JSON.stringify(result)}`);
     }

@@ -123,6 +123,8 @@ pytest tests/test_project.py
 - [接力开发文档](docs/HANDOFF.md)
 - [Hardboard 施工文档](docs/HARDBOARD_CONSTRUCTION.md)
 - [Electron Apple 风格界面施工文档](docs/ELECTRON_APPLE_UI_CONSTRUCTION.md)
+- [Qwen 视觉与聊天附件施工文档](docs/QWEN_VISION_ATTACHMENT_CONSTRUCTION.md)
+- [猫薄荷新手旅程施工文档](docs/CATNIP_ONBOARDING_CONSTRUCTION.md)
 - [开发进度](docs/DEV_PROGRESS.md)
 - [施工日志](docs/LOG.md)
 - [Windows 0.1 测试报告](docs/WINDOWS_0_1_TEST_REPORT.md)

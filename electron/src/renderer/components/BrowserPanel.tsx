@@ -852,10 +852,10 @@ export default function BrowserPanel({
   return (
     <div className={`browser-panel browser-panel--${mode} nes-container is-rounded`}>
       <div className="workbench-mode-tabs nes-container is-dark" role="tablist" aria-label="工作区视图">
-        <button type="button" role="tab" aria-selected={mode === 'repo'} className={`nes-btn${mode === 'repo' ? ' is-primary' : ''}`} onClick={() => setMode('repo')}>仓库</button>
-        <button type="button" role="tab" aria-selected={mode === 'monitor'} className={`nes-btn${mode === 'monitor' ? ' is-primary' : ''}`} onClick={() => setMode('monitor')}>监视器</button>
-        <button type="button" role="tab" aria-selected={mode === 'tasks'} className={`nes-btn${mode === 'tasks' ? ' is-primary' : ''}`} onClick={() => setMode('tasks')}>任务管理器</button>
-        <button type="button" role="tab" aria-selected={mode === 'editor'} className={`nes-btn${mode === 'editor' ? ' is-primary' : ''}`} onClick={() => setMode('editor')}>编辑器</button>
+        <button data-tour-id="tab-repo" type="button" role="tab" aria-selected={mode === 'repo'} className={`nes-btn${mode === 'repo' ? ' is-primary' : ''}`} onClick={() => setMode('repo')}>仓库</button>
+        <button data-tour-id="tab-monitor" type="button" role="tab" aria-selected={mode === 'monitor'} className={`nes-btn${mode === 'monitor' ? ' is-primary' : ''}`} onClick={() => setMode('monitor')}>监视器</button>
+        <button data-tour-id="tab-tasks" type="button" role="tab" aria-selected={mode === 'tasks'} className={`nes-btn${mode === 'tasks' ? ' is-primary' : ''}`} onClick={() => setMode('tasks')}>任务管理器</button>
+        <button data-tour-id="tab-editor" type="button" role="tab" aria-selected={mode === 'editor'} className={`nes-btn${mode === 'editor' ? ' is-primary' : ''}`} onClick={() => setMode('editor')}>编辑器</button>
         <span className="ui-build-label">{UI_BUILD_LABEL}</span>
       </div>
 
@@ -939,11 +939,13 @@ export default function BrowserPanel({
       ) : null}
 
       {mode === 'repo' ? (
-        <WorkspacePanel overview={workbench} onRefresh={onRefreshWorkbench} onOpenItem={onOpenWorkbenchItem} onEditItem={handleEditWorkbenchItem} />
+        <div className="tour-panel-fill" data-tour-id="panel-repo">
+          <WorkspacePanel overview={workbench} onRefresh={onRefreshWorkbench} onOpenItem={onOpenWorkbenchItem} onEditItem={handleEditWorkbenchItem} />
+        </div>
       ) : null}
 
       {mode === 'monitor' ? (
-        <div className="serial-monitor serial-assistant">
+        <div className="serial-monitor serial-assistant" data-tour-id="panel-monitor">
           <div className="serial-assistant-main">
             <fieldset className="serial-box serial-receive-box">
               <legend>接收区</legend>
@@ -1033,14 +1035,14 @@ export default function BrowserPanel({
       ) : null}
 
       {mode === 'tasks' ? (
-        <div className="task-manager-panel">
+        <div className="task-manager-panel" data-tour-id="panel-tasks">
           <div className="task-manager-compile">
             <div className="compile-workbench-title nes-container is-dark">
               <strong>硬件编译/烧录任务 · {UI_BUILD_LABEL}</strong>
               <span>{runtimeState ? `${runtimeState.phase} / ${runtimeState.status}` : 'eventbus idle'}</span>
             </div>
             <div className="compile-control-grid">
-              <div className="compile-control-row compile-control-row--build nes-container is-rounded">
+              <div className="compile-control-row compile-control-row--build nes-container is-rounded" data-tour-id="task-build-controls">
                 <strong>Build</strong>
                 <button className="nes-btn compile-refresh-button" type="button" onClick={onRefreshWorkbench}>刷新工程</button>
                 <select className="nes-select project-select" value={projectDir} onChange={(e) => setProjectDir(e.target.value)}>
@@ -1055,7 +1057,7 @@ export default function BrowserPanel({
                 </span>
                 <div className="runtime-progress compile-row-progress"><span style={{ width: `${runtimeState?.phase === 'build' ? Math.max(0, Math.min(100, progressValue)) : 0}%` }} /></div>
               </div>
-              <div className="compile-control-row compile-control-row--flash nes-container is-rounded">
+              <div className="compile-control-row compile-control-row--flash nes-container is-rounded" data-tour-id="task-flash-controls">
                 <strong>Flash</strong>
                 <button className="nes-btn" type="button" onClick={onRefreshHardboardDevices}>刷新设备</button>
                 <select className="nes-select" value={selectedPort} onChange={(e) => { setSelectedDevicePort(e.target.value); setSerialPort(e.target.value); }}>
@@ -1124,7 +1126,7 @@ export default function BrowserPanel({
                 ) : null}
               </section>
             ) : null}
-            <section className="task-history-panel nes-container is-rounded">
+            <section className="task-history-panel nes-container is-rounded" data-tour-id="task-results">
               <header className="task-history-header">
                 <strong>最近任务与结果</strong>
                 <div className="task-history-header-actions">
@@ -1162,7 +1164,7 @@ export default function BrowserPanel({
       ) : null}
 
       {mode === 'editor' ? (
-        <div className="editor-panel">
+        <div className="editor-panel" data-tour-id="panel-editor">
           <aside className="editor-explorer nes-container is-rounded">
             <header className="editor-explorer-header">
               <div>
@@ -1324,7 +1326,7 @@ export default function BrowserPanel({
             />
             <div className="editor-footer">
               <div className="editor-status">{activeEditorTab?.message || '还没有打开文件。'}</div>
-              <div className="editor-font-controls" aria-label="编辑器字体大小">
+              <div className="editor-font-controls" data-tour-id="editor-font-controls" aria-label="编辑器字体大小">
                 <span>字体</span>
                 <button type="button" title="减小字体" onClick={() => setEditorFontSize((current) => Math.max(EDITOR_FONT_SIZE_MIN, current - 1))} disabled={editorFontSize <= EDITOR_FONT_SIZE_MIN}>−</button>
                 <strong>{editorFontSize}px</strong>

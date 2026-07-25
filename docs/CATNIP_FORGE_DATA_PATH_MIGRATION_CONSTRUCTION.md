@@ -77,5 +77,5 @@ Electron 默认会根据 `package.json.name` 计算 `userData`。当前主进程
 - Hardboard 当前短路径改为 `C:\Catnip_Forge\hardboard`；仅在旧路径确认为 junction 时做安全清理，普通目录不删除。
 - 新增 `npm.cmd --prefix electron run verify:data-paths`，使用隔离临时 `appData` 验证旧会话/附件迁移、瞬时文件过滤、重复启动不覆盖、bootstrap 主入口和 Hardboard 新路径。
 - Runtime/Electron typecheck 与专项路径测试通过。
-- 已按用户要求完整重建 `electron/dist-package/win-unpacked`；`verify:version`、`verify:release` 均通过，成品共 36,991 个文件、`4,382,346,009` 字节。
+- 路径迁移落地时已完整重建 `electron/dist-package/win-unpacked`；当时 `verify:version`、`verify:release` 均通过，成品共 36,991 个文件、`4,382,346,009` 字节。该数字是路径迁移阶段快照，不代表后续功能重打包后的当前体积；当前成品以 `HANDOFF.md` 顶部和 `WINDOWS_V1_0_0_RELEASE_CHECKLIST.md` 最新记录为准。
 - 隐藏启动成品 EXE 后，Electron 子进程参数确认使用 `--user-data-dir="%APPDATA%\@Catnip_Forge\electron"`；测试进程与临时目录已清理。

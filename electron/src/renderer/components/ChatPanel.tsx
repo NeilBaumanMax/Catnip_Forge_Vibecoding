@@ -489,7 +489,7 @@ export default function ChatPanel({
 
   return (
     <div className={`chat-panel nes-container is-rounded${historyCollapsed ? ' chat-panel--history-collapsed' : ''}`}>
-      <aside className="chat-history" aria-label="历史对话">
+      <aside className="chat-history" data-tour-id="chat-history" aria-label="历史对话">
         <div className="chat-history-header">
           <div className="chat-history-brand" title="Catnip Forge · Catnip 硬件智能开发平台">
             <img src={catnipForgeIcon} alt="" aria-hidden="true" />
@@ -584,6 +584,7 @@ export default function ChatPanel({
           <button
             type="button"
             className={`chat-professional-toggle${professionalView ? ' is-active' : ''}`}
+            data-tour-id="professional-view"
             aria-pressed={professionalView}
             title="开启后自动展开每轮任务的工具、状态与诊断信息"
             onClick={() => setProfessionalView((current) => !current)}
@@ -633,7 +634,7 @@ export default function ChatPanel({
         })}
         <div ref={bottomRef} />
       </div>
-      <form className="chat-input" onSubmit={handleSubmit}>
+      <form className="chat-input" data-tour-id="agent-composer" onSubmit={handleSubmit}>
         {attachments.length ? <AttachmentCards attachments={attachments} removable onRemove={(id) => setAttachments((current) => current.filter((item) => item.id !== id))} /> : null}
         {attachmentError ? <div className="chat-attachment-error" role="alert">{attachmentError}</div> : null}
         <div
@@ -713,6 +714,7 @@ export default function ChatPanel({
         <div className="chat-input-actions">
           <button
             className="chat-attachment-button nes-btn"
+            data-tour-id="attachment-button"
             type="button"
             disabled={attachmentPicking || !activeConversationId || attachments.length >= 6}
             title="添加图片、PDF、Word、PPT 或文本附件"
@@ -737,6 +739,7 @@ export default function ChatPanel({
           <div className="chat-skill-picker-wrap" ref={skillPickerRef}>
             <button
               className={`chat-skill-button nes-btn${skillPickerOpen ? ' is-active' : ''}`}
+              data-tour-id="skill-button"
               type="button"
               aria-haspopup="listbox"
               aria-expanded={skillPickerOpen}

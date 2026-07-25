@@ -66,7 +66,15 @@ git diff --check
 
 2026-07-25 从 `main` 重新全量生成最终成品：目录共 36,985 个文件、`4,382,268,512` 字节，入口 `Catnip Forge.exe` 的 PE 版本为 `1.0.0.7201`。`verify:version`、`verify:release`、`verify:first-run` 和 `verify:first-run-restart` 均通过；Node `v22.14.0`、Python 3.12.9/pyserial `3.5`、Claude Code `2.1.167`、Playwright 与 12 个目录型 Skills 完整，无真实 API Key。首启及保存一次性测试 Key 后自动重启闭环通过，测试 Key 和全部成品测试进程已清理。打包入口同时增加 `_bundled` 前置校验，缺少 Node、Python、pyserial 或 Playwright 时会在清理旧成品前失败；仓库页后续更新为 Skills 优先、硬件工程与参考代码默认折叠并同步开合，已重新打入同一成品目录。
 
-2026-07-25 从 `qwen_vision_attachments` 再次完整重建当前成品：目录共 36,991 个文件、`4,382,346,009` 字节，PE 版本仍为 `1.0.0.7201`。`verify:version` 与扩展后的 `verify:release` 通过，DeepSeek/Qwen 真实 Key 均未入包，Qwen 附件桥接、Runtime MCP、Electron bootstrap 和 Catnip user-data path 文件均已随包。隐藏启动确认 Electron 使用 `%APPDATA%\@Catnip_Forge\electron`；本轮未使用真实 Qwen Key，测试进程和临时目录均已清理。
+2026-07-25 从 `qwen_vision_attachments` 再次完整重建当前成品：目录共 36,991 个文件、`4,382,346,009` 字节，PE 版本仍为 `1.0.0.7201`。`verify:version` 与扩展后的 `verify:release` 通过，DeepSeek/Qwen 真实 Key 均未入包，Qwen 附件桥接、Runtime MCP、Electron bootstrap 和 Catnip user-data path 文件均已随包。隐藏启动确认 Electron 使用 `%APPDATA%\@Catnip_Forge\electron`；自动打包与发布门禁未使用真实 Qwen Key，测试进程和临时目录均已清理。随后用户在当前界面自行配置真实服务，以两张 PNG 图片完成 `qwen-vl-plus` 联网识别，工具事件、结构化视觉证据和 Agent 主回答引用均正常，图片视觉主闭环通过人工验收；真实 Key 仍只保存在用户本地且不属于发布包。
+
+2026-07-25 猫薄荷新手旅程 v2 与顶部“？”重播入口落地后再次全量重建当前成品：共 36,989 个文件，`verify:release` 记录总大小为 `4,382,362,210` 字节，PE 版本仍为 `1.0.0.7201`；`verify:version`、发布资源校验、10 个稳定引导目标专项断言和隔离 Chromium 完整 UI 流程均通过。成品包含首次邀请、12 步离线导览、完成持久化和顶部功能栏重播，不包含 DeepSeek/Qwen 真实 Key。
+
+2026-07-25 按真实界面反馈将旅程升级为 v3 详细版并再次全量重建：当前成品共 36,989 个文件，`verify:release` 记录总大小为 `4,382,366,713` 字节，PE 版本仍为 `1.0.0.7201`。20 个稳定聚光目标、23 步完整 UI 流程、完成持久化、顶部“？”重播与 “One Prompt, Working Hardware” 完成页均通过；成品不包含 DeepSeek/Qwen 真实 Key。
+
+2026-07-25 全屏人工测试反馈修复后升级为 v4 并再次全量重建：当前成品共 36,989 个文件，`verify:release` 记录总大小为 `4,382,367,369` 字节，PE 版本仍为 `1.0.0.7201`。隔离 Chromium 流程真实收起 Agent 后确认聚光框跟随新坐标，后续步骤自动恢复 Agent 与猫薄荷面板且不显示黄色跳过提示；教程正文、标题和猫薄荷形象已放大。成品不包含 DeepSeek/Qwen 真实 Key。
+
+2026-07-25 第 22 步助手被再次关闭导致恢复停滞的问题修复后升级为 v5，并在同步用户手册后完成最终全量重建：当前成品共 36,991 个文件，`verify:release` 记录总大小为 `4,382,367,589` 字节，PE 版本仍为 `1.0.0.7201`。受管理教程目标现会在步骤停留期间持续恢复；隔离 Chromium 流程主动关闭猫薄荷助手后确认面板、高亮和教程操作均自动恢复。成品不包含 DeepSeek/Qwen 真实 Key。
 
 ## 使用边界
 

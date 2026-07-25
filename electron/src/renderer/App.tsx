@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ChatPanel from './components/ChatPanel';
 import BrowserPanel from './components/BrowserPanel';
+import CatnipOnboarding from './components/CatnipOnboarding';
 import MarkdownContent from './components/MarkdownContent';
 import catnipForgeIcon from './assets/catnip-forge.png';
 import catnipAssistantImage from './assets/catnip-assistant.png';
@@ -16,6 +17,7 @@ const MIN_ASSISTANT_SIZE = 96;
 const MAX_ASSISTANT_SIZE = 208;
 const ASSISTANT_SIZE_STEP = 16;
 const APPEARANCE_EDGE_GAP = 12;
+const ONBOARDING_SMOKE_MODE = new URLSearchParams(window.location.search).has('onboardingSmoke');
 const IDLE_TASK_STATUS: AgentTaskStatus = { busy: false, paused: false, activeTaskId: null, activeTask: null, queueLength: 0, guidanceCount: 0 };
 const ASSISTANT_WELCOME: SoftwareAssistantMessage = {
   id: 'welcome',
@@ -164,6 +166,7 @@ export default function App() {
   const [startupApiKeyError, setStartupApiKeyError] = useState('');
   const [startupApiKeySaving, setStartupApiKeySaving] = useState(false);
   const [startupApiKeyRestarting, setStartupApiKeyRestarting] = useState(false);
+  const [onboardingStartRequest, setOnboardingStartRequest] = useState(0);
   const workbenchSmokeTriggered = useRef(false);
   const activeConversationIdRef = useRef('');
   const appearanceSettingsRef = useRef<HTMLDivElement>(null);
@@ -362,6 +365,19 @@ export default function App() {
       });
       return next;
     });
+  }, []);
+
+  const handleOnboardingStart = useCallback(() => {
+    setLeftPanelCollapsed(false);
+    setAppearanceMenuOpen(false);
+  }, []);
+
+  const handleOnboardingEnsureAgentOpen = useCallback(() => {
+    setLeftPanelCollapsed(false);
+  }, []);
+
+  const handleOnboardingEnsureAssistantOpen = useCallback(() => {
+    setAppearanceMenuOpen(true);
   }, []);
 
   const handleDividerPointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
@@ -780,7 +796,7 @@ export default function App() {
         style={{ '--left-panel-width': `${leftPanelWidth}%` } as React.CSSProperties}
       >
         {!leftPanelCollapsed ? (
-          <div className="left-panel">
+          <div className="left-panel" data-tour-id="agent-workspace">
             <ChatPanel
               messages={messages}
               steps={steps}
@@ -812,6 +828,7 @@ export default function App() {
         >
           <button
             className="panel-divider-toggle"
+            data-tour-id="agent-panel-toggle"
             type="button"
             title={leftPanelCollapsed ? '展开对话区' : '收起对话区'}
             aria-label={leftPanelCollapsed ? '展开对话区' : '收起对话区'}
@@ -894,6 +911,13 @@ export default function App() {
           </form>
         </div>
       ) : null}
+      <CatnipOnboarding
+        enabled={Boolean(ONBOARDING_SMOKE_MODE || (startupStatus && !startupStatus.firstRun && !window.electronAPI?.isWorkbenchSmokeTest))}
+        startRequest={onboardingStartRequest}
+        onStart={handleOnboardingStart}
+        onEnsureAgentOpen={handleOnboardingEnsureAgentOpen}
+        onEnsureAssistantOpen={handleOnboardingEnsureAssistantOpen}
+      />
       <div
         className={`appearance-settings${appearanceDragging ? ' is-dragging' : ''}${appearancePosition.x < 382 ? ' opens-right' : ''}${appearancePosition.y < 520 ? ' opens-down' : ''}`}
         ref={appearanceSettingsRef}
@@ -909,6 +933,17 @@ export default function App() {
               <div className="software-assistant-actions" role="group" aria-label="助手与外观设置">
                 <button type="button" className={appearanceTheme === 'light' ? 'is-selected' : ''} onClick={() => setAppearanceTheme('light')} title="浅色模式" aria-label="切换到浅色模式">☀</button>
                 <button type="button" className={appearanceTheme === 'dark' ? 'is-selected' : ''} onClick={() => setAppearanceTheme('dark')} title="深色模式" aria-label="切换到深色模式">☾</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAppearanceMenuOpen(false);
+                    setOnboardingStartRequest((current) => current + 1);
+                  }}
+                  title="新手教程：带我认识 Catnip Forge"
+                  aria-label="打开新手教程"
+                >
+                  ?
+                </button>
                 <button type="button" disabled={assistantSize <= MIN_ASSISTANT_SIZE} onClick={() => resizeSoftwareAssistant(-ASSISTANT_SIZE_STEP)} title="缩小猫薄荷" aria-label="缩小猫薄荷">−</button>
                 <button type="button" disabled={assistantSize >= MAX_ASSISTANT_SIZE} onClick={() => resizeSoftwareAssistant(ASSISTANT_SIZE_STEP)} title="放大猫薄荷" aria-label="放大猫薄荷">＋</button>
                 <button type="button" onClick={() => setAppearanceMenuOpen(false)} title="关闭助手" aria-label="关闭助手">×</button>
@@ -947,6 +982,7 @@ export default function App() {
         ) : null}
         <button
           className={`appearance-settings-trigger${appearanceMenuOpen ? ' is-open' : ''}`}
+          data-tour-id="assistant-trigger"
           type="button"
           title="猫薄荷软件助手（可拖动）"
           aria-label="打开猫薄荷软件助手"

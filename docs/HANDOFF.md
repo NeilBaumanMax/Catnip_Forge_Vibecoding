@@ -21,14 +21,15 @@
 - 首启现在同时显示 DeepSeek 必填 Key 与 Qwen 选填 Key。Qwen 留空或本地保存失败不能阻断 DeepSeek；`resources/qwen-apikey.txt` 只供 Electron 主进程使用，不得注入 Renderer、Agent 提示词、日志或 Git。
 - 聊天附件由 Electron 主进程复制到 runtime-data 的会话目录，以随机附件 ID 绑定当前会话；Runtime MCP 只能经本机随机令牌桥接读取。当前图片可按需调用 Qwen，PDF/DOCX/PPTX 先走本地文字提取；复杂文档页面视觉尚未实现。
 - 当前 `win-unpacked` 已在客户路径迁移实现后完整重建，并通过 `verify:version` 与扩展后的 `verify:release`；发布门禁同时确认 DeepSeek/Qwen 真实 Key 均未打入成品，并检查附件主进程桥接、Runtime MCP、bootstrap 与 user-data path 文件确实随包。
-- 2026-07-25 成品共 36,991 个文件、`4,382,346,009` 字节；隐藏启动时 Electron 子进程参数确认 `--user-data-dir` 指向 `%APPDATA%\@Catnip_Forge\electron`，测试进程已清理。
+- 2026-07-25 猫薄荷新手旅程 v5 修复版及同步用户手册落地后已再次全量重建成品，共 36,991 个文件，`verify:release` 记录总大小为 `4,382,367,589` 字节；PE 版本仍为 `1.0.0.7201`，DeepSeek/Qwen 真实 Key 均未入包。此前隐藏启动已确认 Electron 子进程参数使用 `%APPDATA%\@Catnip_Forge\electron`。
 - `verify:first-run-restart` 查找 CDP 目标时必须使用主界面标题 `Catnip Forge ·`，不能只匹配 `Catnip Forge`，否则重启时会误连标题为“Catnip Forge — 启动中”的 Splash。
-- 当前施工分支源码需以 Runtime/Electron typecheck、main/renderer build、Windows unpacked 打包和 `git diff --check` 作为提交门禁。当前版本已执行 Windows 打包与发布资源校验；无 Key 首启及自动重启闭环、MCP handshake、随包 Python、ESP-IDF 冷构建及 COM5 串口回归来自同版本既有基线验证，真实 Qwen 联网服务和 Agent 长时间连续对话仍需持续观察。
+- 当前施工分支源码需以 Runtime/Electron typecheck、main/renderer build、Windows unpacked 打包和 `git diff --check` 作为提交门禁。当前版本已执行 Windows 打包与发布资源校验；无 Key 首启及自动重启闭环、MCP handshake、随包 Python、ESP-IDF 冷构建及 COM5 串口回归来自同版本既有基线验证。2026-07-25 用户已在当前界面使用真实 Qwen 服务完成两张 PNG 图片的联网识别，`qwen-vl-plus` 返回的结构化证据进入 Agent“执行过程”并被主回答采用，图片视觉主闭环可记为实测通过；复杂文档页面视觉、真实服务异常场景和 Agent 长时间连续对话仍需持续观察。
 - 启动阶段由独立 `splashWindow` 承接，主窗口必须保持 `show: false` 直到 `ready-to-show`。启动页从实际显示起至少保留约 5 秒，进度按一次性时间线平滑推进并封顶 94%；工作区、开发环境、Renderer 节点更新真实阶段文案，最终 100% 必须同时等待主窗口真实就绪。`assets/splash.html` 与三张 `splash-*.png` 必须随包，不能恢复循环假进度或在启动页之前闪现主窗口。
 - 当前主题不再持续跟随 Windows/Electron 的 `prefers-color-scheme`。首次无记录时读取一次系统偏好，之后由“猫薄荷”助手标题栏选择并持久化；助手位置也独立持久化，可拖动避开编辑器字号工具条。
 - “猫薄荷”是独立的软件使用帮助通道：复用 `resources/apikey.txt`，直接调用 DeepSeek Chat Completions，不得改为占用左侧硬件 Agent 队列。系统提示只允许解释 Catnip Forge 操作，真实编译/烧录/文件修改必须引导到左侧 Agent。
 - 猫薄荷的软件事实来源是源码 `electron/CATNIP_FORGE_USER_GUIDE.md`，发布后位于 `resources/CATNIP_FORGE_USER_GUIDE.md`。每次提问重新读取且不缓存；维护发布版手册可立即生效，但正式改版必须同步源码母版。固定权限和密钥安全规则优先于手册，文件缺失或为空时必须降级为“不确定”，不得恢复硬编码功能清单。
 - 悬浮入口必须使用 `catnip-assistant.png` 的透明全身形象完整呈现：默认 144px、`object-fit: contain`、无圆形背景与头像式裁切；角色本体承担点击和拖动入口。标题栏“− / ＋”以 16px 调节至 96–208px，尺寸写入 `vibeide.assistant.size`。
+- 猫薄荷新手旅程在首次配置完成后提供 v5 的 23 步详细离线导览，以稳定 `data-tour-id` 聚光讲解 Agent、仓库、Build/Flash、编辑器、历史对话和猫薄荷设置；不调用模型、不修改文件、不编译烧录或连接串口。进入 Agent/助手相关步骤会自动恢复所需面板，步骤停留期间目标再次消失也会持续恢复，受管理目标不能显示黄色跳过提示，聚光框逐帧跟随布局变化。状态写入 `vibeide.onboarding.catnipJourney`，旧 v1/v2/v3/v4 状态会被忽略，助手顶部“？”可随时重播。
 - Windows packaged 工作台资源不得用 `win-unpacked/<资源>` 手工拼接：Skills 通过 `getAgentDir()` 指向 `resources/agent/skills`，文档和硬件分别通过 `getResourcesDir()` / `getHardboardDir()` 解析。工作台允许范围是明确仓库，不包含整个安装根目录。
 - `resources/agent/skills` 是唯一用户维护源仓库；`skill-manager.ts` 在 Agent 启动前把它标准化部署到用户数据下的 `agent-workspace/.claude/skills`。仓库页 Skill 管理器负责 CRUD/同步，不能把源路径改到 `%APPDATA%`。
 - 仓库页当前以 Skills 为主：Skill 管理器固定在首位，硬件工程与参考代码作为双栏组默认折叠并共享开合状态；点击任意标题行都必须同步更新两栏的项目内容、方向和 `aria-expanded`，展开后两栏同时显示路径、打开目录入口与文件列表。
@@ -68,7 +69,7 @@
 - `奥德赛0.4.0.7161.exe` PE 元数据：`ProductName=奥德赛0.4.0.7161`、`FileVersion=0.4.0.7161`、`ProductVersion=0.4.0.7161`
 - 本轮尚未重新执行 exe 启动和 ESP32-S3 实机闭环，详见 `docs/WINDOWS_0_4_0_7161_TEST_REPORT.md`
 
-下方各版本和早期 1.0.0-7201 记录均为历史验证事实；当前成品真相以本文“当前版本和验证”小节及 `CATNIP_FORGE_DATA_PATH_MIGRATION_CONSTRUCTION.md` 为准。
+下方各版本和早期 1.0.0-7201 记录均为历史验证事实；当前成品真相以本文“当前版本和验证”小节及 `WINDOWS_V1_0_0_RELEASE_CHECKLIST.md` 最新记录为准。`CATNIP_FORGE_DATA_PATH_MIGRATION_CONSTRUCTION.md` 中的体积仅是路径迁移阶段快照。
 
 历史已通过（Windows v1.0.0 `main` 基线成品重建，2026-07-25）：
 

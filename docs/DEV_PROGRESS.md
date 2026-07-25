@@ -13,7 +13,7 @@
 ## 当前已落地
 
 - [x] 在 `qwen_vision_attachments` 分支完成 Qwen 视觉旁路与聊天附件第一阶段：DeepSeek 主开发模型保持不变，首启 Qwen Key 同屏选填；聊天支持图片/PDF/DOCX/PPTX/文本附件，Runtime MCP 可本地读取/搜索并按需调用 `vision.qwen_analyze`，调用状态进入 Agent“执行过程”
-- [x] 附件采用 Electron 主进程受控存储和会话绑定随机 ID；Qwen Key 只在主进程经随机令牌 loopback 桥接使用。离线 mock、Runtime/Electron typecheck、会话/队列/Skill 回归、Renderer 生产构建和 Windows 完整打包通过；真实 Qwen 联网服务与复杂文档页面视觉尚未验收
+- [x] 附件采用 Electron 主进程受控存储和会话绑定随机 ID；Qwen Key 只在主进程经随机令牌 loopback 桥接使用。离线 mock、Runtime/Electron typecheck、会话/队列/Skill 回归、Renderer 生产构建和 Windows 完整打包通过；2026-07-25 用户又以两张 PNG 图片完成真实 `qwen-vl-plus` 联网识别，识别结果进入 Agent“执行过程”并被主回答采用。图片视觉主闭环已实测通过，复杂/扫描文档页面视觉与真实服务异常场景尚未验收
 - [x] 新增 Catnip Forge 品牌启动界面：三张透明素材完整落地，工作区、开发环境、Renderer 与主窗口 ready 节点驱动真实阶段进度，完成后自动切换主窗口
 - [x] 新增启动页 CDP 烟测 `npm.cmd --prefix electron run verify:splash-ui`，覆盖素材加载、双语文案、系统字体栈、进度更新、窗口边界和截图验收
 - [x] 启动页改为从实际显示起至少保留约 5 秒，进度条逐帧平滑推进至 94%，并与主窗口真实 `ready-to-show` 双门槛协调后完成至 100%
@@ -51,6 +51,10 @@
 - [x] 猫薄荷悬浮入口改用透明全身素材，移除圆形底板、头像裁切和局部放大；角色本体完整显示，默认贴近右下角
 - [x] 助手标题栏在深浅模式旁新增缩小/放大按钮，支持 96–208px、16px 分级和尺寸持久化；默认尺寸提升为 144px
 - [x] 新增软件助手 CDP 界面烟测：`npm.cmd --prefix electron run verify:software-assistant-ui`，覆盖形象加载、浮层边界、欢迎语、输入框和主题操作按钮
+- [x] “猫薄荷新手旅程”升级为 v5 的 23 步详细离线导览：逐项解释 Skill 管理、硬件工程/参考代码、Build/Flash 顺序、执行结果、编辑器分栏与字号、历史对话、专业视图、附件、多个 Skill 和猫薄荷设置；进入 Agent/助手相关步骤会自动恢复所需面板，步骤停留期间受管理目标消失也会持续恢复，聚光框逐帧跟随布局；支持稍后提醒、永久关闭、完成持久化、键盘/减少动态效果，并可从助手顶部“？”重播；旧 v1/v2/v3/v4 记录不会阻挡修复版邀请
+- [x] 新增 `npm.cmd --prefix electron run verify:onboarding`，校验 10 个稳定 `data-tour-id`、离线安全承诺、状态持久化、重播入口、缺失目标降级及辅助功能规则
+- [x] 新增隔离 Chromium 界面烟测 `npm.cmd --prefix electron run verify:onboarding-ui`，不读取真实 Key、不调用云端，实际走完首次邀请、四页面点击、完成状态和助手内重播
+- [x] 新手旅程 v5、20 个聚光目标、23 步详细说明和持续面板恢复修复已重新全量打入 Windows `win-unpacked`；`verify:version`、`verify:release` 和包含“第 22 步关闭助手后自动恢复”的完整 UI 流程通过，成品为 `1.0.0.7201`、36,991 个文件，发布校验统计 `4,382,367,589` 字节，且不含 DeepSeek/Qwen 真实 Key
 - [x] 内置串口助手采用左侧收发、右侧配置布局，支持完整串口参数、文本/HEX 双向收发、编码与行尾控制；无用数值趋势图已删除，并适配整体浅色/深色材质
 - [x] Windows 串口设备 CIM 枚举失败时自动回退到随包 `pyserial`，COM5 中文设备名、打开和关闭释放已完成打包版验证
 - [x] Windows ESP-IDF 和串口统一使用 `resources/runtime/python/Scripts/python.exe`；旧 `esptools/idf-tools/python_env` 不再进入安装包，隔离模式由 `sitecustomize.py` 恢复脚本目录导入

@@ -23,13 +23,14 @@
 17. [WINDOWS_V1_0_0_RELEASE_CHECKLIST](WINDOWS_V1_0_0_RELEASE_CHECKLIST.md)：v1.0.0 便携包版本映射、API Key 首启、随包资源和分发验收清单。
 18. [SPLASH_SCREEN_CONSTRUCTION](SPLASH_SCREEN_CONSTRUCTION.md)：品牌启动页的视觉、真实加载阶段、双窗口切换、打包路径和验收基线。
 19. [SOFTWARE_ASSISTANT_GUIDE_CONSTRUCTION](SOFTWARE_ASSISTANT_GUIDE_CONSTRUCTION.md)：猫薄荷可维护 Markdown 知识手册、动态提示词、安全降级和发布验收基线。
-20. [LEGACY_WEB_AUTOMATION_CONSTRUCTION](LEGACY_WEB_AUTOMATION_CONSTRUCTION.md)：旧网页录制/回放、爬虫、隐藏工作台与 Python `coddecat` scaffold 的冻结保留边界。
+20. [CATNIP_ONBOARDING_CONSTRUCTION](CATNIP_ONBOARDING_CONSTRUCTION.md)：猫薄荷首次邀请、聚光交互、四主页面导览、持久化重播和离线安全边界。
+21. [LEGACY_WEB_AUTOMATION_CONSTRUCTION](LEGACY_WEB_AUTOMATION_CONSTRUCTION.md)：旧网页录制/回放、爬虫、隐藏工作台与 Python `coddecat` scaffold 的冻结保留边界。
 
-## 现有历史文档
+## 专项与历史文档
 
-- [Agent 完全控制串口监视器](SERIAL_MONITOR_AGENT_CONTROL_CONSTRUCTION.md)：共享串口会话、本机鉴权桥接、Agent MCP 工具、UI 同步和无硬件测试边界。
-- [Qwen 视觉与聊天附件](QWEN_VISION_ATTACHMENT_CONSTRUCTION.md)：DeepSeek 主 Agent 不变、Qwen 视觉旁路、双 Key 首启、附件 MCP、执行过程和无真实 Key 测试边界。
-- [Catnip Forge 客户数据路径迁移](CATNIP_FORGE_DATA_PATH_MIGRATION_CONSTRUCTION.md)：把客户电脑上的应用数据与 Hardboard 短路径统一为 `@Catnip_Forge` / `C:\Catnip_Forge`，并保留旧数据安全迁移。
+- [Agent 完全控制串口监视器](SERIAL_MONITOR_AGENT_CONTROL_CONSTRUCTION.md)：当前共享串口会话、本机鉴权桥接、Agent MCP 工具、UI 同步和无硬件测试边界。
+- [Qwen 视觉与聊天附件](QWEN_VISION_ATTACHMENT_CONSTRUCTION.md)：当前 DeepSeek 主 Agent、Qwen 视觉旁路、双 Key 首启、附件 MCP、执行过程和真实图片验收边界。
+- [Catnip Forge 客户数据路径迁移](CATNIP_FORGE_DATA_PATH_MIGRATION_CONSTRUCTION.md)：当前客户数据路径与 Hardboard 短路径规则，以及旧数据安全迁移。
 
 - [DEV_PROGRESS](DEV_PROGRESS.md)：历史开发进度，仍有参考价值。
 - [LOG](LOG.md)：持续施工日志，记录各阶段的关键变更、验证和 Git 边界。

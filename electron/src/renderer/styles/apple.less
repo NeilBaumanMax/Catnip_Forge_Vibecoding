@@ -838,7 +838,7 @@ body.is-resizing-panels .panel-divider::before {
   position: relative;
   min-height: 64px;
   max-height: 320px;
-  overflow: hidden;
+  overflow: auto;
   background: var(--ui-control-bg);
   border-radius: 9px;
 }
@@ -2684,6 +2684,312 @@ select.nes-select {
 
 .appearance-settings.opens-right.opens-down .appearance-popover {
   transform-origin: left top;
+}
+
+/* Catnip onboarding: a non-destructive, anchored journey that keeps the
+   highlighted control directly interactive. */
+.tour-panel-fill {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.catnip-onboarding-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  pointer-events: none;
+}
+
+.catnip-onboarding-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 10, 18, 0.52);
+  backdrop-filter: blur(2px);
+}
+
+.catnip-onboarding-spotlight {
+  position: fixed;
+  border: 2px solid color-mix(in srgb, var(--ui-accent) 78%, white);
+  border-radius: 15px;
+  box-shadow:
+    0 0 0 9999px rgba(7, 10, 18, 0.52),
+    0 0 0 5px color-mix(in srgb, var(--ui-accent) 18%, transparent),
+    0 14px 34px rgba(0, 0, 0, 0.2);
+  transition:
+    top 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    left 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.catnip-onboarding-card,
+.catnip-onboarding-invitation {
+  color: var(--ui-text);
+  background: color-mix(in srgb, var(--ui-surface-solid) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ui-separator) 72%, white);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(30px) saturate(170%);
+}
+
+.catnip-onboarding-card {
+  position: fixed;
+  display: grid;
+  width: min(380px, calc(100vw - 36px));
+  max-height: calc(100vh - 36px);
+  overflow: hidden;
+  border-radius: 20px;
+  pointer-events: auto;
+  transform-origin: center;
+  animation: catnip-onboarding-arrive 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition:
+    top 280ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    left 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.catnip-onboarding-card > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 14px 8px;
+}
+
+.catnip-onboarding-card > header > span,
+.catnip-onboarding-invitation > div > span {
+  color: var(--ui-accent);
+  font-size: 12px;
+  font-weight: 720;
+  letter-spacing: 0.035em;
+}
+
+.catnip-onboarding-card > header button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  place-items: center;
+  color: var(--ui-text-tertiary);
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+  font: 500 18px/1 system-ui, sans-serif;
+}
+
+.catnip-onboarding-card > header button:hover {
+  color: var(--ui-text);
+  background: var(--ui-fill-hover);
+}
+
+.catnip-onboarding-card-body {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 5px 18px 14px 10px;
+}
+
+.catnip-onboarding-card-body > img {
+  width: 88px;
+  height: 106px;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 8px rgba(0, 0, 0, 0.2));
+}
+
+.catnip-onboarding-card h2,
+.catnip-onboarding-invitation h2 {
+  margin: 2px 0 7px;
+  color: var(--ui-text);
+  font-size: 20px;
+  font-weight: 720;
+  line-height: 1.22;
+  letter-spacing: -0.018em;
+}
+
+.catnip-onboarding-card p,
+.catnip-onboarding-invitation p {
+  margin: 0;
+  color: var(--ui-text-secondary);
+  font-size: 14px;
+  line-height: 1.58;
+}
+
+.catnip-onboarding-hint {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 14px 10px;
+  padding: 8px 10px;
+  color: var(--ui-text-secondary);
+  background: color-mix(in srgb, var(--ui-accent) 10%, transparent);
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.catnip-onboarding-hint i {
+  width: 7px;
+  height: 7px;
+  background: var(--ui-accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ui-accent) 14%, transparent);
+}
+
+.catnip-onboarding-hint.is-warning {
+  color: var(--ui-warning-text, #8a5a00);
+  background: color-mix(in srgb, #f2a900 14%, transparent);
+}
+
+.catnip-onboarding-card > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px 13px;
+  background: color-mix(in srgb, var(--ui-surface-solid) 64%, transparent);
+  box-shadow: 0 -1px 0 var(--ui-separator);
+}
+
+.catnip-onboarding-card > footer > span {
+  color: var(--ui-text-tertiary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.catnip-onboarding-card > footer > div {
+  display: flex;
+  gap: 7px;
+}
+
+.catnip-onboarding-card button,
+.catnip-onboarding-invitation button {
+  padding: 8px 12px;
+  color: var(--ui-text);
+  background: var(--ui-fill);
+  border: 0;
+  border-radius: 10px;
+  font: 650 12px/1 system-ui, sans-serif;
+  transition: transform 100ms ease, background-color 140ms ease, opacity 140ms ease;
+}
+
+.catnip-onboarding-card button:hover:not(:disabled),
+.catnip-onboarding-invitation button:hover:not(:disabled) {
+  background: var(--ui-fill-hover);
+}
+
+.catnip-onboarding-card button:active:not(:disabled),
+.catnip-onboarding-invitation button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.catnip-onboarding-card button.is-primary,
+.catnip-onboarding-invitation button.is-primary {
+  color: white;
+  background: var(--ui-accent);
+}
+
+.catnip-onboarding-card button:disabled {
+  opacity: 0.62;
+}
+
+.catnip-onboarding-card button:focus-visible,
+.catnip-onboarding-invitation button:focus-visible {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+
+.catnip-onboarding-invitation {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 2900;
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  width: min(470px, calc(100vw - 48px));
+  padding: 16px 17px 16px 8px;
+  border-radius: 22px;
+  animation: catnip-onboarding-invitation-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.catnip-onboarding-invitation > img {
+  align-self: end;
+  width: 92px;
+  height: 118px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.22));
+}
+
+.catnip-onboarding-invitation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 13px;
+}
+
+.catnip-onboarding-invitation button.is-quiet {
+  color: var(--ui-text-tertiary);
+  background: transparent;
+}
+
+@keyframes catnip-onboarding-arrive {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes catnip-onboarding-invitation-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 720px) {
+  .catnip-onboarding-card {
+    right: 18px !important;
+    bottom: 18px !important;
+    left: 18px !important;
+    top: auto !important;
+    width: auto;
+  }
+
+  .catnip-onboarding-invitation {
+    right: 12px;
+    bottom: 12px;
+    grid-template-columns: 70px minmax(0, 1fr);
+    width: calc(100vw - 24px);
+  }
+
+  .catnip-onboarding-invitation > img {
+    width: 70px;
+    height: 94px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catnip-onboarding-card,
+  .catnip-onboarding-invitation,
+  .catnip-onboarding-spotlight {
+    animation: none;
+    transition: opacity 160ms ease;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .catnip-onboarding-card,
+  .catnip-onboarding-invitation {
+    background: var(--ui-surface-solid);
+    backdrop-filter: none;
+  }
+
+  .catnip-onboarding-scrim {
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .catnip-onboarding-card,
+  .catnip-onboarding-invitation,
+  .catnip-onboarding-spotlight {
+    border: 2px solid var(--ui-text);
+  }
 }
 
 .appearance-popover-heading {

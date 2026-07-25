@@ -105,7 +105,7 @@ function SkillManager({ onOpenFolder, onRefreshWorkbench }: { onOpenFolder: (fol
           <h3>Skills</h3>
           <p>在固定源仓库中维护，保存后自动部署为 Agent 原生 Skill。</p>
         </div>
-        <div className="skill-manager-actions">
+        <div className="skill-manager-actions" data-tour-id="skill-manager-actions">
           <button className="nes-btn" type="button" onClick={() => snapshot && onOpenFolder(snapshot.status.sourceDir)}>打开目录</button>
           <button className="nes-btn" type="button" disabled={busy} onClick={() => void syncSkills()}>立即同步</button>
           <button className="nes-btn is-primary" type="button" disabled={!snapshot?.status.writable} onClick={() => setEditor({ ...EMPTY_SKILL })}>新建 Skill</button>
