@@ -22,6 +22,7 @@
     "smoke:chat-ui:packaged": "node node_modules/cross-env/src/bin/cross-env.js CATNIP_EXPECTED_RENDERER_ROOT=dist-package/win-unpacked node scripts/verify_chat_ui.cjs",
     "smoke:composer-geometry": "node scripts/verify_composer_geometry.cjs",
     "smoke:runtime-task-ui": "node scripts/verify_runtime_task_ui.cjs",
+    "smoke:task-scrollbar-ui": "node scripts/verify_task_scrollbar_ui.cjs",
     "verify:chat-presentation": "node scripts/verify_chat_presentation.cjs",
     "verify:session": "node node_modules/electron/cli.js scripts/verify_claude_session.cjs",
     "verify:hardboard": "node node_modules/electron/cli.js scripts/verify_hardboard_context_rules.cjs",

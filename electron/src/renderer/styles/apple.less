@@ -21,6 +21,9 @@
   --ui-separator: rgba(60, 60, 67, 0.2);
   --ui-separator-strong: rgba(60, 60, 67, 0.34);
   --ui-focus: rgba(0, 122, 255, 0.28);
+  --ui-scrollbar-thumb: rgba(99, 99, 102, 0.42);
+  --ui-scrollbar-thumb-hover: rgba(99, 99, 102, 0.62);
+  --ui-scrollbar-thumb-active: rgba(72, 72, 74, 0.76);
   --ui-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.04);
   --ui-shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
   --ui-radius-sm: 7px;
@@ -1495,6 +1498,79 @@ body.is-resizing-chat-composer * {
   padding: 8px;
 }
 
+/* Quiet overlay-style scrollbars. Keep both axes functional without reviving
+   the old 14px pixel track or the saturated blue thumb. */
+.chat-history-list,
+.chat-messages,
+.chat-execution-list,
+.chat-execution-item pre,
+.chat-markdown-table-wrap,
+.chat-skill-options,
+.task-history-table,
+.task-manager-log,
+.runtime-event-list,
+.runtime-live-log,
+.runtime-monitor-log,
+.serial-output,
+.editor-tab-strip,
+.editor-code-host,
+.workspace-editor-textarea,
+.serial-assistant-settings {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ui-scrollbar-thumb) transparent;
+}
+
+.chat-history-list::-webkit-scrollbar,
+.chat-messages::-webkit-scrollbar,
+.chat-execution-list::-webkit-scrollbar,
+.chat-execution-item pre::-webkit-scrollbar,
+.chat-markdown-table-wrap::-webkit-scrollbar,
+.chat-skill-options::-webkit-scrollbar,
+.task-history-table::-webkit-scrollbar,
+.task-manager-log::-webkit-scrollbar,
+.runtime-event-list::-webkit-scrollbar,
+.runtime-live-log::-webkit-scrollbar,
+.runtime-monitor-log::-webkit-scrollbar,
+.serial-output::-webkit-scrollbar,
+.editor-tab-strip::-webkit-scrollbar,
+.editor-code-host::-webkit-scrollbar,
+.workspace-editor-textarea::-webkit-scrollbar,
+.serial-assistant-settings::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.task-history-table::-webkit-scrollbar-track,
+.task-history-table::-webkit-scrollbar-corner {
+  background: transparent;
+  border: 0;
+}
+
+.task-history-table::-webkit-scrollbar-thumb {
+  min-width: 34px;
+  min-height: 34px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--ui-scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+.task-history-table::-webkit-scrollbar-thumb:hover {
+  background: var(--ui-scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+
+.task-history-table::-webkit-scrollbar-thumb:active {
+  background: var(--ui-scrollbar-thumb-active);
+  background-clip: padding-box;
+}
+
+.task-history-table::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 .task-history-table-head {
   min-height: 40px;
   padding: 9px 10px;
@@ -2257,6 +2333,9 @@ select.nes-select {
     --ui-fill-hover: rgba(235, 235, 245, 0.16);
     --ui-separator: rgba(235, 235, 245, 0.21);
     --ui-separator-strong: rgba(235, 235, 245, 0.34);
+    --ui-scrollbar-thumb: rgba(174, 174, 178, 0.38);
+    --ui-scrollbar-thumb-hover: rgba(199, 199, 204, 0.58);
+    --ui-scrollbar-thumb-active: rgba(209, 209, 214, 0.72);
     --ui-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25), 0 6px 18px rgba(0, 0, 0, 0.18);
 }
 
