@@ -20,6 +20,7 @@
     "smoke:workbench": "node scripts/run_workbench_smoke.cjs",
     "smoke:chat-ui": "node scripts/verify_chat_ui.cjs",
     "smoke:chat-ui:packaged": "node node_modules/cross-env/src/bin/cross-env.js CATNIP_EXPECTED_RENDERER_ROOT=dist-package/win-unpacked node scripts/verify_chat_ui.cjs",
+    "smoke:composer-geometry": "node scripts/verify_composer_geometry.cjs",
     "smoke:runtime-task-ui": "node scripts/verify_runtime_task_ui.cjs",
     "verify:chat-presentation": "node scripts/verify_chat_presentation.cjs",
     "verify:session": "node node_modules/electron/cli.js scripts/verify_claude_session.cjs",
