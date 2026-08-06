@@ -4,9 +4,10 @@
 
 ## 当前事实
 
-- 2026-08-07 已完成成品 Python、Runtime EventBus 持续日志和 Agent 输入框光标对齐修复。施工文档为 `PACKAGED_RUNTIME_RELIABILITY_CONSTRUCTION.md`，代码提交为 `259c27b3`。
-- 修复成品位于 `electron/dist-package-fixed/win-unpacked`，发布校验记录为 `4,464,199,142` 字节，包内隔离 Python/pyserial、ESP-IDF v5.4.3、Node 和 Claude CLI 均通过。原 `dist-package/win-unpacked` 因用户实例仍运行而未强制覆盖；关闭旧实例后再替换或重建，并执行聊天框/任务管理器真实 UI smoke。
-- EventBus 已用 6 个并发进程、120 条并发事件验证序号连续唯一和半写入恢复。ESP/USB-UART 真机仍是明确未验收边界。
+- 2026-08-07 已完成成品 Python、Runtime EventBus 持续日志和 Agent 输入框光标对齐修复。施工文档为 `PACKAGED_RUNTIME_RELIABILITY_CONSTRUCTION.md`，核心代码提交 `259c27b3`，真实成品 UI 验收补充提交 `ea3e53b7`。
+- 已安全关闭旧实例并重建原交付目录 `electron/dist-package/win-unpacked`；发布校验记录为 `4,464,220,642` 字节，包内隔离 Python/pyserial、ESP-IDF v5.4.3、Node 和 Claude CLI 均通过。
+- EventBus 已用 6 个并发进程、120 条事件验证序号连续唯一和半写入恢复；真实成品任务页又以两阶段事件证明日志面板打开后仍收到迟到事件并更新 completed。聊天成品 smoke 确认 textarea/高亮层同为 14px、20.3px 行高和 560px 内容宽度。
+- 仍未验收：ESP/USB-UART 真机闭环、复杂文档页面视觉、真实云服务异常和最终客户机器分发；不得把事件注入 smoke 当成硬件闭环。
 
 - 当前日期：2026-08-07。
 - 正式产品名：`Catnip Forge`；中文全称：`Catnip 硬件智能开发平台`；英文定位：`Autonomous Hardware Development Agent`。
@@ -326,6 +327,6 @@ Electron UI -> Gateway -> Worker -> Agent -> Runtime MCP -> Electron Chromium / 
 1. 对编辑器新建、重命名、回收站删除、字号持久化和打包版离线语法高亮执行一轮 Windows UI smoke，重点覆盖已打开标签的路径同步。
 2. 根据启动和包体实测决定是否拆分 Monaco 语言资源；当前完整 Worker 已本地打包。
 3. 有真实开发板后验证 Agent/UI 共享串口的收发、等待输出、断线恢复以及不同 ESP32 console/reset 策略。
-4. 给任务管理器补一条 Windows packaged runtime smoke，覆盖 build/flash/serial 三个入口；共享会话无硬件 mock 已通过。
+4. 任务管理器 Windows packaged 事件持续订阅 smoke 已补齐；有真实设备后再覆盖 build/flash/serial 三个硬件入口，不能用事件注入替代。
 5. 发布 `1.0.0-7201` Windows 包后，新建对应版本报告；旧版本报告继续保留为历史实测。
 6. 在 ESP-IDF 真实编译测试通过后，补全 `WINDOWS_0_1_TEST_REPORT.md` 的中文路径修复验证项。

@@ -5,9 +5,11 @@
 - 从真实成品会话确认 `click.core` 缺失、`IDF_PYTHON_ENV_PATH` 缺失和 `MSYSTEM=MINGW64` 污染；进一步证明旧校验使用的 `Scripts/python.exe` 会串到开发机系统 Python，造成假阳性。
 - 重装被忽略的 `_bundled/python` ESP-IDF 核心依赖；应用统一使用根解释器，ESP-IDF Scripts 启动器补齐 DLL 和相对 `_pth`。打包前预检和成品发布校验现在都会验证关键模块路径及 `idf.py --version`。
 - EventBus 增加跨进程 writer lock、磁盘序号重同步和坏尾行恢复；Renderer 改为最近 500 条按稳定事件 ID 去重，轮询防重入并显示错误。6 个子进程并发写入 120 条事件测试通过。
-- Agent 输入框透明 textarea 与文字高亮层统一盒模型、边框、换行和滚动条槽位，聊天 UI smoke 增加几何一致性检查。
+- Agent 输入框透明 textarea 与文字高亮层统一盒模型、边框、换行和滚动条槽位，聊天 UI smoke 增加几何一致性检查。真实成品首次验收发现全局样式令两层字号为 14px/13px，修正为同为 14px 后宽度、行高和全部计算样式断言通过。
 - Runtime/Electron 类型检查及构建、结构测试 4 项、EventBus 专项测试、`git diff --check` 全部通过。修复版并列成品 `electron/dist-package-fixed/win-unpacked` 构建及 `verify:release` 通过，总大小 `4,464,199,142` 字节。
-- 原成品仍有用户实例运行，未强制杀进程或覆盖，以免丢失会话；新成品 UI 人工复核、ESP/USB-UART 真机烧录和真实串口收发保持未验收。
+- 用户关闭旧实例后已重建原 `electron/dist-package/win-unpacked`；`verify:release` 通过，总大小 `4,464,220,642` 字节。
+- 新增真实成品 `smoke:runtime-task-ui`：先确认首段 Build 事件进入任务历史和实时日志，再于面板保持打开时注入迟到进度/完成事件；下一轮轮询收到新日志并把任务更新为 completed。`smoke:chat-ui`、Electron typecheck、renderer build、发布校验和 `git diff --check` 同轮通过。
+- 本轮三项用户问题已验收；ESP/USB-UART 真机烧录/串口、复杂文档视觉、真实云异常和最终客户机分发继续保持未验收边界。
 
 ## 2026-08-06 — 开发闭环流程整改启动
 

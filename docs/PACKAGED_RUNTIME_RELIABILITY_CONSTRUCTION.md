@@ -86,20 +86,23 @@
 
 ## 施工结果（2026-08-07）
 
-- 施工基线提交：`77e67ba3`；代码提交：`259c27b3`。
+- 施工基线提交：`77e67ba3`；核心代码提交：`259c27b3`；真实成品 UI 验收补充提交：`ea3e53b7`。
 - Python：应用改用带 `_pth` 的根解释器；ESP-IDF 所要求的 `Scripts/python.exe` 同时携带 `python312.dll` 和独立相对路径 `_pth`。运行环境禁止 user site，清除 `MSYSTEM`，打包前和成品校验均验证 `serial`、`click.core`、`idf_component_manager`、`esptool` 的真实模块路径位于包内。
 - EventBus：写入采用跨进程排他锁，每次从磁盘状态和日志尾部重新对齐序号；半写入尾行可恢复。Renderer 每秒读取最近窗口并按事件 `id` 去重，轮询串行且失败可见。
-- 输入框：高亮层与 textarea 统一为 `border-box`、1px 边框、相同字体/换行属性和稳定滚动条槽位；聊天 UI smoke 增加计算样式和内容宽度一致性断言。
+- 输入框：高亮层与 textarea 统一为 `border-box`、1px 边框、相同字体/换行属性和稳定滚动条槽位；真实成品首次 smoke 又发现全局 `!important` 令 textarea 为 14px、而高亮层仍为 13px，现已统一为 14px。聊天 UI smoke 输出并断言两层完整计算样式和内容宽度。
 
 ### 已通过
 
 - `tests/test_project.py`：4 项通过。
 - Runtime typecheck/build 与 `verify:event-clear` 通过；专项测试包含 6 个并发写入进程、120 条事件、旧序号推进和半写入尾行恢复，最终序号连续且唯一。
 - Electron typecheck、main build、renderer build 通过；`git diff --check` 通过。
-- 并列重建 `electron/dist-package-fixed/win-unpacked` 成功；发布校验通过，包体 `4,464,199,142` 字节，包内 Node `v22.14.0`、隔离 pyserial `3.5`、ESP-IDF `v5.4.3`、Claude Code `2.1.167` 均可执行。
+- 已安全关闭旧实例并覆盖重建原交付目录 `electron/dist-package/win-unpacked`；发布校验通过，包体 `4,464,220,642` 字节，包内 Node `v22.14.0`、隔离 pyserial `3.5`、ESP-IDF `v5.4.3`、Claude Code `2.1.167` 均可执行。
+- 从原交付目录启动真实成品后，`smoke:chat-ui` 通过：textarea 与高亮层均为 560px 内容宽度、14px 字号、20.3px 行高，盒模型、padding、边框、字体、换行和滚动条槽位全部一致；多 Skill 插入、高亮、焦点返回、原子退格、输入区缩放和历史会话操作同时通过。
+- 新增 `smoke:runtime-task-ui`。脚本先注入 Build 启动/进度事件并确认任务历史和首段实时日志出现，再在日志面板保持打开后注入第二段进度/完成事件；真实成品下一轮轮询收到迟到标记，任务变为 completed，页面仍显示“任务管理器正在订阅 runtime/hardboard/events”。
+- 最终回归通过：Electron typecheck、renderer build、聊天 UI smoke、任务管理器持续订阅 smoke、`verify:release` 与 `git diff --check`。
 
-### 尚未完成的人工边界
+### 保留的验收边界
 
-- 原 `electron/dist-package/win-unpacked` 当时仍有用户实例运行。为避免强制结束进程造成未发送对话丢失，本轮没有覆盖该目录，修复成品保存在并列目录 `electron/dist-package-fixed/win-unpacked`。
-- 因旧实例占用固定 CDP 端口，本轮未把新成品的聊天框和任务管理器标记为真实 UI 人工验收通过；相关 CSS 几何断言已加入 smoke，但仍需在关闭旧实例后从修复成品启动复核。
-- ESP/USB-UART 真机烧录和真实串口收发仍需设备；本轮没有用模拟测试冒充真机验收。
+- Python 隔离、任务管理器持续事件/实时日志和输入框文字/光标几何三项本轮问题均已在原交付目录的真实成品中验收通过。
+- ESP/USB-UART 真机烧录、真实串口收发、断线恢复与端口占用恢复仍需设备；本轮事件注入只验收 EventBus/UI 持续订阅，不冒充真实编译器、烧录器或串口硬件闭环。
+- 复杂/扫描文档页面视觉、真实云服务 401/429/超时/断网异常及最终客户机器分发仍按各自施工文档保留，不因本轮三项修复扩大验收结论。
