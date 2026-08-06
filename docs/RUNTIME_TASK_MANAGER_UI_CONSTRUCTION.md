@@ -272,4 +272,6 @@ ProductVersion: 0.3.0
 - 已生成并检查真实窗口截图 `electron/.tmp/task-scrollbar-acceptance.png`，任务表底部与右侧均为细圆角滑块，不再出现截图中的白轨/蓝块像素风。
 - Electron typecheck、Renderer/主进程/Runtime 构建及 Windows 全量 `pack:win` 通过。未启动的干净包通过 `verify:release`：构建号 `7201`、总大小 `4,464,201,225` 字节，Node `v22.14.0`、隔离 Python/pyserial `3.5`、ESP-IDF `v5.4.3`、Claude Code `2.1.167` 完整，且不含真实 DeepSeek/Qwen key。
 - 干净发布包与已启动 UI 验收包的 `resources/app.asar` SHA-256 均为 `7CEB034B634238D25CDB8552376E3718D6F6679598325ED9B0679C71630095B3`，证明发布门禁与 UI 实测对应同一份代码。
-- 当前机器的 VS Code 主窗口 PID 30640 持有旧正式目录与暂存目录的 `app.asar` 文件句柄，导致标准 `electron/dist-package/win-unpacked` 无法原位替换；已验收新包保存在 `electron/dist-package-ready/win-unpacked`。在 VS Code 正常关闭或用户明确授权关闭两个精确句柄前，不得把标准路径切换标记为完成。
+- 用户明确授权后，以管理员权限只关闭 VS Code PID 30640 中精确匹配旧正式包和暂存包的两个 `app.asar` 句柄；VS Code 全程存活。标准 `electron/dist-package/win-unpacked` 已完成切换并冷启动复验，target URL 明确指向标准路径，滚动条断言 `ok=true`，底部状态为“任务管理器正在订阅 runtime/hardboard/events”。
+- 目录重组首次冷启动还暴露 ready 中转包缺少 `runtime/nodejs` 等大资源；未以 CSS 通过掩盖该问题，而是从已通过发布门禁的同哈希干净包补齐 Node、Python、node_modules、Playwright、scripts 和运行目录。标准包随后直接通过 Node `v22.14.0`、隔离 Python `3.12.9`/pyserial `3.5`、ESP-IDF `v5.4.3` 与 EventBus JSON 探针。
+- 旧残缺正式备份和可删除临时文件已清理。VS Code 因本轮哈希读取又持有两份非正式路径 `app.asar`，目前只剩 `electron/dist-package-ready/.../app.asar` 与 `electron/.tmp/scrollbar-clean-release/.../app.asar` 两个各约 99 MB、无 exe 的残片；不影响正式包，VS Code 正常关闭后可直接删除。

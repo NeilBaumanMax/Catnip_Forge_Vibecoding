@@ -6,7 +6,9 @@
 - 实现提交 `b6d11d15`；新增 `smoke:task-scrollbar-ui`，按指定 `app.asar` URL 检查横纵 overflow、scrollbar 宽高、track/corner、thumb 边框/圆角和 button。验收脚本补强提交 `424a1e00` 支持可选截图与 `Browser.close` 正常清理。
 - 旧成品基线测试准确复现 `14px`、蓝色 thumb、非透明 track、`0px` 圆角；新成品两次返回 `ok=true`，值为 `8px`、透明轨道、`2px` 内缩边、`999px` 圆角、button 隐藏、横向 overflow 保留。真实窗口截图已人工复核。
 - Electron typecheck、完整 `pack:win` 通过；未启动干净包的 `verify:release` 通过，总大小 `4,464,201,225` 字节，内置 Node/Python/ESP-IDF/Claude/Playwright 完整且无真实 key。干净包与 UI 验收包 `app.asar` SHA-256 一致。
-- 两次原位重打包暴露旧标准包 `app.asar` 被占用；微软签名的 Sysinternals Handle 最终定位为当前 VS Code 主窗口 PID 30640 持有两个文件句柄。为避免中断会话，没有强杀 VS Code 或强关句柄；新包保存在 `electron/dist-package-ready/win-unpacked`，标准路径切换保留为明确未完成项。
+- 两次原位重打包暴露旧标准包 `app.asar` 被占用；微软签名的 Sysinternals Handle 最终定位为当前 VS Code 主窗口 PID 30640。用户明确授权后，通过 UAC 只关闭两个精确文件句柄，VS Code 保持存活，标准目录完成切换。
+- 第一次标准目录冷启动截图同时暴露中转 ready 包缺少 `runtime/nodejs`，EventBus 因此读取失败。立即从已通过发布门禁的同哈希干净包补齐 Node、Python、node_modules、Playwright、scripts 等资源；直接 EventBus JSON、Node `v22.14.0`、隔离 Python `3.12.9`/pyserial `3.5`、ESP-IDF `v5.4.3` 均通过。再次冷启动后，标准 URL 的滚动条 smoke 返回 `ok=true`，底部恢复“任务管理器正在订阅 runtime/hardboard/events”。
+- 已删除旧残缺正式备份、第一份临时包、诊断工具和旧截图。因 VS Code 后续哈希读取，两个非正式目录各剩一个约 99 MB、无 exe 的锁定 `app.asar`；不影响标准成品，待 VS Code 正常退出后删除。
 
 ## 2026-08-07 — 成品 Runtime 三项可靠性修复
 
