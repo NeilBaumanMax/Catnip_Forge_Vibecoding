@@ -251,3 +251,14 @@ ProductVersion: 0.3.0
 
 - 已验证原目录 `resources/runtime/dist/hardboard/runner.js` 包含早期失败事件写入逻辑，`resources/app.asar` 包含 `resolveSelectedProjectDir` 和 Runtime UI v2 前端。
 - 当前 0.1 包已在 Windows 上重新打包并迁移到 `E:\vibeide-0.1-win-unpacked`，不要继续把上面的 0.3.0 历史版本当成当前交付版本。
+## 2026-08-07 — 任务结果滚动条 Apple UI 收口
+
+用户在 Windows 成品任务管理器截图中确认，最近任务结果表仍继承旧像素主题滚动条：纵向与横向轨道为高亮白/灰色、滑块为饱和蓝色、宽度 14px 且没有圆角，与当前深色 Apple 风格明显冲突。
+
+本轮施工边界：
+
+1. 保留任务结果表横纵双向滚动能力和 sticky 表头，不改变任务数据、清除逻辑或 EventBus。
+2. 在 Apple 主题层覆盖旧 `.task-history-table` 像素滚动条，使用 8px 细轨道、透明轨道、圆角半透明滑块、内缩描边和 hover/active 强度反馈。
+3. 同一套滚动条视觉应用到工作台内实际可滚动区域，兼容深色/浅色主题；输入框透明高亮层继续隐藏自身滚动条，不能被全局规则重新显示。
+4. 新增 Renderer/CDP 样式验收，断言任务结果表横纵溢出仍存在，滚动条宽高、轨道、滑块圆角及颜色符合 Apple 主题，并核对指定成品 URL。
+5. 完成施工文档提交、实现、类型检查/Renderer 构建、成品重建与真实 UI 验收、文档收尾、推送和远端哈希核对。
