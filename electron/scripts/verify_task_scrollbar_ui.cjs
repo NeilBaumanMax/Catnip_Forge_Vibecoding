@@ -63,6 +63,7 @@ async function main() {
       const thumb = getComputedStyle(table, '::-webkit-scrollbar-thumb');
       const corner = getComputedStyle(table, '::-webkit-scrollbar-corner');
       const button = getComputedStyle(table, '::-webkit-scrollbar-button');
+      const runtimeMessage = document.querySelector('.runtime-message')?.textContent?.trim() || '';
       const result = {
         overflowX: style.overflowX,
         overflowY: style.overflowY,
@@ -77,6 +78,8 @@ async function main() {
         cornerBackground: corner.backgroundColor,
         buttonDisplay: button.display,
         horizontalOverflow: table.scrollWidth > table.clientWidth,
+        runtimeMessage,
+        subscriptionReadFailed: runtimeMessage.startsWith('事件订阅读取失败：'),
       };
       return {
         ...result,
@@ -90,7 +93,8 @@ async function main() {
           && result.thumbRadius === '999px'
           && result.thumbBackgroundClip === 'padding-box'
           && result.buttonDisplay === 'none'
-          && result.horizontalOverflow,
+          && result.horizontalOverflow
+          && !result.subscriptionReadFailed,
       };
     })()`;
     const evaluated = await cdpCall(socket, 1, 'Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
