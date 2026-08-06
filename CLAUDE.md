@@ -36,6 +36,8 @@ sed -n '1,260p' docs/ARCHITECTURE.md
 sed -n '1,260p' docs/DEVELOPMENT.md
 ```
 
+结构性功能、跨模块修改、发布变更和高风险修复必须先建立或更新对应的 `docs/*_CONSTRUCTION.md`，明确范围、风险、测试和验收标准，并优先形成独立文档提交。完整流程以 `docs/DEVELOPMENT_WORKFLOW_CONSTRUCTION.md` 为准。
+
 如果要做实质改动，先确认工作区是否干净。必要时建立备份分支：
 
 ```bash
@@ -56,7 +58,7 @@ git check-ignore -v .local-secrets/HANDOFF_PRIVATE.md .claude/settings.local.jso
 ```
 
 4. 精确 `git add`，不要用 `git add -A` 把运行态和私有文件扫进去。
-5. 提交并推送到当前仓库 `https://github.com/NeilBaumanMax/vibeide_Neil.git`。
+5. 精确提交并推送当前施工分支到 remote `origin`（`git@github.com:NeilBaumanMax/Catnip-Forge.git`），随后查询远端确认提交号；未经合并验收不直接推入 `main`。
 
 ## 验证命令
 

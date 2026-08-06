@@ -7,7 +7,7 @@
 - Node.js 22+
 - npm
 - Python 3.11+
-- Git 可访问 `https://github.com/NeilBaumanMax/vibeide_Neil.git`
+- Git 可访问 `git@github.com:NeilBaumanMax/Catnip-Forge.git`
 - Windows 实机用于最终运行验证
 
 ## 开工检查
@@ -17,6 +17,8 @@ cd E:\Agent\vibeide\vibeide
 git branch --show-current
 git status --short
 git remote -v
+git branch -vv
+git rev-list --left-right --count origin/main...HEAD
 ```
 
 读文档：
@@ -26,7 +28,24 @@ sed -n '1,220p' README.md
 sed -n '1,220p' docs/HANDOFF.md
 sed -n '1,260p' docs/ARCHITECTURE.md
 sed -n '1,260p' docs/REFACTOR_PLAN.md
+sed -n '1,260p' docs/DEVELOPMENT_WORKFLOW_CONSTRUCTION.md
 ```
+
+## 强制开发闭环
+
+结构性功能、跨模块修改、发布变更和高风险修复必须按以下顺序执行：
+
+1. 检查分支、工作区、远端、用户已有改动和当前文档基线。
+2. 编码前新建或更新相关 `*_CONSTRUCTION.md`，写清范围、风险、测试和验收标准。
+3. 先提交纯文档施工基线，再进入代码施工；紧急修复例外必须留下原因。
+4. 编码后先跑专项测试；失败时修复并重新执行失败项。
+5. 执行 Runtime/Electron 类型检查、构建、`git diff --check` 和受影响功能的完整回归。
+6. 完成不能由自动测试替代的 UI、真实 API、真实硬件或成品人工验收；无法执行的项目明确标记未验收。
+7. 更新专项施工文档、`HANDOFF.md`、`DEV_PROGRESS.md`、`LOG.md` 和相关发布检查表。
+8. 精确暂存、复核 staged diff、提交并推送当前施工分支。
+9. 查询远端并核对提交号；远端未确认前不得称为已交付。
+
+完整门禁和例外规则见 [DEVELOPMENT_WORKFLOW_CONSTRUCTION](DEVELOPMENT_WORKFLOW_CONSTRUCTION.md)。
 
 ## 安装依赖
 
@@ -129,7 +148,18 @@ git add electron/src runtime/src agent/skills agent/tools config scripts tests
 ```bash
 git status --short --ignored
 git check-ignore -v .local-secrets/HANDOFF_PRIVATE.md .claude/settings.local.json agent/.claude/settings.json electron/dist/main/index.js || true
+git diff --cached --check
 ```
+
+提交后推送当前施工分支并核对远端：
+
+```bash
+git push -u origin <当前分支>
+git ls-remote --heads origin <当前分支>
+git rev-parse HEAD
+```
+
+不得未经合并验收直接推送到 `main`。用户明确要求暂不推送时，应把它记录为本次任务例外，不得默认延续到后续施工。
 
 ## 文档收尾
 

@@ -9,7 +9,7 @@
 - 内部工程代号：`vibeide`。
 - 当前本机工作目录：`E:\Agent\vibeide\vibeide`（Windows 实机）。
 - 当前远端真相源：remote `origin` = `git@github.com:NeilBaumanMax/Catnip-Forge.git`；当前施工分支：`qwen_vision_attachments`，基于 `main`。提交号和远端跟踪状态必须通过本地 Git 动态查询，不在接力文档中固化旧 HEAD。
-- 当前分支在既有主线之上增加 Qwen 视觉旁路和聊天附件第一阶段；DeepSeek 主开发模型不变。本轮维护本地 Git、不推送远端，Windows `electron/dist-package/win-unpacked` 已从该分支重新构建。
+- 当前分支在既有主线之上增加 Qwen 视觉旁路、聊天附件、客户数据路径迁移和猫薄荷新手旅程；DeepSeek 主开发模型不变。2026-07-25 的“不推送”任务级例外已经结束，当前必须完成回归、验收、施工分支推送和远端确认。
 - 旧 GitHub/历史源：`git@github.com:howtion0/vibeide.git`、`git@github.com:howtio/vibeide.git` 仍可能出现在历史日志或迁移文档中，不再作为当前同步目标。
 
 ## 当前版本和验证
@@ -277,7 +277,7 @@ node dist\index.js hardboard:serial COM7 10 115200
 1. 本机改代码和文档。
 2. 本机验证（typecheck / build / pack）。
 3. 提交到 Git。
-4. 推送到 `https://github.com/NeilBaumanMax/vibeide_Neil.git`。
+4. 推送当前施工分支到 remote `origin`（`git@github.com:NeilBaumanMax/Catnip-Forge.git`），查询远端并确认提交号；未经合并验收不直接推入 `main`。
 5. `git config core.sshCommand` 已配置解决中文路径问题。
 
 不要提交：

@@ -25,6 +25,7 @@
 19. [SOFTWARE_ASSISTANT_GUIDE_CONSTRUCTION](SOFTWARE_ASSISTANT_GUIDE_CONSTRUCTION.md)：猫薄荷可维护 Markdown 知识手册、动态提示词、安全降级和发布验收基线。
 20. [CATNIP_ONBOARDING_CONSTRUCTION](CATNIP_ONBOARDING_CONSTRUCTION.md)：猫薄荷首次邀请、聚光交互、四主页面导览、持久化重播和离线安全边界。
 21. [LEGACY_WEB_AUTOMATION_CONSTRUCTION](LEGACY_WEB_AUTOMATION_CONSTRUCTION.md)：旧网页录制/回放、爬虫、隐藏工作台与 Python `coddecat` scaffold 的冻结保留边界。
+22. [DEVELOPMENT_WORKFLOW_CONSTRUCTION](DEVELOPMENT_WORKFLOW_CONSTRUCTION.md)：施工文档先行、编码、测试修复、回归、验收、提交、推送和远端确认的强制闭环。
 
 ## 专项与历史文档
 
@@ -46,3 +47,4 @@
 - 本机接力、Windows SSH、GitHub 同步写在 `HANDOFF.md` 和 `GITHUB_SYNC.md`。
 - 账号密码只写 `.local-secrets/HANDOFF_PRIVATE.md`，不写进任何公开文档。
 - 每次重构收尾时更新 `DEV_PROGRESS.md` 和 `LOG.md`。
+- 结构性功能、跨模块修改、发布变更和高风险修复必须先建立或更新专项施工文档，再进入代码施工。
