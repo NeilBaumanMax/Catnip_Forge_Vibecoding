@@ -1,9 +1,13 @@
+const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 
 const CDP_LIST = 'http://127.0.0.1:9230/json';
 const packageRoot = path.resolve(process.env.CATNIP_PACKAGE_ROOT || path.join(__dirname, '..', 'dist-package', 'win-unpacked'));
 const expectedUrl = pathToFileURL(path.join(packageRoot, 'resources', 'app.asar')).href.toLowerCase();
+const screenshotPath = process.env.CATNIP_SCREENSHOT_PATH
+  ? path.resolve(process.env.CATNIP_SCREENSHOT_PATH)
+  : '';
 
 async function findTarget() {
   let discovered = [];
@@ -92,8 +96,21 @@ async function main() {
     const evaluated = await cdpCall(socket, 1, 'Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
     if (evaluated.exceptionDetails) throw new Error(evaluated.exceptionDetails.text || 'Renderer evaluation failed');
     const report = { ...evaluated.result.value, packageRoot, targetUrl: target.url };
+    if (screenshotPath) {
+      await cdpCall(socket, 2, 'Page.enable');
+      const screenshot = await cdpCall(socket, 3, 'Page.captureScreenshot', {
+        format: 'png',
+        captureBeyondViewport: false,
+      });
+      fs.mkdirSync(path.dirname(screenshotPath), { recursive: true });
+      fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
+      report.screenshotPath = screenshotPath;
+    }
     console.log(JSON.stringify(report, null, 2));
     if (!report.ok) process.exitCode = 1;
+    if (process.env.CATNIP_CLOSE_AFTER === '1') {
+      socket.send(JSON.stringify({ id: 4, method: 'Browser.close', params: {} }));
+    }
   } finally {
     socket.close();
   }
