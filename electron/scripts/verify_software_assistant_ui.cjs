@@ -24,12 +24,12 @@ async function main() {
   for (let attempt = 0; attempt < 40; attempt += 1) {
     try {
       targets = await fetch(CDP_LIST).then((response) => response.json());
-      if (targets.some((entry) => entry.title?.includes('Catnip Forge'))) break;
+      if (targets.some((entry) => entry.title?.includes('Catnip Forge ·'))) break;
     } catch {}
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  const target = targets.find((entry) => entry.title?.includes('Catnip Forge'));
-  if (!target?.webSocketDebuggerUrl) throw new Error('Catnip Forge renderer CDP target not found');
+  const target = targets.find((entry) => entry.title?.includes('Catnip Forge ·'));
+  if (!target?.webSocketDebuggerUrl) throw new Error('Catnip Forge main renderer CDP target not found');
 
   const socket = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((resolve, reject) => {

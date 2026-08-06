@@ -64,7 +64,7 @@ git check-ignore -v .local-secrets/HANDOFF_PRIVATE.md .claude/settings.local.jso
 
 ```bash
 # Python 结构测试
-pytest tests/test_project.py
+python -m pytest tests/test_project.py
 
 # Runtime
 cd runtime

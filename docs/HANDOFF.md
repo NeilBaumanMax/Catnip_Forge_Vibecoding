@@ -4,7 +4,7 @@
 
 ## 当前事实
 
-- 当前日期：2026-07-25。
+- 当前日期：2026-08-06。
 - 正式产品名：`Catnip Forge`；中文全称：`Catnip 硬件智能开发平台`；英文定位：`Autonomous Hardware Development Agent`。
 - 内部工程代号：`vibeide`。
 - 当前本机工作目录：`E:\Agent\vibeide\vibeide`（Windows 实机）。
@@ -22,6 +22,7 @@
 - 聊天附件由 Electron 主进程复制到 runtime-data 的会话目录，以随机附件 ID 绑定当前会话；Runtime MCP 只能经本机随机令牌桥接读取。当前图片可按需调用 Qwen，PDF/DOCX/PPTX 先走本地文字提取；复杂文档页面视觉尚未实现。
 - 当前 `win-unpacked` 已在客户路径迁移实现后完整重建，并通过 `verify:version` 与扩展后的 `verify:release`；发布门禁同时确认 DeepSeek/Qwen 真实 Key 均未打入成品，并检查附件主进程桥接、Runtime MCP、bootstrap 与 user-data path 文件确实随包。
 - 2026-07-25 猫薄荷新手旅程 v5 修复版及同步用户手册落地后已再次全量重建成品，共 36,991 个文件，`verify:release` 记录总大小为 `4,382,367,589` 字节；PE 版本仍为 `1.0.0.7201`，DeepSeek/Qwen 真实 Key 均未入包。此前隐藏启动已确认 Electron 子进程参数使用 `%APPDATA%\@Catnip_Forge\electron`。
+- 2026-08-06 流程整改后再次全量重建当前分支成品，共 36,992 个文件、`4,382,368,640` 字节；Runtime/Electron 构建、逻辑专项、工作台/启动页/聊天/助手/新手旅程 UI、版本/发布资源、无 Key 首启和自动重启闭环均通过。三项 CDP 脚本已修正为只连接 `Catnip Forge ·` 主界面；测试 Key 和测试进程已清理。
 - `verify:first-run-restart` 查找 CDP 目标时必须使用主界面标题 `Catnip Forge ·`，不能只匹配 `Catnip Forge`，否则重启时会误连标题为“Catnip Forge — 启动中”的 Splash。
 - 当前施工分支源码需以 Runtime/Electron typecheck、main/renderer build、Windows unpacked 打包和 `git diff --check` 作为提交门禁。当前版本已执行 Windows 打包与发布资源校验；无 Key 首启及自动重启闭环、MCP handshake、随包 Python、ESP-IDF 冷构建及 COM5 串口回归来自同版本既有基线验证。2026-07-25 用户已在当前界面使用真实 Qwen 服务完成两张 PNG 图片的联网识别，`qwen-vl-plus` 返回的结构化证据进入 Agent“执行过程”并被主回答采用，图片视觉主闭环可记为实测通过；复杂文档页面视觉、真实服务异常场景和 Agent 长时间连续对话仍需持续观察。
 - 启动阶段由独立 `splashWindow` 承接，主窗口必须保持 `show: false` 直到 `ready-to-show`。启动页从实际显示起至少保留约 5 秒，进度按一次性时间线平滑推进并封顶 94%；工作区、开发环境、Renderer 节点更新真实阶段文案，最终 100% 必须同时等待主窗口真实就绪。`assets/splash.html` 与三张 `splash-*.png` 必须随包，不能恢复循环假进度或在启动页之前闪现主窗口。

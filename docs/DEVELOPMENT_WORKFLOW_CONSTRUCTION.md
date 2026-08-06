@@ -98,3 +98,15 @@
 - 当前施工分支成功推送到 `origin` 并建立 upstream。
 - 本地 `HEAD` 与远端 `origin/qwen_vision_attachments` 提交号一致。
 - 未完成的真实硬件、真实云服务或最终分发验收继续明确列出，不冒充通过。
+
+## 6. 2026-08-06 落地与验收结果
+
+- 纯文档流程基线已独立提交为 `9d3985c0 docs: enforce construction delivery workflow`，完成后才进入代码与测试修改。
+- 首轮结构测试因系统 Python 缺少 `pytest` 和 `PyYAML` 无法收集；依赖安装到已忽略的 `electron/.tmp/pytest-deps` 后重新执行，`tests/test_project.py` 共 4 项通过。开发文档已改用可靠的 `python -m pytest` 入口并补充依赖安装命令。
+- Runtime typecheck/build、Electron typecheck/main build/renderer build 全部通过。
+- 会话、Hardboard 上下文、Skill、软件助手手册、新手旅程规则、任务队列、共享串口 mock、Qwen 附件 mock 和客户数据路径专项验证全部通过。
+- 工作台、新手旅程 UI、启动页、聊天 UI 和猫薄荷助手 UI 烟测通过；截图产物位于已忽略的 `electron/.tmp`。
+- UI 回归发现聊天、软件助手和成品首启脚本用宽泛标题选择 CDP 页面，可能误连 Splash；现统一限定主界面标题 `Catnip Forge ·`。聊天脚本同时等待首轮会话与 Skill 状态稳定，消除启动竞态；修复后从应用启动时直接复测通过。
+- 完整重建 Windows `win-unpacked` 成功，共 36,992 个文件、`4,382,368,640` 字节；PE/产品版本 `1.0.0.7201`，Node `v22.14.0`、pyserial `3.5`、Claude Code `2.1.167` 和发布资源校验通过，DeepSeek/Qwen 真实 Key 均未入包。
+- 成品无 Key 首启、品牌资源、Skill 入口、占位 Key 拒绝、一次性测试 Key 保存、自动重启及重启后就绪全部通过；测试 Key 已清除，成品测试进程已关闭。
+- 本轮没有调用真实 DeepSeek/Qwen 服务，也没有连接真实 ESP/USB-UART。2026-07-25 的真实 Qwen 图片验收仍是历史有效事实；复杂文档视觉、真实服务异常、真实串口与最终客户机器分发仍是未验收边界。

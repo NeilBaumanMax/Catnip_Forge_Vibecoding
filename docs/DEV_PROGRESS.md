@@ -18,6 +18,7 @@
 - [x] 新增启动页 CDP 烟测 `npm.cmd --prefix electron run verify:splash-ui`，覆盖素材加载、双语文案、系统字体栈、进度更新、窗口边界和截图验收
 - [x] 启动页改为从实际显示起至少保留约 5 秒，进度条逐帧平滑推进至 94%，并与主窗口真实 `ready-to-show` 双门槛协调后完成至 100%
 - [x] GitHub 远端真相源已统一为 remote `origin` = `git@github.com:NeilBaumanMax/Catnip-Forge.git`，当前施工分支为 `qwen_vision_attachments`（基于 `main`）；提交号和跟踪状态由本地 Git 动态查询
+- [x] 2026-08-06 建立强制开发闭环施工文档并独立提交；当前分支以全量自动回归、CDP 启动页误选修复、Windows 成品重建、最终文档提交、施工分支推送和远端核对作为本轮收尾门禁
 - [x] 当前唯一施工源码目录已统一为 Windows `E:\Agent\vibeide\vibeide`；旧 `C:\vibeide` 和 `E:\vibeide` 仅保留在历史迁移记录中
 - [x] README 已重写为 Catnip Forge 当前 Electron + Runtime + Agent 主线，`vibeide` 保留为仓库和内部工程代号
 - [x] 新文档体系已建立：INDEX / ARCHITECTURE / DEVELOPMENT / GITHUB_SYNC / REFACTOR_PLAN / SECURITY / HANDOFF

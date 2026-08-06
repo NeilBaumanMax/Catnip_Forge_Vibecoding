@@ -70,6 +70,8 @@ git diff --check
 
 2026-07-25 猫薄荷新手旅程 v2 与顶部“？”重播入口落地后再次全量重建当前成品：共 36,989 个文件，`verify:release` 记录总大小为 `4,382,362,210` 字节，PE 版本仍为 `1.0.0.7201`；`verify:version`、发布资源校验、10 个稳定引导目标专项断言和隔离 Chromium 完整 UI 流程均通过。成品包含首次邀请、12 步离线导览、完成持久化和顶部功能栏重播，不包含 DeepSeek/Qwen 真实 Key。
 
+2026-08-06 流程整改后从 `qwen_vision_attachments` 完整重建当前成品：共 36,992 个文件、`4,382,368,640` 字节，PE 版本 `1.0.0.7201`。Runtime/Electron 构建、全部相关逻辑专项、工作台/启动页/聊天/软件助手/新手旅程 UI、`verify:version`、`verify:release`、`verify:first-run` 和 `verify:first-run-restart` 均通过。发布包不含 DeepSeek/Qwen 真实 Key；一次性首启测试 Key 和成品测试进程均已清理。本轮未连接真实 ESP/USB-UART、未调用真实云端模型，也未替代最终客户机器分发验收。
+
 2026-07-25 按真实界面反馈将旅程升级为 v3 详细版并再次全量重建：当前成品共 36,989 个文件，`verify:release` 记录总大小为 `4,382,366,713` 字节，PE 版本仍为 `1.0.0.7201`。20 个稳定聚光目标、23 步完整 UI 流程、完成持久化、顶部“？”重播与 “One Prompt, Working Hardware” 完成页均通过；成品不包含 DeepSeek/Qwen 真实 Key。
 
 2026-07-25 全屏人工测试反馈修复后升级为 v4 并再次全量重建：当前成品共 36,989 个文件，`verify:release` 记录总大小为 `4,382,367,369` 字节，PE 版本仍为 `1.0.0.7201`。隔离 Chromium 流程真实收起 Agent 后确认聚光框跟随新坐标，后续步骤自动恢复 Agent 与猫薄荷面板且不显示黄色跳过提示；教程正文、标题和猫薄荷形象已放大。成品不包含 DeepSeek/Qwen 真实 Key。

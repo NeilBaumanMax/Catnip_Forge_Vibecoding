@@ -70,6 +70,12 @@ cd agent
 npm install
 ```
 
+Python 结构测试依赖：
+
+```bash
+python -m pip install pytest pyyaml
+```
+
 ## 启动
 
 Linux / macOS：
@@ -97,7 +103,7 @@ scripts\start_electron_desktop.cmd
 最小结构测试：
 
 ```bash
-pytest tests/test_project.py
+python -m pytest tests/test_project.py
 ```
 
 Runtime：

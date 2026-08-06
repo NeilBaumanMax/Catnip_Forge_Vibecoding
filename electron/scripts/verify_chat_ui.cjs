@@ -1,5 +1,17 @@
 const CDP_LIST = 'http://127.0.0.1:9230/json';
 
+async function findRendererTarget() {
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    try {
+      const targets = await fetch(CDP_LIST).then((response) => response.json());
+      const target = targets.find((entry) => entry.title?.includes('Catnip Forge ·'));
+      if (target?.webSocketDebuggerUrl) return target;
+    } catch {}
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error('未找到 Catnip Forge 主界面 Renderer CDP target');
+}
+
 async function cdpCall(socket, id, method, params = {}) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
@@ -20,9 +32,7 @@ async function cdpCall(socket, id, method, params = {}) {
 }
 
 async function main() {
-  const targets = await fetch(CDP_LIST).then((response) => response.json());
-  const target = targets.find((entry) => entry.title?.includes('Catnip Forge'));
-  if (!target?.webSocketDebuggerUrl) throw new Error('未找到 Catnip Forge Renderer CDP target');
+  const target = await findRendererTarget();
 
   const socket = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((resolve, reject) => {
@@ -55,6 +65,11 @@ async function main() {
           observer.observe(document.body, { childList: true, subtree: true, attributes: true, characterData: true });
         });
       };
+      await waitFor(() => document.readyState === 'complete');
+      // The main window becomes discoverable before session and Skill hydration
+      // finish. Let those startup updates settle so they cannot replace controls
+      // halfway through the interaction sequence.
+      await new Promise((resolve) => setTimeout(resolve, 7_000));
       const button = [...document.querySelectorAll('button')].find((item) => item.textContent?.trim() === '专业视图');
       if (!button) return { ok: false, reason: 'missing professional view button' };
       const skillButton = [...document.querySelectorAll('button')].find((item) => item.textContent?.trim().startsWith('＋ Skills'));
