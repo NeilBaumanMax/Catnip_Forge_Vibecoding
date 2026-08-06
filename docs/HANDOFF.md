@@ -8,6 +8,7 @@
 - 已安全关闭旧实例并重建原交付目录 `electron/dist-package/win-unpacked`；发布校验记录为 `4,464,220,642` 字节，包内隔离 Python/pyserial、ESP-IDF v5.4.3、Node 和 Claude CLI 均通过。
 - EventBus 已用 6 个并发进程、120 条事件验证序号连续唯一和半写入恢复；真实成品任务页又以两阶段事件证明日志面板打开后仍收到迟到事件并更新 completed。聊天成品 smoke 确认 textarea/高亮层同为 14px、20.3px 行高和 560px 内容宽度。
 - 仍未验收：ESP/USB-UART 真机闭环、复杂文档页面视觉、真实云服务异常和最终客户机器分发；不得把事件注入 smoke 当成硬件闭环。
+- 2026-08-07 用户截图复测确认其实际运行的是遗留 `dist-package-fixed`，该包仍为 textarea 14px / 高亮层 13px。旧目录现已在无进程占用后删除；唯一成品为 `electron/dist-package/win-unpacked`。UI smoke 必须核对 target 的 `app.asar` URL，不能只看窗口标题。`smoke:composer-geometry` 已用用户原句验证末端坐标差值 `0px`，测试后恢复输入。
 
 - 当前日期：2026-08-07。
 - 正式产品名：`Catnip Forge`；中文全称：`Catnip 硬件智能开发平台`；英文定位：`Autonomous Hardware Development Agent`。

@@ -118,3 +118,12 @@
 3. 不在用户仍有未发送输入时强制关闭当前实例。切换成品前先由用户确认关闭，随后从唯一原交付目录启动并用同一段中文/英文混排文本复验。
 4. 旧 `dist-package-fixed` 不再作为可启动交付物；确认无进程占用后移除，避免再次与 `dist-package/win-unpacked` 混淆。
 5. 重新执行施工提交、实现提交、真实成品验收、文档收尾、推送与远端提交号核对；未完成指定路径验收前不得再次称为修复完成。
+
+### 复开施工结果
+
+- 施工复开提交：`bcf9203b`；实现提交：`f7d97e05`；精确端点验收提交：`2674a9bc`。
+- packaged 聊天与任务 UI 脚本现在按 `app.asar` 的完整 file URL 匹配指定成品；对旧并列实例执行时已实际得到“预期 `dist-package`、发现 `dist-package-fixed`”失败，证明门禁能够阻止误验收。任务验收在验证 target 后才允许写入测试事件。
+- 两层显式统一 `word-spacing`、kerning、ligature 和 `text-rendering`；几何断言扩展到完整字体指标。
+- 新增 `smoke:composer-geometry`，使用用户截图对应的 33 字符中英文混排原句，在指定原交付成品中比较高亮文本末端与 textarea 字体镜像的光标末端。实测字体指标差异为 0 项，末端坐标差值为 `0px`，测试后恢复用户原输入与选择区。
+- `electron/dist-package/win-unpacked` 已重新完整构建，`verify:release` 通过，总大小 `4,464,199,233` 字节；当前 Renderer target URL 已核对属于该目录。
+- 用户关闭旧实例后，已在确认无进程占用的前提下删除生成目录 `electron/dist-package-fixed`，避免再次误启动。当前正确成品已启动，用户未发送原句已恢复，光标停在第 33 个字符末端。
