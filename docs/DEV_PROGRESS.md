@@ -12,6 +12,10 @@
 
 ## 当前已落地
 
+- [x] 2026-08-07 修复成品 Python 假阳性：根解释器与 ESP-IDF `Scripts` 启动器都使用包内隔离路径，补齐 Scripts DLL/_pth，清除 MSYS 污染；发布门禁验证关键模块绝不逃逸到系统 site-packages，并已在 4.464GB 并列成品中跑通 ESP-IDF v5.4.3。
+- [x] 2026-08-07 修复任务管理器后续无日志：EventBus 跨进程加锁并从磁盘重同步序号，UI 改为最近窗口按事件 ID 去重及可恢复轮询；6 进程 120 条并发事件专项测试通过。
+- [x] 2026-08-07 修复 Agent 输入框光标/文字双层排版偏移：统一盒模型、边框、滚动条槽位和字体换行指标，并扩充聊天 UI smoke 几何断言。新成品真实 UI 复核待旧实例安全关闭后执行。
+
 - [x] 在 `qwen_vision_attachments` 分支完成 Qwen 视觉旁路与聊天附件第一阶段：DeepSeek 主开发模型保持不变，首启 Qwen Key 同屏选填；聊天支持图片/PDF/DOCX/PPTX/文本附件，Runtime MCP 可本地读取/搜索并按需调用 `vision.qwen_analyze`，调用状态进入 Agent“执行过程”
 - [x] 附件采用 Electron 主进程受控存储和会话绑定随机 ID；Qwen Key 只在主进程经随机令牌 loopback 桥接使用。离线 mock、Runtime/Electron typecheck、会话/队列/Skill 回归、Renderer 生产构建和 Windows 完整打包通过；2026-07-25 用户又以两张 PNG 图片完成真实 `qwen-vl-plus` 联网识别，识别结果进入 Agent“执行过程”并被主回答采用。图片视觉主闭环已实测通过，复杂/扫描文档页面视觉与真实服务异常场景尚未验收
 - [x] 新增 Catnip Forge 品牌启动界面：三张透明素材完整落地，工作区、开发环境、Renderer 与主窗口 ready 节点驱动真实阶段进度，完成后自动切换主窗口

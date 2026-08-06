@@ -83,3 +83,23 @@
 2. 实现与测试形成代码提交；
 3. 成品验收和最终状态回写文档后形成收尾提交；
 4. 推送当前施工分支并核对远端提交号，远端未确认前不称为已交付。
+
+## 施工结果（2026-08-07）
+
+- 施工基线提交：`77e67ba3`；代码提交：`259c27b3`。
+- Python：应用改用带 `_pth` 的根解释器；ESP-IDF 所要求的 `Scripts/python.exe` 同时携带 `python312.dll` 和独立相对路径 `_pth`。运行环境禁止 user site，清除 `MSYSTEM`，打包前和成品校验均验证 `serial`、`click.core`、`idf_component_manager`、`esptool` 的真实模块路径位于包内。
+- EventBus：写入采用跨进程排他锁，每次从磁盘状态和日志尾部重新对齐序号；半写入尾行可恢复。Renderer 每秒读取最近窗口并按事件 `id` 去重，轮询串行且失败可见。
+- 输入框：高亮层与 textarea 统一为 `border-box`、1px 边框、相同字体/换行属性和稳定滚动条槽位；聊天 UI smoke 增加计算样式和内容宽度一致性断言。
+
+### 已通过
+
+- `tests/test_project.py`：4 项通过。
+- Runtime typecheck/build 与 `verify:event-clear` 通过；专项测试包含 6 个并发写入进程、120 条事件、旧序号推进和半写入尾行恢复，最终序号连续且唯一。
+- Electron typecheck、main build、renderer build 通过；`git diff --check` 通过。
+- 并列重建 `electron/dist-package-fixed/win-unpacked` 成功；发布校验通过，包体 `4,464,199,142` 字节，包内 Node `v22.14.0`、隔离 pyserial `3.5`、ESP-IDF `v5.4.3`、Claude Code `2.1.167` 均可执行。
+
+### 尚未完成的人工边界
+
+- 原 `electron/dist-package/win-unpacked` 当时仍有用户实例运行。为避免强制结束进程造成未发送对话丢失，本轮没有覆盖该目录，修复成品保存在并列目录 `electron/dist-package-fixed/win-unpacked`。
+- 因旧实例占用固定 CDP 端口，本轮未把新成品的聊天框和任务管理器标记为真实 UI 人工验收通过；相关 CSS 几何断言已加入 smoke，但仍需在关闭旧实例后从修复成品启动复核。
+- ESP/USB-UART 真机烧录和真实串口收发仍需设备；本轮没有用模拟测试冒充真机验收。

@@ -4,7 +4,11 @@
 
 ## 当前事实
 
-- 当前日期：2026-08-06。
+- 2026-08-07 已完成成品 Python、Runtime EventBus 持续日志和 Agent 输入框光标对齐修复。施工文档为 `PACKAGED_RUNTIME_RELIABILITY_CONSTRUCTION.md`，代码提交为 `259c27b3`。
+- 修复成品位于 `electron/dist-package-fixed/win-unpacked`，发布校验记录为 `4,464,199,142` 字节，包内隔离 Python/pyserial、ESP-IDF v5.4.3、Node 和 Claude CLI 均通过。原 `dist-package/win-unpacked` 因用户实例仍运行而未强制覆盖；关闭旧实例后再替换或重建，并执行聊天框/任务管理器真实 UI smoke。
+- EventBus 已用 6 个并发进程、120 条并发事件验证序号连续唯一和半写入恢复。ESP/USB-UART 真机仍是明确未验收边界。
+
+- 当前日期：2026-08-07。
 - 正式产品名：`Catnip Forge`；中文全称：`Catnip 硬件智能开发平台`；英文定位：`Autonomous Hardware Development Agent`。
 - 内部工程代号：`vibeide`。
 - 当前本机工作目录：`E:\Agent\vibeide\vibeide`（Windows 实机）。
