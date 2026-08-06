@@ -104,6 +104,12 @@ async function main() {
         && textareaStyle.whiteSpace === highlightStyle.whiteSpace
         && textareaStyle.overflowWrap === highlightStyle.overflowWrap
         && textareaStyle.scrollbarGutter === highlightStyle.scrollbarGutter;
+      const composerTextGeometry = {
+        textareaClientWidth: composer.clientWidth,
+        highlightClientWidth: highlight.clientWidth,
+        textarea: Object.fromEntries(['boxSizing', 'padding', 'borderWidth', 'fontFamily', 'fontSize', 'lineHeight', 'letterSpacing', 'whiteSpace', 'overflowWrap', 'scrollbarGutter'].map((key) => [key, textareaStyle[key]])),
+        highlight: Object.fromEntries(['boxSizing', 'padding', 'borderWidth', 'fontFamily', 'fontSize', 'lineHeight', 'letterSpacing', 'whiteSpace', 'overflowWrap', 'scrollbarGutter'].map((key) => [key, highlightStyle[key]])),
+      };
       const expandedComposerHeight = expandedComposerRect.height;
       const composerResizable = expandedComposerHeight > initialComposerHeight
         && Math.abs(expandedComposerHeight - highlightRect.height) < 1
@@ -275,6 +281,7 @@ async function main() {
         menuPlacementOk,
         composerResizable,
         composerTextGeometryAligned,
+        composerTextGeometry,
         originalComposerHeight,
         initialComposerHeight,
         expandedComposerHeight,
