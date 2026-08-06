@@ -4,6 +4,9 @@
 
 ## 当前事实
 
+- 2026-08-07 已完成任务管理器滚动条 Apple UI 修复：8px、透明轨道、半透明系统灰圆角滑块、hover/active 克制反馈，横纵滚动仍存在。`smoke:task-scrollbar-ui` 会按 `app.asar` 绝对 URL 选择目标，并可选输出截图或正常关闭测试程序。
+- 干净重打包通过 `verify:release`，且与 UI 验收包的 `app.asar` SHA-256 同为 `7CEB034B634238D25CDB8552376E3718D6F6679598325ED9B0679C71630095B3`。当前 VS Code 主窗口 PID 30640 持有旧标准目录的 `app.asar`，使 `electron/dist-package/win-unpacked` 无法安全替换；新包保存在 `electron/dist-package-ready/win-unpacked`。必须在 VS Code 正常关闭后切换目录，或由用户明确授权只关闭两个精确文件句柄；不得强杀 VS Code、不得把当前标准目录当作完整成品。
+
 - 2026-08-07 已完成成品 Python、Runtime EventBus 持续日志和 Agent 输入框光标对齐修复。施工文档为 `PACKAGED_RUNTIME_RELIABILITY_CONSTRUCTION.md`，核心代码提交 `259c27b3`，真实成品 UI 验收补充提交 `ea3e53b7`。
 - 已安全关闭旧实例并重建原交付目录 `electron/dist-package/win-unpacked`；发布校验记录为 `4,464,220,642` 字节，包内隔离 Python/pyserial、ESP-IDF v5.4.3、Node 和 Claude CLI 均通过。
 - EventBus 已用 6 个并发进程、120 条事件验证序号连续唯一和半写入恢复；真实成品任务页又以两阶段事件证明日志面板打开后仍收到迟到事件并更新 completed。聊天成品 smoke 确认 textarea/高亮层同为 14px、20.3px 行高和 560px 内容宽度。

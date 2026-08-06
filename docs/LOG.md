@@ -1,5 +1,13 @@
 # 施工日志
 
+## 2026-08-07 — 任务管理器滚动条 Apple UI 收口
+
+- 先提交施工边界 `24107e22`，再在 `apple.less` 以主题变量统一工作台滚动区；任务表从旧 14px 蓝色直角滑块改为 8px 透明轨道、半透明系统灰圆角滑块，并提供 hover/active 即时反馈。
+- 实现提交 `b6d11d15`；新增 `smoke:task-scrollbar-ui`，按指定 `app.asar` URL 检查横纵 overflow、scrollbar 宽高、track/corner、thumb 边框/圆角和 button。验收脚本补强提交 `424a1e00` 支持可选截图与 `Browser.close` 正常清理。
+- 旧成品基线测试准确复现 `14px`、蓝色 thumb、非透明 track、`0px` 圆角；新成品两次返回 `ok=true`，值为 `8px`、透明轨道、`2px` 内缩边、`999px` 圆角、button 隐藏、横向 overflow 保留。真实窗口截图已人工复核。
+- Electron typecheck、完整 `pack:win` 通过；未启动干净包的 `verify:release` 通过，总大小 `4,464,201,225` 字节，内置 Node/Python/ESP-IDF/Claude/Playwright 完整且无真实 key。干净包与 UI 验收包 `app.asar` SHA-256 一致。
+- 两次原位重打包暴露旧标准包 `app.asar` 被占用；微软签名的 Sysinternals Handle 最终定位为当前 VS Code 主窗口 PID 30640 持有两个文件句柄。为避免中断会话，没有强杀 VS Code 或强关句柄；新包保存在 `electron/dist-package-ready/win-unpacked`，标准路径切换保留为明确未完成项。
+
 ## 2026-08-07 — 成品 Runtime 三项可靠性修复
 
 - 从真实成品会话确认 `click.core` 缺失、`IDF_PYTHON_ENV_PATH` 缺失和 `MSYSTEM=MINGW64` 污染；进一步证明旧校验使用的 `Scripts/python.exe` 会串到开发机系统 Python，造成假阳性。

@@ -12,6 +12,8 @@
 
 ## 当前已落地
 
+- [x] 2026-08-07 任务管理器滚动条完成 Apple UI 收口：旧成品 smoke 先复现 14px 蓝色直角像素滚动条，新成品改为 8px、透明轨道、半透明系统灰圆角滑块并保留横纵溢出；CDP 精确 URL 样式断言、真实截图、typecheck、全量打包及干净包 `verify:release` 通过。标准 `dist-package/win-unpacked` 的最终目录切换仍被 VS Code PID 30640 的文件句柄阻塞，已验收包暂存于 `electron/dist-package-ready/win-unpacked`，此目录切换不得误报完成。
+
 - [x] 2026-08-07 修复成品 Python 假阳性：根解释器与 ESP-IDF `Scripts` 启动器都使用包内隔离路径，补齐 Scripts DLL/_pth，清除 MSYS 污染；发布门禁验证关键模块绝不逃逸到系统 site-packages，并已在原交付目录 `win-unpacked` 跑通 ESP-IDF v5.4.3。
 - [x] 2026-08-07 修复任务管理器后续无日志：EventBus 跨进程加锁并从磁盘重同步序号，UI 改为最近窗口按事件 ID 去重及可恢复轮询；6 进程 120 条并发事件专项测试通过，真实成品两阶段迟到事件 smoke 证明日志面板打开后仍持续收取事件并更新任务完成态。
 - [x] 2026-08-07 修复 Agent 输入框光标/文字双层排版偏移：统一盒模型、边框、滚动条槽位和字体换行指标；真实成品发现并修正最后一处 14px/13px 全局样式差异，CDP 验收确认两层宽度、字号、行高和全部换行几何一致。

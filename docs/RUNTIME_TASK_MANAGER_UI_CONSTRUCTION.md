@@ -262,3 +262,14 @@ ProductVersion: 0.3.0
 3. 同一套滚动条视觉应用到工作台内实际可滚动区域，兼容深色/浅色主题；输入框透明高亮层继续隐藏自身滚动条，不能被全局规则重新显示。
 4. 新增 Renderer/CDP 样式验收，断言任务结果表横纵溢出仍存在，滚动条宽高、轨道、滑块圆角及颜色符合 Apple 主题，并核对指定成品 URL。
 5. 完成施工文档提交、实现、类型检查/Renderer 构建、成品重建与真实 UI 验收、文档收尾、推送和远端哈希核对。
+
+### 2026-08-07 验收记录
+
+- 施工文档先行提交：`24107e22`；实现提交：`b6d11d15`；验收脚本补强提交：`424a1e00`。
+- 修改前，针对旧成品运行 `smoke:task-scrollbar-ui`，稳定复现截图中的 `14px × 14px`、蓝色滑块、非透明轨道、`0px` 圆角和可见 scrollbar button。
+- 修改后，指定成品 URL 的 CDP 验收两次通过：`8px × 8px`、透明 track/corner、半透明系统灰滑块、`2px` 透明内缩边、`999px` 圆角、button 隐藏，且 `horizontalOverflow=true`，没有牺牲横向滚动。
+- 按 `apple-design` 的克制、层级和直接反馈原则复核：常态低对比度，hover/active 仅提高滑块强度，不再使用饱和蓝色抢占内容注意力；深浅主题使用独立语义变量。
+- 已生成并检查真实窗口截图 `electron/.tmp/task-scrollbar-acceptance.png`，任务表底部与右侧均为细圆角滑块，不再出现截图中的白轨/蓝块像素风。
+- Electron typecheck、Renderer/主进程/Runtime 构建及 Windows 全量 `pack:win` 通过。未启动的干净包通过 `verify:release`：构建号 `7201`、总大小 `4,464,201,225` 字节，Node `v22.14.0`、隔离 Python/pyserial `3.5`、ESP-IDF `v5.4.3`、Claude Code `2.1.167` 完整，且不含真实 DeepSeek/Qwen key。
+- 干净发布包与已启动 UI 验收包的 `resources/app.asar` SHA-256 均为 `7CEB034B634238D25CDB8552376E3718D6F6679598325ED9B0679C71630095B3`，证明发布门禁与 UI 实测对应同一份代码。
+- 当前机器的 VS Code 主窗口 PID 30640 持有旧正式目录与暂存目录的 `app.asar` 文件句柄，导致标准 `electron/dist-package/win-unpacked` 无法原位替换；已验收新包保存在 `electron/dist-package-ready/win-unpacked`。在 VS Code 正常关闭或用户明确授权关闭两个精确句柄前，不得把标准路径切换标记为完成。
