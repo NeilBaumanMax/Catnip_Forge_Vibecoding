@@ -4,17 +4,21 @@ const { pathToFileURL } = require('node:url');
 const CDP_LIST = 'http://127.0.0.1:9230/json';
 const packageRoot = path.resolve(process.env.CATNIP_PACKAGE_ROOT || path.join(__dirname, '..', 'dist-package', 'win-unpacked'));
 const runtimeRoot = path.join(packageRoot, 'resources', 'runtime');
+const expectedAppUrlPrefix = pathToFileURL(path.join(packageRoot, 'resources', 'app.asar')).href.toLowerCase();
 
 async function findRendererTarget() {
+  let discoveredUrls = [];
   for (let attempt = 0; attempt < 40; attempt += 1) {
     try {
       const targets = await fetch(CDP_LIST).then((response) => response.json());
-      const target = targets.find((entry) => entry.type === 'page' && entry.title?.includes('Catnip Forge'));
+      const candidates = targets.filter((entry) => entry.type === 'page' && entry.title?.includes('Catnip Forge ·'));
+      discoveredUrls = candidates.map((entry) => entry.url);
+      const target = candidates.find((entry) => entry.url?.toLowerCase().startsWith(expectedAppUrlPrefix));
       if (target?.webSocketDebuggerUrl) return target;
     } catch {}
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  throw new Error('未找到 Catnip Forge 主界面 Renderer CDP target；请先启动待验收的 win-unpacked 应用');
+  throw new Error(`未找到指定成品 ${packageRoot} 的 Catnip Forge 主界面 Renderer CDP target；已发现 ${JSON.stringify(discoveredUrls)}`);
 }
 
 async function cdpCall(socket, id, method, params = {}) {
@@ -47,6 +51,10 @@ async function evaluate(socket, id, expression) {
 }
 
 async function main() {
+  // Resolve and validate the exact packaged Renderer before writing any
+  // acceptance events. A same-title instance from another output directory
+  // must not mutate history or produce a false-positive result.
+  const target = await findRendererTarget();
   process.env.RUNTIME_ROOT = runtimeRoot;
   const eventStoreUrl = pathToFileURL(path.join(runtimeRoot, 'dist', 'eventbus', 'event-store.js')).href;
   const { appendRuntimeEvent } = await import(eventStoreUrl);
@@ -97,7 +105,6 @@ async function main() {
     payload: { progress: 35, acceptance: true },
   });
 
-  const target = await findRendererTarget();
   const socket = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((resolve, reject) => {
     socket.addEventListener('open', resolve, { once: true });
@@ -193,7 +200,7 @@ async function main() {
       && sustained.lateMarkerVisible
       && sustained.taskCompleted
       && !/失败|failed/i.test(`${initial.runtimeMessage} ${sustained.runtimeMessage}`);
-    const report = { ok, packageRoot, taskId, initial, sustained };
+    const report = { ok, packageRoot, targetUrl: target.url, taskId, initial, sustained };
     console.log(JSON.stringify(report, null, 2));
     if (!ok) process.exitCode = 1;
   } finally {

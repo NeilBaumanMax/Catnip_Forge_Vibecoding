@@ -1,15 +1,28 @@
+const path = require('node:path');
+const { pathToFileURL } = require('node:url');
+
 const CDP_LIST = 'http://127.0.0.1:9230/json';
+const expectedRendererRoot = process.env.CATNIP_EXPECTED_RENDERER_ROOT
+  ? path.resolve(process.env.CATNIP_EXPECTED_RENDERER_ROOT)
+  : null;
+const expectedAppUrlPrefix = expectedRendererRoot
+  ? pathToFileURL(path.join(expectedRendererRoot, 'resources', 'app.asar')).href.toLowerCase()
+  : null;
 
 async function findRendererTarget() {
+  let discoveredUrls = [];
   for (let attempt = 0; attempt < 40; attempt += 1) {
     try {
       const targets = await fetch(CDP_LIST).then((response) => response.json());
-      const target = targets.find((entry) => entry.title?.includes('Catnip Forge ·'));
+      const candidates = targets.filter((entry) => entry.type === 'page' && entry.title?.includes('Catnip Forge ·'));
+      discoveredUrls = candidates.map((entry) => entry.url);
+      const target = candidates.find((entry) => !expectedAppUrlPrefix || entry.url?.toLowerCase().startsWith(expectedAppUrlPrefix));
       if (target?.webSocketDebuggerUrl) return target;
     } catch {}
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  throw new Error('未找到 Catnip Forge 主界面 Renderer CDP target');
+  const expected = expectedRendererRoot ? `，预期成品根目录 ${expectedRendererRoot}` : '';
+  throw new Error(`未找到匹配的 Catnip Forge 主界面 Renderer CDP target${expected}；已发现 ${JSON.stringify(discoveredUrls)}`);
 }
 
 async function cdpCall(socket, id, method, params = {}) {
@@ -93,22 +106,23 @@ async function main() {
       const highlight = document.querySelector('.chat-input-highlight');
       const textareaStyle = getComputedStyle(composer);
       const highlightStyle = getComputedStyle(highlight);
+      const textMetricKeys = [
+        'font', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'fontStretch',
+        'lineHeight', 'letterSpacing', 'wordSpacing', 'textIndent', 'textTransform',
+        'fontKerning', 'fontFeatureSettings', 'fontVariationSettings', 'textRendering',
+        'whiteSpace', 'overflowWrap', 'tabSize',
+      ];
       const composerTextGeometryAligned = composer.clientWidth === highlight.clientWidth
         && textareaStyle.boxSizing === highlightStyle.boxSizing
         && textareaStyle.padding === highlightStyle.padding
         && textareaStyle.borderWidth === highlightStyle.borderWidth
-        && textareaStyle.fontFamily === highlightStyle.fontFamily
-        && textareaStyle.fontSize === highlightStyle.fontSize
-        && textareaStyle.lineHeight === highlightStyle.lineHeight
-        && textareaStyle.letterSpacing === highlightStyle.letterSpacing
-        && textareaStyle.whiteSpace === highlightStyle.whiteSpace
-        && textareaStyle.overflowWrap === highlightStyle.overflowWrap
+        && textMetricKeys.every((key) => textareaStyle[key] === highlightStyle[key])
         && textareaStyle.scrollbarGutter === highlightStyle.scrollbarGutter;
       const composerTextGeometry = {
         textareaClientWidth: composer.clientWidth,
         highlightClientWidth: highlight.clientWidth,
-        textarea: Object.fromEntries(['boxSizing', 'padding', 'borderWidth', 'fontFamily', 'fontSize', 'lineHeight', 'letterSpacing', 'whiteSpace', 'overflowWrap', 'scrollbarGutter'].map((key) => [key, textareaStyle[key]])),
-        highlight: Object.fromEntries(['boxSizing', 'padding', 'borderWidth', 'fontFamily', 'fontSize', 'lineHeight', 'letterSpacing', 'whiteSpace', 'overflowWrap', 'scrollbarGutter'].map((key) => [key, highlightStyle[key]])),
+        textarea: Object.fromEntries(['boxSizing', 'padding', 'borderWidth', ...textMetricKeys, 'scrollbarGutter'].map((key) => [key, textareaStyle[key]])),
+        highlight: Object.fromEntries(['boxSizing', 'padding', 'borderWidth', ...textMetricKeys, 'scrollbarGutter'].map((key) => [key, highlightStyle[key]])),
       };
       const expandedComposerHeight = expandedComposerRect.height;
       const composerResizable = expandedComposerHeight > initialComposerHeight
@@ -315,7 +329,7 @@ async function main() {
     const result = evaluated.result?.value;
     if (!result?.ok) throw new Error(`专业视图交互校验失败: ${JSON.stringify(result)}`);
 
-    console.log(JSON.stringify(result, null, 2));
+    console.log(JSON.stringify({ ...result, targetUrl: target.url, expectedRendererRoot }, null, 2));
   } finally {
     socket.close();
   }
