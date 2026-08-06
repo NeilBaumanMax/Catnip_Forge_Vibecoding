@@ -44,6 +44,7 @@ qwen-apikey.txt
 electron/node_modules/
 electron/dist/
 electron/dist-package/
+electron/dist-package-fixed/
 electron/dist-package.zip
 electron/.tmp/
 agent/node_modules/

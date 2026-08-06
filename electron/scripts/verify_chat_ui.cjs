@@ -90,6 +90,20 @@ async function main() {
       const expandedComposerRect = composerEditor.getBoundingClientRect();
       const textareaRect = composer.getBoundingClientRect();
       const highlightRect = document.querySelector('.chat-input-highlight').getBoundingClientRect();
+      const highlight = document.querySelector('.chat-input-highlight');
+      const textareaStyle = getComputedStyle(composer);
+      const highlightStyle = getComputedStyle(highlight);
+      const composerTextGeometryAligned = composer.clientWidth === highlight.clientWidth
+        && textareaStyle.boxSizing === highlightStyle.boxSizing
+        && textareaStyle.padding === highlightStyle.padding
+        && textareaStyle.borderWidth === highlightStyle.borderWidth
+        && textareaStyle.fontFamily === highlightStyle.fontFamily
+        && textareaStyle.fontSize === highlightStyle.fontSize
+        && textareaStyle.lineHeight === highlightStyle.lineHeight
+        && textareaStyle.letterSpacing === highlightStyle.letterSpacing
+        && textareaStyle.whiteSpace === highlightStyle.whiteSpace
+        && textareaStyle.overflowWrap === highlightStyle.overflowWrap
+        && textareaStyle.scrollbarGutter === highlightStyle.scrollbarGutter;
       const expandedComposerHeight = expandedComposerRect.height;
       const composerResizable = expandedComposerHeight > initialComposerHeight
         && Math.abs(expandedComposerHeight - highlightRect.height) < 1
@@ -237,6 +251,7 @@ async function main() {
           && deleteConfirmed
           && menuPlacementOk
           && composerResizable
+          && composerTextGeometryAligned
           && skillReferenceReadable
           && skillInlineMulti
           && skillMarkerHighlight
@@ -259,6 +274,7 @@ async function main() {
         deleteConfirmed,
         menuPlacementOk,
         composerResizable,
+        composerTextGeometryAligned,
         originalComposerHeight,
         initialComposerHeight,
         expandedComposerHeight,

@@ -68,7 +68,7 @@ export function resolvePython(version = DEFAULT_IDF_VERSION): string | null {
   prepareDevelopmentPython(roots[1]);
   const candidates = [
     process.env.VIBEIDE_PYTHON,
-    ...roots.map((root) => path.join(root, 'Scripts', 'python.exe')),
+    ...roots.map((root) => path.join(root, 'python.exe')),
   ];
 
   return findUsablePython(candidates);
@@ -103,6 +103,10 @@ function prepareDevelopmentPython(pythonRoot: string): void {
     const scriptsPython = path.join(scriptsDir, 'python.exe');
     fs.mkdirSync(scriptsDir, { recursive: true });
     if (!fs.existsSync(scriptsPython)) fs.copyFileSync(sourcePython, scriptsPython);
+    const pythonDll = path.join(pythonRoot, 'python312.dll');
+    if (fs.existsSync(pythonDll)) fs.copyFileSync(pythonDll, path.join(scriptsDir, 'python312.dll'));
+    const scriptsPthSource = path.join(RUNTIME_DIRS.root, 'python', 'python312-scripts._pth');
+    if (fs.existsSync(scriptsPthSource)) fs.copyFileSync(scriptsPthSource, path.join(scriptsDir, 'python312._pth'));
 
     const siteCustomizeSource = path.join(RUNTIME_DIRS.root, 'python', 'sitecustomize.py');
     const sitePackages = path.join(pythonRoot, 'Lib', 'site-packages');
@@ -124,8 +128,10 @@ export function buildIdfEnv(idfPath: string, version: string, projectDir?: strin
   const espRomElfDir = resolveEspRomElfDir(idfToolsPath);
   const cxxIncludePaths = resolveXtensaCxxIncludePaths(idfToolsPath, projectDir);
   ensureConstraintsFile(idfToolsPath, version);
+  const inheritedEnv = { ...process.env };
+  delete inheritedEnv.MSYSTEM;
   return {
-    ...process.env,
+    ...inheritedEnv,
     IDF_PATH: idfPath,
     IDF_TOOLS_PATH: idfToolsPath,
     ...(idfPythonEnvPath ? { IDF_PYTHON_ENV_PATH: idfPythonEnvPath } : {}),
@@ -193,7 +199,7 @@ function resolveIdfPythonEnvPath(version: string): string | null {
     const roots = bundledPythonRoots();
     prepareDevelopmentPython(roots[1]);
     for (const root of roots) {
-      if (findUsablePython([path.join(root, 'Scripts', 'python.exe')])) return root;
+      if (findUsablePython([path.join(root, 'python.exe')])) return root;
     }
     return null;
   }

@@ -91,7 +91,7 @@ async function listWindowsSerialPortsWithPython(): Promise<HardboardDevice[]> {
     const { stdout } = await execFileAsync(python, ['-c', script], {
       timeout: 8000,
       windowsHide: true,
-      env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1' },
+      env: { ...buildHardboardEnv(), PYTHONUTF8: '1' },
     });
     const parsed = JSON.parse(stdout.trim() || '[]') as HardboardDevice[];
     return Array.isArray(parsed) ? parsed.filter((item) => item?.port) : [];
@@ -432,8 +432,8 @@ function resolveHardboardPython(): string | null {
   prepareDevelopmentPython(developmentRoot);
   const candidates = [
     process.env.VIBEIDE_PYTHON,
-    path.join(packagedRoot, 'Scripts', 'python.exe'),
-    path.join(developmentRoot, 'Scripts', 'python.exe'),
+    path.join(packagedRoot, 'python.exe'),
+    path.join(developmentRoot, 'python.exe'),
   ].filter((candidate): candidate is string => Boolean(candidate));
 
   for (const candidate of candidates) {
@@ -453,9 +453,13 @@ function prepareDevelopmentPython(pythonRoot: string): void {
   if (!fs.existsSync(sourcePython)) return;
   try {
     const scriptsDir = path.join(pythonRoot, 'Scripts');
-    fs.mkdirSync(scriptsDir, { recursive: true });
     const scriptsPython = path.join(scriptsDir, 'python.exe');
+    fs.mkdirSync(scriptsDir, { recursive: true });
     if (!fs.existsSync(scriptsPython)) fs.copyFileSync(sourcePython, scriptsPython);
+    const pythonDll = path.join(pythonRoot, 'python312.dll');
+    if (fs.existsSync(pythonDll)) fs.copyFileSync(pythonDll, path.join(scriptsDir, 'python312.dll'));
+    const scriptsPthSource = path.join(getRuntimeDir(), 'python', 'python312-scripts._pth');
+    if (fs.existsSync(scriptsPthSource)) fs.copyFileSync(scriptsPthSource, path.join(scriptsDir, 'python312._pth'));
 
     const siteCustomizeSource = path.join(getRuntimeDir(), 'python', 'sitecustomize.py');
     const sitePackages = path.join(pythonRoot, 'Lib', 'site-packages');
@@ -472,10 +476,12 @@ function buildHardboardEnv(): NodeJS.ProcessEnv {
   const idfPath = path.join(runtimeDir, 'hardboard', 'esptools', 'esp-idf-v5.4.3', 'esp-idf');
   const idfToolsPath = path.join(runtimeDir, 'hardboard', 'esptools', 'idf-tools');
   const python = resolveHardboardPython();
-  const pythonEnvPath = python && process.platform === 'win32' ? path.dirname(path.dirname(python)) : '';
+  const pythonEnvPath = python && process.platform === 'win32' ? path.dirname(python) : '';
   const pythonBin = python ? path.dirname(python) : '';
+  const inheritedEnv = { ...process.env };
+  delete inheritedEnv.MSYSTEM;
   return {
-    ...process.env,
+    ...inheritedEnv,
     IDF_PATH: idfPath,
     IDF_TOOLS_PATH: idfToolsPath,
     ...(pythonEnvPath ? { IDF_PYTHON_ENV_PATH: pythonEnvPath, PYTHONHOME: pythonEnvPath, PYTHONNOUSERSITE: '1' } : {}),

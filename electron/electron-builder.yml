@@ -76,6 +76,10 @@ extraResources:
       - "!python312._pth.disabled*"
   - from: ../_bundled/python/python.exe
     to: runtime/python/Scripts/python.exe
+  - from: ../_bundled/python/python312.dll
+    to: runtime/python/Scripts/python312.dll
+  - from: ../runtime/python/python312-scripts._pth
+    to: runtime/python/Scripts/python312._pth
   - from: ../runtime/python/sitecustomize.py
     to: runtime/python/Lib/site-packages/sitecustomize.py
   - from: ../_bundled/playwright

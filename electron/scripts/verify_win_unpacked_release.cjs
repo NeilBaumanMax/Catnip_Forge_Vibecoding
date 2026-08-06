@@ -39,8 +39,13 @@ const required = [
   'electron/assets/icon.ico',
   'electron/assets/icon.png',
   'runtime/nodejs/node.exe',
+  'runtime/python/python.exe',
+  'runtime/python/python312._pth',
   'runtime/python/Scripts/python.exe',
+  'runtime/python/Scripts/python312._pth',
+  'runtime/python/Scripts/python312.dll',
   'runtime/python/Lib/site-packages/serial',
+  'runtime/python/Lib/site-packages/click/core.py',
   'runtime/dist/index.js',
   'runtime/dist/mcp/server.js',
   'runtime/dist/mcp/attachment.tool.js',
@@ -74,10 +79,36 @@ for (const entry of [
 }
 
 const nodeVersion = run(path.join(resources, 'runtime', 'nodejs', 'node.exe'), ['--version']);
-const pythonResult = run(path.join(resources, 'runtime', 'python', 'Scripts', 'python.exe'), ['-c', 'import serial; print(serial.VERSION)']);
+const packagedPython = path.join(resources, 'runtime', 'python', 'python.exe');
+const packagedPythonRoot = path.dirname(packagedPython);
+const packagedIdfPath = path.join(resources, 'runtime', 'hardboard', 'esptools', 'esp-idf-v5.4.3', 'esp-idf');
+const packagedIdfToolsPath = path.join(resources, 'runtime', 'hardboard', 'esptools', 'idf-tools');
+const packagedPythonEnv = {
+  ...process.env,
+  PYTHONNOUSERSITE: '1',
+  PYTHONHOME: packagedPythonRoot,
+  IDF_PATH: packagedIdfPath,
+  IDF_TOOLS_PATH: packagedIdfToolsPath,
+  IDF_PYTHON_ENV_PATH: packagedPythonRoot,
+  IDF_PYTHON_CHECK_CONSTRAINTS: 'no',
+  ESP_IDF_VERSION: '5.4.3',
+};
+delete packagedPythonEnv.MSYSTEM;
+const pythonResult = JSON.parse(run(packagedPython, ['-c', [
+  'import json, pathlib, sys, serial, click.core, idf_component_manager, esptool',
+  'root = pathlib.Path(sys.executable).resolve().parent',
+  'modules = [serial, click.core, idf_component_manager, esptool]',
+  'print(json.dumps({"serial": serial.VERSION, "root": str(root), "modules": [str(pathlib.Path(module.__file__).resolve()) for module in modules]}))',
+].join('; ')], packageRoot, packagedPythonEnv));
+const idfVersion = run(packagedPython, [path.join(packagedIdfPath, 'tools', 'idf.py'), '--version'], packageRoot, packagedPythonEnv);
 const claudeVersion = run(path.join(resources, 'agent', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe'), ['--version']);
 assert.match(nodeVersion, /^v\d+/);
-assert.equal(pythonResult, '3.5');
+assert.equal(pythonResult.serial, '3.5');
+assert.equal(path.resolve(pythonResult.root), path.resolve(path.dirname(packagedPython)));
+assert.match(idfVersion, /ESP-IDF v5\.4\.3/);
+for (const modulePath of pythonResult.modules) {
+  assert(modulePath.toLowerCase().startsWith(path.dirname(packagedPython).toLowerCase()), `Python escaped bundled root: ${modulePath}`);
+}
 assert.match(claudeVersion, /Claude Code/i);
 
 const runtimeDir = path.join(resources, 'runtime');
@@ -104,14 +135,15 @@ console.log(JSON.stringify({
   exe,
   totalBytes,
   nodeVersion,
-  python: `pyserial ${pythonResult}`,
+  python: `isolated pyserial ${pythonResult.serial}`,
+  idfVersion,
   claudeVersion,
   deepSeekApiKeyBundled: false,
   qwenApiKeyBundled: false,
 }, null, 2));
 
-function run(command, args, cwd = packageRoot) {
-  const result = spawnSync(command, args, { cwd, encoding: 'utf-8', windowsHide: true, timeout: 30_000 });
+function run(command, args, cwd = packageRoot, env = process.env) {
+  const result = spawnSync(command, args, { cwd, env, encoding: 'utf-8', windowsHide: true, timeout: 30_000 });
   if (result.status !== 0) throw new Error(`${command} failed (${result.status}): ${result.stderr || result.stdout}`);
   return String(result.stdout || result.stderr).trim();
 }

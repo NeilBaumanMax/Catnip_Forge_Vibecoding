@@ -85,6 +85,14 @@ interface TaskLogFocus {
   status: TaskHistoryItem['status'];
 }
 
+function mergeRuntimeEventWindow(current: RuntimeEvent[], incoming: RuntimeEvent[]): RuntimeEvent[] {
+  const byId = new Map<string, RuntimeEvent>();
+  for (const event of [...current, ...incoming]) byId.set(event.id, event);
+  return [...byId.values()]
+    .sort((left, right) => left.time - right.time || left.seq - right.seq)
+    .slice(-500);
+}
+
 function taskHistoryFromEvents(events: RuntimeEvent[]): TaskHistoryItem[] {
   const tasks = new Map<string, TaskHistoryItem>();
   for (const event of events) {
@@ -258,7 +266,6 @@ export default function BrowserPanel({
   const [serialText, setSerialText] = useState('');
   const [runtimeState, setRuntimeState] = useState<HardboardRuntimeState | null>(null);
   const [runtimeEvents, setRuntimeEvents] = useState<RuntimeEvent[]>([]);
-  const [runtimeSeq, setRuntimeSeq] = useState(0);
   const [runtimePollGeneration, setRuntimePollGeneration] = useState(0);
   const [projectDir, setProjectDir] = useState('');
   const [runtimeMessage, setRuntimeMessage] = useState('');
@@ -441,13 +448,27 @@ export default function BrowserPanel({
 
   useEffect(() => {
     let cancelled = false;
+    let inFlight = false;
     const generation = runtimePollGenerationRef.current;
     const poll = async () => {
-      const result = await window.electronAPI?.getHardboardRuntimeEvents?.(runtimeSeq);
-      if (!result || cancelled || generation !== runtimePollGenerationRef.current) return;
-      setRuntimeState(result.state);
-      setRuntimeSeq(result.state.lastSeq);
-      setRuntimeEvents((current) => [...current, ...result.events].slice(-500));
+      if (inFlight) return;
+      inFlight = true;
+      try {
+        // Always read the bounded recent window. Runtime events have multiple
+        // writers, so an incremental numeric cursor alone cannot recover from
+        // legacy duplicate/regressed sequences. Stable event ids deduplicate it.
+        const result = await window.electronAPI?.getHardboardRuntimeEvents?.(0);
+        if (!result || cancelled || generation !== runtimePollGenerationRef.current) return;
+        setRuntimeState(result.state);
+        setRuntimeEvents((current) => mergeRuntimeEventWindow(current, result.events));
+        setRuntimeMessage((current) => current.startsWith('事件订阅读取失败：') ? '' : current);
+      } catch (error) {
+        if (!cancelled && generation === runtimePollGenerationRef.current) {
+          setRuntimeMessage(`事件订阅读取失败：${error instanceof Error ? error.message : String(error)}`);
+        }
+      } finally {
+        inFlight = false;
+      }
     };
     void poll();
     const timer = window.setInterval(() => void poll(), 1000);
@@ -455,7 +476,7 @@ export default function BrowserPanel({
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [projectDir, runtimeSeq, runtimePollGeneration]);
+  }, [projectDir, runtimePollGeneration]);
 
   useEffect(() => {
     if (!projectDir && projectOptions[0]) {
@@ -820,7 +841,6 @@ export default function BrowserPanel({
       runtimePollGenerationRef.current += 1;
       setRuntimePollGeneration(runtimePollGenerationRef.current);
       setRuntimeState(result.state);
-      setRuntimeSeq(result.state.lastSeq);
       setLiveLogClearedSeq(0);
       setFullLogClearedSeq(0);
       setEventCardsClearedSeq(0);

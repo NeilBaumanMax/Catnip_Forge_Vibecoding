@@ -5,32 +5,35 @@ import type { HardboardRuntimeState, RuntimeEvent, RuntimeEventInput } from './e
 
 const EVENT_LOG_FILE = path.join(RUNTIME_DIRS.hardboardEvents, 'events.jsonl');
 const EVENT_STATE_FILE = path.join(RUNTIME_DIRS.hardboardEvents, 'state.json');
+const EVENT_LOCK_FILE = path.join(RUNTIME_DIRS.hardboardEvents, '.writer.lock');
 const RECENT_LIMIT = 80;
 const HEARTBEAT_STALE_MS = 15_000;
+const LOCK_STALE_MS = 30_000;
 
 let lastSeq = readInitialSeq();
 let state: HardboardRuntimeState = readInitialState();
 
 export function appendRuntimeEvent(input: RuntimeEventInput): RuntimeEvent {
-  ensureEventDir();
-  const event: RuntimeEvent = {
-    seq: nextSeq(),
-    id: input.id || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`,
-    time: input.time || Date.now(),
-    source: input.source,
-    kind: input.kind,
-    taskId: input.taskId,
-    pid: input.pid,
-    toolName: input.toolName,
-    projectDir: input.projectDir,
-    message: input.message,
-    payload: input.payload,
-  };
+  return withEventWriterLock(() => {
+    const event: RuntimeEvent = {
+      seq: nextSeq(),
+      id: input.id || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`,
+      time: input.time || Date.now(),
+      source: input.source,
+      kind: input.kind,
+      taskId: input.taskId,
+      pid: input.pid,
+      toolName: input.toolName,
+      projectDir: input.projectDir,
+      message: input.message,
+      payload: input.payload,
+    };
 
-  fs.appendFileSync(EVENT_LOG_FILE, `${JSON.stringify(event)}\n`, 'utf-8');
-  state = reduceState(state, event);
-  writeState(state);
-  return event;
+    appendEventLine(event);
+    state = reduceState(readStateFromDisk() ?? state, event);
+    writeState(state);
+    return event;
+  });
 }
 
 export function getRuntimeEventState(): HardboardRuntimeState {
@@ -73,26 +76,28 @@ export function clearRuntimeEventHistory(): {
   logsRemoved: number;
   state: HardboardRuntimeState;
 } {
-  let eventsRemoved = 0;
-  if (fs.existsSync(EVENT_LOG_FILE)) {
-    const lines = fs.readFileSync(EVENT_LOG_FILE, 'utf-8').split(/\r?\n/).filter(Boolean);
-    eventsRemoved = lines.length;
-    fs.unlinkSync(EVENT_LOG_FILE);
-  }
-
-  let logsRemoved = 0;
-  if (fs.existsSync(RUNTIME_DIRS.hardboardLogs)) {
-    for (const entry of fs.readdirSync(RUNTIME_DIRS.hardboardLogs, { withFileTypes: true })) {
-      if (!entry.isFile() || !entry.name.toLowerCase().endsWith('.log')) continue;
-      fs.unlinkSync(path.join(RUNTIME_DIRS.hardboardLogs, entry.name));
-      logsRemoved += 1;
+  return withEventWriterLock(() => {
+    let eventsRemoved = 0;
+    if (fs.existsSync(EVENT_LOG_FILE)) {
+      const lines = fs.readFileSync(EVENT_LOG_FILE, 'utf-8').split(/\r?\n/).filter(Boolean);
+      eventsRemoved = lines.length;
+      fs.unlinkSync(EVENT_LOG_FILE);
     }
-  }
 
-  lastSeq = 0;
-  state = createInitialState();
-  writeState(state);
-  return { ok: true, eventsRemoved, logsRemoved, state };
+    let logsRemoved = 0;
+    if (fs.existsSync(RUNTIME_DIRS.hardboardLogs)) {
+      for (const entry of fs.readdirSync(RUNTIME_DIRS.hardboardLogs, { withFileTypes: true })) {
+        if (!entry.isFile() || !entry.name.toLowerCase().endsWith('.log')) continue;
+        fs.unlinkSync(path.join(RUNTIME_DIRS.hardboardLogs, entry.name));
+        logsRemoved += 1;
+      }
+    }
+
+    lastSeq = 0;
+    state = createInitialState();
+    writeState(state);
+    return { ok: true, eventsRemoved, logsRemoved, state };
+  });
 }
 
 function deriveRuntimeState(value: HardboardRuntimeState): HardboardRuntimeState {
@@ -265,8 +270,78 @@ function createInitialState(): HardboardRuntimeState {
 }
 
 function nextSeq(): number {
-  lastSeq += 1;
+  const diskStateSeq = readStateFromDisk()?.lastSeq ?? 0;
+  const logSeq = readLastLogSeq();
+  lastSeq = Math.max(lastSeq, diskStateSeq, logSeq) + 1;
   return lastSeq;
+}
+
+function readStateFromDisk(): HardboardRuntimeState | null {
+  if (!fs.existsSync(EVENT_STATE_FILE)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(EVENT_STATE_FILE, 'utf-8')) as HardboardRuntimeState;
+  } catch {
+    return null;
+  }
+}
+
+function readLastLogSeq(): number {
+  if (!fs.existsSync(EVENT_LOG_FILE)) return 0;
+  try {
+    const lines = fs.readFileSync(EVENT_LOG_FILE, 'utf-8').split(/\r?\n/).filter(Boolean);
+    for (let index = lines.length - 1; index >= 0; index -= 1) {
+      try {
+        const event = JSON.parse(lines[index]) as Partial<RuntimeEvent>;
+        if (typeof event.seq === 'number' && Number.isFinite(event.seq)) return event.seq;
+      } catch {
+        // Keep scanning past a partial tail record.
+      }
+    }
+  } catch {
+    // A reader may race an atomic clear; the in-memory/state sequence still applies.
+  }
+  return 0;
+}
+
+function appendEventLine(event: RuntimeEvent): void {
+  let prefix = '';
+  if (fs.existsSync(EVENT_LOG_FILE) && fs.statSync(EVENT_LOG_FILE).size > 0) {
+    const descriptor = fs.openSync(EVENT_LOG_FILE, 'r');
+    try {
+      const tail = Buffer.alloc(1);
+      fs.readSync(descriptor, tail, 0, 1, fs.statSync(EVENT_LOG_FILE).size - 1);
+      if (tail[0] !== 0x0a) prefix = '\n';
+    } finally {
+      fs.closeSync(descriptor);
+    }
+  }
+  fs.appendFileSync(EVENT_LOG_FILE, `${prefix}${JSON.stringify(event)}\n`, 'utf-8');
+}
+
+function withEventWriterLock<T>(operation: () => T): T {
+  ensureEventDir();
+  let descriptor: number | null = null;
+  for (let attempt = 0; attempt < 300; attempt += 1) {
+    try {
+      descriptor = fs.openSync(EVENT_LOCK_FILE, 'wx');
+      break;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+      try {
+        if (Date.now() - fs.statSync(EVENT_LOCK_FILE).mtimeMs > LOCK_STALE_MS) fs.unlinkSync(EVENT_LOCK_FILE);
+      } catch {
+        // Another writer released or replaced the lock.
+      }
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10);
+    }
+  }
+  if (descriptor == null) throw new Error('runtime event writer lock timed out');
+  try {
+    return operation();
+  } finally {
+    fs.closeSync(descriptor);
+    try { fs.unlinkSync(EVENT_LOCK_FILE); } catch { /* lock already cleaned up */ }
+  }
 }
 
 function writeState(value: HardboardRuntimeState): void {
