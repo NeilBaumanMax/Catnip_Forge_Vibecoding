@@ -12,6 +12,7 @@
 
 ## 当前已落地
 
+- [x] 2026-08-08 将默认开发仓库切换为 `Catnip_Forge_Vibecoding`，完成当前源码与标签同步；`qwen_vision_attachments` 验收后合入 `main`，现行文档统一以新仓库和主分支为准
 - [x] 2026-08-07 任务管理器滚动条完成 Apple UI 收口：旧成品 smoke 先复现 14px 蓝色直角像素滚动条，新成品改为 8px、透明轨道、半透明系统灰圆角滑块并保留横纵溢出；CDP 精确 URL 样式断言、真实截图、typecheck、全量打包及干净包 `verify:release` 通过。用户授权精确释放 VS Code 文件句柄后，标准 `dist-package/win-unpacked` 已恢复完整并通过冷启动验收；订阅状态、Node、隔离 Python/pyserial、ESP-IDF 探针同时通过。
 
 - [x] 2026-08-07 修复成品 Python 假阳性：根解释器与 ESP-IDF `Scripts` 启动器都使用包内隔离路径，补齐 Scripts DLL/_pth，清除 MSYS 污染；发布门禁验证关键模块绝不逃逸到系统 site-packages，并已在原交付目录 `win-unpacked` 跑通 ESP-IDF v5.4.3。
@@ -24,7 +25,7 @@
 - [x] 新增 Catnip Forge 品牌启动界面：三张透明素材完整落地，工作区、开发环境、Renderer 与主窗口 ready 节点驱动真实阶段进度，完成后自动切换主窗口
 - [x] 新增启动页 CDP 烟测 `npm.cmd --prefix electron run verify:splash-ui`，覆盖素材加载、双语文案、系统字体栈、进度更新、窗口边界和截图验收
 - [x] 启动页改为从实际显示起至少保留约 5 秒，进度条逐帧平滑推进至 94%，并与主窗口真实 `ready-to-show` 双门槛协调后完成至 100%
-- [x] GitHub 远端真相源已统一为 remote `origin`，当前施工分支为 `qwen_vision_attachments`（基于 `main`）；提交号和跟踪状态由本地 Git 动态查询
+- [x] GitHub 远端真相源已统一为 remote `origin`，当前开发主分支为 `main`；提交号和跟踪状态由本地 Git 动态查询
 - [x] 2026-08-06 建立强制开发闭环施工文档并独立提交；当前分支以全量自动回归、CDP 启动页误选修复、Windows 成品重建、最终文档提交、施工分支推送和远端核对作为本轮收尾门禁
 - [x] 当前唯一施工源码目录已统一为 Windows `E:\Agent\vibeide\vibeide`；旧 `C:\vibeide` 和 `E:\vibeide` 仅保留在历史迁移记录中
 - [x] README 已重写为 Catnip Forge 当前 Electron + Runtime + Agent 主线，`vibeide` 保留为仓库和内部工程代号

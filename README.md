@@ -6,7 +6,7 @@
 
 Catnip Forge 是一个面向硬件 vibecoding 的本地桌面 IDE。它把 Electron、Claude Code Agent、Runtime MCP 工具、ESP-IDF hardboard 工具链和可复用 Skill 放在同一个桌面应用里，用来完成 ESP32/ESP32-S3 工程编写、编译、烧录、串口监视、文档查看和网页辅助检索。
 
-当前 GitHub 仓库名为 `Catnip-Forge`；内部 npm 包名和运行态兼容键仍沿用 `vibeide` 作为工程代号，用户可见正式产品名统一为 `Catnip Forge`。
+当前 GitHub 开发仓库名为 `Catnip_Forge_Vibecoding`；内部 npm 包名和运行态兼容键仍沿用 `vibeide` 作为工程代号，用户可见正式产品名统一为 `Catnip Forge`。
 
 当前主线不是旧的纯 Python scaffold，而是：
 
@@ -17,12 +17,12 @@ Electron UI -> Gateway -> Worker -> Agent -> Runtime MCP -> Electron Chromium / 
 ## 当前状态
 
 - 当前 GitHub remote：`origin`
-- 当前施工分支：`qwen_vision_attachments`（基于 `main`）
+- 当前开发主分支：`main`
 - 当前对外发布版本：`v1.0.0`；内部构建号 `7201`，npm 包版本 `1.0.0-7201`，Windows PE 文件版本 `1.0.0.7201`
 - 当前 Windows 源码目录：`E:\Agent\vibeide\vibeide`
 - 上一版 Windows v0.1.0 unpacked 包：`E:\vibeide-0.1-win-unpacked`（历史验证对象）
 - 历史 Linux、`C:\vibeide` 和旧 `E:\vibeide` 路径仅用于迁移记录，不再作为当前施工目录。
-- 当前代码来源：Windows 工作区在 `qwen_vision_attachments` 分支维护 Qwen 视觉旁路、聊天附件、Catnip Forge 客户数据路径，以及既有 Apple 风格 Electron、目录型 Skill、共享串口助手和编辑器能力；提交号和 GitHub 跟踪状态以本地 Git 动态查询结果为准。
+- 当前代码来源：Windows 工作区通过 `main` 维护 Qwen 视觉旁路、聊天附件、Catnip Forge 客户数据路径，以及既有 Apple 风格 Electron、目录型 Skill、共享串口助手和编辑器能力；提交号和 GitHub 跟踪状态以本地 Git 动态查询结果为准。
 
 ## 能力边界
 
