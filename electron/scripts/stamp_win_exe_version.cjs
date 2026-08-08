@@ -25,14 +25,14 @@ const language = { lang: 1033, codepage: 1200 };
 vi.setFileVersion(version, language.lang);
 vi.setProductVersion(version, language.lang);
 vi.setStringValues(language, {
-  CompanyName: 'howtion',
+  CompanyName: 'Catnip Forge',
   FileDescription: description,
   FileVersion: version,
   InternalName: `${productName}.exe`,
   OriginalFilename: `${productName}.exe`,
   ProductName: productName,
   ProductVersion: version,
-  LegalCopyright: 'Copyright (C) howtion. All rights reserved.',
+  LegalCopyright: 'Copyright (C) Catnip Forge. All rights reserved.',
 }, true);
 vi.outputToResourceEntries(res.entries);
 res.outputResource(exe);

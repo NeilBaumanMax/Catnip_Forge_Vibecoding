@@ -2,7 +2,7 @@
 
 ## 目标
 
-把当前 Linux 工作区里的 runtime eventbus、任务管理器、编辑器多文件标签、仓库导入文件夹能力移植到 Windows 实机。施工时先同步到 `C:\vibeide`，随后按用户要求把源码和 unpacked 包迁移到 E 盘：`E:\vibeide`、`E:\vibeide-0.1-win-unpacked`。施工前先把当前工作备份到 GitHub `git@github.com:howtion0/vibeide.git`，再在 Windows 上编译、打包 `0.1` 版本 exe，并使用插在 Windows 上的 ESP32-S3 做硬件验证。
+把当前 Linux 工作区里的 runtime eventbus、任务管理器、编辑器多文件标签、仓库导入文件夹能力移植到 Windows 实机。施工时先同步到 `C:\vibeide`，随后按用户要求把源码和 unpacked 包迁移到 E 盘：`E:\vibeide`、`E:\vibeide-0.1-win-unpacked`。施工前先把当前工作备份到当时的 GitHub 远端，再在 Windows 上编译、打包 `0.1` 版本 exe，并使用插在 Windows 上的 ESP32-S3 做硬件验证。
 
 ## 施工顺序
 
@@ -10,7 +10,7 @@
 2. 备份当前 Linux 工作区到 GitHub：
 
 ```text
-git@github.com:howtion0/vibeide.git
+历史 GitHub 远端
 ```
 
 3. 同步源码到 Windows `C:\vibeide`，覆盖上一版本源码，但不删除 Windows 本地依赖、硬件运行态和用户文件。

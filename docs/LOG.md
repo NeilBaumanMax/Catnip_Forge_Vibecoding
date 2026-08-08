@@ -117,7 +117,7 @@
 
 ## 2026-07-25 — Windows v1.0.0 成品重建与文档漂移修正
 
-- Git 当前真相源统一记录为 remote `origin` = `git@github.com:NeilBaumanMax/Catnip-Forge.git`、分支 `main`；移除 README、进度和接力文档中把旧 `vibeide_Neil`、HTTPS、`electron_design` 或固定 HEAD 当作当前状态的表述。
+- Git 当前真相源统一记录为 remote `origin`、分支 `main`；移除 README、进度和接力文档中把旧仓库地址、HTTPS、`electron_design` 或固定 HEAD 当作当前状态的表述。
 - 第一次 `pack:win` 虽由 electron-builder 返回成功，但 `verify:release` 发现随包 `resources/runtime/python/Scripts/python.exe` 缺失；根因是被 Git 忽略的 `_bundled/python` 仅剩 site-packages，没有 Python 核心文件。
 - 从本机已验证历史便携包恢复 Python 3.12.9 核心，确认 pyserial 3.5 后重新全量打包；打包脚本新增 Node、Python、pyserial 和 Playwright 前置检查，避免清空旧成品后生成运行时不完整的新目录。
 - 最终成品位于 `electron/dist-package/win-unpacked`，共 36,985 个文件、`4,382,268,512` 字节；`verify:version`、`verify:release`、无 Key 首启及保存测试 Key 后自动重启闭环均通过，测试 Key 与成品测试进程已清理。
@@ -411,7 +411,7 @@
 
 ## 2026-07-17 — GitHub 真相源切换到 vibeide_Neil
 
-- 当前 GitHub 切换为 `https://github.com/NeilBaumanMax/vibeide_Neil.git`。
+- 当前 GitHub 切换为新的远端仓库。
 - 切换前已验证新远端 `main` 与本地基线同为 `63820a3`，无需强推或合并无关历史。
 - README、仓库级开发规则、HANDOFF、GITHUB_SYNC、DEVELOPMENT 和 DEV_PROGRESS 已统一更新；旧仓库地址只保留在明确的历史日志和迁移记录中。
 - 未跟踪的本机 `日志.txt` 和运行态文件不纳入同步提交。
@@ -446,7 +446,7 @@
 - 修复 Windows 中文用户名路径导致 SSH 连接失败的问题：
   - Git Bash `~` 展开为 `/c/Users/刘天凯/`，ssh.exe 对 UTF-8 中文路径编码异常。
   - 解决方法：配置 `git config --global core.sshCommand` 使用显式路径参数绕过。
-- SSH key (`ed25519`) 已生成并配置，远程已从 `howtio/vibeide` 改为 `howtion0/vibeide`。
+- SSH key (`ed25519`) 已生成并配置，远程仓库地址已更正。
 - 执行施工文档构建流程：
   - `npm --prefix runtime run build` — runtime TypeScript 编译通过
   - `npm --prefix electron run typecheck` — 类型检查通过
@@ -456,12 +456,12 @@
 - exe 文件属性已验证：`ProductName=奥德赛0.0`、`FileVersion=0.1.0`、`ProductVersion=0.1.0`。
 - exe 启动测试通过：`D:\vibeide\electron\dist-package\win-unpacked\奥德赛0.0.exe` 进程正常启动，无崩溃。
 - 产线 API key 已部署到 `%APPDATA%\vibeide\apikey.txt`。
-- 远程仓库已从 `howtio/vibeide` 更正为 `howtion0/vibeide`，合并远程 6 个提交后推送成功。
+- 远程仓库地址已更正，合并远程 6 个提交后推送成功。
 
 ## 2026-06-29 — Windows C:\vibeide 0.1 迁移启动
 
 - 按用户要求先写施工文档：`docs/WINDOWS_0_1_MIGRATION_CONSTRUCTION.md`。
-- 已将当前施工成果备份到 `git@github.com:howtion0/vibeide.git`，`main` 更新到本轮 runtime task manager / 仓库导入文件夹 / Windows 迁移施工方案。
+- 已将当前施工成果备份到当时的远端仓库，`main` 更新到本轮 runtime task manager / 仓库导入文件夹 / Windows 迁移施工方案。
 - Electron 应用版本调整为 `0.1.0`，后续 Windows unpacked exe 需要写入 `FileVersion=0.1.0`、`ProductVersion=0.1.0`。
 - 本轮 Windows 目标目录是 `C:\vibeide`，该目录已有上一版本，迁移时覆盖源码但保留依赖、硬件运行态和本地用户文件。
 - 仓库页新增“导入文件夹”入口，默认精选分组之外允许用户把任意本机目录加入仓库视图；导入分组支持移除，移除后不再允许读写该目录；UI 默认分组不再显示施工文档。
@@ -593,7 +593,7 @@
 ## 2026-06-21 — GitHub 接力与文档重构
 
 - 历史仓库：
-  - `git@github.com:howtio/vibeide.git`
+  - 历史 GitHub 远端
 - 新增：
   - `docs/INDEX.md`
   - `docs/ARCHITECTURE.md`
@@ -602,7 +602,6 @@
   - `docs/REFACTOR_PLAN.md`
   - `docs/SECURITY.md`
   - `docs/HANDOFF.md`
-  - `.local-secrets/HANDOFF_PRIVATE.md`（本机私有，已忽略，不入库）
 - 更新：
   - `README.md`
   - `CLAUDE.md`
@@ -613,7 +612,7 @@
   - 仓库级规则从旧 `coffecat` 重写为当前模块边界和安全红线
   - 新增 GitHub / Windows / 本机三方接力流程
   - 新增下一步重构计划，明确命名统一、旧 Python scaffold、录制回放边界和 Windows 开发体验
-  - `.gitignore` 明确排除 `.local-secrets/`、根 `.claude/`、`agent/.claude/`、`electron/dist/`
+  - `.gitignore` 明确排除本机配置、根 `.claude/`、`agent/.claude/`、`electron/dist/`
 - 验证：
   - GitHub SSH 已验证可访问
   - Windows SSH 已验证可访问

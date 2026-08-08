@@ -54,11 +54,11 @@ git checkout main
 
 ```bash
 git status --short --ignored
-git check-ignore -v .local-secrets/HANDOFF_PRIVATE.md .claude/settings.local.json agent/.claude/settings.json || true
+git check-ignore -v .claude/settings.local.json agent/.claude/settings.json || true
 ```
 
-4. 精确 `git add`，不要用 `git add -A` 把运行态和私有文件扫进去。
-5. 精确提交并推送当前施工分支到 remote `origin`（`git@github.com:NeilBaumanMax/Catnip-Forge.git`），随后查询远端确认提交号；未经合并验收不直接推入 `main`。
+4. 精确 `git add`，不要用 `git add -A` 把运行态和本机文件扫进去。
+5. 精确提交并推送当前施工分支到 remote `origin`，随后查询远端确认提交号；未经合并验收不直接推入 `main`。
 
 ## 验证命令
 
@@ -94,7 +94,7 @@ npm run build:renderer
 
 ## 安全红线
 
-- 不提交 `apikey.txt`、`.env`、`.local-secrets/`。
+- 不提交 `apikey.txt`、`.env` 或任何本机凭据文件。
 - 不提交 `runtime/chrome_profile/`、cookies、日志、录制运行产物。
 - 不提交 `electron/dist/`、`electron/dist-package/`、`node_modules/`。
 - 不在 README、公开 docs、commit message 中写真实账号密码。

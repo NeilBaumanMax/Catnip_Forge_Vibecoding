@@ -17,7 +17,7 @@ runtime/hardboard/esptools/
 历史 Linux 开发机曾使用的 ESP-IDF（仅作迁移记录）：
 
 ```text
-/home/howtion/.esp/v5.4.3/esp-idf
+/home/<user>/.esp/v5.4.3/esp-idf
 ```
 
 Windows 最终免环境配置要求：

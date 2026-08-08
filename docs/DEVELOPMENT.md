@@ -7,7 +7,7 @@
 - Node.js 22+
 - npm
 - Python 3.11+
-- Git 可访问 `git@github.com:NeilBaumanMax/Catnip-Forge.git`
+- Git 可访问已配置的 remote `origin`
 - Windows 实机用于最终运行验证
 
 ## 开工检查
@@ -153,7 +153,7 @@ git add electron/src runtime/src agent/skills agent/tools config scripts tests
 
 ```bash
 git status --short --ignored
-git check-ignore -v .local-secrets/HANDOFF_PRIVATE.md .claude/settings.local.json agent/.claude/settings.json electron/dist/main/index.js || true
+git check-ignore -v .claude/settings.local.json agent/.claude/settings.json electron/dist/main/index.js || true
 git diff --cached --check
 ```
 

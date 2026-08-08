@@ -70,7 +70,7 @@
 本次需要完成：
 
 1. 修正仓库级开发规则中缺失的阶段门禁。
-2. 统一当前远端为 `git@github.com:NeilBaumanMax/Catnip-Forge.git`。
+2. 统一当前远端为 remote `origin`。
 3. 清除已经过期的“本轮不推送”状态描述。
 4. 审计当前 `HEAD` 相对 `origin/main` 的 20 个本地提交。
 5. 重新执行适用于当前分支的自动验证和 Windows 成品校验。

@@ -46,6 +46,6 @@
 - README 只写对外入口和最短启动路径。
 - 架构和模块边界写在 `ARCHITECTURE.md`。
 - 本机接力、Windows SSH、GitHub 同步写在 `HANDOFF.md` 和 `GITHUB_SYNC.md`。
-- 账号密码只写 `.local-secrets/HANDOFF_PRIVATE.md`，不写进任何公开文档。
+- 账号密码只保存在本机，不写进任何项目文档。
 - 每次重构收尾时更新 `DEV_PROGRESS.md` 和 `LOG.md`。
 - 结构性功能、跨模块修改、发布变更和高风险修复必须先建立或更新专项施工文档，再进入代码施工。

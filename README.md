@@ -16,7 +16,7 @@ Electron UI -> Gateway -> Worker -> Agent -> Runtime MCP -> Electron Chromium / 
 
 ## 当前状态
 
-- 当前 GitHub remote `origin`：`git@github.com:NeilBaumanMax/Catnip-Forge.git`
+- 当前 GitHub remote：`origin`
 - 当前施工分支：`qwen_vision_attachments`（基于 `main`）
 - 当前对外发布版本：`v1.0.0`；内部构建号 `7201`，npm 包版本 `1.0.0-7201`，Windows PE 文件版本 `1.0.0.7201`
 - 当前 Windows 源码目录：`E:\Agent\vibeide\vibeide`
@@ -145,9 +145,8 @@ pytest tests/test_project.py
 - `agent/screenshots/`
 - `apikey.txt`
 - `.env`
-- `.local-secrets/`
 
-本机私有账号、密码和 SSH 信息记录在 `.local-secrets/HANDOFF_PRIVATE.md`，该目录已被 `.gitignore` 排除。
+账号、密码、API Key 和 SSH 信息只保存在本机，不写入项目文档或版本库。
 
 ## 下一步
 

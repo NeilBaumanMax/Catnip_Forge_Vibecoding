@@ -1,7 +1,7 @@
 # Windows 0.1 迁移与硬件测试报告
 
 测试日期：2026-06-29  
-测试机器：Windows `hp@192.168.137.1`  
+测试机器：Windows 实机
 源码目录：`E:\vibeide`  
 打包目录：`E:\vibeide-0.1-win-unpacked`  
 可执行文件：`E:\vibeide-0.1-win-unpacked\奥德赛0.0.exe`

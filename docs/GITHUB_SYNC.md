@@ -2,7 +2,7 @@
 
 ## 目标
 
-把 GitHub 仓库 `git@github.com:NeilBaumanMax/Catnip-Forge.git`（remote `origin`）作为远端源码真相源，以 Windows 当前工作区 `E:\Agent\vibeide\vibeide` 为本地施工目录，避免旧迁移镜像继续分叉。
+把 GitHub remote `origin` 作为远端源码真相源，以 Windows 当前工作区 `E:\Agent\vibeide\vibeide` 为本地施工目录，避免旧迁移镜像继续分叉。
 
 ## 当前拓扑
 
@@ -11,10 +11,10 @@ Windows 当前工作区
   E:\Agent\vibeide\vibeide
       ↑↓ git（SSH）
 GitHub
-  git@github.com:NeilBaumanMax/Catnip-Forge.git
+  remote origin（SSH）
 ```
 
-历史迁移曾使用 Linux `/home/howtion/桌面/hardvibecoding/vibeide`、Windows `C:\vibeide`、`E:\vibeide` 和 `E:\vibeide-0.1-win-unpacked`。这些路径只用于理解旧日志和测试报告，不再作为当前开工、启动或打包目录。
+历史迁移曾使用 Linux 工作区、Windows `C:\vibeide`、`E:\vibeide` 和 `E:\vibeide-0.1-win-unpacked`。这些路径只用于理解旧日志和测试报告，不再作为当前开工、启动或打包目录。
 
 ## 已完成
 
@@ -24,7 +24,7 @@ GitHub
 - `electron_fix_neil` 早期推送曾因 GitHub HTTPS 连接重置失败；远端分支事实不能根据本地分支存在与否推断，必须以成功的 `git push` 或远端查询结果为准。
 - Windows SSH 已连通。
 - `C:\vibeide`、`E:\vibeide` 与 `E:\vibeide-0.1-win-unpacked` 是历史同步目标；当前唯一施工目录为 `E:\Agent\vibeide\vibeide`，不得再将旧目录描述为当前同步状态。
-- 本机私有连接信息已写入 `.local-secrets/HANDOFF_PRIVATE.md`，该目录不会提交。
+- 本机连接与身份信息不得写入项目文档或版本库。
 
 ## 推荐长期流程
 
@@ -47,7 +47,7 @@ git push -u origin <当前分支>
 
 ```powershell
 cd E:\Agent\vibeide
-git clone git@github.com:NeilBaumanMax/Catnip-Forge.git vibeide
+git clone <repository-ssh-url> vibeide
 cd E:\Agent\vibeide\vibeide
 npm --prefix runtime install
 npm --prefix electron install
@@ -63,16 +63,16 @@ npm --prefix agent install
 主源码包：
 
 ```bash
-ssh hp@192.168.137.1 "tar -a -cf C:\Users\HP\AppData\Local\Temp\vibeide-source.zip --exclude=./electron/node_modules --exclude=./electron/dist-package --exclude=./electron/dist-package.zip --exclude=./agent/node_modules --exclude=./agent/logs --exclude=./agent/screenshots --exclude=./agent/recordings --exclude=./_bundled --exclude=./apikey.txt -C E:\vibeide ."
-scp hp@192.168.137.1:/C:/Users/HP/AppData/Local/Temp/vibeide-source.zip ../vibeide-source.zip
+ssh <windows-user>@<windows-host> "tar -a -cf C:\Users\<windows-user>\AppData\Local\Temp\vibeide-source.zip --exclude=./electron/node_modules --exclude=./electron/dist-package --exclude=./electron/dist-package.zip --exclude=./agent/node_modules --exclude=./agent/logs --exclude=./agent/screenshots --exclude=./agent/recordings --exclude=./_bundled --exclude=./apikey.txt -C E:\vibeide ."
+scp <windows-user>@<windows-host>:/C:/Users/<windows-user>/AppData/Local/Temp/vibeide-source.zip ../vibeide-source.zip
 unzip -o ../vibeide-source.zip
 ```
 
 Runtime 源码包：
 
 ```bash
-ssh hp@192.168.137.1 "tar -a -cf C:\Users\HP\AppData\Local\Temp\vibeide-runtime-source.zip --exclude=./node_modules --exclude=./dist --exclude=./chrome_profile --exclude=./recordings --exclude=./workflows -C E:\vibeide\runtime ."
-scp hp@192.168.137.1:/C:/Users/HP/AppData/Local/Temp/vibeide-runtime-source.zip ../vibeide-runtime-source.zip
+ssh <windows-user>@<windows-host> "tar -a -cf C:\Users\<windows-user>\AppData\Local\Temp\vibeide-runtime-source.zip --exclude=./node_modules --exclude=./dist --exclude=./chrome_profile --exclude=./recordings --exclude=./workflows -C E:\vibeide\runtime ."
+scp <windows-user>@<windows-host>:/C:/Users/<windows-user>/AppData/Local/Temp/vibeide-runtime-source.zip ../vibeide-runtime-source.zip
 mkdir -p runtime
 unzip -o ../vibeide-runtime-source.zip -d runtime
 ```
@@ -82,7 +82,6 @@ unzip -o ../vibeide-runtime-source.zip -d runtime
 必须确认这些不进 Git：
 
 ```text
-.local-secrets/
 .claude/
 agent/.claude/
 apikey.txt
@@ -105,7 +104,7 @@ workplaces/
 
 ```bash
 git status --short --ignored
-git check-ignore -v .local-secrets/HANDOFF_PRIVATE.md .claude/settings.local.json agent/.claude/settings.json electron/dist/main/index.js || true
+git check-ignore -v .claude/settings.local.json agent/.claude/settings.json electron/dist/main/index.js || true
 ```
 
 ## 初次入库建议
@@ -121,6 +120,5 @@ git check-ignore -v .local-secrets/HANDOFF_PRIVATE.md .claude/settings.local.jso
 不要提交：
 
 - `electron/dist/`
-- `.local-secrets/`
 - `.claude/`
 - `agent/.claude/`

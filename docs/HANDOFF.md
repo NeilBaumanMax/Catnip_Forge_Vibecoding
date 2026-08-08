@@ -1,6 +1,6 @@
 # Catnip Forge 接力开发文档
 
-> 本文是下一次 Codex 接力的第一入口。敏感账号密码不写在本文，见本机私有文件 `.local-secrets/HANDOFF_PRIVATE.md`，该目录已被 `.gitignore` 排除。
+> 本文是下一次 Codex 接力的第一入口。敏感账号、密码和连接信息不得写入项目文档。
 
 ## 当前事实
 
@@ -17,9 +17,9 @@
 - 正式产品名：`Catnip Forge`；中文全称：`Catnip 硬件智能开发平台`；英文定位：`Autonomous Hardware Development Agent`。
 - 内部工程代号：`vibeide`。
 - 当前本机工作目录：`E:\Agent\vibeide\vibeide`（Windows 实机）。
-- 当前远端真相源：remote `origin` = `git@github.com:NeilBaumanMax/Catnip-Forge.git`；当前施工分支：`qwen_vision_attachments`，基于 `main`。提交号和远端跟踪状态必须通过本地 Git 动态查询，不在接力文档中固化旧 HEAD。
+- 当前远端真相源：remote `origin`；当前施工分支：`qwen_vision_attachments`，基于 `main`。提交号和远端跟踪状态必须通过本地 Git 动态查询，不在接力文档中固化旧 HEAD。
 - 当前分支在既有主线之上增加 Qwen 视觉旁路、聊天附件、客户数据路径迁移和猫薄荷新手旅程；DeepSeek 主开发模型不变。2026-07-25 的“不推送”任务级例外已经结束，当前必须完成回归、验收、施工分支推送和远端确认。
-- 旧 GitHub/历史源：`git@github.com:howtion0/vibeide.git`、`git@github.com:howtio/vibeide.git` 仍可能出现在历史日志或迁移文档中，不再作为当前同步目标。
+- 旧 GitHub/历史源可能出现在历史提交中，不再作为当前同步目标。
 
 ## 当前版本和验证
 
@@ -54,8 +54,8 @@
 - 本机源码目录：`E:\Agent\vibeide\vibeide`
 - 目标打包 exe：`electron\dist-package\win-unpacked\Catnip Forge.exe`
 - 产线 API key：`resources\apikey.txt`（DeepSeek，与应用同目录，删包即删 key）
-- 仓库 remote `origin`：`git@github.com:NeilBaumanMax/Catnip-Forge.git`
-- SSH key：`~/.ssh/id_ed25519`，已配置 `git config core.sshCommand` 绕过中文路径编码问题
+- 仓库 remote：`origin`
+- SSH 连接由本机 Git 配置管理，不在项目文档中记录身份信息
 
 已通过（当前源码目录 `E:\Agent\vibeide\vibeide`，2026-07-17）：
 
@@ -287,12 +287,11 @@ node dist\index.js hardboard:serial COM7 10 115200
 1. 本机改代码和文档。
 2. 本机验证（typecheck / build / pack）。
 3. 提交到 Git。
-4. 推送当前施工分支到 remote `origin`（`git@github.com:NeilBaumanMax/Catnip-Forge.git`），查询远端并确认提交号；未经合并验收不直接推入 `main`。
+4. 推送当前施工分支到 remote `origin`，查询远端并确认提交号；未经合并验收不直接推入 `main`。
 5. `git config core.sshCommand` 已配置解决中文路径问题。
 
 不要提交：
 
-- `.local-secrets/`
 - `node_modules/`
 - `electron/dist/`
 - `electron/dist-package/`

@@ -19,7 +19,7 @@
 
 - `README.md` 不再以旧 `coddecat` 纯 Python scaffold 为主。
 - `docs/INDEX.md` 存在并能串起核心文档。
-- `.local-secrets/`、`.claude/`、`agent/.claude/`、`electron/dist/` 被 ignore。
+- 本机敏感配置、`.claude/`、`agent/.claude/`、`electron/dist/` 被 ignore。
 - `git status --short --ignored` 可解释。
 
 ## 阶段 1：命名统一

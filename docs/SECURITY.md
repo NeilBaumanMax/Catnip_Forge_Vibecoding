@@ -20,7 +20,6 @@ Windows 成品的聊天记录、附件、日志、浏览器状态和 Agent 配�
 apikey.txt
 qwen-apikey.txt
 .env
-.local-secrets/
 .claude/
 agent/.claude/
 runtime/chrome_profile/
@@ -37,13 +36,9 @@ electron/dist/
 electron/dist-package/
 ```
 
-## 本机私有文档
+## 本机敏感信息
 
-私有接力信息放这里：
-
-```text
-.local-secrets/HANDOFF_PRIVATE.md
-```
+账号、密码、API Key、SSH 身份和连接信息不得写入项目目录或版本库。
 
 可记录：
 
@@ -83,11 +78,11 @@ Qwen Key 仅由 Electron 主进程读取。Runtime MCP 通过只监听 `127.0.0.
 
 ```bash
 git status --short --ignored
-git check-ignore -v .local-secrets/HANDOFF_PRIVATE.md .claude/settings.local.json agent/.claude/settings.json electron/dist/main/index.js || true
-find . -path ./.git -prune -o -iname '*key*' -o -iname '*.env' -o -path './.local-secrets/*' -print
+git check-ignore -v .claude/settings.local.json agent/.claude/settings.json electron/dist/main/index.js || true
+find . -path ./.git -prune -o -iname '*key*' -o -iname '*.env' -print
 ```
 
-`find` 会打印本机私有文件是正常的，但这些文件必须被 `.gitignore` 命中。
+`find` 如打印敏感文件，这些文件必须被 `.gitignore` 命中并保持未跟踪。
 
 ## Windows SSH
 
@@ -96,7 +91,7 @@ Windows SSH 只用于本机和 Windows 实机之间的开发接力。公开文�
 公开文档可写：
 
 ```bash
-ssh hp@192.168.137.1
+ssh <windows-user>@<windows-host>
 ```
 
-密码只写 `.local-secrets/HANDOFF_PRIVATE.md`。
+密码不得写入项目目录或版本库。
