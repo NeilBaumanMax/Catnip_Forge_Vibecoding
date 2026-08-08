@@ -69,7 +69,9 @@ async function main() {
     const ok = result?.modal && result?.skillButton && result?.firstRun && !result?.apiKeyReady
       && result?.playwrightReady && result?.placeholderRejected && /resources[\\/]apikey\.txt$/i.test(result?.keyPath || '');
     const branded = result?.title?.includes('Catnip Forge') && result?.brandIconLoaded && result?.startupIconLoaded
-      && result?.positioningVisible && result?.brandIconSize?.width === 26 && result?.brandIconSize?.height === 26;
+      && result?.positioningVisible
+      && Math.abs((result?.brandIconSize?.width ?? 0) - 26) < 0.1
+      && Math.abs((result?.brandIconSize?.height ?? 0) - 26) < 0.1;
     if (!ok || !branded) throw new Error(`packaged first-run verification failed: ${JSON.stringify(result)}`);
     console.log(JSON.stringify({ ok: true, ...result }, null, 2));
   } finally {

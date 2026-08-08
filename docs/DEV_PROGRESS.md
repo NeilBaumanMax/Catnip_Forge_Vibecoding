@@ -12,6 +12,7 @@
 
 ## 当前已落地
 
+- [x] 2026-08-08 完整重建 v1.5.0 Windows `win-unpacked`：41,920 个文件、`4,464,201,281` 字节；版本/发布门禁、无 Key 首启、测试 Key 自动重启闭环均通过。成品 Python 与 `IDF_PYTHON_ENV_PATH` 均固定在 `resources/runtime/python`，pyserial 3.5、ESP-IDF v5.4.3 通过且未逃逸到系统或用户虚拟环境
 - [x] 2026-08-08 对外发布标签更新为 `v1.5.0`；内部 Build `7201`、npm `1.0.0-7201` 和 PE `1.0.0.7201` 保持不变，历史 v1.0.0 成品验收记录继续作为既有构建事实保留
 - [x] 2026-08-08 将默认开发仓库切换为 `Catnip_Forge_Vibecoding`，完成当前源码与标签同步；`qwen_vision_attachments` 验收后合入 `main`，现行文档统一以新仓库和主分支为准
 - [x] 2026-08-07 任务管理器滚动条完成 Apple UI 收口：旧成品 smoke 先复现 14px 蓝色直角像素滚动条，新成品改为 8px、透明轨道、半透明系统灰圆角滑块并保留横纵溢出；CDP 精确 URL 样式断言、真实截图、typecheck、全量打包及干净包 `verify:release` 通过。用户授权精确释放 VS Code 文件句柄后，标准 `dist-package/win-unpacked` 已恢复完整并通过冷启动验收；订阅状态、Node、隔离 Python/pyserial、ESP-IDF 探针同时通过。

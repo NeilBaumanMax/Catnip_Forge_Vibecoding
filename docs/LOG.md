@@ -1,5 +1,13 @@
 # 施工日志
 
+## 2026-08-08 — v1.5.0 Windows 成品重建与隔离 Python 验收
+
+- 完整执行 Runtime/Electron typecheck、生产构建和 `pack:win`，重建后的 `win-unpacked` 共 41,920 个文件、`4,464,201,281` 字节，`app.asar` SHA-256 为 `7CEB034B634238D25CDB8552376E3718D6F6679598325ED9B0679C71630095B3`。
+- 发布门禁确认成品版本 `v1.5.0`、Node `v22.14.0`、Claude Code `2.1.167`，DeepSeek/Qwen 真实 Key 均未入包。
+- 根解释器与 Scripts 启动器均从 `resources/runtime/python/Lib/site-packages` 加载 serial、click、idf_component_manager 和 esptool；pyserial 3.5、ESP-IDF v5.4.3 通过，模块路径未逃逸到系统 Python、用户 site-packages 或旧虚拟环境。
+- 无 Key 首启与保存一次性测试 Key 后自动重启闭环通过；测试 Key 和 8 个成品子进程已清理。首启 smoke 对 26px 品牌图改用 0.1px 浮点容差，兼容 CDP 返回的 `26.0000019px`，不改变产品 UI。
+- 本轮没有真实 ESP/USB-UART，不把 IDF/Python 探针扩张为硬件烧录、串口或最终客户机分发已验收。
+
 ## 2026-08-08 — 开发仓库切换、主线合并与文档漂移修正
 
 - 对外发布标签更新为 `v1.5.0`；内部 Build `7201`、npm `1.0.0-7201` 和 PE `1.0.0.7201` 保持不变，避免把未重打包的内部文件版本误写为新值。

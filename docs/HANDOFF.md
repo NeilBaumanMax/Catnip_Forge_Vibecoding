@@ -24,6 +24,7 @@
 ## 当前版本和验证
 
 - 当前对外发布标签：`v1.5.0`；内部构建号 `7201`，npm 包版本 `1.0.0-7201`，Windows PE 四段版本映射为 `1.0.0.7201`。
+- 2026-08-08 已从 `main` 完整重建 v1.5.0 `win-unpacked`：共 41,920 个文件、`4,464,201,281` 字节；版本/发布门禁、无 Key 首启与测试 Key 自动重启闭环通过。随包 Python 固定为 `resources/runtime/python`，pyserial 3.5、ESP-IDF v5.4.3 和模块路径隔离断言通过；详见 `WINDOWS_V1_5_0_RELEASE_CHECKLIST.md`。
 - Windows 便携成品是完整的 `electron/dist-package/win-unpacked`，必须解压到普通可写目录后运行，不能只分发 exe。发布包不含真实 `resources/apikey.txt`，只含模板；无 Key 首启由应用内窗口完成配置。
 - `win-unpacked` 只是构建输出名，不是运行时硬编码名称；分发压缩包的顶层目录可以重命名，但必须完整保留 exe、`resources`、DLL 等内部相对结构。推荐解压到路径较短的普通可写目录，避免 ESP-IDF 工具链遇到权限或长路径问题。
 - 首启窗口保存 Key 成功后必须保留“状态反馈 + 自动重启”链路：Renderer 显示正在重启，主进程 900ms 后 `app.relaunch()` 并走统一退出清理；不要恢复为需要用户手工重启的流程。
@@ -331,5 +332,5 @@ Electron UI -> Gateway -> Worker -> Agent -> Runtime MCP -> Electron Chromium / 
 2. 根据启动和包体实测决定是否拆分 Monaco 语言资源；当前完整 Worker 已本地打包。
 3. 有真实开发板后验证 Agent/UI 共享串口的收发、等待输出、断线恢复以及不同 ESP32 console/reset 策略。
 4. 任务管理器 Windows packaged 事件持续订阅 smoke 已补齐；有真实设备后再覆盖 build/flash/serial 三个硬件入口，不能用事件注入替代。
-5. 发布 `1.0.0-7201` Windows 包后，新建对应版本报告；旧版本报告继续保留为历史实测。
+5. v1.5.0 / Build 7201 Windows 包已重建并建立版本报告；后续内部构建号变化时新增对应报告，旧版本报告继续保留为历史实测。
 6. 在 ESP-IDF 真实编译测试通过后，补全 `WINDOWS_0_1_TEST_REPORT.md` 的中文路径修复验证项。
