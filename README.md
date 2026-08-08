@@ -18,7 +18,7 @@ Electron UI -> Gateway -> Worker -> Agent -> Runtime MCP -> Electron Chromium / 
 
 - 当前 GitHub remote：`origin`
 - 当前开发主分支：`main`
-- 当前对外发布版本：`v1.0.0`；内部构建号 `7201`，npm 包版本 `1.0.0-7201`，Windows PE 文件版本 `1.0.0.7201`
+- 当前对外发布标签：`v1.5.0`；内部构建号仍为 `7201`，npm 包版本 `1.0.0-7201`，Windows PE 文件版本 `1.0.0.7201`
 - 当前 Windows 源码目录：`E:\Agent\vibeide\vibeide`
 - 上一版 Windows v0.1.0 unpacked 包：`E:\vibeide-0.1-win-unpacked`（历史验证对象）
 - 历史 Linux、`C:\vibeide` 和旧 `E:\vibeide` 路径仅用于迁移记录，不再作为当前施工目录。

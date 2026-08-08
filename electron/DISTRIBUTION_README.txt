@@ -1,4 +1,4 @@
-Catnip Forge v1.0.0（Build 7201）Windows x64 便携版
+Catnip Forge v1.5.0（Build 7201）Windows x64 便携版
 中文全称：Catnip 硬件智能开发平台
 英文定位：Autonomous Hardware Development Agent
 
@@ -21,6 +21,6 @@ Catnip Forge v1.0.0（Build 7201）Windows x64 便携版
 - 转发或重新压缩前，请确认已经删除 resources\apikey.txt。
 
 版本说明：
-- 对外发布版本：v1.0.0
+- 对外发布版本：v1.5.0
 - 内部构建号：7201
 - Windows 文件版本：1.0.0.7201

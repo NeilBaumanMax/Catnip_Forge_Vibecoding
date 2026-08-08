@@ -3,8 +3,8 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..', '..');
 const versionInfo = readJson('config/version.json');
-if (versionInfo.publicVersion !== '1.0.0' || versionInfo.buildNumber !== 7201) {
-  throw new Error('config/version.json: expected public release v1.0.0 build 7201');
+if (versionInfo.publicVersion !== '1.5.0' || versionInfo.buildNumber !== 7201) {
+  throw new Error('config/version.json: expected public release v1.5.0 build 7201');
 }
 if (versionInfo.productName !== 'Catnip Forge'
   || versionInfo.productFullName !== 'Catnip 硬件智能开发平台'

@@ -13,7 +13,7 @@ const resources = path.join(packageRoot, 'resources');
 const version = JSON.parse(fs.readFileSync(path.join(projectRoot, 'config', 'version.json'), 'utf-8'));
 const exe = path.join(packageRoot, `${version.productName}.exe`);
 
-assert.equal(version.publicVersion, '1.0.0');
+assert.equal(version.publicVersion, '1.5.0');
 assert.equal(version.buildNumber, 7201);
 assert(fs.existsSync(exe), `missing ${exe}`);
 assert(fs.existsSync(path.join(packageRoot, 'README-FIRST.txt')), 'missing distribution README');
@@ -29,7 +29,7 @@ const keyExample = fs.readFileSync(path.join(resources, 'apikey.txt.example'), '
 const keyLines = keyExample.split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith('#'));
 assert.deepEqual(keyLines, ['DEEPSEEK_API_KEY=sk-your-key-here'], 'API key example must contain only the documented placeholder');
 const distributionReadme = fs.readFileSync(path.join(packageRoot, 'README-FIRST.txt'), 'utf-8');
-assert(distributionReadme.includes('v1.0.0（Build 7201）'), 'distribution README version drifted');
+assert(distributionReadme.includes('v1.5.0（Build 7201）'), 'distribution README version drifted');
 assert(distributionReadme.includes('D:\\CatnipForge'), 'distribution README must recommend the current short product path');
 assert(!distributionReadme.includes('Odyssey'), 'distribution README contains the retired product name');
 
