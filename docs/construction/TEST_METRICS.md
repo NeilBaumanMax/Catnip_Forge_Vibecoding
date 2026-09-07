@@ -135,3 +135,8 @@ Phase 1核心检查2通过、0失败、4组未验证。不把CLI未就绪检查�
 | `npm --prefix electron run build:renderer` | 通过 | 1262 modules；既有大 chunk warning |
 
 第一次 UI 契约测试失败 1 次：正则被 JSX `=>` 干扰；修复测试边界后通过。最终统计：3 通过、0 失败；真实搜索、Agent Handoff 和硬件均未验证。
+
+
+## 2026-09-08 官方连接状态桥
+
+最终 4 项通过、0 失败：typecheck、verify:explore-ui、verify:explore-zhihu-status、build:renderer。首次状态测试因 Electron GPU 崩溃未到脚本；禁用 GPU 后通过。环境白名单首次过窄误报 needs_install，补齐标准 Windows 变量后真实返回 needs_secret、installed=true、compatible=true。

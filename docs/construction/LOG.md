@@ -120,3 +120,11 @@
 - 首次 `verify:explore-ui` 失败：测试正则把 JSX 箭头函数 `=>` 的大于号误当标签结束。根因在测试匹配，改为单行边界后通过，没有修改产品实现迎合错误断言。
 - 最终：`verify:explore-ui`、Electron typecheck、Renderer build 共 3 项通过，0 失败；Renderer 1262 modules，保留既有大 chunk warning。
 - 自动审批曾在批量精确写入中因 Codex 使用额度上限中止；已写入部分经 status/diff 核实，剩余修改使用工作区标准 `apply_patch` 完成。没有重试 DeepSeek、知乎搜索或硬件操作。
+
+
+## 2026-09-08 / Phase 3 / 官方连接状态桥
+
+- Main 只通过官方 `agent/skills/zhihu/scripts/run.ps1 status` 检查连接，Renderer 仅收到五个安全字段；不传或回显 Secret。
+- 子进程环境由全量继承收紧为 Windows 运行白名单和 `ZHIHU_CLI_HOME`。首次过窄白名单导致 CLI version 检查失败并误报 needs_install；补齐标准 Windows 进程变量后，真实结果为 needs_secret、installed/compatible=true。
+- 状态测试首次被 Electron GPU 子进程崩溃阻断，测试禁用硬件加速后到达官方脚本。普通沙箱读不到真实用户注册表环境，显式传入已核对的 D 盘根目录完成验证；产品源码未硬编码 D 路径。
+- 最终 typecheck、Explore UI、官方状态桥、Renderer build 共 4 项通过；0 失败。未调用 DeepSeek、搜索或硬件。

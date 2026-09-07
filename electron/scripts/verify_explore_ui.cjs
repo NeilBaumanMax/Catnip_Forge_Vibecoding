@@ -19,6 +19,7 @@ assert.match(explorePanel, />解问题</, 'diagnosis entry is missing');
 assert.match(explorePanel, /本次分析 Context/, 'diagnosis context picker is missing');
 assert.match(explorePanel, /取消勾选后，该项不会进入分析/, 'context exclusion promise is missing');
 assert.match(explorePanel, /需要先连接知乎开放平台/, 'safe connection wording is missing');
+assert.match(explorePanel, /getExploreZhihuStatus/, 'Explore must read connection status through preload');
 assert.match(explorePanel, /不会修改文件、Build、Flash 或操作串口/, 'Explore side-effect boundary is missing');
 
 assert.match(globalStyles, /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\) minmax\(160px, 0\.9fr\)/);

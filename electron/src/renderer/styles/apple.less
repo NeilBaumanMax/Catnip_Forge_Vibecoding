@@ -3254,6 +3254,39 @@ select.nes-select {
   gap: 16px;
   max-width: 920px;
 }
+.explore-connection-badge {
+  width: min(920px, 100%);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  color: var(--ui-text-secondary);
+  background: var(--ui-fill);
+  border: 1px solid var(--ui-separator);
+  border-radius: 10px;
+  font-size: 12px;
+}
+.explore-connection-badge strong {
+  color: var(--ui-text);
+  overflow-wrap: anywhere;
+}
+.explore-connection-badge button {
+  padding: 5px 8px;
+  color: var(--ui-accent);
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.explore-connection-badge button:hover:not(:disabled),
+.explore-connection-badge button:focus-visible {
+  background: var(--ui-fill-hover);
+  outline: none;
+}
+.explore-connection-badge--connected {
+  border-color: color-mix(in srgb, var(--ui-green) 38%, transparent);
+}
 .explore-entry-card {
   min-height: 230px;
   display: flex;
@@ -3413,6 +3446,12 @@ select.nes-select {
   .explore-submit-row {
     align-items: stretch;
     flex-direction: column;
+  }
+  .explore-connection-badge {
+    grid-template-columns: 1fr auto;
+  }
+  .explore-connection-badge > span {
+    grid-column: 1 / -1;
   }
 }
 

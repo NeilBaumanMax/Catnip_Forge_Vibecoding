@@ -110,6 +110,14 @@ export interface AddVerificationRecordInput {
   evidenceRefs?: string[];
 }
 
+export interface ExploreZhihuConnectionStatus {
+  state: 'connected' | 'needs_secret' | 'needs_install' | 'error';
+  installed: boolean;
+  compatible: boolean;
+  authConfigured: boolean;
+  message: string;
+}
+
 const CONTEXT_KINDS = new Set<ExploreContextKind>(['project', 'target', 'hardware', 'source', 'build', 'serial', 'knowledge']);
 const SOURCE_TYPES = new Set<SourceEvidenceType>(['zhihu', 'web', 'local']);
 

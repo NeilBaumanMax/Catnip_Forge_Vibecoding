@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import type { ExploreZhihuConnectionStatus } from '../../common/explore';
 
 type ExploreView = 'home' | 'idea' | 'diagnosis';
 
@@ -21,6 +22,8 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const [problem, setProblem] = useState('');
   const [selectedContextIds, setSelectedContextIds] = useState<string[]>([]);
   const [notice, setNotice] = useState('');
+  const [connection, setConnection] = useState<ExploreZhihuConnectionStatus | null>(null);
+  const [checkingConnection, setCheckingConnection] = useState(false);
 
   const contextOptions = useMemo<ContextOption[]>(() => [
     {
@@ -43,6 +46,21 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
     },
   ], [currentProject, hardwareSummary, runtimeSummary]);
 
+  const refreshConnection = async () => {
+    setCheckingConnection(true);
+    try {
+      setConnection(await window.electronAPI.getExploreZhihuStatus());
+    } catch {
+      setConnection({ state: 'error', installed: false, compatible: false, authConfigured: false, message: '无法检查知乎开放平台连接状态' });
+    } finally {
+      setCheckingConnection(false);
+    }
+  };
+
+  useEffect(() => {
+    void refreshConnection();
+  }, []);
+
   const enter = (next: Exclude<ExploreView, 'home'>) => {
     setView(next);
     setNotice('');
@@ -59,8 +77,20 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
 
   const stopBeforeSearch = (event: React.FormEvent) => {
     event.preventDefault();
+    if (connection?.state === 'connected') {
+      setNotice('知识来源已连接，但探索编排当前不可用。本次没有发起搜索。');
+      return;
+    }
     setNotice('需要先连接知乎开放平台，才能检索真实社区经验和全网资料。本次没有发起搜索。');
   };
+
+  const connectionBadge = (
+    <div className={`explore-connection-badge explore-connection-badge--${connection?.state || 'checking'}`}>
+      <span>知识来源</span>
+      <strong>{checkingConnection ? '正在检查连接...' : connection?.message || '尚未检查'}</strong>
+      <button type="button" onClick={() => void refreshConnection()} disabled={checkingConnection}>重新检查</button>
+    </div>
+  );
 
   if (view === 'home') {
     return (
@@ -70,6 +100,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
           <h2 id="explore-title">探索</h2>
           <p>从真实开发经验中找到可实现的方向，或为当前硬件问题建立有证据的判断。</p>
         </div>
+        {connectionBadge}
         <div className="explore-entry-grid">
           <button className="explore-entry-card" type="button" onClick={() => enter('idea')} data-tour-id="explore-idea">
             <span className="explore-entry-index">01</span>
@@ -100,6 +131,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
       </header>
 
       <form className="explore-form" onSubmit={stopBeforeSearch}>
+        {connectionBadge}
         <label className="explore-field">
           <span>{isIdea ? '你想做什么？' : '现在遇到了什么问题？'}</span>
           <textarea

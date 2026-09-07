@@ -53,6 +53,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   addExploreKnowledgeVerification: (input: AddVerificationRecordInput) => ipcRenderer.invoke('explore:knowledge:addVerification', input),
   findRelatedExploreKnowledge: (query: string, limit?: number) => ipcRenderer.invoke('explore:knowledge:findRelated', query, limit),
   selectExploreKnowledgeForContext: (selectedIds: string[]) => ipcRenderer.invoke('explore:knowledge:selectForContext', selectedIds),
+  getExploreZhihuStatus: () => ipcRenderer.invoke('explore:zhihu:status'),
   isWorkbenchSmokeTest: process.env.VIBEIDE_SMOKE_WORKBENCH_OPEN === '1',
   finishWorkbenchSmokeTest: (result: unknown) => ipcRenderer.invoke('smoke:workbench:finish', result),
   activateBrowserTab: (id: string) => ipcRenderer.invoke('browser:activateTab', id),

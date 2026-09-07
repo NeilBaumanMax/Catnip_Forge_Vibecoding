@@ -109,3 +109,8 @@ Phase 2 完成提交：`860badf7a21d3cb1b4fc7f434488ab5de379dd34`，已与 `orig
 当前真实 UI 已有五个工作区：仓库、监视器、任务管理器、编辑器、探索。实现入口为 `BrowserPanel.tsx` 和 `ExplorePanel.tsx`；首页严格只有找灵感/解问题。表单尚未调用检索或 Agent，点击提交只说明需要连接开放平台且本次未搜索。
 
 下一步应接官方 Skill 的安全连接状态与请求编排；不得把 Secret 放入 Renderer，不得为演示生成假来源。DeepSeek 仍按用户要求禁止重试。
+
+
+## 2026-09-08 连接状态桥
+
+`explore-zhihu-status.ts` 使用官方 run.ps1 status；Gateway/preload 只暴露安全映射。子进程环境采用白名单，不得改回全量 `process.env`。当前真实映射为 `needs_secret`。用户禁止重试 DeepSeek。
