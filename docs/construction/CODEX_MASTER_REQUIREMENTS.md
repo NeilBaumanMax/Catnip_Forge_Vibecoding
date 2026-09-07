@@ -25,7 +25,7 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 | A3 | 原子 JSON user-data 足以存知识卡 | 现有 session-store JSON，但知识存储/恢复尚未实现 | 跨重启丢失、损坏或混入安装目录 | 原子替换、重启、损坏处理和项目关联测试 | TESTING | paths.ts getRuntimeDataDir；session-store.ts writeFileSync | Local Store/Main |
 | A4 | 可从当前工程和 main/CMakeLists 收集最小相关源码 | 已有受控读取/文件索引；相关性与限额尚未定 | 过量读取或漏掉关键证据 | 单工程白名单、路径越界、截断、用户取消测试 | TESTING | workbench readWorkbenchFile、hardboard/project-files.ts；不能直接把全部候选注入 | Main/Context |
 | A5 | EventBus 和共享串口能稳定提供最新 Context | 已有最近 500 事件与串口增量读取；项目关联/过期需验证 | 误用其他工程或旧运行数据 | taskId/projectDir/timestamp 筛选、无数据/过期/清空场景 | TESTING | event-store getRecentRuntimeEvents、SerialMonitorSession.read/wait | Runtime/Main |
-| A6 | 官方 CLI 在 Windows 开发和打包版可运行 | 用户 ZIP 存在，不含 binary；尚未执行官方 status | Phase 1 与后续 live 搜索阻塞 | scripts/run.ps1 status；授权后 setup；开发/打包资源测试 | UNVERIFIED | ZIP SHA-256 见现场报告；manifest windows-amd64 | Official Skill/Packaging |
+| A6 | 官方CLI在Windows开发和打包版可运行 | ZIP已导入，status显示未就绪，安装/成品未验证 | Phase 1与真实搜索阻塞 | 用户授权后原setup，再status/包验证 | BLOCKED | run.ps1 status: installed=false / request_install_consent；见PHASE_1_ZHIHU_SKILL | Official Skill/Packaging |
 | A7 | 用户已配置可用 Access Secret | 未读取/索取/验证凭证 | 只能做无鉴权边界测试 | 官方 status；必要时经安全通道配置并最小搜索 | UNVERIFIED | 本轮未执行鉴权请求 | CLI/Main |
 | A8 | 有可复现运行异常的真实板/工程可做 Demo | 发现三个工程，未连接或选择故障 | 排障不能称完整闭环 | 用户确认项目/端口后实测 Build/Flash/Serial | UNVERIFIED | hello_world_esp32s3、touch_hello、wifi_connect_fmai；无板证据 | Hardboard/Demo |
 | A9 | 延续现有 UI 能容纳探索 | 页签与设计文件存在，尚无探索视觉验收 | 布局和交互需调整 | 后续功能 UI + 现有 CDP smoke；视觉不自行定稿扩展 | UNVERIFIED | BrowserPanel 四页签、apple.less/global.less | Renderer |

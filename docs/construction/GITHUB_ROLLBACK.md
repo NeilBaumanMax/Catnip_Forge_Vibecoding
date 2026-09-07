@@ -13,3 +13,7 @@
 安全恢复：先记录当前状态及提交、保存用户工作（未经许可不自动处理），用 `git show <baseline>:<path>` 只读对比。需要撤回本轮已提交变更时审查明确提交并使用 `git revert <明确commit>` 形成新提交；逐个解决冲突并测试，不回写历史。备份 branch 是恢复参考而不是许可整树覆盖。只有确认工作区无重叠改动时才进行分支切换。
 
 日志与 HANDOFF 记录阶段 commit、remote hash、push 状态；以最后一次实际查询为准。
+
+## Phase 1备份与提交核验
+
+backup/pre-phase-1-20260907的local/remote均为bba40d575a641f22a5e4380490349c45ea583503，push成功且ls-remote核对。官方源核验提交36d93282ca8344028702dc0905488556ce775042亦已push并核远端；源提交后工作区干净。
