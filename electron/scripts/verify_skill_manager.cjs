@@ -29,6 +29,35 @@ async function main() {
   assert(hardboardSkill.supportFileCount >= 2, 'hardboard support folders should be visible');
   assert(fs.existsSync(path.join(synced.status.deployDir, 'espidf-hardboard', 'scripts', 'README.md')), 'skill scripts tree did not deploy');
   assert(fs.existsSync(path.join(synced.status.deployDir, 'espidf-hardboard', 'references', 'README.md')), 'skill references tree did not deploy');
+  const zhihuSkill = synced.skills.find((skill) => skill.id === 'zhihu');
+  assert(zhihuSkill, 'official zhihu skill missing');
+  assert.equal(zhihuSkill.sourceFormat, 'standard', 'official zhihu skill must use the standard directory format');
+  assert.equal(zhihuSkill.supportFileCount, 14, 'official zhihu support tree must remain complete');
+  assert.match(zhihuSkill.description, /使用知乎开放平台搜索知乎和全网内容/, 'folded YAML description was not parsed');
+  assert.notEqual(zhihuSkill.description, '>-', 'folded YAML marker leaked into the displayed description');
+  const zhihuSource = fs.readFileSync(zhihuSkill.sourcePath);
+  const zhihuDeployed = fs.readFileSync(path.join(synced.status.deployDir, 'zhihu', 'SKILL.md'));
+  assert.deepEqual(zhihuDeployed, zhihuSource, 'standard SKILL.md must deploy byte-for-byte without rewriting vendor content');
+  for (const relativePath of [
+    'manifest.json',
+    'scripts/run.ps1',
+    'scripts/run.sh',
+    'scripts/setup.ps1',
+    'scripts/setup.sh',
+    'references/cli.md',
+    'references/hackathon-content-api.md',
+    'references/hackathon-oauth.md',
+    'references/hackathon.md',
+    'references/http-api.md',
+    'references/mcp.md',
+    'references/oauth.md',
+    'references/open-platform.md',
+    'references/user-api.md',
+  ]) {
+    const source = fs.readFileSync(path.join(zhihuSkill.folderPath, relativePath));
+    const deployed = fs.readFileSync(path.join(synced.status.deployDir, 'zhihu', relativePath));
+    assert.deepEqual(deployed, source, `official zhihu support file changed during deployment: ${relativePath}`);
+  }
 
   assert(!buildContext('编译 Electron TypeScript 前端').skillsFound.includes('espidf-hardboard'), 'generic compilation must not trigger hardboard');
   const hardboard = buildContext('编译 ESP32-S3 固件并烧录');
@@ -47,12 +76,21 @@ async function main() {
   });
   const normalized = normalizeAgentTaskInput({ text: explicitText, skillRefs: refs });
   assert.deepEqual(normalized.skillRefs.map((ref) => ref.id), ['espidf-hardboard', 'data-extract'], 'structured skill references must validate');
+  const zhihuText = '请使用 @zhihu 搜索真实开发经验';
+  const zhihuStart = zhihuText.indexOf('@zhihu');
+  const zhihuNormalized = normalizeAgentTaskInput({
+    text: zhihuText,
+    skillRefs: [{ id: 'zhihu', name: 'zhihu', start: zhihuStart, end: zhihuStart + '@zhihu'.length }],
+  });
+  assert.deepEqual(zhihuNormalized.skillRefs.map((ref) => ref.id), ['zhihu'], '@zhihu structured reference must validate');
+  const zhihuContext = buildContext(zhihuText, ['zhihu']);
+  assert.deepEqual(zhihuContext.explicitSkills, ['zhihu'], '@zhihu must be an explicit skill');
+  assert.match(zhihuContext.prompt, /\/zhihu/, 'agent prompt must require loading the official zhihu skill');
   console.log(`skill manager smoke ok (${synced.status.deployedCount} deployed)`);
   app.quit();
 }
 
 main().catch((error) => {
   console.error(error);
-  app.quit();
-  process.exitCode = 1;
+  app.exit(1);
 });

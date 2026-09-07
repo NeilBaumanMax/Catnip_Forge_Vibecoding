@@ -27,6 +27,7 @@
     "verify:session": "node node_modules/electron/cli.js scripts/verify_claude_session.cjs",
     "verify:hardboard": "node node_modules/electron/cli.js scripts/verify_hardboard_context_rules.cjs",
     "verify:skills": "node node_modules/electron/cli.js scripts/verify_skill_manager.cjs",
+    "verify:zhihu-skill-package": "node scripts/verify_zhihu_skill_package.cjs",
     "verify:release": "node scripts/verify_win_unpacked_release.cjs",
     "verify:first-run": "node scripts/verify_packaged_first_run.cjs",
     "verify:first-run-restart": "node scripts/verify_first_run_restart.cjs",

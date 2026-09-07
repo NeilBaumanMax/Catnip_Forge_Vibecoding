@@ -92,3 +92,22 @@ Phase 1核心检查2通过、0失败、4组未验证。不把CLI未就绪检查�
 3. [Environment]::SetEnvironmentVariable用户级变量写入/回读通过；精确旧目录删除后Test-Path=False。
 4. D:\ZhihuCLI\current\zhihu-cli.exe version通过。
 未验证：真实凭据与搜索仍待配置；宿主重启后的实际集成不由此推断通过。无业务源码修改。
+
+## Phase 1宿主兼容小闭环
+
+核心最终检查9项通过、2项失败历史、2组外部待验证：
+
+| 检查 | 最终结果 | 边界 |
+| --- | --- | --- |
+| electron typecheck / build:main | 2通过 | 无Renderer/Runtime改动 |
+| verify:skills | 1通过 | 13 deployed；zhihu描述、15文件部署、@引用 |
+| verify:zhihu-skill-package | 1通过 | builder过滤器，尚非真实成品 |
+| verify:task-queue / verify:hardboard | 2通过 | 旧队列和硬件上下文回归 |
+| 3个修改/新增CJS `node --check` | 3通过 | skills/package/release语法 |
+| 部署目录官方status与ZIP bytes | 2通过（辅助，不计核心9项） | D盘CLI；无业务请求 |
+| 第一次verify:skills | 失败：断言description，进程错误返回0 | 同时定位测试假绿；已修catch |
+| 第二次verify:skills | 失败：旧目录Skill缺frontmatter，exit1 | 修复条件过宽；已按原生frontmatter区分 |
+| 真实Agent Skill调用 | 2次调用均失败：DeepSeek 402 | init发现zhihu，但未发生tool_use；AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE |
+| 真实知乎搜索 | 未验证 | auth.configured=false；LIVE_INTEGRATION_PENDING |
+
+工程过程另有：1次实现锚点失败、1次兼容锚点失败、3次打包文本锚点失败，均在写目标前停止；1次误重试插入重复打包块，Review后精确去重，最终syntax/config/diff检查通过。不得删除这些失败历史。实际Windows包字节验证和冷启动仍未执行。

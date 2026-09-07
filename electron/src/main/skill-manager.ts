@@ -67,13 +67,23 @@ function parseSkill(text: string, fallbackName: string): SkillDocument {
   let description = '';
   const match = body.match(/^---\s*\r?\n([\s\S]*?)\r?\n---\s*(?:\r?\n|$)/);
   if (match) {
-    for (const line of match[1].split(/\r?\n/)) {
-      const field = line.match(/^([a-zA-Z][\w-]*):\s*(.*)$/);
+    const lines = match[1].split(/\r?\n/);
+    for (let index = 0; index < lines.length; index += 1) {
+      const field = lines[index].match(/^([a-zA-Z][\w-]*):\s*(.*)$/);
       if (!field) continue;
       const rawValue = field[2].trim();
       let value = rawValue.replace(/^'([\s\S]*)'$/, '$1');
       if (rawValue.startsWith('"') && rawValue.endsWith('"')) {
         try { value = JSON.parse(rawValue) as string; } catch { value = rawValue.slice(1, -1); }
+      } else if (/^[>|][+-]?$/.test(rawValue)) {
+        const continuation: string[] = [];
+        while (index + 1 < lines.length && /^(?:\s+|$)/.test(lines[index + 1])) {
+          index += 1;
+          continuation.push(lines[index].trim());
+        }
+        value = rawValue.startsWith('>')
+          ? continuation.filter(Boolean).join(' ')
+          : continuation.join('\n').trim();
       }
       if (field[1] === 'name' && value) name = value;
       if (field[1] === 'description') description = value;
@@ -170,10 +180,10 @@ function supportFiles(entry: { file: string; format: 'legacy' | 'standard' }): s
   return files;
 }
 
-function hashSkillTree(entry: { file: string; format: 'legacy' | 'standard' }, normalizedText: string): string {
+function hashSkillTree(entry: { file: string; format: 'legacy' | 'standard' }, deployedSkill: string | Buffer): string {
   const hash = crypto.createHash('sha256');
   hash.update('SKILL.md\0');
-  hash.update(normalizedText);
+  hash.update(deployedSkill);
   const root = path.dirname(entry.file);
   for (const file of supportFiles(entry)) {
     hash.update(`\0${path.relative(root, file).split(path.sep).join('/')}\0`);
@@ -269,15 +279,19 @@ export function syncManagedSkills(): SkillManagerSnapshot {
   for (const entry of sourceEntries()) {
     const id = assertSkillId(entry.id);
     activeIds.add(id);
-    const sourceText = fs.readFileSync(entry.file, 'utf-8');
-    const normalizedText = serializeSkill(parseSkill(sourceText, id));
+    const sourceBuffer = fs.readFileSync(entry.file);
+    const sourceText = sourceBuffer.toString('utf-8');
+    const hasNativeFrontmatter = /^\uFEFF?---\s*\r?\n/.test(sourceText);
+    const deployedSkill = entry.format === 'standard' && hasNativeFrontmatter
+      ? sourceBuffer
+      : serializeSkill(parseSkill(sourceText, id));
     const targetDir = path.join(DEPLOY_DIR, id);
     if (fs.existsSync(targetDir) && !previous?.skills[id]) {
       throw new Error(`Agent 工作区已存在非 Catnip Forge 管理的同名 Skill：${id}`);
     }
     const stagingDir = path.join(DEPLOY_DIR, `.odyssey-staging-${id}-${process.pid}-${Date.now()}`);
     fs.mkdirSync(stagingDir, { recursive: true });
-    fs.writeFileSync(path.join(stagingDir, 'SKILL.md'), normalizedText, 'utf-8');
+    fs.writeFileSync(path.join(stagingDir, 'SKILL.md'), deployedSkill);
     if (entry.format === 'standard') {
       for (const support of fs.readdirSync(path.dirname(entry.file), { withFileTypes: true })) {
         if (support.name === 'SKILL.md' || support.name.startsWith('.')) continue;
@@ -288,7 +302,7 @@ export function syncManagedSkills(): SkillManagerSnapshot {
     fs.renameSync(stagingDir, targetDir);
     next.skills[id] = {
       sourcePath: entry.file,
-      hash: hashSkillTree(entry, normalizedText),
+      hash: hashSkillTree(entry, deployedSkill),
     };
   }
 

@@ -21,7 +21,7 @@ Manager仍把多行description解析为 >- 并重写部署SKILL.md，尚未修�
 ## 下一步1–3项
 
 1. CLI 安装授权已由用户明确给出并完成。当前需按官方流程配置用户自己的 Access Secret；使用本机安全输入和官方 auth set --secret-stdin，不发送到产品 Chat、源码、日志或命令参数。尚未获取凭据，真实调用保持 LIVE_INTEGRATION_PENDING。
-2. setup/status 已完成，不重复安装；使用返回的绝对 binary_path。默认路径为 %LOCALAPPDATA%/ZhihuCLI/current/zhihu-cli.exe，版本 0.5.0-beta.20260826061344。用户目前仅授权安装，未授权初始化或本人数据，不执行 me contents。
+2. setup/status 已完成，不重复安装；使用返回的绝对 binary_path。当前路径为 D:/ZhihuCLI/current/zhihu-cli.exe，版本 0.5.0-beta.20260826061344；用户级ZHIHU_CLI_HOME已持久设置。用户目前仅授权安装，未授权初始化或本人数据，不执行 me contents。
 3. 条件满足后先复现宿主description/部署保真失败，最小修复并验证support树、显式refs/Worker加载契约、打包过滤器；真实LLM/搜索/成品分别计证据，完成Phase 1再继续Phase 2。
 
 ## 输入与测试
@@ -64,3 +64,9 @@ backup/pre-phase-0-20260907指向baseline；backup/pre-phase-1-20260907指向Pha
 迁移先确认D盘目标不存在、源目录无reparse点，复制3文件逐项SHA-256一致；用D盘环境运行原setup.ps1返回reused_cli=true/ok=true，再run.ps1 status返回installed=true/compatible=true且binary_path为D盘。setup的installed=false在此表示复用已有文件，不是未安装。
 
 新位置验证后，再次核实两份exe散列和精确旧目录边界，删除旧安装树；Test-Path返回False。D盘binary version成功返回0.5.0-beta.20260826061344。未配置Secret、未调用搜索、未触板；LIVE_INTEGRATION_PENDING保持。
+
+## 2026-09-07 Phase 1宿主集成进展
+
+已完成离线宿主小闭环：13个Skill部署通过；官方zhihu多行描述正确，SKILL.md与14个support文件保真；@zhihu进入现有结构化引用和Worker加载约束；builder自动包含15文件且排除用户CLI；release门禁已增强。旧Skill、任务队列、Hardboard上下文回归通过。
+
+当前Blocker：`LIVE_INTEGRATION_PENDING`（官方CLI auth.configured=false）和`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`（受限真实Agent调用在tool_use前HTTP 402）。不能称Phase 1完整通过，也不进入Phase 2。真实成品检查留Phase 6，REAL_HARDWARE_VALIDATION_PENDING保持。

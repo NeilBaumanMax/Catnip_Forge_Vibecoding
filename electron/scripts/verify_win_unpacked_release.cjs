@@ -33,9 +33,28 @@ assert(distributionReadme.includes('v1.5.0（Build 7201）'), 'distribution READ
 assert(distributionReadme.includes('D:\\CatnipForge'), 'distribution README must recommend the current short product path');
 assert(!distributionReadme.includes('Odyssey'), 'distribution README contains the retired product name');
 
+const officialZhihuSkillFiles = [
+  'SKILL.md',
+  'manifest.json',
+  'scripts/run.ps1',
+  'scripts/run.sh',
+  'scripts/setup.ps1',
+  'scripts/setup.sh',
+  'references/cli.md',
+  'references/hackathon-content-api.md',
+  'references/hackathon-oauth.md',
+  'references/hackathon.md',
+  'references/http-api.md',
+  'references/mcp.md',
+  'references/oauth.md',
+  'references/open-platform.md',
+  'references/user-api.md',
+];
+
 const required = [
   'agent/node_modules/@anthropic-ai/claude-code/bin/claude.exe',
   'agent/skills/espidf-hardboard/SKILL.md',
+  ...officialZhihuSkillFiles.map((relative) => `agent/skills/zhihu/${relative}`),
   'electron/assets/icon.ico',
   'electron/assets/icon.png',
   'runtime/nodejs/node.exe',
@@ -57,6 +76,12 @@ const required = [
 for (const relative of required) {
   assert(fs.existsSync(path.join(resources, relative)), `missing resources/${relative}`);
 }
+for (const relative of officialZhihuSkillFiles) {
+  const source = fs.readFileSync(path.join(projectRoot, 'agent', 'skills', 'zhihu', relative));
+  const packaged = fs.readFileSync(path.join(resources, 'agent', 'skills', 'zhihu', relative));
+  assert.deepEqual(packaged, source, `packaged official zhihu skill file changed: ${relative}`);
+}
+assert(!fs.existsSync(path.join(resources, 'agent', 'skills', 'zhihu', 'zhihu-cli.exe')), 'release must not bundle the user-installed zhihu CLI');
 
 const packagedVersion = JSON.parse(fs.readFileSync(path.join(resources, 'config', 'version.json'), 'utf-8'));
 assert.deepEqual(packagedVersion, version, 'packaged version metadata drifted');

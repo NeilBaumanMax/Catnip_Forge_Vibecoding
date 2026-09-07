@@ -40,3 +40,15 @@
 迁移先确认D盘目标不存在、源目录无reparse点，复制3文件逐项SHA-256一致；用D盘环境运行原setup.ps1返回reused_cli=true/ok=true，再run.ps1 status返回installed=true/compatible=true且binary_path为D盘。setup的installed=false在此表示复用已有文件，不是未安装。
 
 新位置验证后，再次核实两份exe散列和精确旧目录边界，删除旧安装树；Test-Path返回False。D盘binary version成功返回0.5.0-beta.20260826061344。未配置Secret、未调用搜索、未触板；LIVE_INTEGRATION_PENDING保持。
+
+## 2026-09-07 / Phase 1 / 宿主 Skill 兼容与打包契约
+
+- `apply_patch` 连续两次因 Windows sandbox-bin ACL 初始化失败，未产生改动；按已记录的工具降级策略改用唯一锚点/行索引的精确编辑，所有修改均通过 Git diff Review。
+- 先扩展 `verify_skill_manager.cjs`，第一次专项执行准确复现 `zhihu.description === ">-"`。同时发现原测试 catch 调用 `app.quit()` 后设置 `process.exitCode` 会让该断言失败仍返回 exit 0；改为 `app.exit(1)`，避免假绿。
+- 第一次实现支持 YAML 折叠/字面块标量，并让标准目录 Skill 原字节部署。类型检查和主进程构建通过，第二次专项测试以 exit 1 失败：旧 `1688-source-finding` 目录 Skill 没有 frontmatter，原行为依赖宿主生成。根因是“标准目录”不等于“原生 frontmatter”。
+- 修复根因：只有标准目录且源文档已有原生 frontmatter时原字节部署；旧目录/扁平 Skill仍使用现有序列化兼容。随后13个Skill全部部署，`zhihu`描述正确、14个support文件逐字节一致、`@zhihu`结构化引用和Worker加载提示通过。
+- 打包自动契约新增时，三次严格文本锚点因CRLF/匹配差异停止且没有写目标；改用行索引后首次成功。后续误重试在发现脚本已存在前重复插入release块/npm script；Review立即发现，精确移除第二份，语法和专项复测通过。没有将临时重复内容提交。
+- 新增 `verify:zhihu-skill-package`：解析真实electron-builder配置，验证15个官方文件均被agent extraResources过滤器包含，源树无`.env`/CLI binary；可用CATNIP_PACKAGE_ROOT对真实包逐字节核验。`verify:release`同时要求15文件逐字节相同且包内无`zhihu-cli.exe`。本阶段只验证builder规则，未重打4GB级成品，实际包验证留Phase 6。
+- 最终相关回归：Electron typecheck、build:main、verify:skills、verify:zhihu-skill-package、verify:task-queue、verify:hardboard共6项通过；3个CJS脚本node --check通过；从实际部署目录执行官方run.ps1 status通过，D盘binary兼容；官方源再次与ZIP逐字节相同。
+- 真实Agent受限smoke仅开放Skill工具并使用plan权限。第一次调用exit 1；脱敏诊断再次调用显示init已发现slash command `zhihu`，但在任何工具调用前DeepSeek返回HTTP 402 Insufficient Balance。未打印Key、未开放Bash/文件/MCP/硬件、未调用知乎搜索。故“真实Agent已调用Skill(zhihu)”仍未验证，记录`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`，不能用发现列表冒充调用成功。
+- 当前真实搜索还受`auth.configured=false`阻塞，记录`LIVE_INTEGRATION_PENDING`。未进入Phase 2。
