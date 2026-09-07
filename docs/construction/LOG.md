@@ -110,3 +110,13 @@
 - Phase 2 实现提交 `860badf7a21d3cb1b4fc7f434488ab5de379dd34` 已推送；`origin/idea_to_production` 返回同一 hash，提交后工作区干净。
 - 验收满足：Domain 对象运行时可校验；知识卡原子持久化并可跨重启读取；不保存整篇正文；来源 URL 可追溯；验证状态可追加；相关历史只发现，显式选择后才进入 Context；专项及相关回归通过。
 - Phase 2 完成。外部真实搜索、Agent 和硬件状态不被本阶段软件验收掩盖，继续分别保持 pending。
+
+
+## 2026-09-08 / Phase 3 / 探索可见入口小闭环
+
+- Phase 3 备份 `backup/pre-phase-3-20260907` 已从 `42d74e560a0719ad598fb052db3f2a35519e61b1` 创建并推送；未切换工作区。
+- 新增第五个可见工作区“探索”，首页仅有“找灵感 / 解问题”。两条入口可进入表单；灵感显示当前工程/硬件约束，排障默认选择当前可用工程、设备和运行状态，并允许取消。
+- Explore 提交当前停在安全连接提示，不制造搜索结果、Idea、Diagnosis 或来源；页面明确分析阶段无文件/Build/Flash/Serial 副作用。
+- 首次 `verify:explore-ui` 失败：测试正则把 JSX 箭头函数 `=>` 的大于号误当标签结束。根因在测试匹配，改为单行边界后通过，没有修改产品实现迎合错误断言。
+- 最终：`verify:explore-ui`、Electron typecheck、Renderer build 共 3 项通过，0 失败；Renderer 1262 modules，保留既有大 chunk warning。
+- 自动审批曾在批量精确写入中因 Codex 使用额度上限中止；已写入部分经 status/diff 核实，剩余修改使用工作区标准 `apply_patch` 完成。没有重试 DeepSeek、知乎搜索或硬件操作。

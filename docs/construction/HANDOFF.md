@@ -102,3 +102,10 @@ backup/pre-phase-0-20260907指向baseline；backup/pre-phase-1-20260907指向Pha
 ## 2026-09-07 Phase 2 完成快照
 
 Phase 2 完成提交：`860badf7a21d3cb1b4fc7f434488ab5de379dd34`，已与 `origin/idea_to_production` 核对一致。当前下一阶段为 Phase 3。Phase 2 Store 与 IPC 可直接复用，不要另建数据库或第二套 IPC。
+
+
+## 2026-09-08 Phase 3 UI 入口状态
+
+当前真实 UI 已有五个工作区：仓库、监视器、任务管理器、编辑器、探索。实现入口为 `BrowserPanel.tsx` 和 `ExplorePanel.tsx`；首页严格只有找灵感/解问题。表单尚未调用检索或 Agent，点击提交只说明需要连接开放平台且本次未搜索。
+
+下一步应接官方 Skill 的安全连接状态与请求编排；不得把 Secret 放入 Renderer，不得为演示生成假来源。DeepSeek 仍按用户要求禁止重试。

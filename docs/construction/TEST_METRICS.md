@@ -124,3 +124,14 @@ Phase 1核心检查2通过、0失败、4组未验证。不把CLI未就绪检查�
 | `git diff --check` / 新脚本 `node --check` | 通过 | 无 whitespace 错误；脚本语法通过 |
 
 最终统计：5 个功能/回归目标通过，0 失败；真实知乎搜索和真实 Agent Skill 调用 2 项未验证。第一次并行 Renderer 构建仅返回 `transforming...`、没有退出码，不计通过或失败；单独重跑 exit 0。Review 发现的合法 JSON 坏卡片缺口已补测试并修复。
+
+
+## 2026-09-08 Phase 3 探索入口
+
+| 命令 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm --prefix electron run verify:explore-ui` | 通过 | 五页签、两个入口、Context 取消、安全连接与无副作用文案 |
+| `npm --prefix electron run typecheck` | 通过 | ExplorePanel/BrowserPanel 类型 |
+| `npm --prefix electron run build:renderer` | 通过 | 1262 modules；既有大 chunk warning |
+
+第一次 UI 契约测试失败 1 次：正则被 JSX `=>` 干扰；修复测试边界后通过。最终统计：3 通过、0 失败；真实搜索、Agent Handoff 和硬件均未验证。

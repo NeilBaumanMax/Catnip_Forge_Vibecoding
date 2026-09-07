@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom';
 import WorkspacePanel from './WorkspacePanel';
 import CodeEditor from './CodeEditor';
+import ExplorePanel from './ExplorePanel';
 import type { BrowserTab, HardboardDevice, HardboardRuntimeState, RecordingSummary, RuntimeEvent, SerialMonitorEvent, SerialMonitorSnapshot, WorkbenchItem, WorkbenchOverview } from '../types';
 
 interface Props {
@@ -25,7 +26,7 @@ interface Props {
   onOpenWorkbenchItem: (targetPath: string) => void;
 }
 
-type PanelMode = 'workbench' | 'repo' | 'monitor' | 'tasks' | 'editor';
+type PanelMode = 'workbench' | 'repo' | 'monitor' | 'tasks' | 'editor' | 'explore';
 
 function formatSerialEvent(event: SerialMonitorEvent, receiveMode: 'text' | 'hex'): string {
   if (event.direction === 'tx') {
@@ -876,6 +877,7 @@ export default function BrowserPanel({
         <button data-tour-id="tab-monitor" type="button" role="tab" aria-selected={mode === 'monitor'} className={`nes-btn${mode === 'monitor' ? ' is-primary' : ''}`} onClick={() => setMode('monitor')}>监视器</button>
         <button data-tour-id="tab-tasks" type="button" role="tab" aria-selected={mode === 'tasks'} className={`nes-btn${mode === 'tasks' ? ' is-primary' : ''}`} onClick={() => setMode('tasks')}>任务管理器</button>
         <button data-tour-id="tab-editor" type="button" role="tab" aria-selected={mode === 'editor'} className={`nes-btn${mode === 'editor' ? ' is-primary' : ''}`} onClick={() => setMode('editor')}>编辑器</button>
+        <button data-tour-id="tab-explore" type="button" role="tab" aria-selected={mode === 'explore'} className={`nes-btn${mode === 'explore' ? ' is-primary' : ''}`} onClick={() => setMode('explore')}>探索</button>
         <span className="ui-build-label">{UI_BUILD_LABEL}</span>
       </div>
 
@@ -962,6 +964,14 @@ export default function BrowserPanel({
         <div className="tour-panel-fill" data-tour-id="panel-repo">
           <WorkspacePanel overview={workbench} onRefresh={onRefreshWorkbench} onOpenItem={onOpenWorkbenchItem} onEditItem={handleEditWorkbenchItem} />
         </div>
+      ) : null}
+
+      {mode === 'explore' ? (
+        <ExplorePanel
+          currentProject={projectDir || runtimeState?.activeProjectDir || ''}
+          hardwareSummary={hardboardDevices.length ? `已检测到 ${hardboardDevices.length} 个设备` : '未检测到开发板'}
+          runtimeSummary={runtimeState && runtimeState.status !== 'idle' ? `${runtimeState.phase} · ${runtimeState.status}` : '暂无运行记录'}
+        />
       ) : null}
 
       {mode === 'monitor' ? (

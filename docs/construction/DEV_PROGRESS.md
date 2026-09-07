@@ -69,3 +69,10 @@ Git 已核对快照：branch idea_to_production；baseline f6e20e8e1d581a10fbd9c
 ## 2026-09-07 Phase 2 完成
 
 Phase 2 已完成并推送：`860badf7a21d3cb1b4fc7f434488ab5de379dd34`，本地/远端一致，提交后工作区干净。当前进入 Phase 3；先实现“探索”可见入口和两条产品入口，不制造假来源、不调用 DeepSeek。
+
+
+## 2026-09-08 Phase 3 可见入口
+
+Phase 3 进行中。已完成第五页签“探索”、仅含“找灵感 / 解问题”的首页、两条输入流程和可取消的排障 Context 选择。尚未接入真实检索和 Agent Handoff；当前不会产生假结果。
+
+测试：3 项通过、0 失败；第一次 UI 契约断言失败已定位为测试正则并修复。下一小项：安全的官方 Skill 连接状态与 Explore 请求编排边界。
