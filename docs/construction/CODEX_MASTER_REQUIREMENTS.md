@@ -28,7 +28,7 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 | A6 | 官方CLI在Windows开发和打包版可运行 | 开发机安装/status及部署脚本通过，真实成品尚未验证 | Phase 1成品运行受影响 | builder契约已测，Phase 6真实包/status | TESTING | D盘CLI compatible；部署run.ps1 status通过；package config通过 | Official Skill/Packaging |
 | A7 | 用户已配置可用Access Secret | 安装后的CLI实际status返回auth.configured=false | 真实知乎搜索只能保持待验收 | 用户本机安全配置，官方stdin验证及最小搜索 | BLOCKED | next_action=request_access_secret；未获取或配置凭据 | CLI/Main |
 | A8 | 有可复现运行异常的真实板/工程可做 Demo | 发现三个工程，未连接或选择故障 | 排障不能称完整闭环 | 用户确认项目/端口后实测 Build/Flash/Serial | UNVERIFIED | hello_world_esp32s3、touch_hello、wifi_connect_fmai；无板证据 | Hardboard/Demo |
-| A9 | 延续现有 UI 能容纳探索 | 页签与设计文件存在，尚无探索视觉验收 | 布局和交互需调整 | 后续功能 UI + 现有 CDP smoke；视觉不自行定稿扩展 | UNVERIFIED | BrowserPanel 四页签、apple.less/global.less | Renderer |
+| A9 | 延续现有 UI 能容纳探索 | 功能入口和构建已验证；完整结果页与视觉验收尚未完成 | 若后续结果密度超出布局，需最小调整 | 继续沿用现有样式完成结果 UI，并在 Phase 6 做真实桌面验收 | CONFIRMED | BrowserPanel 已有五页签；ExplorePanel 两入口；verify:explore-ui 与 renderer build 通过 | Renderer |
 
 ## 风险与 Review 结论
 

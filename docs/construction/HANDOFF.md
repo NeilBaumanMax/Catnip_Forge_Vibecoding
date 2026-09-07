@@ -1,122 +1,73 @@
 # 新 Agent 接力入口
 
-更新时间：2026-09-07。用户已明确授权并完成官方 CLI 安装。当前 Phase 1 真实调用停在安全凭据配置边界；未经凭据配置不能声称真实搜索通过，Phase 1 尚未完成。禁止 worktree、子 Agent、改变产品方向。
+更新时间：2026-09-08。当前分支 `idea_to_production`，探索 MVP 未完成。开工必须动态运行 `git branch --show-current`、`git status --short`、`git rev-parse HEAD`，本文件的 hash 只代表最近一次核对快照。
 
-## 必读
+## 先读
 
-AGENTS.md → docs/product/PRODUCT_REQUIREMENTS.md → CODEX_MASTER_REQUIREMENTS.md（A1–A9）→ DECISION_LOG.md → CONSTRUCTION_PLAN.md → PHASE_1_ZHIHU_SKILL.md → TOOL_POLICY.md / TEST_METRICS.md / LOG.md。历史 docs 只作证据。
+1. `AGENTS.md` 与 `docs/product/PRODUCT_REQUIREMENTS.md`。
+2. `docs/construction/CODEX_MASTER_REQUIREMENTS.md`、`CONSTRUCTION_PLAN.md`、`WORKFLOW.md`。
+3. `LAYER_CONTRACT.md`、`TOOL_POLICY.md`、`TEST_METRICS.md`、`LOG.md`。
+4. 当前真实代码；旧 docs 只作历史证据。
 
-## 产品与 Phase
+不得创建 worktree 或委派子 Agent。不得调用 DeepSeek，直到用户明确说明余额恢复。不得把 Secret 放进 Renderer、Chat、日志、URL、仓库或安装包。
 
-当前仍是四个可见工作区的桌面 Agent IDE；探索、知识库、新 Handoff 均未实现。Phase 0 文档/Git/测试基线完成且已推送。Phase 1 已导入官方15文件、执行原 setup.ps1 安装并完成官方 status 检查，未改业务实现/vendor协议。Phase 2–6 未开始，MVP 未完成。
+## 产品与 Phase 状态
 
-关键决定：探索（找灵感/解问题）；官方 Skill；每用户 Secret；分析/计划不施工、确认后执行；真实硬件证据；主动收藏与历史知识用户选择；无 OAuth/Web/云端/第二套系统。
+产品保持 Electron 本地硬件 AI IDE。当前可见工作区为：仓库、监视器、任务管理器、编辑器、探索；探索首页只有找灵感和解问题。
 
-## 架构与风险
+- Phase 0：完成，Product Truth、Decision/Assumption、Git/测试基线和施工文档已建立。
+- Phase 1：离线宿主集成完成。官方 `zhihu` Skill 的 15 个 vendor 文件已保真导入、完整部署并进入 `@zhihu`/打包契约；官方 CLI 安装在 `D:\ZhihuCLI`。真实搜索和 Agent Skill 调用仍未验收。
+- Phase 2：完成。共享 Domain、运行时校验、Main JSON 知识 Store、五个知识 IPC、相关发现与显式选择已实现。
+- Phase 3：进行中。第五页签、两入口表单、排障 Context 取消、官方 status 安全桥和 Request 准备 IPC 已实现；真实搜索、结构化 Idea/Diagnosis、结果 UI 和 Handoff 尚未实现。
+- Phase 4–6：未开始。
 
-BrowserPanel → preload → gateway chat:send → Worker单队列 → Claude Code stream-json → Runtime/Hardboard；Skill源agent/skills，部署Agent workspace/.claude/skills；复用Main JSON user-data、EventBus与共享串口。
+## 当前实现边界
 
-Manager仍把多行description解析为 >- 并重写部署SKILL.md，尚未修复。旧浏览器搜索规则与官方CLI需最小区分；Agent skip-permissions尚无Explore/Plan门禁；业务结构化Result未实现。不能把源导入视为 @zhihu 集成、LLM加载或真实搜索已通过。A1–A9见主约束，A6已BLOCKED。
+`ExplorePanel.tsx` 生成共享 `ExploreRequest`，经 preload 到 `explore:request:prepare`。Main 运行时校验并剔除未选择 Context；找灵感声明知乎必需/全网按需，解问题声明两者均必需。该 IPC 不执行搜索、Agent、文件修改或硬件操作，准备成功不能称为已形成 Idea/Diagnosis。
 
-## 下一步1–3项
+官方连接状态由 `explore-zhihu-status.ts` 调用 vendor `scripts/run.ps1 status` 并映射为安全字段。子进程使用环境白名单。知识数据位于 Electron `userData/explore/knowledge.json`，Renderer 不直接读写文件；历史知识只发现，显式选择后才进入 Context。
 
-1. CLI 安装授权已由用户明确给出并完成。当前需按官方流程配置用户自己的 Access Secret；使用本机安全输入和官方 auth set --secret-stdin，不发送到产品 Chat、源码、日志或命令参数。尚未获取凭据，真实调用保持 LIVE_INTEGRATION_PENDING。
-2. setup/status 已完成，不重复安装；使用返回的绝对 binary_path。当前路径为 D:/ZhihuCLI/current/zhihu-cli.exe，版本 0.5.0-beta.20260826061344；用户级ZHIHU_CLI_HOME已持久设置。用户目前仅授权安装，未授权初始化或本人数据，不执行 me contents。
-3. 条件满足后先复现宿主description/部署保真失败，最小修复并验证support树、显式refs/Worker加载契约、打包过滤器；真实LLM/搜索/成品分别计证据，完成Phase 1再继续Phase 2。
+现有 Worker 仍使用单队列和 persistent Agent。`agent.ts` 当前带 `--dangerously-skip-permissions`，因此 Explore 不能仅靠提示词接入；必须先有程序级只分析/计划门禁及拒绝副作用测试。不得新建第二套 Agent、任务队列、Skill 系统或 Runtime。
 
-## 输入与测试
+## 下一步 1–3 项
 
-官方ZIP：E:\Agent\vibeide\zhihu-cli-skill-0.5.3-beta.20260904115023.zip。
-SHA-256：f7b1de244c875749feec7fae5b134e2de5f26332198e6c73861140b2d72c4dd7。
-源在agent/skills/zhihu，15文件工作区/暂存均与ZIP原字节一致。已执行原setup并完成兼容验证；未索取/读Secret、未调用搜索或本人API。
+1. **先做独立文档基线提交并推送**：写明 Phase 3a 结构化结果通道与只分析程序门禁的最小文件范围、拒绝用例、验收和风险。不能把该基线与实现放在同一提交。
+2. 在现有 Worker/Agent 边界实现最小受限模式；程序拒绝 Explore 分析中的文件写入、Build、Flash、Serial，验证非法结构化结果不会进入 UI。没有门禁前不得让 Explore 表单触发 Agent。
+3. 外部条件恢复后再做 live 验收：用户通过官方安全流程配置 Access Secret；DeepSeek 只有用户明确允许恢复后才调用。分别验证官方知乎/全网搜索和真实 `Skill(zhihu)`，保留真实来源。
 
-Phase 0：13通过、2次pytest启动失败、3组待验证；Phase 1：2通过、0失败、4组待验证。系统和随包Python都缺pytest，未修复。真实硬件REAL_HARDWARE_VALIDATION_PENDING；未重建包。另发现文档写入中文变问号，根因Windows PowerShell默认管道编码；已明确UTF-8重写文档，原失败记录保留LOG，复测见TEST_METRICS。
+## Decision 与 Assumption
 
-## Git快照
+D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探索；知乎只是知识渠道；Explore 只分析；交给 Catnip 先出计划；用户确认后才施工；排障交叉验证；知识主动收藏且历史卡加入 Context 前由用户决定。
 
-branch idea_to_production，跟踪origin/idea_to_production；origin为git@github.com:NeilBaumanMax/Catnip_Forge_Vibecoding.git。
-baseline f6e20e8e1d581a10fbd9c0e48d39bec5c4376112。
-Phase 0 local/remote bba40d575a641f22a5e4380490349c45ea583503。
-最新已核对源核验 local/remote 36d93282ca8344028702dc0905488556ce775042；push成功，源提交后工作区干净。
-backup/pre-phase-0-20260907指向baseline；backup/pre-phase-1-20260907指向Phase 0提交，远端均核对。
-当前只收尾文档修复，最终记录提交本身用git rev-parse HEAD与ls-remote动态核对；不得将上一条hash当当前HEAD。下一轮重新检查工作区，保护用户修改。
+- A1 TESTING：复用 chat/worker/skillRefs/queue；受限模式和返回通道未完成。
+- A2 TESTING：Domain schema 已有；真实模型结构化输出未验证。
+- A3 CONFIRMED：原子 JSON Store 的保存、重启、损坏保护和选择语义已验证。
+- A4/A5 TESTING：相关源码及 Build/Serial 的项目、时间和读取上限仍待 Phase 4。
+- A6 TESTING：开发机 CLI/status 与 builder 规则通过；真实成品未验证。
+- A7 BLOCKED：官方 status 为 `auth.configured=false`。
+- A8 UNVERIFIED：未选定并实测比赛硬件故障。
+- A9 CONFIRMED：第五页签和两入口已通过 UI 契约与 Renderer build；完整结果页仍待实现。
 
-## 2026-09-07 官方 CLI 安装实测
+## Blocker、Known Issues 与真实验证
 
-用户明确同意安装并要求告知位置。安装前已说明默认用户目录；未覆盖 ZHIHU_CLI_HOME，未修改 PATH。
+- `LIVE_INTEGRATION_PENDING`：没有获取或配置用户 Access Secret，未执行真实知乎/全网搜索。
+- `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`：两次受限 smoke 都在 tool use 前返回 HTTP 402；用户已禁止重试。
+- `REAL_HARDWARE_VALIDATION_PENDING`：未执行本轮真实 Build/Flash/Serial，不能声称硬件闭环完成。
+- Phase 6 的真实 Windows package、冷启动和 packaged Skill status 未执行。
+- Phase 0 的两次 Python pytest 均因环境缺 pytest，未进入断言；不得写成测试通过。
+- 过程审计发现 Phase 2/3 若干小闭环把实现和收尾文档放在同一提交，缺少严格的“小闭环先文档”提交证据。WORKFLOW 已收紧；下一业务小项必须先有独立文档提交。
 
-- 原脚本：powershell -NoProfile -ExecutionPolicy Bypass -File agent/skills/zhihu/scripts/setup.ps1。
-- 安装目录：%LOCALAPPDATA%/ZhihuCLI；当前 binary：%LOCALAPPDATA%/ZhihuCLI/current/zhihu-cli.exe；版本副本：%LOCALAPPDATA%/ZhihuCLI/versions/0.5.0-beta.20260826061344/zhihu-cli.exe。真实绝对路径已向本机用户告知，公开施工记录不写操作系统用户名。
-- setup exit0，installed=true，downloaded_cli_version=0.5.0-beta.20260826061344。下载/大小/散列/归档与版本校验全部由原官方脚本执行，没有修改vendor。
-- 随后官方 scripts/run.ps1 status：installed=true、compatible=true、update_check.status=verified（HTTP200）、无CLI/Skill更新、auth.configured=false、request_access_secret。返回的官方Skill散列与用户ZIP相同。
-- 两份exe实际各6,891,008字节。后续只使用setup/status返回的绝对binary_path，不使用PATH裸命令。
-- 只读 auth set --help 证实 --secret-stdin 在线验证后写系统安全凭证库；未执行 auth set/verify 或 me contents，没有配置Secret，也没有执行真实搜索。
-- 安装授权门禁解除；LIVE_INTEGRATION_PENDING。宿主兼容修复、@zhihu/support sync、成品/硬件仍未验收。
+## 测试快照
 
-安装小项Git快照：branch idea_to_production；安装开始前HEAD为 4a3f7b86449b3bba994a2476c3f258f051455b7f，工作区干净。当前仅安装记录文档变更；本次文档提交后将push并动态核对origin，CLI二进制和任何凭据不入Git。
+Phase 0：13 个检查目标通过、2 次 pytest 启动失败、3 组未验证。Phase 1 离线集成相关回归通过，live 搜索与 Agent 调用待验。Phase 2：5 组通过、0 最终失败、2 个外部项未验证。Phase 3 已完成三个小闭环，最终分别为 3/4/4 组通过、0 最终失败；首次 UI、GPU、环境白名单失败均保留在 `TEST_METRICS.md` 和 `LOG.md`。
 
-## 2026-09-07 安装位置变更：D盘（当前有效位置）
+2026-09-08 文档漂移修正专项：3 个检查目标通过、0 失败；只修改 AGENTS/施工文档，未重复业务构建。
 
-用户明确要求不放C盘。当前安装根为 D:\ZhihuCLI，binary_path为 D:\ZhihuCLI\current\zhihu-cli.exe；版本副本在 D:\ZhihuCLI\versions\0.5.0-beta.20260826061344\zhihu-cli.exe。旧 %LOCALAPPDATA%/ZhihuCLI 路径记录只作历史，已删除本次C盘安装目录。
+## Git 快照与回滚
 
-采用官方支持的用户级 ZHIHU_CLI_HOME=D:\ZhihuCLI，已持久写入并回读验证，不修改PATH或vendor脚本。已运行宿主可能仍持有旧环境；重新启动后使用新环境，施工shell应显式从用户级变量读取后传入官方脚本，避免退回C盘。
+- baseline：`f6e20e8e1d581a10fbd9c0e48d39bec5c4376112`。
+- 审计开始时 local/remote：`bff953900d1af98aa9e69f50308ed137c4b0b373`；push 与 `ls-remote` 已核对，工作区当时干净。
+- 备份：`backup/pre-phase-0-20260907` → baseline；`backup/pre-phase-1-20260907` → `bba40d57`；`backup/pre-phase-2-20260907` → `b3b32a4b`；`backup/pre-phase-3-20260907` → `42d74e56`。local/remote 均已有核对记录。
+- 只能精确暂存；禁止 `reset --hard`、`clean -fd`、`push --force`、擅自 stash 或覆盖用户修改。撤回已提交工作使用经审查的 `git revert <commit>` 并重新测试。
 
-迁移先确认D盘目标不存在、源目录无reparse点，复制3文件逐项SHA-256一致；用D盘环境运行原setup.ps1返回reused_cli=true/ok=true，再run.ps1 status返回installed=true/compatible=true且binary_path为D盘。setup的installed=false在此表示复用已有文件，不是未安装。
-
-新位置验证后，再次核实两份exe散列和精确旧目录边界，删除旧安装树；Test-Path返回False。D盘binary version成功返回0.5.0-beta.20260826061344。未配置Secret、未调用搜索、未触板；LIVE_INTEGRATION_PENDING保持。
-
-## 2026-09-07 Phase 1宿主集成进展
-
-已完成离线宿主小闭环：13个Skill部署通过；官方zhihu多行描述正确，SKILL.md与14个support文件保真；@zhihu进入现有结构化引用和Worker加载约束；builder自动包含15文件且排除用户CLI；release门禁已增强。旧Skill、任务队列、Hardboard上下文回归通过。
-
-当前Blocker：`LIVE_INTEGRATION_PENDING`（官方CLI auth.configured=false）和`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`（受限真实Agent调用在tool_use前HTTP 402）。不能称Phase 1完整通过，也不进入Phase 2。真实成品检查留Phase 6，REAL_HARDWARE_VALIDATION_PENDING保持。
-
-## 2026-09-07 Phase 1 最新可接力状态
-
-宿主集成实现已经完成并推送：`9d7efb3a2cb97aad3132da0c4396663b4ef7839e`，本地与 `origin/idea_to_production` 已用 `ls-remote` 核对一致，提交后工作区干净。此前“Manager 仍未修复”及“support/@zhihu/打包契约未完成”的描述已过期；真实状态以本节为准。
-
-当前仅剩两个外部边界：
-
-1. 官方 CLI 位于 `D:\ZhihuCLI\current\zhihu-cli.exe`，状态兼容但 `auth.configured=false`；真实知乎搜索为 `LIVE_INTEGRATION_PENDING`。
-2. 受限 Agent smoke 已发现 `zhihu` slash command，但模型在任何 tool use 前返回 DeepSeek HTTP 402；真实 `Skill(zhihu)` 调用为 `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`。
-
-不得用静态发现、部署成功或模拟结果替代上述两项真实验证。取得安全凭据并恢复 Agent 模型额度后，先完成最小真实搜索与只读 Agent Skill 调用，再决定 Phase 1 完成并进入 Phase 2。真实安装包仍留 Phase 6，硬件状态仍为 `REAL_HARDWARE_VALIDATION_PENDING`。
-
-
-## 2026-09-07 外部调用门禁更新
-
-用户明确要求：DeepSeek 已无余额，禁止继续尝试。保持 `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`，不得自动重试、切换模型或用静态检查宣称真实调用通过，除非用户后续明确告知服务恢复。
-
-官方 Skill status 已再次确认：D 盘 CLI 安装且兼容，`auth.configured=false`、`next_action=request_access_secret`。真实搜索仍为 `LIVE_INTEGRATION_PENDING`；不得向聊天索取或回显 Secret。
-
-
-## 2026-09-07 Phase 2 已开工
-
-用户要求继续推进，并明确禁止重试无余额的 DeepSeek。当前 Phase 2 进行中；外部验证继续如实 pending，但不阻塞独立的软件层施工。
-
-已实现入口：`electron/src/common/explore.ts`、`electron/src/main/explore-knowledge.ts`；Gateway/preload 暴露五个知识操作。持久化位于 Electron `userData/explore/knowledge.json`，Renderer 不直接读写文件。相关卡只返回候选，只有显式 ID 选择才进入 Context。
-
-备份 `backup/pre-phase-2-20260907` 已推送并核对指向 `b3b32a4bdd3d65a175bb04d823644288c1a3b627`。本小闭环提交 hash 需在提交后动态核对。不得重试 DeepSeek；不得声称真实知乎搜索或硬件已验证。
-
-
-## 2026-09-07 Phase 2 完成快照
-
-Phase 2 完成提交：`860badf7a21d3cb1b4fc7f434488ab5de379dd34`，已与 `origin/idea_to_production` 核对一致。当前下一阶段为 Phase 3。Phase 2 Store 与 IPC 可直接复用，不要另建数据库或第二套 IPC。
-
-
-## 2026-09-08 Phase 3 UI 入口状态
-
-当前真实 UI 已有五个工作区：仓库、监视器、任务管理器、编辑器、探索。实现入口为 `BrowserPanel.tsx` 和 `ExplorePanel.tsx`；首页严格只有找灵感/解问题。表单尚未调用检索或 Agent，点击提交只说明需要连接开放平台且本次未搜索。
-
-下一步应接官方 Skill 的安全连接状态与请求编排；不得把 Secret 放入 Renderer，不得为演示生成假来源。DeepSeek 仍按用户要求禁止重试。
-
-
-## 2026-09-08 连接状态桥
-
-`explore-zhihu-status.ts` 使用官方 run.ps1 status；Gateway/preload 只暴露安全映射。子进程环境采用白名单，不得改回全量 `process.env`。当前真实映射为 `needs_secret`。用户禁止重试 DeepSeek。
-
-## 2026-09-08 Explore Request 准备边界
-
-新增 `electron/src/main/explore-request.ts` 和 `explore:request:prepare` IPC。两个 Explore 表单现在生成共享 `ExploreRequest`，Main 负责运行时校验、剔除未选择 Context，并返回来源策略；该 IPC 不执行搜索或 Agent。灵感带可用工程/硬件，排障保持用户取消项。
-
-本小闭环 4 组软件验证通过、0 组最终失败；第一次 UI 契约失败及修复记录在 LOG/TEST_METRICS。下一步应先设计结构化结果传输和只分析程序门禁，再接现有 Agent；当前 DeepSeek 禁止重试，知乎未配置 Secret，不能做真实联调或伪造来源。硬件仍为 `REAL_HARDWARE_VALIDATION_PENDING`。最新提交和远端状态须在本轮 commit/push 后动态核对。
+本次文档漂移修正完成后的提交与远端 hash，必须用 Git 动态查询；不能让提交正文虚称包含自身 hash。

@@ -1,6 +1,6 @@
 # Layer Contract
 
-依据当前源码核实后确定责任；新增契约尚待 A1/A2 原型，不虚构已有 IPC。
+依据当前源码核实后确定责任。知识 Store、官方 status 和 Request 准备 IPC 已实现；受限分析与结构化结果通道仍待 A1/A2 原型，不虚构为已有能力。
 
 | 层 | 责任与复用入口 | 禁止 |
 | --- | --- | --- |
@@ -30,3 +30,10 @@
 - Main 对 IPC 输入执行运行时校验；整篇正文和未知字段不会写入知识卡。
 - findRelated 只发现候选；selectForContext 必须收到用户明确选择的 card ID。
 - 磁盘 JSON 语法或卡片结构损坏时保留原文件并报错，不自动覆盖。
+
+## 2026-09-08 Request 准备程序边界
+
+- Renderer 经 preload 提交共享 `ExploreRequest`；Main 必须再次运行时校验。
+- Main 只保留 `selected=true` 的 Context；取消项不得返回给后续分析输入。
+- 找灵感声明知乎必需、全网按需；解问题声明知乎与全网均必需。
+- `explore:request:prepare` 不执行搜索、Agent、文件写入、Build、Flash 或 Serial。准备成功不等于已产生 Idea/Diagnosis。

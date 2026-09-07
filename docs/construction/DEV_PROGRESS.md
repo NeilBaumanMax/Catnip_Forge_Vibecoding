@@ -1,17 +1,14 @@
 # 开发进度
 
-更新时间：2026-09-07。探索 MVP 未完成。
+更新时间：2026-09-08。探索 MVP 未完成。
 
-- 当前 Phase：Phase 0 完成；Phase 1 官方源导入、官方 CLI 安装和安装后 status 完成；真实联调等待安全凭据配置。
-- 已完成：15份产品/施工文档、现场审计、D001–D020、A1–A9、分层/测试基线；两阶段远程备份；官方15文件安全解包、工作区及 Git 内容与 ZIP 逐字节一致。
-- 当前任务：记录用户明确授权的 CLI 安装结果和安全凭据边界。
-- Blocker：LIVE_INTEGRATION_PENDING；安装授权门禁已解除，官方安装后 status 为 installed=true、compatible=true、auth.configured=false、next_action=request_access_secret。没有索取/配置 Secret 或执行真实搜索。
-- 未完成：宿主多行描述/部署保真修复、support sync、@zhihu 集成、打包资源、真实调用；Phase 2–6 未开始。
-- 测试：Phase 0 为13通过、2次 pytest 启动失败、3组未验证；Phase 1 为2通过、0失败、4组未验证；文档编码检查首次失败，修复后复测另记 TEST_METRICS。
-- Secret：未索取、读取或配置；本次安装后的真实 CLI status 明确返回 auth.configured=false。
-- 硬件：REAL_HARDWARE_VALIDATION_PENDING；未触板。
-
-Git 已核对快照：branch idea_to_production；baseline f6e20e8e1d581a10fbd9c0e48d39bec5c4376112；Phase 0 local/remote bba40d575a641f22a5e4380490349c45ea583503；官方源核验 local/remote 36d93282ca8344028702dc0905488556ce775042，push成功、查询一致。backup/pre-phase-0-20260907 指向baseline，backup/pre-phase-1-20260907 指向Phase 0提交，均核对。源提交后工作区干净；当前只有本轮文档修复待提交。最终记录提交 HEAD 以 git rev-parse HEAD / ls-remote 为准，不伪造自包含 hash。
+- 当前 Phase：Phase 3 进行中。Phase 0 已完成；Phase 1 离线宿主集成完成、真实调用待外部条件；Phase 2 Domain 与本地知识底座完成。
+- 已完成：官方 `zhihu` Skill 15 文件导入与保真部署、D 盘 CLI 安装/status、安全打包过滤；Explore Domain/JSON Store/知识 IPC；第五工作区“探索”、找灵感/解问题入口、官方连接状态桥、Main Request 准备与 Context 排除。
+- 当前任务：施工规范自检与文档漂移修正。修正完成后，下一业务小闭环必须先做独立文档基线提交，再实现结构化结果通道和 Explore 只分析程序门禁。
+- 未完成：真实知乎/全网搜索、结构化 Idea/Diagnosis UI、现有 Agent Handoff、用户确认执行门禁、Phase 4–6、真实包和真机闭环。
+- Blocker：`LIVE_INTEGRATION_PENDING`（官方 status 为 `auth.configured=false`）；`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`（用户明确禁止重试）；`REAL_HARDWARE_VALIDATION_PENDING`。这些外部项不阻止独立文档和软件门禁施工。
+- 测试：最新三个 Phase 3 小闭环分别为 3、4、4 组最终通过，0 组最终失败；首次失败和全部基线见 TEST_METRICS/LOG。Python pytest 仍因依赖缺失未启动到断言。
+- Git 审计起点：`idea_to_production`，local/remote `bff953900d1af98aa9e69f50308ed137c4b0b373`，工作区干净；baseline `f6e20e8e1d581a10fbd9c0e48d39bec5c4376112`。Phase 0–3 远端备份均已有核对记录。
 
 ## 2026-09-07 官方 CLI 安装实测
 

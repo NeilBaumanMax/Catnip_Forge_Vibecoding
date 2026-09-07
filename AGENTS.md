@@ -29,7 +29,7 @@
 
 ## 关键源码入口
 
-- UI：`electron/src/renderer/components/BrowserPanel.tsx`（四个可见工作区）、`ChatPanel.tsx`、`App.tsx`。
+- UI：`electron/src/renderer/components/BrowserPanel.tsx`（五个可见工作区，含“探索”）、`ExplorePanel.tsx`、`ChatPanel.tsx`、`App.tsx`。
 - IPC：`electron/src/preload/index.ts` → `electron/src/main/gateway.ts`。
 - Agent：`electron/src/main/worker/orchestrator.ts`、`context.ts`、`task-state.ts`、`electron/src/main/agent.ts`。
 - Skill：`electron/src/main/skill-manager.ts`、`agent/skills/<id>/SKILL.md`。

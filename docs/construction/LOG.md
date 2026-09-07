@@ -137,3 +137,17 @@
 - 第一次 `verify:explore-ui` 失败：动态连接消息替换了原有固定安全兜底，静态契约无法确认“需要先连接知乎开放平台”。恢复固定兜底并保留动态消息后复测通过。
 - 最终 `verify:explore-request`、`verify:explore-ui`、Electron typecheck、Renderer build 共 4 组通过，0 组最终失败；`git diff --check` 通过。Electron 测试仍输出既有 Windows `os_crypt` 警告但 exit 0。
 - 未调用 DeepSeek、知乎搜索或硬件。`LIVE_INTEGRATION_PENDING`、`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`、`REAL_HARDWARE_VALIDATION_PENDING` 保持。
+
+## 2026-09-08 / 施工规范自检与文档漂移修正
+
+- Git 审计起点：branch `idea_to_production`，local/remote `bff953900d1af98aa9e69f50308ed137c4b0b373`，工作区干净；Phase 0–3 备份分支存在。未创建 worktree、未破坏用户修改。
+- 符合项：Phase 0 在业务开发前建立并提交 Product Truth/施工基线；后续实现保持确认范围，使用官方 vendor Skill、现有 Skill Manager/Main IPC/Agent/Runtime；Secret 未进入 Renderer；未制造来源；专项测试、首次失败、commit/push 和远端核对均有记录。
+- 流程偏差：Phase 2/3 的总范围和 Phase 计划虽早于实现，但多个功能小闭环把实现与收尾文档放在同一 commit。实际操作也常为读计划→实现→测试→补文档，无法提供严格的“每个小闭环先提交施工文档基线”证据。此项判定为不符合 WORKFLOW 第 3 条，不能用同一提交中的文档补写冒充先行。
+- 文档漂移：AGENTS 仍称四工作区；DEV_PROGRESS/HANDOFF 顶部停在 Phase 1；ARCHITECTURE 仍把已实现 Explore/Store/IPC 全称为未实现；A9 仍基于四页签；GITHUB_ROLLBACK 表缺 Phase 1–3；Phase 3 实际先完成安全 UI 外壳但计划状态未说明。
+- 修正：更新 AGENTS、DEV_PROGRESS、ARCHITECTURE、LAYER_CONTRACT、A9、CONSTRUCTION_PLAN、GITHUB_ROLLBACK；重写 HANDOFF 为当前单一快照。LOG 历史段不删除。
+- 流程加固：WORKFLOW 明确要求下一业务小闭环在 Git 历史中先有独立的文档基线 commit/push；实现与收尾文档同一提交不计先行证据。本轮只改施工文档，不改业务代码。
+- 文档一致性测试与最终 Git 提交状态在本节后续追加，不预写通过结果。
+
+复测结果：必需文档/UTF-8/13 个本地链接/当前 Phase 断言通过；`git diff --check` 通过；变更范围检查确认仅 `AGENTS.md` 与 `docs/construction/*`。最终 3 个检查目标通过、0 失败。未运行应用测试，因为本轮无业务代码变更；未调用 DeepSeek、知乎搜索或硬件。
+
+用户继续后第一次复测编排在 `functions.exec` 的 JavaScript 参数中误混入命令字段，触发 `SyntaxError: Invalid shorthand property initializer`；脚本在启动任何 shell 命令前退出，未改文件。修正工具参数后，同一组检查实际执行并通过。该失败属于测试启动编排失败，保留但不伪报为产品测试失败。

@@ -12,6 +12,12 @@
 | 5 | 5a 主动收藏与重启；5b 历史相关卡发现经用户选择；5c 真实验证回写 | A 收藏→重启→发现→拒绝不入 Context；B 真实有效→项目验证记录；C 失败→明确无效/失败记录；不做 OAuth |
 | 6 | 回归、安全、Windows 包、冷启动、Skill 入包、两 Demo、文档/Git 收尾 | 软件全通过；真实搜索/设备/包有证据；无 Secret；baseline/backup/commit/远端一致；不扩功能 |
 
+## 2026-09-08 执行状态与顺序纠正
+
+- Phase 0 完成；Phase 1 离线宿主集成完成但 live 调用待外部条件；Phase 2 完成；Phase 3 进行中。
+- Phase 3 已先完成 3b 的安全 UI 外壳、status 和 Request 准备，但没有开放搜索或 Agent Handoff，因此未绕过 3a 门禁。下一业务小项回到 3a：先提交结构化结果通道与只分析程序门禁的独立施工基线，再实现和测试。
+- 只有 3a 的运行时拒绝测试通过后，才能让 Explore 表单触发现有 Agent。当前按钮只准备请求并明确没有搜索。
+
 ## Phase 1 已定位的最小工程范围
 
 - 新增 `agent/skills/zhihu`，按用户 ZIP 原字节导入，不创建假 Skill。
