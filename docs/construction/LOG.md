@@ -151,3 +151,10 @@
 复测结果：必需文档/UTF-8/13 个本地链接/当前 Phase 断言通过；`git diff --check` 通过；变更范围检查确认仅 `AGENTS.md` 与 `docs/construction/*`。最终 3 个检查目标通过、0 失败。未运行应用测试，因为本轮无业务代码变更；未调用 DeepSeek、知乎搜索或硬件。
 
 用户继续后第一次复测编排在 `functions.exec` 的 JavaScript 参数中误混入命令字段，触发 `SyntaxError: Invalid shorthand property initializer`；脚本在启动任何 shell 命令前退出，未改文件。修正工具参数后，同一组检查实际执行并通过。该失败属于测试启动编排失败，保留但不伪报为产品测试失败。
+
+## 2026-09-08 / Phase 3a / 结构化结果与只分析门禁施工基线
+
+- 动态核对 branch `idea_to_production`、HEAD `0ea534c690cd30033b3f69275971c99acb64ecc0`、upstream `origin/idea_to_production`，工作区起点干净且 local/remote 一致；未创建 worktree 或子 Agent。
+- 完整复读 Product Truth、HANDOFF、主约束、计划、流程、分层、工具、测试、Decision 与只追加 LOG；核实现有 `ExploreRequest` 只到 prepare IPC，Agent 为共享 persistent process 且带 `--dangerously-skip-permissions`，`ChatBuffer` 已暴露最终 result 文本。
+- 第一次 Git/源码勘察命令因 PowerShell 将未加引号的 `@{u}` 解析为哈希字面量而在启动任何子命令前失败；加引号后成功。无文件或外部状态改动，不计产品断言失败。
+- 本提交只建立 `PHASE_3A_RESTRICTED_ANALYSIS_BASELINE.md` 并同步接力入口：限定 5 个业务/测试文件、显式执行档位、进程权限隔离、严格结构化结果通道、拒绝用例和离线验收。没有业务源码、DeepSeek、知乎搜索、Secret 或硬件操作。

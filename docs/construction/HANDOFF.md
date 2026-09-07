@@ -31,8 +31,8 @@
 
 ## 下一步 1–3 项
 
-1. **先做独立文档基线提交并推送**：写明 Phase 3a 结构化结果通道与只分析程序门禁的最小文件范围、拒绝用例、验收和风险。不能把该基线与实现放在同一提交。
-2. 在现有 Worker/Agent 边界实现最小受限模式；程序拒绝 Explore 分析中的文件写入、Build、Flash、Serial，验证非法结构化结果不会进入 UI。没有门禁前不得让 Explore 表单触发 Agent。
+1. **先完成并推送独立文档基线**：范围、拒绝用例、验收与风险见 [Phase 3a 基线](PHASE_3A_RESTRICTED_ANALYSIS_BASELINE.md)。该提交不得包含业务实现。
+2. 文档基线远端核对后，在其限定的现有 Worker/Agent 边界实现最小受限模式；程序拒绝 Explore 分析中的文件写入、Build、Flash、Serial，验证非法结构化结果不会进入 UI。没有门禁前不得让 Explore 表单触发 Agent。
 3. 外部条件恢复后再做 live 验收：用户通过官方安全流程配置 Access Secret；DeepSeek 只有用户明确允许恢复后才调用。分别验证官方知乎/全网搜索和真实 `Skill(zhihu)`，保留真实来源。
 
 ## Decision 与 Assumption
