@@ -81,3 +81,10 @@ backup/pre-phase-0-20260907指向baseline；backup/pre-phase-1-20260907指向Pha
 2. 受限 Agent smoke 已发现 `zhihu` slash command，但模型在任何 tool use 前返回 DeepSeek HTTP 402；真实 `Skill(zhihu)` 调用为 `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`。
 
 不得用静态发现、部署成功或模拟结果替代上述两项真实验证。取得安全凭据并恢复 Agent 模型额度后，先完成最小真实搜索与只读 Agent Skill 调用，再决定 Phase 1 完成并进入 Phase 2。真实安装包仍留 Phase 6，硬件状态仍为 `REAL_HARDWARE_VALIDATION_PENDING`。
+
+
+## 2026-09-07 外部调用门禁更新
+
+用户明确要求：DeepSeek 已无余额，禁止继续尝试。保持 `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`，不得自动重试、切换模型或用静态检查宣称真实调用通过，除非用户后续明确告知服务恢复。
+
+官方 Skill status 已再次确认：D 盘 CLI 安装且兼容，`auth.configured=false`、`next_action=request_access_secret`。真实搜索仍为 `LIVE_INTEGRATION_PENDING`；不得向聊天索取或回显 Secret。

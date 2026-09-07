@@ -84,3 +84,10 @@
 - 宿主 Skill 兼容、官方文件保真、`@zhihu` 加载契约和打包资源门禁已提交为 `9d7efb3a2cb97aad3132da0c4396663b4ef7839e`。
 - `git push origin idea_to_production` 成功；`git ls-remote --heads origin idea_to_production` 返回相同 hash；提交后 `git status --short --branch` 仅显示本地分支跟踪远端，无未提交文件。
 - Phase 1 离线软件验收已完成。真实知乎搜索仍受 `auth.configured=false` 阻塞；真实 Agent 调用受 DeepSeek HTTP 402 阻塞。保持 `LIVE_INTEGRATION_PENDING` 与 `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`，不进入 Phase 2。
+
+
+## 2026-09-07 / Phase 1 / DeepSeek 停止重试与状态复核
+
+- 用户明确指示 DeepSeek 已无余额，不得继续尝试；后续保持 `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`，直到用户明确告知服务恢复。
+- 本轮此前的并行检查脚本因 JavaScript 语法错误在启动任何命令前退出，未调用 Git、知乎或 DeepSeek。
+- 随后仅复核 Git 与官方 `scripts/run.ps1 status`：branch `idea_to_production`，HEAD `bce243786555a00fdded77c46848b8bcd9014f39`，当时与远端一致且工作区干净；CLI 位于 D 盘、版本兼容，`auth.configured=false`、`next_action=request_access_secret`。未执行搜索、本人数据、Agent 或硬件调用。
