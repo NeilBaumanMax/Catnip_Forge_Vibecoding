@@ -83,3 +83,12 @@ Phase 1核心检查2通过、0失败、4组未验证。不把CLI未就绪检查�
 | 凭据配置和真实知乎搜索 | 0 | 0 | 1 | 未执行，auth.configured=false |
 
 安装小项3通过、0失败、1组未验证；不覆盖前述首次未就绪、pytest缺失或文档编码失败历史。核心集成、打包和真实硬件仍为原先未验证项目。
+
+## D盘迁移小项
+
+4组通过、0失败、1组未验证：
+1. Copy-Item前边界/重解析点检查及复制后3文件Get-FileHash SHA256比对，通过。
+2. ZHIHU_CLI_HOME=D:\ZhihuCLI 下原setup.ps1、run.ps1 status通过；复用已有CLI、路径D盘、版本兼容。
+3. [Environment]::SetEnvironmentVariable用户级变量写入/回读通过；精确旧目录删除后Test-Path=False。
+4. D:\ZhihuCLI\current\zhihu-cli.exe version通过。
+未验证：真实凭据与搜索仍待配置；宿主重启后的实际集成不由此推断通过。无业务源码修改。
