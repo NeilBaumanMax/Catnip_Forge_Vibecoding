@@ -52,3 +52,11 @@
 - 最终相关回归：Electron typecheck、build:main、verify:skills、verify:zhihu-skill-package、verify:task-queue、verify:hardboard共6项通过；3个CJS脚本node --check通过；从实际部署目录执行官方run.ps1 status通过，D盘binary兼容；官方源再次与ZIP逐字节相同。
 - 真实Agent受限smoke仅开放Skill工具并使用plan权限。第一次调用exit 1；脱敏诊断再次调用显示init已发现slash command `zhihu`，但在任何工具调用前DeepSeek返回HTTP 402 Insufficient Balance。未打印Key、未开放Bash/文件/MCP/硬件、未调用知乎搜索。故“真实Agent已调用Skill(zhihu)”仍未验证，记录`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`，不能用发现列表冒充调用成功。
 - 当前真实搜索还受`auth.configured=false`阻塞，记录`LIVE_INTEGRATION_PENDING`。未进入Phase 2。
+
+## 2026-09-07 离线验收结论与提交
+
+Phase 1 的宿主兼容和打包规则小闭环已完成。实现提交 `9d7efb3a2cb97aad3132da0c4396663b4ef7839e` 已推送至 `origin/idea_to_production`，远端 hash 相同，提交后工作区干净。
+
+已完成项：多行 frontmatter 描述、官方 `SKILL.md` 原字节部署、support tree 同步、`@zhihu` 引用与 Worker 加载契约、builder 文件包含、release 文件保真和 CLI 排除门禁。真实安装包重建仍按计划留到 Phase 6。
+
+Phase 1 尚不能宣布整体完成：官方 status 仍为 `auth.configured=false`，真实搜索是 `LIVE_INTEGRATION_PENDING`；真实 Agent 在 tool use 前被 DeepSeek HTTP 402 阻断，记录 `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`。不得用静态检查冒充真实调用。

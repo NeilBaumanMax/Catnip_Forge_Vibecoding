@@ -70,3 +70,14 @@ backup/pre-phase-0-20260907指向baseline；backup/pre-phase-1-20260907指向Pha
 已完成离线宿主小闭环：13个Skill部署通过；官方zhihu多行描述正确，SKILL.md与14个support文件保真；@zhihu进入现有结构化引用和Worker加载约束；builder自动包含15文件且排除用户CLI；release门禁已增强。旧Skill、任务队列、Hardboard上下文回归通过。
 
 当前Blocker：`LIVE_INTEGRATION_PENDING`（官方CLI auth.configured=false）和`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`（受限真实Agent调用在tool_use前HTTP 402）。不能称Phase 1完整通过，也不进入Phase 2。真实成品检查留Phase 6，REAL_HARDWARE_VALIDATION_PENDING保持。
+
+## 2026-09-07 Phase 1 最新可接力状态
+
+宿主集成实现已经完成并推送：`9d7efb3a2cb97aad3132da0c4396663b4ef7839e`，本地与 `origin/idea_to_production` 已用 `ls-remote` 核对一致，提交后工作区干净。此前“Manager 仍未修复”及“support/@zhihu/打包契约未完成”的描述已过期；真实状态以本节为准。
+
+当前仅剩两个外部边界：
+
+1. 官方 CLI 位于 `D:\ZhihuCLI\current\zhihu-cli.exe`，状态兼容但 `auth.configured=false`；真实知乎搜索为 `LIVE_INTEGRATION_PENDING`。
+2. 受限 Agent smoke 已发现 `zhihu` slash command，但模型在任何 tool use 前返回 DeepSeek HTTP 402；真实 `Skill(zhihu)` 调用为 `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`。
+
+不得用静态发现、部署成功或模拟结果替代上述两项真实验证。取得安全凭据并恢复 Agent 模型额度后，先完成最小真实搜索与只读 Agent Skill 调用，再决定 Phase 1 完成并进入 Phase 2。真实安装包仍留 Phase 6，硬件状态仍为 `REAL_HARDWARE_VALIDATION_PENDING`。
