@@ -6,6 +6,7 @@ export interface ParsedChunk {
   toolInput?: unknown;
   mcpServers?: Array<{ name: string; status: string }>;
   isError?: boolean;
+  structuredOutput?: unknown;
 }
 
 export class ChatBuffer {
@@ -97,7 +98,12 @@ export class ChatBuffer {
             isError: true,
           }];
         }
-        return [{ type: 'result', content: msg.result || msg.subtype || 'completed', isError: false }];
+        return [{
+          type: 'result',
+          content: msg.result || msg.subtype || 'completed',
+          structuredOutput: msg.structured_output,
+          isError: false,
+        }];
       }
 
       return [];

@@ -1,6 +1,6 @@
 import { BrowserWindow } from 'electron';
 import { randomUUID } from 'node:crypto';
-import { ensureAgentProcess, killAgent, getAgentProcess, sendAgentMessage } from '../agent';
+import { ensureAgentProcess, killAgent, getAgentProcess, sendAgentMessage, type AgentExecutionProfile } from '../agent';
 import { loadURL, getBrowserView } from '../browser-view';
 import { TaskStateMachine } from './task-state';
 import { buildContext } from './context';
@@ -10,6 +10,13 @@ import { isHtmlGameTask, validateCurrentPage } from './page-validator';
 import { appendClaudeSessionTurn, buildClaudeSessionContext, getClaudeSessionFile, listChatConversations } from './session-store';
 import { listManagedSkills } from '../skill-manager';
 import { buildAttachmentPromptContext, type AttachmentReference } from '../attachment-store';
+import {
+  normalizeExploreAnalysisResult,
+  normalizeExploreRequest,
+  type ExploreAnalysisExpectation,
+  type ExploreAnalysisResult,
+  type ExploreRequest,
+} from '../../common/explore';
 
 export type PushUIFn = (channel: string, data: unknown) => void;
 export type TaskSubmitMode = 'auto' | 'guide' | 'queue';
@@ -42,11 +49,51 @@ interface QueuedTask {
   skillRefs: SkillReference[];
   attachments: AttachmentReference[];
   conversationId: string;
+  executionProfile: AgentExecutionProfile;
+  exploreExpectation?: ExploreAnalysisExpectation;
 }
 
 interface TaskContinuation {
   kind: 'guidance' | 'validation' | 'resume' | 'skill-enforcement';
   text: string;
+}
+
+export function isExploreAnalysisToolAllowed(toolName: string): boolean {
+  return toolName === 'Skill';
+}
+
+export function canAppendTaskGuidance(
+  activeProfile: AgentExecutionProfile,
+  incomingProfile: AgentExecutionProfile,
+): boolean {
+  return activeProfile === 'default' && incomingProfile === 'default';
+}
+
+export function agentStderrForUI(profile: AgentExecutionProfile, text: string): string {
+  return profile === 'explore_analysis'
+    ? '[Agent] Explore 受限分析进程报告错误，原始输出已隐藏。'
+    : text;
+}
+
+export function agentTextForLog(profile: AgentExecutionProfile, text: string): string {
+  return profile === 'explore_analysis' ? '[restricted explore content hidden]' : text;
+}
+
+export function parseExploreAnalysisResultText(
+  text: string,
+  expectation: ExploreAnalysisExpectation,
+): ExploreAnalysisResult {
+  const trimmed = text.trim();
+  if (!trimmed || trimmed.startsWith('```') || trimmed.endsWith('```')) {
+    throw new Error('Explore analysis result must be plain JSON');
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    throw new Error('Explore analysis result must be valid JSON');
+  }
+  return normalizeExploreAnalysisResult(parsed, expectation);
 }
 
 export function normalizeAgentTaskInput(input: string | AgentTaskInput): AgentTaskInput {
@@ -94,6 +141,9 @@ export class Orchestrator {
   private currentTask: string | null = null;
   private currentTaskId: string | null = null;
   private currentConversationId: string | null = null;
+  private currentExecutionProfile: AgentExecutionProfile = 'default';
+  private currentExploreExpectation: ExploreAnalysisExpectation | null = null;
+  private currentExploreResult: ExploreAnalysisResult | null = null;
   private currentSkillRefs: SkillReference[] = [];
   private currentAttachments: AttachmentReference[] = [];
   private invokedSkillIds = new Set<string>();
@@ -130,10 +180,49 @@ export class Orchestrator {
     const input = normalizeAgentTaskInput(task);
     const text = input.text;
     const targetConversationId = conversationId || listChatConversations().activeConversationId;
-    const request: QueuedTask = { id: randomUUID(), text, skillRefs: input.skillRefs, attachments: input.attachments, conversationId: targetConversationId };
+    const request: QueuedTask = {
+      id: randomUUID(),
+      text,
+      skillRefs: input.skillRefs,
+      attachments: input.attachments,
+      conversationId: targetConversationId,
+      executionProfile: 'default',
+    };
+
+    return this.submitQueuedTask(request, mode);
+  }
+
+  submitExploreAnalysis(
+    value: unknown,
+    requestId = randomUUID(),
+    conversationId?: string,
+  ): TaskSubmitResult & { requestId: string } {
+    const request = normalizeExploreRequest(value);
+    const normalizedRequestId = requestId.trim();
+    if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/.test(normalizedRequestId)) throw new Error('Explore request id is invalid');
+    const selectedRequest: ExploreRequest = {
+      ...request,
+      context: { items: request.context.items.filter((item) => item.selected) },
+    };
+    const targetConversationId = conversationId || listChatConversations().activeConversationId;
+    const queuedTask: QueuedTask = {
+      id: randomUUID(),
+      text: this.buildExploreAnalysisPrompt(selectedRequest, normalizedRequestId),
+      skillRefs: [],
+      attachments: [],
+      conversationId: targetConversationId,
+      executionProfile: 'explore_analysis',
+      exploreExpectation: { requestId: normalizedRequestId, mode: selectedRequest.mode },
+    };
+    const result = this.submitQueuedTask(queuedTask, this.getTaskStatus().busy ? 'queue' : 'auto');
+    return { ...result, requestId: normalizedRequestId };
+  }
+
+  private submitQueuedTask(request: QueuedTask, mode: TaskSubmitMode): TaskSubmitResult {
+    const input: AgentTaskInput = { text: request.text, skillRefs: request.skillRefs, attachments: request.attachments };
 
     if (this.currentTask || this.turnInFlight || this.paused) {
-      if (this.currentConversationId && this.currentConversationId !== targetConversationId) {
+      if (this.currentConversationId && this.currentConversationId !== request.conversationId) {
         throw new Error('Agent 正在当前对话中工作，完成或停止后才能切换历史对话');
       }
       if (mode === 'queue') {
@@ -145,6 +234,10 @@ export class Orchestrator {
         });
         this.emitTaskStatus();
         return this.submitResult('queued', request.id);
+      }
+
+      if (!canAppendTaskGuidance(this.currentExecutionProfile || 'default', request.executionProfile)) {
+        throw new Error('受限 Explore 分析不接受跨档位追加要求，请排队为独立任务');
       }
 
       this.pendingGuidance.push(input);
@@ -169,6 +262,9 @@ export class Orchestrator {
     this.currentTask = request.text;
     this.currentTaskId = request.id;
     this.currentConversationId = request.conversationId;
+    this.currentExecutionProfile = request.executionProfile;
+    this.currentExploreExpectation = request.exploreExpectation || null;
+    this.currentExploreResult = null;
     this.currentSkillRefs = request.skillRefs;
     this.currentAttachments = request.attachments || [];
     this.invokedSkillIds = new Set();
@@ -186,7 +282,7 @@ export class Orchestrator {
         return;
       }
       const message = error instanceof Error ? error.message : String(error);
-      logger.error('task:error', { task: request.text, taskId: request.id, message });
+      logger.error('task:error', { task: agentTextForLog(request.executionProfile, request.text), taskId: request.id, message });
       this.pushUI('chat:message', {
         text: `[Worker] 任务执行失败: ${message}`,
         timestamp: Date.now(),
@@ -200,7 +296,11 @@ export class Orchestrator {
   }
 
   private async runTask(task: string, continuation?: TaskContinuation): Promise<void> {
-    logger.info('task:start', { task, taskId: this.currentTaskId, continuation: continuation?.kind });
+    logger.info('task:start', {
+      task: agentTextForLog(this.currentExecutionProfile, task),
+      taskId: this.currentTaskId,
+      continuation: continuation?.kind,
+    });
 
     if (!continuation) {
       this.state.start(task);
@@ -216,29 +316,34 @@ export class Orchestrator {
     } else if (continuation?.kind === 'skill-enforcement') {
       effectiveTask = `${task}\n\n【显式 Skill 调用校验未通过】\n${continuation.text}\n\n先补齐缺失的 Skill 工具调用，再复核已经完成的工作；不要忽略任何用户正文中的 @Skill。`;
     }
-    const { session, text: sessionContext } = buildClaudeSessionContext(this.currentConversationId);
-    const { prompt, skillsFound, explicitSkills, recommendedSkills } = buildContext(
-      effectiveTask,
-      this.currentSkillRefs.map((ref) => ref.id),
-    );
-    const attachmentContext = this.currentConversationId
+    const restricted = this.currentExecutionProfile === 'explore_analysis';
+    const sessionData = restricted
+      ? { session: { id: 'explore-analysis', turnCount: 0 }, text: '' }
+      : buildClaudeSessionContext(this.currentConversationId);
+    const contextData = restricted
+      ? { prompt: effectiveTask, skillsFound: [] as string[], explicitSkills: [] as string[], recommendedSkills: [] as string[] }
+      : buildContext(effectiveTask, this.currentSkillRefs.map((ref) => ref.id));
+    const attachmentContext = !restricted && this.currentConversationId
       ? buildAttachmentPromptContext(this.currentConversationId, this.currentAttachments)
       : '';
-    const promptWithHistory = `${sessionContext}\n\n${prompt}${attachmentContext ? `\n\n${attachmentContext}` : ''}`;
+    const promptWithHistory = restricted
+      ? contextData.prompt
+      : `${sessionData.text}\n\n${contextData.prompt}${attachmentContext ? `\n\n${attachmentContext}` : ''}`;
     logger.info('task:context', {
-      skillsFound,
-      explicitSkills,
-      recommendedSkills,
+      profile: this.currentExecutionProfile,
+      skillsFound: contextData.skillsFound,
+      explicitSkills: contextData.explicitSkills,
+      recommendedSkills: contextData.recommendedSkills,
       promptLength: promptWithHistory.length,
-      sessionId: session.id,
-      sessionTurns: session.turnCount,
-      sessionFile: getClaudeSessionFile(),
-      promptPreview: promptWithHistory.slice(0, 500),
+      sessionId: sessionData.session.id,
+      sessionTurns: sessionData.session.turnCount,
+      sessionFile: restricted ? null : getClaudeSessionFile(),
+      promptPreview: restricted ? '[restricted explore request]' : promptWithHistory.slice(0, 500),
     });
 
     this.state.advanceTo('running');
 
-    const proc = this.ensurePersistentAgent();
+    const proc = this.ensurePersistentAgent(this.currentExecutionProfile);
     this.turnInFlight = true;
     this.turnStartedAt = Date.now();
     this.lastAgentOutputAt = this.turnStartedAt;
@@ -250,18 +355,18 @@ export class Orchestrator {
       kind: 'detail',
       taskId: this.currentTaskId,
     });
-    if (explicitSkills.length) {
+    if (contextData.explicitSkills.length) {
       this.pushUI('chat:message', {
-        text: `用户显式引用：${explicitSkills.map((id) => `@${id}`).join('、')}。Agent 必须全部加载。`,
+        text: `用户显式引用：${contextData.explicitSkills.map((id) => `@${id}`).join('、')}。Agent 必须全部加载。`,
         timestamp: Date.now(),
         kind: 'detail',
         toolName: 'Skill',
         taskId: this.currentTaskId,
       });
     }
-    if (recommendedSkills.length) {
+    if (contextData.recommendedSkills.length) {
       this.pushUI('chat:message', {
-        text: `自动建议：${recommendedSkills.map((id) => `@${id}`).join('、')}。Agent 将按需加载。`,
+        text: `自动建议：${contextData.recommendedSkills.map((id) => `@${id}`).join('、')}。Agent 将按需加载。`,
         timestamp: Date.now(),
         kind: 'detail',
         toolName: 'Skill',
@@ -270,19 +375,21 @@ export class Orchestrator {
     }
     if (!continuation) {
       this.pushUI('chat:message', {
-        text: this.describeExecutionPlan(task),
+        text: restricted
+          ? '[Worker] Explore 受限分析已启动：仅允许读取与结构化判断，不会修改文件或操作硬件。'
+          : this.describeExecutionPlan(task),
         timestamp: Date.now(),
         kind: 'progress',
         taskId: this.currentTaskId,
       });
     }
 
-    sendAgentMessage(promptWithHistory);
+    sendAgentMessage(promptWithHistory, this.currentExecutionProfile);
     this.emitTaskStatus();
   }
 
-  private ensurePersistentAgent(): NonNullable<ReturnType<typeof getAgentProcess>> {
-    const proc = ensureAgentProcess();
+  private ensurePersistentAgent(profile: AgentExecutionProfile = 'default'): NonNullable<ReturnType<typeof getAgentProcess>> {
+    const proc = ensureAgentProcess(profile);
     if (this.observedAgentPid === proc.pid) {
       return proc;
     }
@@ -292,11 +399,15 @@ export class Orchestrator {
     proc.stdout?.on('data', (chunk: Buffer) => {
       this.lastAgentOutputAt = Date.now();
       const text = chunk.toString();
-      logger.stdout(text);
+      logger.stdout(agentTextForLog(profile, text));
       const parsed = this.buffer.feed(text);
       for (const p of parsed) {
-        logger.info('agent:parsed', { type: p.type, tool: p.toolName, preview: p.content.slice(0, 200) });
-        this.handleParsedChunk(p);
+        logger.info('agent:parsed', {
+          type: p.type,
+          tool: p.toolName,
+          preview: agentTextForLog(profile, p.content.slice(0, 200)),
+        });
+        this.handleParsedChunk(p, profile);
       }
     });
 
@@ -304,8 +415,14 @@ export class Orchestrator {
       this.lastAgentOutputAt = Date.now();
       const text = chunk.toString().trim();
       if (text) {
-        logger.stderr(text);
-        this.pushUI('chat:message', { text, timestamp: Date.now(), kind: 'detail', error: true, taskId: this.currentTaskId });
+        logger.stderr(agentTextForLog(profile, text));
+        this.pushUI('chat:message', {
+          text: agentStderrForUI(profile, text),
+          timestamp: Date.now(),
+          kind: 'detail',
+          error: true,
+          taskId: this.currentTaskId,
+        });
       }
     });
 
@@ -349,21 +466,30 @@ export class Orchestrator {
     const taskId = this.currentTaskId;
     if (!taskId) return;
     this.turnInFlight = false;
-    logger.info('agent:turn-complete', { exitCode: code, taskId: this.currentTaskId, task: task.slice(0, 100) });
+    logger.info('agent:turn-complete', {
+      exitCode: code,
+      taskId: this.currentTaskId,
+      task: agentTextForLog(this.currentExecutionProfile, task.slice(0, 100)),
+    });
+    const restricted = this.currentExecutionProfile === 'explore_analysis';
 
     const remaining = this.buffer.flush();
     for (const p of remaining) {
-      logger.info('agent:parsed', { type: p.type, tool: p.toolName, preview: p.content.slice(0, 200) });
+      logger.info('agent:parsed', {
+        type: p.type,
+        tool: p.toolName,
+        preview: agentTextForLog(this.currentExecutionProfile, p.content.slice(0, 200)),
+      });
       this.handleParsedChunk(p);
     }
 
-    if (code === 0) {
+    if (code === 0 && !restricted) {
       const continued = await this.continueWithPendingGuidance(task);
       if (!this.isActiveTask(taskId)) return;
       if (continued) return;
     }
 
-    if (code === 0 && isHtmlGameTask(task)) {
+    if (code === 0 && !restricted && isHtmlGameTask(task)) {
       const browserView = getBrowserView();
       if (browserView) {
         const validation = await validateCurrentPage(browserView, task);
@@ -431,13 +557,15 @@ export class Orchestrator {
     }
 
     // 页面验收本身可能耗时；验收期间收到的追加要求也必须留在当前任务内。
-    if (code === 0) {
+    if (code === 0 && !restricted) {
       const continued = await this.continueWithPendingGuidance(task);
       if (!this.isActiveTask(taskId)) return;
       if (continued) return;
     }
 
-    if (code === 0) {
+    if (code === 0 && restricted && !this.currentExploreResult) code = 4;
+
+    if (code === 0 && !restricted) {
       const missingSkills = this.currentSkillRefs
         .map((ref) => ref.id)
         .filter((id, index, all) => all.indexOf(id) === index && !this.invokedSkillIds.has(id));
@@ -479,25 +607,29 @@ export class Orchestrator {
     if (code === 0) {
       this.state.complete();
       logger.info('task:complete', { exitCode: code });
-      appendClaudeSessionTurn({
-        user: this.currentUserTurns.join('\n\n追加要求：\n'),
-        assistant: this.currentAgentTranscript || '[Agent] 任务完成',
-        status: 'completed',
-      }, this.currentConversationId);
+      if (!restricted) {
+        appendClaudeSessionTurn({
+          user: this.currentUserTurns.join('\n\n追加要求：\n'),
+          assistant: this.currentAgentTranscript || '[Agent] 任务完成',
+          status: 'completed',
+        }, this.currentConversationId);
+      }
     } else {
       this.state.fail();
       logger.error('task:complete', { exitCode: code, msg: 'Agent exited with error' });
-      appendClaudeSessionTurn({
-        user: this.currentUserTurns.join('\n\n追加要求：\n'),
-        assistant: this.currentAgentTranscript || `[Agent] 任务失败 (code: ${code})`,
-        status: 'failed',
-      }, this.currentConversationId);
-      this.pushUI('chat:message', {
-        text: '当前 Agent 通道不可用，请检查 apikey.txt 和 Claude Code 进程日志。',
-        timestamp: Date.now(),
-        error: true,
-        taskId: this.currentTaskId,
-      });
+      if (!restricted) {
+        appendClaudeSessionTurn({
+          user: this.currentUserTurns.join('\n\n追加要求：\n'),
+          assistant: this.currentAgentTranscript || `[Agent] 任务失败 (code: ${code})`,
+          status: 'failed',
+        }, this.currentConversationId);
+        this.pushUI('chat:message', {
+          text: '当前 Agent 通道不可用，请检查 apikey.txt 和 Claude Code 进程日志。',
+          timestamp: Date.now(),
+          error: true,
+          taskId: this.currentTaskId,
+        });
+      }
     }
 
     this.pushUI('task:complete', { code, taskId: this.currentTaskId });
@@ -505,6 +637,9 @@ export class Orchestrator {
   }
 
   private async continueWithPendingGuidance(task: string): Promise<boolean> {
+    if (this.currentExecutionProfile === 'explore_analysis') {
+      throw new Error('受限 Explore 分析不接受执行中追加要求');
+    }
     if (this.pendingGuidance.length === 0) return false;
     const guidance = this.pendingGuidance.splice(0);
     this.currentUserTurns.push(...guidance.map((entry) => entry.text));
@@ -535,6 +670,8 @@ export class Orchestrator {
 
   private async handleAgentProcessExit(code: number): Promise<void> {
     const taskId = this.currentTaskId;
+    const restricted = this.currentExecutionProfile === 'explore_analysis';
+    if (restricted && code === 0 && !this.currentExploreResult) code = 4;
     logger.info('agent:close', { exitCode: code, taskId, queueLength: this.queuedTasks.length });
     this.pushUI('chat:message', {
       text: `[Agent] Claude Code 进程已退出 (code: ${code})`,
@@ -542,7 +679,7 @@ export class Orchestrator {
       error: code !== 0,
       taskId,
     });
-    if (this.currentTask) {
+    if (this.currentTask && !restricted) {
       appendClaudeSessionTurn({
         user: this.currentUserTurns.length
           ? this.currentUserTurns.join('\n\n追加要求：\n')
@@ -561,7 +698,11 @@ export class Orchestrator {
     this.finishCurrentTask();
   }
 
-  private handleParsedChunk(p: ParsedChunk): void {
+  private handleParsedChunk(
+    p: ParsedChunk,
+    sourceProfile: AgentExecutionProfile = this.currentExecutionProfile,
+  ): void {
+    const restricted = sourceProfile === 'explore_analysis';
     if (p.type === 'init') {
       const failedMcp = p.mcpServers?.filter((server) => ['failed', 'needs-auth', 'disabled', 'blocked'].includes(server.status)) ?? [];
       if (failedMcp.length > 0) {
@@ -598,6 +739,28 @@ export class Orchestrator {
 
     if (p.type === 'result') {
       const task = this.currentTask;
+      if (restricted) {
+        if (!task || !this.currentTaskId) return;
+        if (p.isError || !this.currentExploreExpectation || this.currentExploreResult) {
+          this.failExploreAnalysis('EXPLORE_RESULT_INVALID');
+          return;
+        }
+        try {
+          const result = p.structuredOutput === undefined
+            ? parseExploreAnalysisResultText(p.content, this.currentExploreExpectation)
+            : normalizeExploreAnalysisResult(p.structuredOutput, this.currentExploreExpectation);
+          this.currentExploreResult = result;
+          this.pushUI('explore:analysis:result', result);
+        } catch {
+          this.failExploreAnalysis('EXPLORE_RESULT_INVALID');
+          return;
+        }
+        const taskId = this.currentTaskId;
+        void this.handleAgentTurnComplete(0, task).catch((error) => {
+          this.handleTurnFailure(error, taskId);
+        });
+        return;
+      }
       if (p.isError && p.content) {
         this.currentAgentTranscript += `${p.content}\n`;
         this.pushUI('chat:message', {
@@ -612,6 +775,13 @@ export class Orchestrator {
         void this.handleAgentTurnComplete(p.isError ? 1 : 0, task).catch((error) => {
           this.handleTurnFailure(error, taskId);
         });
+      }
+      return;
+    }
+
+    if (restricted) {
+      if (p.type === 'tool_call' && p.toolName && !isExploreAnalysisToolAllowed(p.toolName)) {
+        this.failExploreAnalysis('EXPLORE_FORBIDDEN_TOOL');
       }
       return;
     }
@@ -666,7 +836,10 @@ export class Orchestrator {
         kind: 'status',
         taskId: this.currentTaskId,
       });
-      logger.info('agent:silence', { seconds, task: this.currentTask.slice(0, 100) });
+      logger.info('agent:silence', {
+        seconds,
+        task: agentTextForLog(this.currentExecutionProfile, this.currentTask.slice(0, 100)),
+      });
     }, 1000);
   }
 
@@ -739,11 +912,21 @@ export class Orchestrator {
     this.finishCurrentTask();
   }
 
+  private failExploreAnalysis(code: 'EXPLORE_FORBIDDEN_TOOL' | 'EXPLORE_RESULT_INVALID'): void {
+    if (this.currentExecutionProfile !== 'explore_analysis' || !this.currentTaskId) return;
+    killAgent();
+    this.observedAgentPid = null;
+    this.handleTurnFailure(new Error(code), this.currentTaskId);
+  }
+
   private finishCurrentTask(): void {
     this.stopSilenceTimer();
     this.currentTask = null;
     this.currentTaskId = null;
     this.currentConversationId = null;
+    this.currentExecutionProfile = 'default';
+    this.currentExploreExpectation = null;
+    this.currentExploreResult = null;
     this.currentSkillRefs = [];
     this.currentAttachments = [];
     this.invokedSkillIds = new Set();
@@ -792,6 +975,20 @@ export class Orchestrator {
     return '[Worker] 执行计划\n1. 读取必要上下文。\n2. 执行修改或工具操作。\n3. 汇报关键结果。';
   }
 
+  private buildExploreAnalysisPrompt(request: ExploreRequest, requestId: string): string {
+    const outputShape = request.mode === 'idea'
+      ? '{"schemaVersion":1,"requestId":"<same requestId>","mode":"idea","ideas":[IdeaResult]}'
+      : '{"schemaVersion":1,"requestId":"<same requestId>","mode":"diagnosis","diagnosis":DiagnosisResult}';
+    return [
+      '你正在执行 Catnip Forge Explore 只分析任务。',
+      '只能依据下方已选择 Context 形成判断；不得修改文件、执行命令、操作浏览器、Build、Flash、Serial 或调用 Runtime MCP。',
+      '最终只能返回一个没有 Markdown 围栏、没有前后说明的 JSON 对象。',
+      `requestId 必须原样返回：${requestId}`,
+      `输出结构：${outputShape}`,
+      `请求：${JSON.stringify(request)}`,
+    ].join('\n');
+  }
+
   pause(): void {
     logger.info('task:state', { action: 'pause' });
     if (!this.currentTask) return;
@@ -829,7 +1026,7 @@ export class Orchestrator {
   stop(): void {
     logger.info('task:state', { action: 'stop' });
     const stoppedTaskId = this.currentTaskId;
-    if (this.currentTask) {
+    if (this.currentTask && this.currentExecutionProfile !== 'explore_analysis') {
       appendClaudeSessionTurn({
         user: this.currentUserTurns.length ? this.currentUserTurns.join('\n\n追加要求：\n') : this.currentTask,
         assistant: this.currentAgentTranscript || '[Worker] 任务已停止',

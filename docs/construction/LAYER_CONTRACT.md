@@ -1,6 +1,6 @@
 # Layer Contract
 
-依据当前源码核实后确定责任。知识 Store、官方 status 和 Request 准备 IPC 已实现；受限分析与结构化结果通道仍待 A1/A2 原型，不虚构为已有能力。
+依据当前源码核实后确定责任。知识 Store、官方 status、Request 准备 IPC、受限分析档位与内部结构化结果通道已实现；真实搜索、真实模型结果、Renderer 消费与 Handoff 仍待后续，不虚构为已有能力。
 
 | 层 | 责任与复用入口 | 禁止 |
 | --- | --- | --- |
@@ -37,3 +37,12 @@
 - Main 只保留 `selected=true` 的 Context；取消项不得返回给后续分析输入。
 - 找灵感声明知乎必需、全网按需；解问题声明知乎与全网均必需。
 - `explore:request:prepare` 不执行搜索、Agent、文件写入、Build、Flash 或 Serial。准备成功不等于已产生 Idea/Diagnosis。
+
+## 2026-09-08 Phase 3a 只分析程序边界
+
+- Worker 队列项显式携带 `default` 或 `explore_analysis`，不能从自然语言推断；跨档位追加被拒绝，排队保持原档位。
+- Agent 进程按档位隔离。`explore_analysis` 使用 `--bare`、`--permission-mode plan`、`--strict-mcp-config`、空 MCP 配置和仅 `Skill` 工具白名单，不携带 `--dangerously-skip-permissions`。
+- Worker 对受限任务只允许观察 `Skill`；任意文件读取/写入及其他工具调用立即失败。普通模型文本、工具结果和非法 JSON 不进入 Renderer。
+- 只有 schemaVersion=1、requestId/mode 与活动请求一致、灵感含知乎来源、排障每个假设同时含知乎与 Web 来源的对象，才进入内部 `explore:analysis:result`。
+- CLI JSON schema 模式的 `structured_output` 由 `ChatBuffer` 显式保留；默认 Chat 的 `result` 文本语义不变，不从文本或代码围栏猜测对象。
+- 当前没有 preload/Renderer 消费该通道，也没有真实搜索或模型证据；程序门禁通过不等于 Idea/Diagnosis 产品流程完成。

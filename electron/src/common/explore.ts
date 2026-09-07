@@ -131,12 +131,65 @@ export interface ExploreRequestPreparation {
   message: string;
 }
 
+export interface ExploreIdeaAnalysisResult {
+  schemaVersion: 1;
+  requestId: string;
+  mode: 'idea';
+  ideas: IdeaResult[];
+}
+
+export interface ExploreDiagnosisAnalysisResult {
+  schemaVersion: 1;
+  requestId: string;
+  mode: 'diagnosis';
+  diagnosis: DiagnosisResult;
+}
+
+export type ExploreAnalysisResult = ExploreIdeaAnalysisResult | ExploreDiagnosisAnalysisResult;
+
+export interface ExploreAnalysisExpectation {
+  requestId: string;
+  mode: ExploreMode;
+}
+
+export const EXPLORE_ANALYSIS_JSON_SCHEMA = {
+  type: 'object',
+  oneOf: [
+    {
+      additionalProperties: false,
+      required: ['schemaVersion', 'requestId', 'mode', 'ideas'],
+      properties: {
+        schemaVersion: { const: 1 },
+        requestId: { type: 'string', minLength: 1, maxLength: 120 },
+        mode: { const: 'idea' },
+        ideas: { type: 'array', minItems: 1, maxItems: 8, items: { type: 'object' } },
+      },
+    },
+    {
+      additionalProperties: false,
+      required: ['schemaVersion', 'requestId', 'mode', 'diagnosis'],
+      properties: {
+        schemaVersion: { const: 1 },
+        requestId: { type: 'string', minLength: 1, maxLength: 120 },
+        mode: { const: 'diagnosis' },
+        diagnosis: { type: 'object' },
+      },
+    },
+  ],
+} as const;
+
 const CONTEXT_KINDS = new Set<ExploreContextKind>(['project', 'target', 'hardware', 'source', 'build', 'serial', 'knowledge']);
 const SOURCE_TYPES = new Set<SourceEvidenceType>(['zhihu', 'web', 'local']);
 
 function objectValue(value: unknown, label: string): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(`${label} must be an object`);
   return value as Record<string, unknown>;
+}
+
+function requireExactKeys(input: Record<string, unknown>, allowed: readonly string[], label: string): void {
+  const allowedKeys = new Set(allowed);
+  const unknown = Object.keys(input).filter((key) => !allowedKeys.has(key));
+  if (unknown.length) throw new Error(`${label} contains unknown fields: ${unknown.join(', ')}`);
 }
 
 function requiredText(value: unknown, label: string, max: number): string {
@@ -248,6 +301,53 @@ export function normalizeDiagnosisResult(value: unknown): DiagnosisResult {
     }),
     sourceConflicts: stringList(input.sourceConflicts, 'diagnosis.sourceConflicts', 30, 2_000),
   };
+}
+
+export function normalizeExploreAnalysisResult(
+  value: unknown,
+  expectation: ExploreAnalysisExpectation,
+): ExploreAnalysisResult {
+  const input = objectValue(value, 'explore analysis result');
+  if (input.schemaVersion !== 1) throw new Error('explore analysis result.schemaVersion is invalid');
+  const requestId = requiredText(input.requestId, 'explore analysis result.requestId', 120);
+  if (requestId !== expectation.requestId) throw new Error('explore analysis result.requestId does not match the active request');
+  if (input.mode !== expectation.mode) throw new Error('explore analysis result.mode does not match the active request');
+
+  if (input.mode === 'idea') {
+    requireExactKeys(input, ['schemaVersion', 'requestId', 'mode', 'ideas'], 'explore analysis result');
+    if (!Array.isArray(input.ideas) || input.ideas.length === 0 || input.ideas.length > 8) {
+      throw new Error('explore analysis result.ideas is invalid');
+    }
+    const ideas = input.ideas.map((idea) => normalizeIdeaResult(idea));
+    if (ideas.some((idea) => !idea.sources.some((source) => source.type === 'zhihu'))) {
+      throw new Error('each idea requires at least one zhihu source');
+    }
+    return {
+      schemaVersion: 1,
+      requestId,
+      mode: 'idea',
+      ideas,
+    };
+  }
+
+  if (input.mode === 'diagnosis') {
+    requireExactKeys(input, ['schemaVersion', 'requestId', 'mode', 'diagnosis'], 'explore analysis result');
+    const diagnosis = normalizeDiagnosisResult(input.diagnosis);
+    if (diagnosis.hypotheses.some((hypothesis) => (
+      !hypothesis.communitySources.some((source) => source.type === 'zhihu')
+      || !hypothesis.externalSources.some((source) => source.type === 'web')
+    ))) {
+      throw new Error('each diagnosis hypothesis requires zhihu and web sources');
+    }
+    return {
+      schemaVersion: 1,
+      requestId,
+      mode: 'diagnosis',
+      diagnosis,
+    };
+  }
+
+  throw new Error('explore analysis result.mode is invalid');
 }
 
 export function normalizeHandoffContext(value: unknown): HandoffContext {

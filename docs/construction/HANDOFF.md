@@ -18,7 +18,7 @@
 - Phase 0：完成，Product Truth、Decision/Assumption、Git/测试基线和施工文档已建立。
 - Phase 1：离线宿主集成完成。官方 `zhihu` Skill 的 15 个 vendor 文件已保真导入、完整部署并进入 `@zhihu`/打包契约；官方 CLI 安装在 `D:\ZhihuCLI`。真实搜索和 Agent Skill 调用仍未验收。
 - Phase 2：完成。共享 Domain、运行时校验、Main JSON 知识 Store、五个知识 IPC、相关发现与显式选择已实现。
-- Phase 3：进行中。第五页签、两入口表单、排障 Context 取消、官方 status 安全桥和 Request 准备 IPC 已实现；真实搜索、结构化 Idea/Diagnosis、结果 UI 和 Handoff 尚未实现。
+- Phase 3：进行中。第五页签、两入口表单、排障 Context 取消、官方 status 安全桥、Request 准备 IPC、Worker/Agent 只分析档位及内部结构化结果门禁已实现；真实搜索、真实模型结构化结果、结果 UI 和 Handoff 尚未实现。
 - Phase 4–6：未开始。
 
 ## 当前实现边界
@@ -27,20 +27,20 @@
 
 官方连接状态由 `explore-zhihu-status.ts` 调用 vendor `scripts/run.ps1 status` 并映射为安全字段。子进程使用环境白名单。知识数据位于 Electron `userData/explore/knowledge.json`，Renderer 不直接读写文件；历史知识只发现，显式选择后才进入 Context。
 
-现有 Worker 仍使用单队列和 persistent Agent。`agent.ts` 当前带 `--dangerously-skip-permissions`，因此 Explore 不能仅靠提示词接入；必须先有程序级只分析/计划门禁及拒绝副作用测试。不得新建第二套 Agent、任务队列、Skill 系统或 Runtime。
+现有 Worker 继续使用单队列和 persistent Agent。默认 Chat 保留 `--dangerously-skip-permissions`；新增的 `explore_analysis` 档位会隔离重启进程，使用 `--bare`、`--permission-mode plan`、严格空 MCP 和仅 `Skill` 白名单。Worker 抑制受限原始文本，拒绝包括任意文件读取在内的其他工具，并只让绑定 requestId/mode、带规定来源的合法 JSON 进入内部结果通道。该通道尚未接 preload/Renderer，也未执行真实模型。
 
 ## 下一步 1–3 项
 
-1. **先完成并推送独立文档基线**：范围、拒绝用例、验收与风险见 [Phase 3a 基线](PHASE_3A_RESTRICTED_ANALYSIS_BASELINE.md)。该提交不得包含业务实现。
-2. 文档基线远端核对后，在其限定的现有 Worker/Agent 边界实现最小受限模式；程序拒绝 Explore 分析中的文件写入、Build、Flash、Serial，验证非法结构化结果不会进入 UI。没有门禁前不得让 Explore 表单触发 Agent。
-3. 外部条件恢复后再做 live 验收：用户通过官方安全流程配置 Access Secret；DeepSeek 只有用户明确允许恢复后才调用。分别验证官方知乎/全网搜索和真实 `Skill(zhihu)`，保留真实来源。
+1. 完成 Phase 3a 实现提交、推送和远端 hash 核对；专项已离线覆盖权限参数、档位隔离、副作用拒绝、来源 schema、Context 排除和 UI 抑制。
+2. 下一个业务小闭环先建立独立文档基线：设计不开放通用 Bash 的官方 CLI 窄搜索桥，并在真实来源可用前保持 Explore 表单不触发 Agent、不展示伪造结果。
+3. 外部条件恢复后做 live 验收：用户通过官方安全流程配置 Access Secret；DeepSeek 只有用户明确允许恢复后才调用。分别验证官方知乎/全网搜索和真实 `Skill(zhihu)`，保留真实来源，再接结果 UI 与 Handoff。
 
 ## Decision 与 Assumption
 
 D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探索；知乎只是知识渠道；Explore 只分析；交给 Catnip 先出计划；用户确认后才施工；排障交叉验证；知识主动收藏且历史卡加入 Context 前由用户决定。
 
-- A1 TESTING：复用 chat/worker/skillRefs/queue；受限模式和返回通道未完成。
-- A2 TESTING：Domain schema 已有；真实模型结构化输出未验证。
+- A1 TESTING：复用单队列/persistent Agent 的受限档位和内部返回通道已通过离线拒绝测试；真实模型进程仍未验证。
+- A2 TESTING：版本化 Idea/Diagnosis envelope、requestId/mode/来源校验和非法 UI 抑制已实现；真实模型结构化输出仍未验证。
 - A3 CONFIRMED：原子 JSON Store 的保存、重启、损坏保护和选择语义已验证。
 - A4/A5 TESTING：相关源码及 Build/Serial 的项目、时间和读取上限仍待 Phase 4。
 - A6 TESTING：开发机 CLI/status 与 builder 规则通过；真实成品未验证。
@@ -59,7 +59,7 @@ D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探�
 
 ## 测试快照
 
-Phase 0：13 个检查目标通过、2 次 pytest 启动失败、3 组未验证。Phase 1 离线集成相关回归通过，live 搜索与 Agent 调用待验。Phase 2：5 组通过、0 最终失败、2 个外部项未验证。Phase 3 已完成三个小闭环，最终分别为 3/4/4 组通过、0 最终失败；首次 UI、GPU、环境白名单失败均保留在 `TEST_METRICS.md` 和 `LOG.md`。
+Phase 0：13 个检查目标通过、2 次 pytest 启动失败、3 组未验证。Phase 1 离线集成相关回归通过，live 搜索与 Agent 调用待验。Phase 2：5 组通过、0 最终失败、2 个外部项未验证。Phase 3 前三个小闭环最终分别为 3/4/4 组通过；Phase 3a 受限门禁本轮 6 个核心目标通过、0 最终失败。既有 UI、GPU、环境白名单失败历史均保留在 `TEST_METRICS.md` 和 `LOG.md`。
 
 2026-09-08 文档漂移修正专项：3 个检查目标通过、0 失败；只修改 AGENTS/施工文档，未重复业务构建。
 

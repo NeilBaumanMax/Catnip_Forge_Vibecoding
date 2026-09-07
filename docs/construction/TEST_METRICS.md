@@ -164,3 +164,17 @@ Phase 1核心检查2通过、0失败、4组未验证。不把CLI未就绪检查�
 最终统计：3 个检查目标通过、0 失败。没有业务代码变更，因此未机械重复 Electron/Runtime 构建；DeepSeek、知乎搜索和硬件均未调用。流程审计发现的小闭环文档先行证据缺失属于施工规范偏差，已在 LOG/WORKFLOW/HANDOFF 中保留并加固。
 
 失败历史：用户继续后的第一次复测工具编排因 JavaScript 参数语法错误在任何 shell 命令启动前失败；修正参数后实际执行的 3 个检查目标全部通过。该次记为 1 次测试启动编排失败，不计为产品断言失败。
+
+## 2026-09-08 Phase 3a 结构化结果与只分析门禁
+
+| 命令 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run verify:explore-analysis-gate` | 通过 | 内含 build:main；实际 CLI help 与 structured_output 契约、bare/plan/空 MCP/仅 Skill 白名单、档位隔离、Context 排除、文件读写/Bash/Runtime/硬件拒绝、Idea/Diagnosis/来源 schema、非法/停止后/档位重置后迟到结果 UI 抑制；默认 result 文本回归 |
+| `npm.cmd --prefix electron run typecheck` | 通过 | common、Agent、Worker 严格类型 |
+| `npm.cmd --prefix electron run build:main` | 通过 | 主进程编译；专项和 request 回归内亦执行，不重复计数 |
+| `npm.cmd --prefix electron run verify:task-queue` | 通过 | 默认 Chat 追加/排队/取消竞态回归 |
+| `npm.cmd --prefix electron run verify:explore-request` | 通过 | Request 运行时校验、取消 Context 和准备 IPC 回归 |
+| `npm.cmd --prefix electron run verify:chat-presentation` | 通过 | ChatBuffer 默认文本/工具事件展示回归，structured_output 扩展未改变旧语义 |
+| `node --check electron/scripts/verify_explore_analysis_gate.cjs` / `git diff --check` | 通过 | 辅助语法和 whitespace 检查，不计入核心 6 项 |
+
+最终统计：6 个核心检查目标通过、0 最终失败。首轮专项即通过；Review 在最终复测前发现 requestId 换行注入风险、项目设置/插件隔离不足、结果来源可为空、受限 stderr 直达 Renderer、受限内容进入日志及任意 Read 绕过取消 Context，分别以严格 ID、`--bare`、来源门禁、固定安全摘要、日志抑制和仅 Skill 白名单修复并补反例。Electron 命令仍有既有 Windows `os_crypt`/GPU 退出警告，进程 exit 0。未调用 DeepSeek、知乎搜索、Access Secret 或硬件；真实模型、来源和硬件继续分别标记 pending。

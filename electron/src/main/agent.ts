@@ -19,6 +19,7 @@ import { buildAgentSystemPrompt } from './worker/context';
 import { ensureManagedSkillsDeployed } from './skill-manager';
 import { getSerialMonitorBridgeEnv } from './serial-monitor-bridge';
 import { getAttachmentBridgeEnv } from './attachment-bridge';
+import { EXPLORE_ANALYSIS_JSON_SCHEMA } from '../common/explore';
 
 const AGENT_DIR = getAgentDir();
 const AGENT_WORKSPACE_DIR = getAgentWorkspaceDir();
@@ -30,11 +31,15 @@ const DEFAULT_DEEPSEEK_MODEL = 'deepseek-v4-pro';
 let agentProcess: ChildProcess | null = null;
 let agentSeq = 0;
 let agentMcpConfigPath: string | null = null;
+let agentExecutionProfile: AgentExecutionProfile | null = null;
 
-export function ensureAgentProcess(): ChildProcess {
-  if (agentProcess && !agentProcess.killed && agentProcess.exitCode == null) {
+export type AgentExecutionProfile = 'default' | 'explore_analysis';
+
+export function ensureAgentProcess(profile: AgentExecutionProfile = 'default'): ChildProcess {
+  if (agentProcess && !agentProcess.killed && agentProcess.exitCode == null && agentExecutionProfile === profile) {
     return agentProcess;
   }
+  if (agentProcess && !agentProcess.killed && agentProcess.exitCode == null) killAgent();
 
   const seq = ++agentSeq;
 
@@ -48,7 +53,7 @@ export function ensureAgentProcess(): ChildProcess {
     deployedCount: skillSnapshot.status.deployedCount,
     error: skillSnapshot.status.error,
   });
-  const mcpConfig = buildMcpConfig();
+  const mcpConfig = buildAgentMcpConfig(profile);
   let mcpConfigPath = path.join(AGENT_WORKSPACE_DIR, `.mcp-config-${seq}.json`);
   try {
     fs.writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2), 'utf-8');
@@ -60,34 +65,20 @@ export function ensureAgentProcess(): ChildProcess {
     mcpConfigPath = tmpPath;
   }
 
-  const systemPrompt = buildAgentSystemPrompt();
-  const args = [
-    '-p',
-    '--mcp-config', mcpConfigPath,
-    '--dangerously-skip-permissions',
-    '--input-format', 'stream-json',
-    '--output-format', 'stream-json',
-    '--append-system-prompt', systemPrompt,
-    '--verbose',
-    '--replay-user-messages',
-  ];
+  const systemPrompt = profile === 'explore_analysis'
+    ? `${buildAgentSystemPrompt()}\n\n当前任务是 Explore 只分析档位。只能读取和形成结构化判断；不得修改文件、执行命令、操作浏览器、调用 Runtime/Hardboard、Build、Flash 或 Serial。`
+    : buildAgentSystemPrompt();
+  const args = buildAgentLaunchArgs(profile, mcpConfigPath, systemPrompt);
 
   logger.info('agent:spawn', {
     bin: CLAUDE_BIN,
-    args: [
-      '-p',
-      '--mcp-config',
-      '<dynamic>',
-      '--dangerously-skip-permissions',
-      '--input-format',
-      'stream-json',
-      '--output-format',
-      'stream-json',
-      '--append-system-prompt',
-      `(${systemPrompt.length} chars)`,
-      '--verbose',
-      '--replay-user-messages',
-    ],
+    profile,
+    args: args.map((arg, index) => {
+      if (index > 0 && args[index - 1] === '--mcp-config') return '<dynamic>';
+      if (index > 0 && args[index - 1] === '--append-system-prompt') return `(${systemPrompt.length} chars)`;
+      if (index > 0 && args[index - 1] === '--json-schema') return '<explore-analysis-schema>';
+      return arg;
+    }),
     cwd: AGENT_WORKSPACE_DIR,
     mcpConfigPath,
     seq,
@@ -100,6 +91,7 @@ export function ensureAgentProcess(): ChildProcess {
     env,
     stdio: ['pipe', 'pipe', 'pipe'],
   });
+  agentExecutionProfile = profile;
   agentMcpConfigPath = mcpConfigPath;
 
   // 进程退出后清理临时 MCP 配置文件
@@ -114,6 +106,7 @@ export function ensureAgentProcess(): ChildProcess {
     if (agentProcess === proc) {
       agentProcess = null;
       agentMcpConfigPath = null;
+      agentExecutionProfile = null;
     }
   });
 
@@ -122,8 +115,8 @@ export function ensureAgentProcess(): ChildProcess {
   return agentProcess;
 }
 
-export function sendAgentMessage(prompt: string): void {
-  const proc = ensureAgentProcess();
+export function sendAgentMessage(prompt: string, profile: AgentExecutionProfile = 'default'): void {
+  const proc = ensureAgentProcess(profile);
   if (!proc.stdin || proc.stdin.destroyed) {
     throw new Error('Agent stdin is not writable');
   }
@@ -147,6 +140,7 @@ export function killAgent(): void {
     old.removeAllListeners();
     old.kill('SIGKILL');
     agentProcess = null;
+    agentExecutionProfile = null;
     agentSeq++;
   }
   if (agentMcpConfigPath) {
@@ -161,6 +155,38 @@ export function getAgentProcess(): ChildProcess | null {
 
 export function getAgentSeq(): number {
   return agentSeq;
+}
+
+export function getAgentExecutionProfile(): AgentExecutionProfile | null {
+  return agentExecutionProfile;
+}
+
+export function buildAgentLaunchArgs(
+  profile: AgentExecutionProfile,
+  mcpConfigPath: string,
+  systemPrompt: string,
+): string[] {
+  const args = [
+    '-p',
+    '--mcp-config', mcpConfigPath,
+    '--input-format', 'stream-json',
+    '--output-format', 'stream-json',
+    '--append-system-prompt', systemPrompt,
+    '--verbose',
+    '--replay-user-messages',
+  ];
+  if (profile === 'default') {
+    args.splice(3, 0, '--dangerously-skip-permissions');
+    return args;
+  }
+  args.splice(3, 0,
+    '--bare',
+    '--permission-mode', 'plan',
+    '--strict-mcp-config',
+    '--tools', 'Skill',
+    '--json-schema', JSON.stringify(EXPLORE_ANALYSIS_JSON_SCHEMA),
+  );
+  return args;
 }
 
 function buildAgentEnv(): NodeJS.ProcessEnv {
@@ -207,7 +233,8 @@ function buildAgentEnv(): NodeJS.ProcessEnv {
  * 生产模式：portable node + --experimental-specifier-resolution=node 跑编译后的 JS
  *           （该 flag 让 Node.js 在 ESM 模式不要求 .js 后缀）
  */
-function buildMcpConfig(): { mcpServers: Record<string, unknown> } {
+export function buildAgentMcpConfig(profile: AgentExecutionProfile): { mcpServers: Record<string, unknown> } {
+  if (profile === 'explore_analysis') return { mcpServers: {} };
   const runtimeDir = getRuntimeDir();
   const tsxCli = path.join(runtimeDir, 'node_modules', 'tsx', 'dist', 'cli.mjs');
   const devServerEntry = getRuntimeDevServerEntry();

@@ -158,3 +158,16 @@
 - 完整复读 Product Truth、HANDOFF、主约束、计划、流程、分层、工具、测试、Decision 与只追加 LOG；核实现有 `ExploreRequest` 只到 prepare IPC，Agent 为共享 persistent process 且带 `--dangerously-skip-permissions`，`ChatBuffer` 已暴露最终 result 文本。
 - 第一次 Git/源码勘察命令因 PowerShell 将未加引号的 `@{u}` 解析为哈希字面量而在启动任何子命令前失败；加引号后成功。无文件或外部状态改动，不计产品断言失败。
 - 本提交只建立 `PHASE_3A_RESTRICTED_ANALYSIS_BASELINE.md` 并同步接力入口：限定 5 个业务/测试文件、显式执行档位、进程权限隔离、严格结构化结果通道、拒绝用例和离线验收。没有业务源码、DeepSeek、知乎搜索、Secret 或硬件操作。
+
+## 2026-09-08 / Phase 3a / 只分析档位与结构化结果实现
+
+- 在独立基线提交 `7dbbb51ae4a9c526f630831a297835845bf289b8` 已推送并远端核对后开始业务修改。实现范围保持为 `common/explore.ts`、`main/agent.ts`、`worker/orchestrator.ts`、专项 CJS 和 `electron/package.json`；未接 gateway/preload/Renderer/Runtime/vendor。
+- 新增版本化 Idea/Diagnosis envelope，绑定活动 requestId/mode；灵感至少一个 Idea 且必须有知乎来源，排障每个假设必须同时有知乎和 Web 来源。非 JSON、代码围栏、未知版本/顶层字段、非法 URL、空结果和来源缺失均拒绝。
+- 现有 Agent 增加显式 `default` / `explore_analysis` 档位。默认参数不变；受限档位移除 skip-permissions，使用 `--bare`、plan、严格空 MCP、仅 `Skill` 白名单和 JSON schema。档位切换会终止旧进程并重建，避免高权限进程复用。
+- Worker 复用同一队列；跨档位 guidance 拒绝，排队保留档位。受限原始文本/工具结果不推 UI，观察到非 Skill 工具立即终止；只有合法对象进入内部 `explore:analysis:result`，停止后的迟到结果忽略。现有表单仍只 prepare。
+- 首轮 `verify:explore-analysis-gate` 通过。Review 随后发现并在最终复测前修复六项：requestId 允许换行、受限 CLI 未隔离项目设置/插件、合法 envelope 可无规定来源、受限 Agent stderr 仍直达 Renderer、受限请求/输出仍进入日志、任意 `Read` 可绕过已取消 Context；补严格 ID、`--bare`、来源反例、固定 stderr 安全摘要、日志内容抑制并将白名单收紧为仅 Skill。没有通过修改测试来迎合实现。
+- 最终命令：`verify:explore-analysis-gate`、typecheck、build:main、`verify:task-queue`、`verify:explore-request`、`verify:chat-presentation` 共 6 个核心目标通过，0 最终失败；新 CJS `node --check` 与 `git diff --check` 通过。Electron 既有 `os_crypt`/GPU 警告 exit 0。
+- 未调用 DeepSeek、知乎搜索、Access Secret 或硬件。`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`、`LIVE_INTEGRATION_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING` 保持；结构化软件门禁不冒充真实模型或来源验收。
+- 本机 Claude CLI 二进制协议复核发现 JSON schema 成功事件使用 `structured_output`；在独立范围修订 `e480819c38be4ef22b9fc75ba6ec7c74b404f54f` 推送并远端核对后，补充 `ChatBuffer` 显式保留该对象。默认 `result` 文本解析不变，Worker 对 structured object 继续执行同一运行时 schema，不解析 Markdown。
+- 第一次补充 ChatBuffer 回归统计的文档 patch 因同一补丁重复声明 `TEST_METRICS.md` 更新段，被 `apply_patch` 在写入前拒绝；无文件改动。合并为单一更新段后成功，该失败记为编辑编排失败，不计产品断言失败。
+- 最终竞态 Review 将 stdout 处理绑定到创建监听器时的固定执行档位；即使任务清理已把当前状态重置为 default，受限进程的迟到文本仍按 restricted 抑制，不能落入 Chat UI。
