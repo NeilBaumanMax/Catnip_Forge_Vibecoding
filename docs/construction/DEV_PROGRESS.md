@@ -81,3 +81,9 @@ Phase 3 进行中。已完成第五页签“探索”、仅含“找灵感 / 解
 ## 2026-09-08 Phase 3 连接状态
 
 已完成官方 Skill status 的 Main 安全桥和 Explore 页面连接状态显示。当前真实状态：D 盘 CLI 已安装且兼容，需要连接知乎开放平台。Secret 不进入 Renderer。下一项仍是检索编排与结构化 Idea；真实调用保持 pending。
+
+## 2026-09-08 Phase 3 请求准备边界
+
+已完成 Explore Request 的 Main 校验与准备 IPC：找灵感自动带入可用工程/硬件约束，解问题只保留用户勾选的 Context；知识源策略明确为灵感“知乎必需、全网按需”，排障“知乎与全网均必需”。Renderer 不执行搜索、不调用 Agent，也不生成假 Idea。
+
+软件验证 4 组通过、0 组最终失败。第一次 UI 契约因安全连接兜底文案被动态消息替换而失败，恢复固定安全兜底后通过。下一项是结构化检索结果契约和现有 Agent 的只分析执行门禁；DeepSeek 禁止重试，真实知乎搜索继续 `LIVE_INTEGRATION_PENDING`。

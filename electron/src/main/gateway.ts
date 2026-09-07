@@ -30,6 +30,7 @@ import {
 import { pickChatAttachments, validateAttachmentReferences } from './attachment-store';
 import { registerExploreKnowledgeIpc } from './explore-knowledge';
 import { registerExploreZhihuStatusIpc } from './explore-zhihu-status';
+import { registerExploreRequestIpc } from './explore-request';
 
 export function startGateway(mainWindow: BrowserWindow): void {
   // Gateway 提供 pushUI 能力 — Worker 通过它推消息到 UI
@@ -85,6 +86,7 @@ export function startGateway(mainWindow: BrowserWindow): void {
   const orch = getOrchestrator(mainWindow, pushUI);
   registerExploreKnowledgeIpc(ipcMain);
   registerExploreZhihuStatusIpc(ipcMain);
+  registerExploreRequestIpc(ipcMain);
 
   // 聊天 — 委托 Worker
   ipcMain.handle('chat:send', async (_event, request: string | AgentTaskInput, mode?: TaskSubmitMode, conversationId?: string, messageId?: string, timestamp?: number) => {

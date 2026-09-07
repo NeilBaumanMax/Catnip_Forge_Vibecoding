@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import type { ExploreZhihuConnectionStatus } from '../../common/explore';
+import type { ExploreContextItem, ExploreRequest, ExploreZhihuConnectionStatus } from '../../common/explore';
 
 type ExploreView = 'home' | 'idea' | 'diagnosis';
 
@@ -11,6 +11,7 @@ interface Props {
 
 interface ContextOption {
   id: string;
+  kind: ExploreContextItem['kind'];
   label: string;
   summary: string;
   available: boolean;
@@ -28,18 +29,21 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const contextOptions = useMemo<ContextOption[]>(() => [
     {
       id: 'current-project',
+      kind: 'project',
       label: '当前工程',
       summary: currentProject || '尚未选择工程',
       available: Boolean(currentProject),
     },
     {
       id: 'current-hardware',
+      kind: 'hardware',
       label: '开发板状态',
       summary: hardwareSummary,
       available: hardwareSummary !== '未检测到开发板',
     },
     {
       id: 'recent-runtime',
+      kind: 'build',
       label: '最近 Build / 运行状态',
       summary: runtimeSummary,
       available: runtimeSummary !== '暂无运行记录',
@@ -75,19 +79,37 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
       : [...current, id]);
   };
 
-  const stopBeforeSearch = (event: React.FormEvent) => {
+  const prepareRequest = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (connection?.state === 'connected') {
-      setNotice('知识来源已连接，但探索编排当前不可用。本次没有发起搜索。');
-      return;
+    const request: ExploreRequest = {
+      mode: view === 'idea' ? 'idea' : 'diagnosis',
+      goal: (view === 'idea' ? goal : problem).trim(),
+      context: {
+        items: contextOptions.map((item) => ({
+          id: item.id,
+          kind: item.kind,
+          label: item.label,
+          summary: item.summary,
+          selected: view === 'idea' ? item.available && item.id !== 'recent-runtime' : selectedContextIds.includes(item.id),
+        })),
+      },
+    };
+    try {
+      const prepared = await window.electronAPI.prepareExploreRequest(request);
+      if (prepared.state === 'ready') {
+        setNotice(`${prepared.message} 当前 Agent 检索编排尚未恢复，本次没有发起搜索。`);
+      } else {
+        setNotice(`${prepared.message} 本次没有发起搜索。`);
+      }
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : '无法准备探索请求');
     }
-    setNotice('需要先连接知乎开放平台，才能检索真实社区经验和全网资料。本次没有发起搜索。');
   };
 
   const connectionBadge = (
     <div className={`explore-connection-badge explore-connection-badge--${connection?.state || 'checking'}`}>
       <span>知识来源</span>
-      <strong>{checkingConnection ? '正在检查连接...' : connection?.message || '尚未检查'}</strong>
+      <strong>{checkingConnection ? '正在检查连接...' : connection?.message || '需要先连接知乎开放平台'}</strong>
       <button type="button" onClick={() => void refreshConnection()} disabled={checkingConnection}>重新检查</button>
     </div>
   );
@@ -130,7 +152,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
         </div>
       </header>
 
-      <form className="explore-form" onSubmit={stopBeforeSearch}>
+      <form className="explore-form" onSubmit={(event) => void prepareRequest(event)}>
         {connectionBadge}
         <label className="explore-field">
           <span>{isIdea ? '你想做什么？' : '现在遇到了什么问题？'}</span>

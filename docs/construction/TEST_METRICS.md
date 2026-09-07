@@ -140,3 +140,15 @@ Phase 1核心检查2通过、0失败、4组未验证。不把CLI未就绪检查�
 ## 2026-09-08 官方连接状态桥
 
 最终 4 项通过、0 失败：typecheck、verify:explore-ui、verify:explore-zhihu-status、build:renderer。首次状态测试因 Electron GPU 崩溃未到脚本；禁用 GPU 后通过。环境白名单首次过窄误报 needs_install，补齐标准 Windows 变量后真实返回 needs_secret、installed=true、compatible=true。
+
+## 2026-09-08 Explore Request 准备边界
+
+| 命令 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm --prefix electron run verify:explore-request` | 通过 | build:main；运行时校验、Context 排除、模式来源策略、IPC 注册 |
+| `npm --prefix electron run verify:explore-ui` | 通过 | Main 请求边界与安全连接兜底 |
+| `npm --prefix electron run typecheck` | 通过 | common/Main/preload/Renderer 类型 |
+| `npm --prefix electron run build:renderer` | 通过 | 1262 modules；既有大 chunk warning |
+| `git diff --check` | 通过 | 无 whitespace 错误 |
+
+第一次 `verify:explore-ui` 失败 1 次：动态连接状态替换了固定“需要先连接知乎开放平台”兜底；恢复安全兜底后通过。最终统计：4 组通过、0 组最终失败；真实搜索、Agent 结构化结果与硬件仍未验证。Electron 专项测试的 Windows `os_crypt` 行为是既有警告，进程 exit 0。

@@ -118,6 +118,19 @@ export interface ExploreZhihuConnectionStatus {
   message: string;
 }
 
+export interface ExploreSourceStrategy {
+  zhihu: 'required';
+  web: 'conditional' | 'required';
+}
+
+export interface ExploreRequestPreparation {
+  request: ExploreRequest;
+  selectedContext: ExploreContextItem[];
+  sourceStrategy: ExploreSourceStrategy;
+  state: 'ready' | 'needs_connection';
+  message: string;
+}
+
 const CONTEXT_KINDS = new Set<ExploreContextKind>(['project', 'target', 'hardware', 'source', 'build', 'serial', 'knowledge']);
 const SOURCE_TYPES = new Set<SourceEvidenceType>(['zhihu', 'web', 'local']);
 

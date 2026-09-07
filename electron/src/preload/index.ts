@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { AddVerificationRecordInput, SaveKnowledgeCardInput } from '../common/explore';
+import type { AddVerificationRecordInput, ExploreRequest, SaveKnowledgeCardInput } from '../common/explore';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getStartupStatus: () => ipcRenderer.invoke('startup:status'),
@@ -54,6 +54,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   findRelatedExploreKnowledge: (query: string, limit?: number) => ipcRenderer.invoke('explore:knowledge:findRelated', query, limit),
   selectExploreKnowledgeForContext: (selectedIds: string[]) => ipcRenderer.invoke('explore:knowledge:selectForContext', selectedIds),
   getExploreZhihuStatus: () => ipcRenderer.invoke('explore:zhihu:status'),
+  prepareExploreRequest: (request: ExploreRequest) => ipcRenderer.invoke('explore:request:prepare', request),
   isWorkbenchSmokeTest: process.env.VIBEIDE_SMOKE_WORKBENCH_OPEN === '1',
   finishWorkbenchSmokeTest: (result: unknown) => ipcRenderer.invoke('smoke:workbench:finish', result),
   activateBrowserTab: (id: string) => ipcRenderer.invoke('browser:activateTab', id),

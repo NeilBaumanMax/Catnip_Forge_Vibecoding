@@ -114,3 +114,9 @@ Phase 2 完成提交：`860badf7a21d3cb1b4fc7f434488ab5de379dd34`，已与 `orig
 ## 2026-09-08 连接状态桥
 
 `explore-zhihu-status.ts` 使用官方 run.ps1 status；Gateway/preload 只暴露安全映射。子进程环境采用白名单，不得改回全量 `process.env`。当前真实映射为 `needs_secret`。用户禁止重试 DeepSeek。
+
+## 2026-09-08 Explore Request 准备边界
+
+新增 `electron/src/main/explore-request.ts` 和 `explore:request:prepare` IPC。两个 Explore 表单现在生成共享 `ExploreRequest`，Main 负责运行时校验、剔除未选择 Context，并返回来源策略；该 IPC 不执行搜索或 Agent。灵感带可用工程/硬件，排障保持用户取消项。
+
+本小闭环 4 组软件验证通过、0 组最终失败；第一次 UI 契约失败及修复记录在 LOG/TEST_METRICS。下一步应先设计结构化结果传输和只分析程序门禁，再接现有 Agent；当前 DeepSeek 禁止重试，知乎未配置 Secret，不能做真实联调或伪造来源。硬件仍为 `REAL_HARDWARE_VALIDATION_PENDING`。最新提交和远端状态须在本轮 commit/push 后动态核对。

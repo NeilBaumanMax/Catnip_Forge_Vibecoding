@@ -1,4 +1,4 @@
-import type { AddVerificationRecordInput, ExploreZhihuConnectionStatus, KnowledgeCard, SaveKnowledgeCardInput } from '../../common/explore';
+import type { AddVerificationRecordInput, ExploreRequest, ExploreRequestPreparation, ExploreZhihuConnectionStatus, KnowledgeCard, SaveKnowledgeCardInput } from '../../common/explore';
 
 export type ChatMessageKind = 'conversation' | 'progress' | 'detail' | 'status';
 
@@ -329,6 +329,7 @@ export interface WindowAPI {
   findRelatedExploreKnowledge: (query: string, limit?: number) => Promise<KnowledgeCard[]>;
   selectExploreKnowledgeForContext: (selectedIds: string[]) => Promise<KnowledgeCard[]>;
   getExploreZhihuStatus: () => Promise<ExploreZhihuConnectionStatus>;
+  prepareExploreRequest: (request: ExploreRequest) => Promise<ExploreRequestPreparation>;
   isWorkbenchSmokeTest?: boolean;
   finishWorkbenchSmokeTest?: (result: unknown) => Promise<{ ok: boolean }>;
   activateBrowserTab: (id: string) => Promise<{ ok: boolean }>;

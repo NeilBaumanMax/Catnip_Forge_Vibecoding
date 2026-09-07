@@ -128,3 +128,12 @@
 - 子进程环境由全量继承收紧为 Windows 运行白名单和 `ZHIHU_CLI_HOME`。首次过窄白名单导致 CLI version 检查失败并误报 needs_install；补齐标准 Windows 进程变量后，真实结果为 needs_secret、installed/compatible=true。
 - 状态测试首次被 Electron GPU 子进程崩溃阻断，测试禁用硬件加速后到达官方脚本。普通沙箱读不到真实用户注册表环境，显式传入已核对的 D 盘根目录完成验证；产品源码未硬编码 D 路径。
 - 最终 typecheck、Explore UI、官方状态桥、Renderer build 共 4 项通过；0 失败。未调用 DeepSeek、搜索或硬件。
+
+## 2026-09-08 / Phase 3 / Explore Request 准备边界
+
+- 新增共享 `ExploreRequestPreparation` 与 `ExploreSourceStrategy`，Main 使用既有运行时校验清理输入，并从请求中移除未勾选 Context。
+- 新增 `explore:request:prepare` IPC；它复用官方连接状态桥，只准备请求与来源策略，不执行搜索、Agent、文件修改或硬件操作。
+- Renderer 的两个表单通过 preload 进入 Main；找灵感自动带入可用工程/硬件，排障保持用户取消选择的结果。连接未完成时仍明确说明本次未搜索。
+- 第一次 `verify:explore-ui` 失败：动态连接消息替换了原有固定安全兜底，静态契约无法确认“需要先连接知乎开放平台”。恢复固定兜底并保留动态消息后复测通过。
+- 最终 `verify:explore-request`、`verify:explore-ui`、Electron typecheck、Renderer build 共 4 组通过，0 组最终失败；`git diff --check` 通过。Electron 测试仍输出既有 Windows `os_crypt` 警告但 exit 0。
+- 未调用 DeepSeek、知乎搜索或硬件。`LIVE_INTEGRATION_PENDING`、`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`、`REAL_HARDWARE_VALIDATION_PENDING` 保持。
