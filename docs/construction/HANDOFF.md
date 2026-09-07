@@ -1,6 +1,6 @@
 # 新 Agent 接力入口
 
-更新时间：2026-09-07。停在 Phase 1 官方 CLI 安装授权门禁。用户授权分阶段施工/提交/推送，但未明确授权本次官方 CLI 安装；不能绕开进入 Phase 2。禁止 worktree、子 Agent、改变产品方向。
+更新时间：2026-09-07。用户已明确授权并完成官方 CLI 安装。当前 Phase 1 真实调用停在安全凭据配置边界；未经凭据配置不能声称真实搜索通过，Phase 1 尚未完成。禁止 worktree、子 Agent、改变产品方向。
 
 ## 必读
 
@@ -8,7 +8,7 @@ AGENTS.md → docs/product/PRODUCT_REQUIREMENTS.md → CODEX_MASTER_REQUIREMENTS
 
 ## 产品与 Phase
 
-当前仍是四个可见工作区的桌面 Agent IDE；探索、知识库、新 Handoff 均未实现。Phase 0 文档/Git/测试基线完成且已推送。Phase 1 只导入官方15文件并执行 status，未改业务实现/vendor协议。Phase 2–6 未开始，MVP 未完成。
+当前仍是四个可见工作区的桌面 Agent IDE；探索、知识库、新 Handoff 均未实现。Phase 0 文档/Git/测试基线完成且已推送。Phase 1 已导入官方15文件、执行原 setup.ps1 安装并完成官方 status 检查，未改业务实现/vendor协议。Phase 2–6 未开始，MVP 未完成。
 
 关键决定：探索（找灵感/解问题）；官方 Skill；每用户 Secret；分析/计划不施工、确认后执行；真实硬件证据；主动收藏与历史知识用户选择；无 OAuth/Web/云端/第二套系统。
 
@@ -20,15 +20,15 @@ Manager仍把多行description解析为 >- 并重写部署SKILL.md，尚未修�
 
 ## 下一步1–3项
 
-1. 取得用户明确安装授权。官方agent/skills/zhihu/SKILL.md首次检查第1条要求未得到明确同意时停止。status返回installed=false / request_install_consent（也可能是不兼容版本，不自行断言完全没安装）。
-2. 获准后用原scripts/setup.ps1，保存返回的绝对binary_path，再status；不从PATH调用未知CLI。未授权初始化或本人数据，不执行me contents。真实Secret需要时另请求安全方式，不进入Renderer/产品Chat/日志。
+1. CLI 安装授权已由用户明确给出并完成。当前需按官方流程配置用户自己的 Access Secret；使用本机安全输入和官方 auth set --secret-stdin，不发送到产品 Chat、源码、日志或命令参数。尚未获取凭据，真实调用保持 LIVE_INTEGRATION_PENDING。
+2. setup/status 已完成，不重复安装；使用返回的绝对 binary_path。默认路径为 %LOCALAPPDATA%/ZhihuCLI/current/zhihu-cli.exe，版本 0.5.0-beta.20260826061344。用户目前仅授权安装，未授权初始化或本人数据，不执行 me contents。
 3. 条件满足后先复现宿主description/部署保真失败，最小修复并验证support树、显式refs/Worker加载契约、打包过滤器；真实LLM/搜索/成品分别计证据，完成Phase 1再继续Phase 2。
 
 ## 输入与测试
 
 官方ZIP：E:\Agent\vibeide\zhihu-cli-skill-0.5.3-beta.20260904115023.zip。
 SHA-256：f7b1de244c875749feec7fae5b134e2de5f26332198e6c73861140b2d72c4dd7。
-源在agent/skills/zhihu，15文件工作区/暂存均与ZIP原字节一致。未执行setup、未索取/读Secret、未调用搜索或本人API。
+源在agent/skills/zhihu，15文件工作区/暂存均与ZIP原字节一致。已执行原setup并完成兼容验证；未索取/读Secret、未调用搜索或本人API。
 
 Phase 0：13通过、2次pytest启动失败、3组待验证；Phase 1：2通过、0失败、4组待验证。系统和随包Python都缺pytest，未修复。真实硬件REAL_HARDWARE_VALIDATION_PENDING；未重建包。另发现文档写入中文变问号，根因Windows PowerShell默认管道编码；已明确UTF-8重写文档，原失败记录保留LOG，复测见TEST_METRICS。
 
@@ -40,3 +40,17 @@ Phase 0 local/remote bba40d575a641f22a5e4380490349c45ea583503。
 最新已核对源核验 local/remote 36d93282ca8344028702dc0905488556ce775042；push成功，源提交后工作区干净。
 backup/pre-phase-0-20260907指向baseline；backup/pre-phase-1-20260907指向Phase 0提交，远端均核对。
 当前只收尾文档修复，最终记录提交本身用git rev-parse HEAD与ls-remote动态核对；不得将上一条hash当当前HEAD。下一轮重新检查工作区，保护用户修改。
+
+## 2026-09-07 官方 CLI 安装实测
+
+用户明确同意安装并要求告知位置。安装前已说明默认用户目录；未覆盖 ZHIHU_CLI_HOME，未修改 PATH。
+
+- 原脚本：powershell -NoProfile -ExecutionPolicy Bypass -File agent/skills/zhihu/scripts/setup.ps1。
+- 安装目录：%LOCALAPPDATA%/ZhihuCLI；当前 binary：%LOCALAPPDATA%/ZhihuCLI/current/zhihu-cli.exe；版本副本：%LOCALAPPDATA%/ZhihuCLI/versions/0.5.0-beta.20260826061344/zhihu-cli.exe。真实绝对路径已向本机用户告知，公开施工记录不写操作系统用户名。
+- setup exit0，installed=true，downloaded_cli_version=0.5.0-beta.20260826061344。下载/大小/散列/归档与版本校验全部由原官方脚本执行，没有修改vendor。
+- 随后官方 scripts/run.ps1 status：installed=true、compatible=true、update_check.status=verified（HTTP200）、无CLI/Skill更新、auth.configured=false、request_access_secret。返回的官方Skill散列与用户ZIP相同。
+- 两份exe实际各6,891,008字节。后续只使用setup/status返回的绝对binary_path，不使用PATH裸命令。
+- 只读 auth set --help 证实 --secret-stdin 在线验证后写系统安全凭证库；未执行 auth set/verify 或 me contents，没有配置Secret，也没有执行真实搜索。
+- 安装授权门禁解除；LIVE_INTEGRATION_PENDING。宿主兼容修复、@zhihu/support sync、成品/硬件仍未验收。
+
+安装小项Git快照：branch idea_to_production；安装开始前HEAD为 4a3f7b86449b3bba994a2476c3f258f051455b7f，工作区干净。当前仅安装记录文档变更；本次文档提交后将push并动态核对origin，CLI二进制和任何凭据不入Git。

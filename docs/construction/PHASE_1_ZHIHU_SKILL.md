@@ -1,6 +1,6 @@
 # Phase 1：官方 Skill 源与状态核验
 
-日期：2026-09-07；状态BLOCKED / ZHIHU_CLI_INSTALL_CONSENT_REQUIRED。源核验小项完成，不代表Phase 1整体验收。
+日期：2026-09-07；状态：CLI安装小项完成；LIVE_INTEGRATION_PENDING。源核验与安装均不代表Phase 1整体验收。
 
 ## 实际证据
 
@@ -11,10 +11,22 @@
 - 仅证明未找到满足最低版本的可用CLI；脚本此分支不独立查询系统凭据，不据此声称Secret不存在。未调用搜索/本人API，未运行setup。
 - 源提交36d93282ca8344028702dc0905488556ce775042已push并核对。
 
-## 安装授权门禁
+## 安装授权门禁（历史，已由本次明确授权解除）
 
 官方SKILL.md首次检查与初始化第1条要求：“询问用户是否现在安装。未得到明确同意时停止。”普通继续施工不代替明确安装授权。安装到用户目录，不需管理员、不改PATH；下载/校验交原setup.ps1，宿主不重写。
 
 ## 未完成
 
-宿主description/部署保真失败测试及修复；support tree/@zhihu/Worker加载契约；真实模型调用；打包过滤与成品CLI验证；连接状态与安全Secret路径。无授权前不继续这些实现，不进入Phase 2；只提交源核验和接力记录。
+宿主description/部署保真失败测试及修复；support tree/@zhihu/Worker加载契约；真实模型调用；打包过滤与成品CLI验证；连接状态与安全Secret路径。此前安装门禁已解除，尚有凭据配置和宿主兼容验证待完成；未进入Phase 2。
+
+## 2026-09-07 官方 CLI 安装实测
+
+用户明确同意安装并要求告知位置。安装前已说明默认用户目录；未覆盖 ZHIHU_CLI_HOME，未修改 PATH。
+
+- 原脚本：powershell -NoProfile -ExecutionPolicy Bypass -File agent/skills/zhihu/scripts/setup.ps1。
+- 安装目录：%LOCALAPPDATA%/ZhihuCLI；当前 binary：%LOCALAPPDATA%/ZhihuCLI/current/zhihu-cli.exe；版本副本：%LOCALAPPDATA%/ZhihuCLI/versions/0.5.0-beta.20260826061344/zhihu-cli.exe。真实绝对路径已向本机用户告知，公开施工记录不写操作系统用户名。
+- setup exit0，installed=true，downloaded_cli_version=0.5.0-beta.20260826061344。下载/大小/散列/归档与版本校验全部由原官方脚本执行，没有修改vendor。
+- 随后官方 scripts/run.ps1 status：installed=true、compatible=true、update_check.status=verified（HTTP200）、无CLI/Skill更新、auth.configured=false、request_access_secret。返回的官方Skill散列与用户ZIP相同。
+- 两份exe实际各6,891,008字节。后续只使用setup/status返回的绝对binary_path，不使用PATH裸命令。
+- 只读 auth set --help 证实 --secret-stdin 在线验证后写系统安全凭证库；未执行 auth set/verify 或 me contents，没有配置Secret，也没有执行真实搜索。
+- 安装授权门禁解除；LIVE_INTEGRATION_PENDING。宿主兼容修复、@zhihu/support sync、成品/硬件仍未验收。

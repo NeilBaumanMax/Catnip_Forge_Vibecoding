@@ -72,3 +72,14 @@ Phase 1核心检查2通过、0失败、4组未验证。不把CLI未就绪检查�
 修复：显式设置 $OutputEncoding = [System.Text.UTF8Encoding]::new($false)，从已确认事实重写受影响进度/接力/专项文档，按完整证据重建本测试补充记录；LOG原失败条目保留，追加可读纠正。新增检查拒绝连续问号并检查中文正文；完整命令/结果在LOG追加。此项1次失败另记，不混入核心功能2项通过。
 
 2026-09-07 修复复测：当前6份施工文档中文/连续问号/本地链接检查通过；官方15文件工作区与已提交Git对象再次对比ZIP通过。文档编码项累计1次失败、1次修复通过，失败历史保留。
+
+## 2026-09-07 安装小项
+
+| 命令/检查 | 通过 | 失败 | 未验证 | 结果 |
+| --- | ---: | ---: | ---: | --- |
+| powershell -NoProfile -ExecutionPolicy Bypass -File agent/skills/zhihu/scripts/setup.ps1 | 1 | 0 | 0 | installed=true，官方校验下载后安装 |
+| powershell -NoProfile -ExecutionPolicy Bypass -File agent/skills/zhihu/scripts/run.ps1 status | 1 | 0 | 0 | installed=true / compatible=true / update_check verified |
+| 对返回binary_path运行 auth set --help；Get-Item核对current和versions文件 | 1 | 0 | 0 | 支持secret-stdin；两exe各6,891,008 bytes；只读 |
+| 凭据配置和真实知乎搜索 | 0 | 0 | 1 | 未执行，auth.configured=false |
+
+安装小项3通过、0失败、1组未验证；不覆盖前述首次未就绪、pytest缺失或文档编码失败历史。核心集成、打包和真实硬件仍为原先未验证项目。
