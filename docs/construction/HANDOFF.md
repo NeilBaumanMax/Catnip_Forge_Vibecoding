@@ -88,3 +88,12 @@ backup/pre-phase-0-20260907指向baseline；backup/pre-phase-1-20260907指向Pha
 用户明确要求：DeepSeek 已无余额，禁止继续尝试。保持 `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`，不得自动重试、切换模型或用静态检查宣称真实调用通过，除非用户后续明确告知服务恢复。
 
 官方 Skill status 已再次确认：D 盘 CLI 安装且兼容，`auth.configured=false`、`next_action=request_access_secret`。真实搜索仍为 `LIVE_INTEGRATION_PENDING`；不得向聊天索取或回显 Secret。
+
+
+## 2026-09-07 Phase 2 已开工
+
+用户要求继续推进，并明确禁止重试无余额的 DeepSeek。当前 Phase 2 进行中；外部验证继续如实 pending，但不阻塞独立的软件层施工。
+
+已实现入口：`electron/src/common/explore.ts`、`electron/src/main/explore-knowledge.ts`；Gateway/preload 暴露五个知识操作。持久化位于 Electron `userData/explore/knowledge.json`，Renderer 不直接读写文件。相关卡只返回候选，只有显式 ID 选择才进入 Context。
+
+备份 `backup/pre-phase-2-20260907` 已推送并核对指向 `b3b32a4bdd3d65a175bb04d823644288c1a3b627`。本小闭环提交 hash 需在提交后动态核对。不得重试 DeepSeek；不得声称真实知乎搜索或硬件已验证。

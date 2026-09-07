@@ -57,3 +57,10 @@ Git 已核对快照：branch idea_to_production；baseline f6e20e8e1d581a10fbd9c
 - 用户要求停止所有 DeepSeek 重试；`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE` 保持。
 - 官方 status 复核通过，但 `auth.configured=false`；`LIVE_INTEGRATION_PENDING` 保持。
 - 本轮未执行知乎搜索、Agent 调用或硬件操作。
+
+
+## 2026-09-07 Phase 2 第一小闭环
+
+当前 Phase：Phase 2 进行中。已完成共享 Domain Contract、运行时校验、Main 本地知识 Store、preload/Main IPC 和专项测试。A3 已确认；A2 仍等待真实模型输出。下一项是审阅提交后继续最小 Handoff/知识选择契约，不开发视觉 UI。
+
+软件验证：5 组通过、0 失败、2 个外部未验证（知乎真实搜索、真实 Agent Skill 调用）。硬件仍为 `REAL_HARDWARE_VALIDATION_PENDING`。

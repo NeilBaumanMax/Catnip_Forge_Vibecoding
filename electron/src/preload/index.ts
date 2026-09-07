@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import type { AddVerificationRecordInput, SaveKnowledgeCardInput } from '../common/explore';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getStartupStatus: () => ipcRenderer.invoke('startup:status'),
@@ -47,6 +48,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveManagedSkill: (input: { id: string; name: string; description: string; body: string; originalId?: string }) => ipcRenderer.invoke('skills:save', input),
   deleteManagedSkill: (id: string) => ipcRenderer.invoke('skills:delete', id),
   syncManagedSkills: () => ipcRenderer.invoke('skills:sync'),
+  listExploreKnowledge: () => ipcRenderer.invoke('explore:knowledge:list'),
+  saveExploreKnowledge: (input: SaveKnowledgeCardInput) => ipcRenderer.invoke('explore:knowledge:save', input),
+  addExploreKnowledgeVerification: (input: AddVerificationRecordInput) => ipcRenderer.invoke('explore:knowledge:addVerification', input),
+  findRelatedExploreKnowledge: (query: string, limit?: number) => ipcRenderer.invoke('explore:knowledge:findRelated', query, limit),
+  selectExploreKnowledgeForContext: (selectedIds: string[]) => ipcRenderer.invoke('explore:knowledge:selectForContext', selectedIds),
   isWorkbenchSmokeTest: process.env.VIBEIDE_SMOKE_WORKBENCH_OPEN === '1',
   finishWorkbenchSmokeTest: (result: unknown) => ipcRenderer.invoke('smoke:workbench:finish', result),
   activateBrowserTab: (id: string) => ipcRenderer.invoke('browser:activateTab', id),

@@ -91,3 +91,15 @@
 - 用户明确指示 DeepSeek 已无余额，不得继续尝试；后续保持 `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`，直到用户明确告知服务恢复。
 - 本轮此前的并行检查脚本因 JavaScript 语法错误在启动任何命令前退出，未调用 Git、知乎或 DeepSeek。
 - 随后仅复核 Git 与官方 `scripts/run.ps1 status`：branch `idea_to_production`，HEAD `bce243786555a00fdded77c46848b8bcd9014f39`，当时与远端一致且工作区干净；CLI 位于 D 盘、版本兼容，`auth.configured=false`、`next_action=request_access_secret`。未执行搜索、本人数据、Agent 或硬件调用。
+
+
+## 2026-09-07 / Phase 2 / Domain 与本地知识底座第一小闭环
+
+- 用户指出进度表达与停顿过多。施工调整为：保留 `LIVE_INTEGRATION_PENDING` 和禁止 DeepSeek 重试，不再让两个外部条件阻塞可独立完成的软件层工作。
+- 建立并推送 `backup/pre-phase-2-20260907`，远端核对指向 `b3b32a4bdd3d65a175bb04d823644288c1a3b627`；未切换分支、未创建 worktree。
+- 新增显式 Explore Request/Context/Source/Idea/Diagnosis/Handoff/Knowledge/Verification 类型和运行时校验；没有用正则解析 Agent 自由文本。
+- 新增 Main user-data JSON Store：临时文件写入、fsync、rename；重启持久化；语法损坏和结构损坏均拒绝覆盖；不接受整篇正文字段。
+- 新增五个经 preload 暴露的知识 IPC：列表、主动保存、验证记录、相关发现、显式选择进入 Context。相关发现不会自动注入。
+- 首次专项测试通过后 Review 发现“合法 JSON 中的损坏卡片会被信任”；补充逐字段磁盘校验和结构损坏回归。随后又补充可注入 IPC 注册测试及 Idea/Diagnosis/Handoff 运行时校验。
+- 最终相关目标：Electron typecheck、build:main/Explore 专项、build:renderer、data-paths、task-queue 共 5 组通过；0 失败。并行 Renderer 首次只返回 transforming、没有退出码，单独重跑后 1261 modules、exit 0；既有大 chunk warning 保留。
+- `apply_patch` 因 Windows sandbox-bin ACL 在校验阶段失败，无文件改动；精确 UTF-8 锚点写入经 diff 与编译验证。未调用 DeepSeek、知乎搜索或硬件。

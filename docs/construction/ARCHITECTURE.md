@@ -31,3 +31,8 @@ Main 另有 Workbench 受控文件、Skill Manager、会话 JSON、用户目录�
 - A4/A5：候选文件索引不是全部自动注入许可；上下文有预算、来源、时间与用户选择。
 - Explore 和 Plan 不得继承 unrestricted execution；先有运行时拒绝测试，再接 UI。
 - 官方 auth/status/setup 在官方 Skill 层；Main 只做必要安全状态映射，不重写 API。不增加知乎 Runtime MCP server。
+
+
+## 2026-09-07 Phase 2 已实现增量
+
+Explore 共享契约位于 `electron/src/common/explore.ts`，由 Main、preload 和 Renderer 类型共同引用。知识卡由 `electron/src/main/explore-knowledge.ts` 保存到 `userData/explore/knowledge.json`；Gateway 注册 IPC，preload 暴露窄方法。Renderer 无文件系统能力，Store 不调用 Agent、Skill 或 Runtime。

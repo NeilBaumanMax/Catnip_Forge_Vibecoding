@@ -1,3 +1,5 @@
+import type { AddVerificationRecordInput, KnowledgeCard, SaveKnowledgeCardInput } from '../../common/explore';
+
 export type ChatMessageKind = 'conversation' | 'progress' | 'detail' | 'status';
 
 export interface SkillReference {
@@ -321,6 +323,11 @@ export interface WindowAPI {
   saveManagedSkill: (input: { id: string; name: string; description: string; body: string; originalId?: string }) => Promise<{ ok: boolean; skill?: ManagedSkillDetail; snapshot?: SkillManagerSnapshot; error?: string }>;
   deleteManagedSkill: (id: string) => Promise<{ ok: boolean; snapshot?: SkillManagerSnapshot; error?: string }>;
   syncManagedSkills: () => Promise<SkillManagerResult>;
+  listExploreKnowledge: () => Promise<KnowledgeCard[]>;
+  saveExploreKnowledge: (input: SaveKnowledgeCardInput) => Promise<KnowledgeCard>;
+  addExploreKnowledgeVerification: (input: AddVerificationRecordInput) => Promise<KnowledgeCard>;
+  findRelatedExploreKnowledge: (query: string, limit?: number) => Promise<KnowledgeCard[]>;
+  selectExploreKnowledgeForContext: (selectedIds: string[]) => Promise<KnowledgeCard[]>;
   isWorkbenchSmokeTest?: boolean;
   finishWorkbenchSmokeTest?: (result: unknown) => Promise<{ ok: boolean }>;
   activateBrowserTab: (id: string) => Promise<{ ok: boolean }>;

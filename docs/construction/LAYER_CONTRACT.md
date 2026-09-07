@@ -22,3 +22,11 @@
 5. 真实工具结果按 task/project/time 关联；完成消息不能替代 Build/Flash/Serial 证据。
 6. 本地知识写入不覆盖未知损坏数据；只保存任务摘要和验证记录。
 7. CLI stdout/stderr、提示词、日志无 Secret；连接凭证走官方系统存储，不能经现有会记录全文的 chat:send 输入。
+
+
+## 2026-09-07 知识底座程序边界
+
+- Renderer 只能经 preload 请求 list/save/addVerification/findRelated/selectForContext。
+- Main 对 IPC 输入执行运行时校验；整篇正文和未知字段不会写入知识卡。
+- findRelated 只发现候选；selectForContext 必须收到用户明确选择的 card ID。
+- 磁盘 JSON 语法或卡片结构损坏时保留原文件并报错，不自动覆盖。

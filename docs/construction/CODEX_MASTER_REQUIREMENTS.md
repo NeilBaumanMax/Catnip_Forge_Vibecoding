@@ -21,8 +21,8 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 | ID | 假设内容 | 为什么仍是假设 | 错误时影响 | 验证方式 | 状态 | 验证证据 | 模块 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | A1 | 复用 chat/worker/skillRefs/queue 可支撑 Explore | 已有文本请求与单队列，未有 Explore 受限模式 | Handoff 安全与返回通道受阻 | 原型验证任务 ID、取消、模式隔离及确认门禁；必要时记录最小接口理由 | TESTING | gateway chat:send、orchestrator submitTask；agent.ts skip-permissions | Main/Worker/Agent |
-| A2 | 现有 CLI 能可靠输出结构化 Idea/Diagnosis | stream-json 只是传输事件，不是业务 schema；尚无 schema 输出验证 | UI 无法稳定消费判断 | 本地 CLI help/能力检查，真实模型 schema 返回与非法响应拒绝测试 | UNVERIFIED | agent.ts stream-json、chat-buffer.ts；未发现 Explore Result | Agent/domain |
-| A3 | 原子 JSON user-data 足以存知识卡 | 现有 session-store JSON，但知识存储/恢复尚未实现 | 跨重启丢失、损坏或混入安装目录 | 原子替换、重启、损坏处理和项目关联测试 | TESTING | paths.ts getRuntimeDataDir；session-store.ts writeFileSync | Local Store/Main |
+| A2 | 现有 Agent 能可靠返回结构化 Idea/Diagnosis | 已建立运行时 schema，但 DeepSeek 被用户要求停止调用，尚无真实模型输出证据 | UI 无法稳定消费判断 | 恢复模型后验证合法结构化返回及非法响应拒绝 | TESTING | `common/explore.ts` 已校验 Idea/Diagnosis/Handoff；真实模型仍待验 | Agent/domain |
+| A3 | 原子 JSON user-data 足以存知识卡 | 已按现有 Main user-data 路径实现并完成当前 MVP 容量/损坏场景验证 | 跨重启丢失、损坏或混入安装目录 | 原子替换、重启、语法/结构损坏保留、项目关联测试 | CONFIRMED | `explore-knowledge.ts`；`verify:explore-knowledge` 通过，坏文件不覆盖 | Local Store/Main |
 | A4 | 可从当前工程和 main/CMakeLists 收集最小相关源码 | 已有受控读取/文件索引；相关性与限额尚未定 | 过量读取或漏掉关键证据 | 单工程白名单、路径越界、截断、用户取消测试 | TESTING | workbench readWorkbenchFile、hardboard/project-files.ts；不能直接把全部候选注入 | Main/Context |
 | A5 | EventBus 和共享串口能稳定提供最新 Context | 已有最近 500 事件与串口增量读取；项目关联/过期需验证 | 误用其他工程或旧运行数据 | taskId/projectDir/timestamp 筛选、无数据/过期/清空场景 | TESTING | event-store getRecentRuntimeEvents、SerialMonitorSession.read/wait | Runtime/Main |
 | A6 | 官方CLI在Windows开发和打包版可运行 | 开发机安装/status及部署脚本通过，真实成品尚未验证 | Phase 1成品运行受影响 | builder契约已测，Phase 6真实包/status | TESTING | D盘CLI compatible；部署run.ps1 status通过；package config通过 | Official Skill/Packaging |

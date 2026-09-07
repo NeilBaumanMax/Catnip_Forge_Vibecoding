@@ -111,3 +111,16 @@ Phase 1核心检查2通过、0失败、4组未验证。不把CLI未就绪检查�
 | 真实知乎搜索 | 未验证 | auth.configured=false；LIVE_INTEGRATION_PENDING |
 
 工程过程另有：1次实现锚点失败、1次兼容锚点失败、3次打包文本锚点失败，均在写目标前停止；1次误重试插入重复打包块，Review后精确去重，最终syntax/config/diff检查通过。不得删除这些失败历史。实际Windows包字节验证和冷启动仍未执行。
+
+## 2026-09-07 Phase 2 Domain / Knowledge 第一小闭环
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm --prefix electron run typecheck` | 通过 | Main/preload/common 严格类型 |
+| `npm --prefix electron run verify:explore-knowledge` | 通过 | build:main；Domain、5 IPC handlers、保存/重启、发现/选择、验证状态、语法/结构坏文件保护 |
+| `npm --prefix electron run build:renderer` | 通过 | 1261 modules；既有 >500KB chunk warning |
+| `npm --prefix electron run verify:data-paths` | 通过 | userData 路径回归 |
+| `npm --prefix electron run verify:task-queue` | 通过 | 现有 Agent 队列未破坏 |
+| `git diff --check` / 新脚本 `node --check` | 通过 | 无 whitespace 错误；脚本语法通过 |
+
+最终统计：5 个功能/回归目标通过，0 失败；真实知乎搜索和真实 Agent Skill 调用 2 项未验证。第一次并行 Renderer 构建仅返回 `transforming...`、没有退出码，不计通过或失败；单独重跑 exit 0。Review 发现的合法 JSON 坏卡片缺口已补测试并修复。
