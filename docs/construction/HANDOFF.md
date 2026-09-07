@@ -97,3 +97,8 @@ backup/pre-phase-0-20260907指向baseline；backup/pre-phase-1-20260907指向Pha
 已实现入口：`electron/src/common/explore.ts`、`electron/src/main/explore-knowledge.ts`；Gateway/preload 暴露五个知识操作。持久化位于 Electron `userData/explore/knowledge.json`，Renderer 不直接读写文件。相关卡只返回候选，只有显式 ID 选择才进入 Context。
 
 备份 `backup/pre-phase-2-20260907` 已推送并核对指向 `b3b32a4bdd3d65a175bb04d823644288c1a3b627`。本小闭环提交 hash 需在提交后动态核对。不得重试 DeepSeek；不得声称真实知乎搜索或硬件已验证。
+
+
+## 2026-09-07 Phase 2 完成快照
+
+Phase 2 完成提交：`860badf7a21d3cb1b4fc7f434488ab5de379dd34`，已与 `origin/idea_to_production` 核对一致。当前下一阶段为 Phase 3。Phase 2 Store 与 IPC 可直接复用，不要另建数据库或第二套 IPC。

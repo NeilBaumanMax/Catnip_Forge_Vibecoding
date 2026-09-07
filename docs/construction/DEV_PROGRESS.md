@@ -64,3 +64,8 @@ Git 已核对快照：branch idea_to_production；baseline f6e20e8e1d581a10fbd9c
 当前 Phase：Phase 2 进行中。已完成共享 Domain Contract、运行时校验、Main 本地知识 Store、preload/Main IPC 和专项测试。A3 已确认；A2 仍等待真实模型输出。下一项是审阅提交后继续最小 Handoff/知识选择契约，不开发视觉 UI。
 
 软件验证：5 组通过、0 失败、2 个外部未验证（知乎真实搜索、真实 Agent Skill 调用）。硬件仍为 `REAL_HARDWARE_VALIDATION_PENDING`。
+
+
+## 2026-09-07 Phase 2 完成
+
+Phase 2 已完成并推送：`860badf7a21d3cb1b4fc7f434488ab5de379dd34`，本地/远端一致，提交后工作区干净。当前进入 Phase 3；先实现“探索”可见入口和两条产品入口，不制造假来源、不调用 DeepSeek。

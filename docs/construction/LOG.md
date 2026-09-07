@@ -103,3 +103,10 @@
 - 首次专项测试通过后 Review 发现“合法 JSON 中的损坏卡片会被信任”；补充逐字段磁盘校验和结构损坏回归。随后又补充可注入 IPC 注册测试及 Idea/Diagnosis/Handoff 运行时校验。
 - 最终相关目标：Electron typecheck、build:main/Explore 专项、build:renderer、data-paths、task-queue 共 5 组通过；0 失败。并行 Renderer 首次只返回 transforming、没有退出码，单独重跑后 1261 modules、exit 0；既有大 chunk warning 保留。
 - `apply_patch` 因 Windows sandbox-bin ACL 在校验阶段失败，无文件改动；精确 UTF-8 锚点写入经 diff 与编译验证。未调用 DeepSeek、知乎搜索或硬件。
+
+
+## 2026-09-07 / Phase 2 / 完成与远端核对
+
+- Phase 2 实现提交 `860badf7a21d3cb1b4fc7f434488ab5de379dd34` 已推送；`origin/idea_to_production` 返回同一 hash，提交后工作区干净。
+- 验收满足：Domain 对象运行时可校验；知识卡原子持久化并可跨重启读取；不保存整篇正文；来源 URL 可追溯；验证状态可追加；相关历史只发现，显式选择后才进入 Context；专项及相关回归通过。
+- Phase 2 完成。外部真实搜索、Agent 和硬件状态不被本阶段软件验收掩盖，继续分别保持 pending。
