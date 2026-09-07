@@ -27,6 +27,7 @@
 | `electron/src/common/explore.ts` | 新增版本化 Explore 分析 envelope 类型与严格运行时校验；复用既有 `normalizeIdeaResult` / `normalizeDiagnosisResult`。 |
 | `electron/src/main/agent.ts` | 增加显式 Agent 执行档位及可测试的启动参数构造；隔离默认进程和受限进程，受限档位去掉 skip-permissions、使用 plan/严格 MCP/只读工具集合。 |
 | `electron/src/main/worker/orchestrator.ts` | 队列项绑定执行档位与 Explore request 元数据；受限文本抑制、禁用工具拒绝、最终结果校验及仅合法对象推送。 |
+| `electron/src/main/worker/chat-buffer.ts` | 保留默认文本结果解析；显式读取 CLI JSON schema 模式返回的 `structured_output`，作为 Worker 严格校验的对象输入，不从 Markdown 猜测结构。 |
 | `electron/scripts/verify_explore_analysis_gate.cjs` | 离线验证权限参数、档位隔离、拒绝副作用、结果 schema、过期结果和 UI 泄漏反例。 |
 | `electron/package.json` | 仅新增上述专项验证脚本入口。 |
 
@@ -62,3 +63,7 @@ git diff --check
 - 本小项为保证门禁完整，受限档位不开放通用 Bash，因此不会在此提交中执行官方 Skill 的 CLI 搜索。后续 live 搜索需要在不开放任意 shell 的前提下设计官方 CLI 的窄桥，并另立文档基线。
 - 当前 Agent 是 persistent process；进程档位切换和迟到事件是首要竞态风险，测试必须先于 UI 接线覆盖。
 - 结构化 schema 校验成功只代表对象可消费，不代表来源真实。没有真实官方搜索证据时不得展示为已验证 Idea/Diagnosis。
+
+## 2026-09-08 范围修订
+
+实现 Review 读取本机 Claude CLI 二进制协议字符串，确认 JSON schema 成功结果具有 `structured_output` 字段；现有 `ChatBuffer` 只读取 `result` 文本，无法可靠承接该对象。故在修改该文件前，将 `electron/src/main/worker/chat-buffer.ts` 加入最小范围，并要求默认 Chat 解析保持回归。该修订仍不开放 UI、搜索、Runtime 或硬件。
