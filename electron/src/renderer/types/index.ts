@@ -1,4 +1,4 @@
-import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreAnalysisStartResult, ExplorePlanStartResult, ExploreRequest, ExploreRequestPreparation, ExploreZhihuConnectionLaunchResult, ExploreZhihuConnectionStatus, HandoffContext, KnowledgeCard, SaveKnowledgeCardInput } from '../../common/explore';
+import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreAnalysisStartResult, ExploreContextGatherRequest, ExploreContextGatherResult, ExplorePlanStartResult, ExploreRequest, ExploreRequestPreparation, ExploreZhihuConnectionLaunchResult, ExploreZhihuConnectionStatus, HandoffContext, KnowledgeCard, SaveKnowledgeCardInput } from '../../common/explore';
 
 export type ChatMessageKind = 'conversation' | 'progress' | 'detail' | 'status';
 
@@ -330,6 +330,7 @@ export interface WindowAPI {
   selectExploreKnowledgeForContext: (selectedIds: string[]) => Promise<KnowledgeCard[]>;
   getExploreZhihuStatus: () => Promise<ExploreZhihuConnectionStatus>;
   beginExploreZhihuConnection: () => Promise<ExploreZhihuConnectionLaunchResult>;
+  gatherExploreContext: (request: ExploreContextGatherRequest) => Promise<ExploreContextGatherResult>;
   prepareExploreRequest: (request: ExploreRequest) => Promise<ExploreRequestPreparation>;
   startExploreAnalysis: (request: ExploreRequest) => Promise<ExploreAnalysisStartResult>;
   onExploreAnalysisResult: (cb: (result: ExploreAnalysisResult) => void) => void;

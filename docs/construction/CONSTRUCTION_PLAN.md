@@ -14,13 +14,10 @@
 
 ## 2026-09-08 执行状态与顺序纠正
 
-- Phase 0 完成；Phase 1 离线宿主集成完成但 live 调用待外部条件；Phase 2 完成；Phase 3 进行中。
-- Phase 3 已完成 3b 的安全 UI 外壳、status 和 Request 准备；3a 的独立基线、Worker/Agent 只分析档位、结构化结果校验与非法 UI 抑制也已实现并离线通过。表单仍未触发 Agent，真实搜索、真实模型结果与 Handoff 未开放。下一业务小项需先为官方 CLI 窄搜索桥建立独立文档基线。
-- 只有 3a 的运行时拒绝测试通过后，才能让 Explore 表单触发现有 Agent。当前按钮只准备请求并明确没有搜索。
-- 窄搜索桥只允许官方 `search zhihu` / `search global`，不得顺带开放 Skill 的热榜、直答、本人数据、官方知识库、额度查询或 OAuth。找灵感为知乎必需、全网按需；解问题为两者均必需。
-- 搜索桥之前或同一独立基线中必须解决 Access Secret 配置门禁。当前 Explore 没有安全配置入口；设计必须由宿主持有交互并通过官方 CLI stdin 验证、写系统凭证库，完整值不得进入 Renderer IPC、产品 Chat、日志或 Agent 输出。若无法满足，保持 `LIVE_INTEGRATION_PENDING`，不得以普通输入框临时接通。
-- Phase 3b1 独立基线见 `PHASE_3B1_ZHIHU_CONNECTION_BASELINE.md`：先实现无参数页面动作、固定个人中心 URL 和独立 Windows 遮蔽输入窗口；该闭环不执行搜索。完成后另建搜索桥基线，不把两个外部风险混在同一实现提交。
-
+- Phase 0–2 完成；Phase 3 软件闭环完成。安全连接、固定搜索桥、受限分析、结果 UI、Handoff 与无工具计划已实现；DeepSeek 真实计划输出通过，真实知乎搜索按用户要求暂缓。
+- Phase 4 进行中：4a 有界 Context 收集已实现；4c 双搜索 Diagnosis 的软件路径已在 3b2 提前完成，但真实来源仍待验。下一项为 4b 监视器/失败任务入口，然后进入 4d 同队列确认执行。
+- 用户确认前，“确认并执行”保持禁用；不得修改工程或调用 Build/Flash/Serial。无实机证据继续记 `REAL_HARDWARE_VALIDATION_PENDING`。
+- Access Secret 未配置且用户要求暂不测试，真实知乎/全网检索继续记 `LIVE_INTEGRATION_PENDING`，不以 mock 或静态门禁冒充。
 ## Phase 1 已定位的最小工程范围
 
 - 新增 `agent/skills/zhihu`，按用户 ZIP 原字节导入，不创建假 Skill。

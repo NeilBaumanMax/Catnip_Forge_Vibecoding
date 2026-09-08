@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreRequest, HandoffContext, SaveKnowledgeCardInput } from '../common/explore';
+import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreContextGatherRequest, ExploreRequest, HandoffContext, SaveKnowledgeCardInput } from '../common/explore';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getStartupStatus: () => ipcRenderer.invoke('startup:status'),
@@ -55,6 +55,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   selectExploreKnowledgeForContext: (selectedIds: string[]) => ipcRenderer.invoke('explore:knowledge:selectForContext', selectedIds),
   getExploreZhihuStatus: () => ipcRenderer.invoke('explore:zhihu:status'),
   beginExploreZhihuConnection: () => ipcRenderer.invoke('explore:zhihu:connect'),
+  gatherExploreContext: (request: ExploreContextGatherRequest) => ipcRenderer.invoke('explore:context:gather', request),
   prepareExploreRequest: (request: ExploreRequest) => ipcRenderer.invoke('explore:request:prepare', request),
   startExploreAnalysis: (request: ExploreRequest) => ipcRenderer.invoke('explore:analysis:start', request),
   onExploreAnalysisResult: (cb: (result: ExploreAnalysisResult) => void) => {

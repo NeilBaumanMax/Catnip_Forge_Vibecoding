@@ -14,6 +14,29 @@ export interface ExploreContext {
   items: ExploreContextItem[];
 }
 
+export interface ExploreContextCandidate extends ExploreContextItem {
+  available: boolean;
+}
+
+export interface ExploreContextGatherRequest {
+  projectDir?: string;
+}
+
+export interface ExploreContextGatherResult {
+  generatedAt: number;
+  projectDir: string | null;
+  items: ExploreContextCandidate[];
+  warnings: string[];
+  limits: {
+    maxDepth: number;
+    maxSourceFiles: number;
+    maxSourceFileBytes: number;
+    maxSourceTotalBytes: number;
+    maxRuntimeEvents: number;
+    maxSerialEvents: number;
+  };
+}
+
 export interface ExploreRequest {
   mode: ExploreMode;
   goal: string;

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import type { ExploreAnalysisResult, ExploreContextItem, ExploreRequest, HandoffContext, IdeaResult, ExploreZhihuConnectionStatus } from '../../common/explore';
+import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextItem, ExploreRequest, HandoffContext, IdeaResult, ExploreZhihuConnectionStatus } from '../../common/explore';
 
 type ExploreView = 'home' | 'idea' | 'diagnosis';
 
@@ -31,8 +31,11 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const [analysisRequest, setAnalysisRequest] = useState<ExploreRequest | null>(null);
   const [planResult, setPlanResult] = useState<Extract<ExploreAnalysisResult, { mode: 'plan' }> | null>(null);
   const [planPending, setPlanPending] = useState(false);
+  const [gatheredContext, setGatheredContext] = useState<ExploreContextGatherResult | null>(null);
+  const [contextLoading, setContextLoading] = useState(false);
+  const [contextError, setContextError] = useState('');
 
-  const contextOptions = useMemo<ContextOption[]>(() => [
+  const fallbackContextOptions = useMemo<ContextOption[]>(() => [
     {
       id: 'current-project',
       kind: 'project',
@@ -55,6 +58,29 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
       available: runtimeSummary !== '暂无运行记录',
     },
   ], [currentProject, hardwareSummary, runtimeSummary]);
+
+  const contextOptions = useMemo<ContextOption[]>(() => {
+    if (view !== 'diagnosis' || !gatheredContext) return fallbackContextOptions;
+    const gathered = gatheredContext.items;
+    const project = gathered.find((item) => item.kind === 'project') || fallbackContextOptions[0];
+    const hardware = fallbackContextOptions[1];
+    const runtime = gathered.find((item) => item.kind === 'build') || {
+      id: 'recent-runtime', kind: 'build' as const, label: '最近 Build / Flash 记录',
+      summary: '所选工程最近 24 小时内没有可用记录', available: false,
+    };
+    const serial = gathered.find((item) => item.kind === 'serial') || {
+      id: 'recent-serial', kind: 'serial' as const, label: '最近串口片段',
+      summary: '当前共享串口没有可用记录', available: false,
+    };
+    return [
+      project,
+      ...gathered.filter((item) => item.kind === 'target'),
+      hardware,
+      ...gathered.filter((item) => item.kind === 'source'),
+      runtime,
+      serial,
+    ];
+  }, [fallbackContextOptions, gatheredContext, view]);
 
   const refreshConnection = async () => {
     setCheckingConnection(true);
@@ -87,6 +113,30 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
     });
   }, []);
 
+  useEffect(() => {
+    if (view !== 'diagnosis') return;
+    let cancelled = false;
+    setContextLoading(true);
+    setContextError('');
+    setGatheredContext(null);
+    void window.electronAPI.gatherExploreContext({ projectDir: currentProject || undefined })
+      .then((result) => {
+        if (cancelled) return;
+        setGatheredContext(result);
+        setContextError(result.warnings.join('；'));
+        const ids = result.items.filter((item) => item.available).map((item) => item.id);
+        if (hardwareSummary !== '未检测到开发板') ids.splice(Math.min(2, ids.length), 0, 'current-hardware');
+        setSelectedContextIds([...new Set(ids)]);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setContextError(error instanceof Error ? error.message : '无法收集当前工程 Context');
+        setSelectedContextIds(fallbackContextOptions.filter((item) => item.available).map((item) => item.id));
+      })
+      .finally(() => { if (!cancelled) setContextLoading(false); });
+    return () => { cancelled = true; };
+  }, [currentProject, hardwareSummary, view]);
+
   const beginConnection = async () => {
     setStartingConnection(true);
     try {
@@ -102,9 +152,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const enter = (next: Exclude<ExploreView, 'home'>) => {
     setView(next);
     setNotice('');
-    if (next === 'diagnosis') {
-      setSelectedContextIds(contextOptions.filter((item) => item.available).map((item) => item.id));
-    }
+
   };
 
   const toggleContext = (id: string) => {
@@ -252,7 +300,8 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
         ) : (
           <fieldset className="explore-context-picker">
             <legend>本次分析 Context</legend>
-            <p>已自动选择当前可用证据。取消勾选后，该项不会进入分析。</p>
+            <p>{contextLoading ? '正在收集有界工程证据...' : '已自动选择当前可用证据。取消勾选后，该项不会进入分析。'}</p>
+            {contextError ? <p className="explore-context-error">{contextError}</p> : null}
             {contextOptions.map((item) => (
               <label key={item.id} className={item.available ? '' : 'is-unavailable'}>
                 <input
@@ -268,8 +317,8 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
         )}
 
         <div className="explore-submit-row">
-          <button className="nes-btn is-primary" type="submit" disabled={analysisPending || !(isIdea ? goal.trim() : problem.trim())}>
-            {analysisPending ? '正在分析...' : isIdea ? '形成可实现的 Idea' : '分析当前问题'}
+          <button className="nes-btn is-primary" type="submit" disabled={analysisPending || (!isIdea && contextLoading) || !(isIdea ? goal.trim() : problem.trim())}>
+            {!isIdea && contextLoading ? '正在收集 Context...' : analysisPending ? '正在分析...' : isIdea ? '形成可实现的 Idea' : '分析当前问题'}
           </button>
           <span>分析阶段不会修改文件、Build、Flash 或操作串口。</span>
         </div>

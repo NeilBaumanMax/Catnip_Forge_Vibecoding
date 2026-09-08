@@ -1,6 +1,6 @@
 # Layer Contract
 
-依据当前源码核实后确定责任。知识 Store、官方 status、Request 准备 IPC、受限分析档位与内部结构化结果通道已实现；真实搜索、真实模型结果、Renderer 消费与 Handoff 仍待后续，不虚构为已有能力。
+依据当前源码核实后确定责任。知识 Store、安全连接、固定搜索桥、受限分析/计划、结果 UI、Handoff 与 Phase 4a 有界 Context 收集已实现；真实知乎搜索和硬件仍待验收。
 
 | 层 | 责任与复用入口 | 禁止 |
 | --- | --- | --- |
@@ -40,12 +40,9 @@
 
 ## 2026-09-08 官方能力与凭证边界
 
-- 当前探索页面实际只调用官方 `status`。页面展示 installed/compatible/authConfigured 的安全映射；不接收原始 CLI 输出，也不接触 Access Secret。
-- `sourceStrategy` 只描述未来检索要求，不表示 `search zhihu` / `search global` 已执行。两项搜索仍待窄桥和 live 验收。
-- 官方 Skill 还提供热榜、直答、本人创作/关注/收藏、官方知识库和额度查询；这些不是探索 MVP 页面能力。Main 不得因 Skill 已部署就自动开放。
-- 当前页面没有 Access Secret 配置入口。后续只能由宿主安全交互把用户在知乎开放平台申请的凭证通过官方 CLI stdin 配置到操作系统凭证库；Renderer/Preload 不得新增携带完整 Secret 的 IPC，Chat 不得作为输入通道。
-- Catnip 的 `userData/explore/knowledge.json` 是本地知识卡 Store，不是知乎官方 Knowledge Base，也不消耗或调用其知识库 API。
-
+- Renderer 只触发零参数连接动作；Main 打开固定个人中心并启动独立遮蔽输入窗口，凭证只经官方 CLI stdin 写系统凭证库。
+- Main 固定搜索桥只允许 `search zhihu` / `search global`，不开放热榜、直答、本人数据、官方知识库、额度查询或 OAuth。真实搜索因用户暂缓配置 Secret 继续记 `LIVE_INTEGRATION_PENDING`。
+- Catnip 的 `userData/explore/knowledge.json` 是本地知识卡 Store，不是知乎官方 Knowledge Base。
 ## 2026-09-08 Phase 3a 只分析程序边界
 
 - Worker 队列项显式携带 `default` 或 `explore_analysis`，不能从自然语言推断；跨档位追加被拒绝，排队保持原档位。
@@ -53,4 +50,10 @@
 - Worker 对受限任务只允许观察 `Skill`；任意文件读取/写入及其他工具调用立即失败。普通模型文本、工具结果和非法 JSON 不进入 Renderer。
 - 只有 schemaVersion=1、requestId/mode 与活动请求一致、灵感含知乎来源、排障每个假设同时含知乎与 Web 来源的对象，才进入内部 `explore:analysis:result`。
 - CLI JSON schema 模式的 `structured_output` 由 `ChatBuffer` 显式保留；默认 Chat 的 `result` 文本语义不变，不从文本或代码围栏猜测对象。
-- 当前没有 preload/Renderer 消费该通道，也没有真实搜索或模型证据；程序门禁通过不等于 Idea/Diagnosis 产品流程完成。
+- preload/Renderer 已消费合法结构化结果；DeepSeek 真实只计划输出已通过。真实知乎来源仍未验收，不能用软件门禁替代。
+## 2026-09-08 Phase 4a 有界 Context
+
+- Main 只接受 Hardboard projects 内且包含顶层 `CMakeLists.txt` 的工程；同时检查 lexical path 与 realpath，跳过符号链接及 `.git`、`build`、`node_modules`、`managed_components`、`dist*`。
+- 深度最多 5，源码候选最多 6，单文件真正定长读取最多 8 KiB，总计最多 32 KiB；每个传给共享 Domain 的摘要仍受 2,000 字符限制。
+- Runtime 只保留最近 24 小时且归属同一工程的 `hardboard.build.*` / `hardboard.flash.*`，最多 40 条；共享串口最多 40 条并标明未证明项目归属。
+- Runtime/串口读取失败只产生可见警告，不丢弃已取得的工程证据；Context 收集完成前诊断提交禁用，取消项继续由 Main prepare 剔除。

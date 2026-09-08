@@ -199,3 +199,11 @@
 - 第一次 CLI 试验因内联空 MCP JSON 被 Windows 参数解析成文件路径，在网络请求前失败；第二次产品档位烟测因测试输出与 Explore plan schema 冲突而超时，均不能用于判断余额。
 - 纠正 schema 后，复用产品现有 `explore_plan` Agent 启动逻辑，以 `deepseek-v4-pro`、`--bare`、plan 权限、空工具和空 MCP 完成真实调用；收到合法 `structured_output`，exit 0，HTTP 402 未复现。临时烟测文件已删除，没有业务源码改动。
 - `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE` 解除。未配置或读取知乎 Access Secret，未调用知乎搜索、Build、Flash、Serial 或硬件；`LIVE_INTEGRATION_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保持。
+## 2026-09-08 / Phase 4a / 有界 Context 收集
+
+- 从 `c0ca685f` 创建并推送 `backup/pre-phase-4-20260908`；独立基线 `cefd6331` 先于业务实现推送。用户要求暂不测试 Access Secret，`LIVE_INTEGRATION_PENDING` 保持但不阻止离线 4a。
+- 新增 Main Context gatherer 与 IPC：只接受 Hardboard projects 内 ESP-IDF 工程；realpath 防越界，跳过符号链接/构建依赖目录；源码最多 6 个、单文件定长读取 8 KiB、总计 32 KiB、深度 5。
+- target 来自有界 sdkconfig；Runtime 只取同工程 24 小时内的 Build/Flash 事件，串口只取共享会话最近 40 条并明确未证明项目归属。Runtime/串口失败返回可见警告且保留工程证据。
+- 解问题页面自动加载候选并允许逐项取消；收集完成前禁止提交，Main prepare 继续剔除未选项。未新增任务系统，未修改工程或执行 Build/Flash/Serial。
+- 首次 package.json 编辑把换行写成字面字符，npm 在 TypeScript 前 EJSONPARSE；修正后通过。首次专项把“最多 6 个”误断言为“正好 6 个”，32 KiB 总上限先触发返回 5 个；修正测试语义后通过。Review 另修复整文件预读、最新日志可能被头部截断、外部状态失败丢弃源码、realpath 与普通 task 事件误收集。
+- 最终专项、typecheck、Main/Renderer build、Explore UI/Request、task queue 与 diff check 通过。没有调用知乎、DeepSeek 或硬件，`REAL_HARDWARE_VALIDATION_PENDING` 保持。

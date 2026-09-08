@@ -201,3 +201,14 @@ Phase 3b2/3c：`verify:explore-search-handoff`、`verify:explore-analysis-gate`�
 | 产品 `explore_plan` 受限档位真实调用 | 通过 | `deepseek-v4-pro`；空工具、空 MCP；合法结构化计划；exit 0；未出现 HTTP 402 |
 
 首次两次试验未形成有效 API 结论：第一次把内联 MCP JSON 当成路径，CLI 在请求前拒绝；第二次烟测输出与产品 plan schema 冲突并超时。纠正为真实 plan schema 后通过。`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE` 解除；知乎搜索仍为 `LIVE_INTEGRATION_PENDING`，硬件仍为 `REAL_HARDWARE_VALIDATION_PENDING`。
+## 2026-09-08 Phase 4a 有界 Context 收集
+
+| 命令 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run verify:explore-context` | 通过 | project/realpath 越界、排除目录、深度/文件/真实读取字节上限、target、同项目 24h Runtime、最新 40 条串口、部分降级、IPC/UI 门禁 |
+| `npm.cmd --prefix electron run typecheck` / `build:main` | 通过 | 共享类型、Main、preload |
+| `npm.cmd --prefix electron run build:renderer` | 通过 | 1262 modules；保留既有大 chunk warning |
+| `verify:explore-ui` / `verify:explore-request` / `verify:task-queue` | 通过 | 取消 Context、请求清洗、旧队列回归 |
+| `git diff --check` | 通过 | 无 whitespace error |
+
+首次专项失败：测试把“最多 6 个源码候选”写成“必须正好 6 个”，实际 32 KiB 总上限先触发并正确返回 5 个；修正错误断言后通过。首次 typecheck 启动前另有一次 package.json 字面换行导致 EJSONPARSE，修复编辑错误后 JSON 与 typecheck 通过。未调用知乎、DeepSeek 或硬件。

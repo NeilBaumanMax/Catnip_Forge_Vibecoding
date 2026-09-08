@@ -2,14 +2,13 @@
 
 更新时间：2026-09-08。探索 MVP 未完成。
 
-- 当前 Phase：Phase 3 进行中。Phase 0 已完成；Phase 1 离线宿主集成完成、真实调用待外部条件；Phase 2 Domain 与本地知识底座完成。
-- 已完成：官方 `zhihu` Skill 15 文件导入与保真部署、D 盘 CLI 安装/status、安全打包过滤；Explore Domain/JSON Store/知识 IPC；第五工作区“探索”、找灵感/解问题入口、官方连接状态桥、Main Request 准备与 Context 排除；Worker/Agent 只分析档位和内部结构化结果门禁。
-- 当前任务：修正“官方 Skill 完整能力、探索页面实际使用能力、Access Secret 用户流程”施工口径。下一业务小闭环必须先做独立文档基线，再设计安全凭证配置路径和官方 CLI 窄搜索桥。
-- 未完成：真实知乎/全网搜索、结构化 Idea/Diagnosis UI、现有 Agent Handoff、用户确认执行门禁、Phase 4–6、真实包和真机闭环。
-- Blocker：`LIVE_INTEGRATION_PENDING`（官方 status 为 `auth.configured=false`，且 Explore 尚无安全配置 Access Secret 的产品入口）；`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`（用户明确禁止重试）；`REAL_HARDWARE_VALIDATION_PENDING`。这些外部项不阻止独立文档和软件门禁施工。
-- 测试：最新三个 Phase 3 小闭环分别为 3、4、4 组最终通过，0 组最终失败；首次失败和全部基线见 TEST_METRICS/LOG。Python pytest 仍因依赖缺失未启动到断言。
-- Git 审计起点：`idea_to_production`，local/remote `bff953900d1af98aa9e69f50308ed137c4b0b373`，工作区干净；baseline `f6e20e8e1d581a10fbd9c0e48d39bec5c4376112`。Phase 0–3 远端备份均已有核对记录。
-
+- 当前 Phase：Phase 4 进行中，4a 有界 Context 收集已实现；Phase 0–2 完成，Phase 3 软件闭环完成但真实知乎搜索按用户要求暂缓。
+- 已完成：安全连接入口、固定知乎/全网搜索桥、受限分析、Idea/Diagnosis UI、结构化 Handoff 与只计划档位；DeepSeek 真实计划输出已通过；当前工程、target、最多 6 个源码候选、24 小时内同工程 Build/Flash 事件和最多 40 条共享串口记录可见且可取消。
+- 当前任务：收口并提交 Phase 4a，随后进入 4b 监视器/任务管理器“分析这个问题”最小入口。
+- 未完成：真实知乎/全网搜索验收、监视器/任务入口、确认执行与实机验证、知识反馈、真实 Windows 包。
+- Blocker：`LIVE_INTEGRATION_PENDING`（Access Secret 未配置，用户要求暂不测试）与 `REAL_HARDWARE_VALIDATION_PENDING`。DeepSeek 余额阻塞已解除。
+- 测试：Phase 4a 专项、typecheck、Main/Renderer build、Explore UI/Request、task queue 通过；首次错误断言与修复见 TEST_METRICS/LOG。
+- Git：Phase 4 备份 `backup/pre-phase-4-20260908` 指向 `c0ca685f1460c7c5c539042d93bcc2d9ada1bfa0`；4a 独立基线提交 `cefd6331` 已推送。
 ## 2026-09-07 官方 CLI 安装实测
 
 用户明确同意安装并要求告知位置。安装前已说明默认用户目录；未覆盖 ZHIHU_CLI_HOME，未修改 PATH。
