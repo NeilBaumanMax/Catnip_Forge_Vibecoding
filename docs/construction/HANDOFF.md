@@ -18,7 +18,7 @@
 - Phase 0：完成，Product Truth、Decision/Assumption、Git/测试基线和施工文档已建立。
 - Phase 1：离线宿主集成完成。官方 `zhihu` Skill 的 15 个 vendor 文件已保真导入、完整部署并进入 `@zhihu`/打包契约；官方 CLI 安装在 `D:\ZhihuCLI`。Skill 本身还支持热榜、直答、本人创作/关注/收藏、官方知识库和额度查询，但探索 MVP 只选用状态检查、知乎搜索和全网搜索；真实搜索和 Agent Skill 调用仍未验收。
 - Phase 2：完成。共享 Domain、运行时校验、Main JSON 知识 Store、五个知识 IPC、相关发现与显式选择已实现。
-- Phase 3：进行中。第五页签、两入口表单、排障 Context 取消、官方 status 安全桥、Request 准备 IPC、Worker/Agent 只分析档位及内部结构化结果门禁已实现；真实搜索、真实模型结构化结果、结果 UI 和 Handoff 尚未实现。
+- Phase 3：进行中，已推进到 3c。连接入口、固定知乎/全网搜索桥、受限分析、Idea/Diagnosis 结果 UI、结构化 Handoff 和无工具只计划档位已实现；真实搜索/模型未验收，“确认并执行”尚未开放。
 - Phase 4–6：未开始。
 
 ## 当前实现边界
@@ -33,9 +33,9 @@ Access Secret 是每个用户自己的知乎开放平台 API 凭证，用于鉴�
 
 ## 下一步 1–3 项
 
-1. 3b1 已实现并推送；当前按 `PHASE_3B2_3C_SEARCH_HANDOFF_BASELINE.md` 连续实现窄搜索、结果 UI 与只计划 Handoff。
-2. 用户确认前不得进入默认执行档位；真实 Secret/DeepSeek 不可用时保留 live pending，不以 mock 冒充。
-3. 软件闭环后再做真实来源、计划、Windows 成品和硬件验收。
+1. Review 并提交当前 3b2/3c 软件闭环；用户确认前继续禁止进入默认执行档位。
+2. Secret 与 DeepSeek 恢复后验收真实知乎/全网来源和真实计划输出。
+3. 后续执行闭环再开放“确认并执行”，随后进入排障硬件验证与知识反馈。
 
 ## Decision 与 Assumption
 

@@ -190,3 +190,5 @@ Phase 1核心检查2通过、0失败、4组未验证。不把CLI未就绪检查�
 第一次检查失败：对只追加 `LOG.md` 整文件使用连续问号断言，命中了历史保留的旧编码事故证据。根因是测试范围过宽；收窄为当前状态文档全文及本次日志标题/关键内容后通过。最终 3 个文档检查目标通过、0 最终失败；本轮无业务代码，因此未重复应用构建。未配置 Secret，未调用知乎搜索、DeepSeek 或硬件。
 
 Phase 3b1：`typecheck`、`verify:explore-zhihu-connection`、`verify:explore-ui` 共 3 项通过，0 最终失败。未执行真实凭证配置或业务 API。
+
+Phase 3b2/3c：`verify:explore-search-handoff`、`verify:explore-analysis-gate`、typecheck、build:main、build:renderer、Explore UI、task-queue 最终通过。task-queue 首次暴露未声明档位被误判为受限并已修复；一次用普通 Node 启动 Electron 专项失败属于测试启动命令错误，改用 npm 专项后通过。真实搜索与模型未验证。

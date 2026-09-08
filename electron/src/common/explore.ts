@@ -124,6 +124,21 @@ export interface ExploreZhihuConnectionLaunchResult {
   message: string;
 }
 
+export interface ExploreAnalysisStartResult {
+  ok: boolean;
+  taskId: string;
+  requestId: string;
+  disposition: 'started' | 'queued';
+  sourceCount: number;
+}
+
+export interface ExplorePlanStartResult {
+  ok: boolean;
+  taskId: string;
+  requestId: string;
+  disposition: 'started' | 'queued';
+}
+
 export interface ExploreSourceStrategy {
   zhihu: 'required';
   web: 'conditional' | 'required';
@@ -151,11 +166,23 @@ export interface ExploreDiagnosisAnalysisResult {
   diagnosis: DiagnosisResult;
 }
 
-export type ExploreAnalysisResult = ExploreIdeaAnalysisResult | ExploreDiagnosisAnalysisResult;
+export interface ExplorePlanResult {
+  schemaVersion: 1;
+  requestId: string;
+  mode: 'plan';
+  plan: {
+    summary: string;
+    steps: Array<{ id: string; title: string; detail: string }>;
+    risks: string[];
+  };
+}
+
+export type ExploreAnalysisResult = ExploreIdeaAnalysisResult | ExploreDiagnosisAnalysisResult | ExplorePlanResult;
 
 export interface ExploreAnalysisExpectation {
   requestId: string;
-  mode: ExploreMode;
+  mode: ExploreMode | 'plan';
+  sourceUrls?: string[];
 }
 
 export const EXPLORE_ANALYSIS_JSON_SCHEMA = {
@@ -179,6 +206,16 @@ export const EXPLORE_ANALYSIS_JSON_SCHEMA = {
         requestId: { type: 'string', minLength: 1, maxLength: 120 },
         mode: { const: 'diagnosis' },
         diagnosis: { type: 'object' },
+      },
+    },
+    {
+      additionalProperties: false,
+      required: ['schemaVersion', 'requestId', 'mode', 'plan'],
+      properties: {
+        schemaVersion: { const: 1 },
+        requestId: { type: 'string', minLength: 1, maxLength: 120 },
+        mode: { const: 'plan' },
+        plan: { type: 'object' },
       },
     },
   ],
@@ -318,6 +355,14 @@ export function normalizeExploreAnalysisResult(
   const requestId = requiredText(input.requestId, 'explore analysis result.requestId', 120);
   if (requestId !== expectation.requestId) throw new Error('explore analysis result.requestId does not match the active request');
   if (input.mode !== expectation.mode) throw new Error('explore analysis result.mode does not match the active request');
+  const allowedSourceUrls = expectation.sourceUrls?.length
+    ? new Set(expectation.sourceUrls.map((url) => new URL(url).toString()))
+    : null;
+  const requireKnownSources = (sources: SourceEvidence[]) => {
+    if (allowedSourceUrls && sources.some((source) => !allowedSourceUrls.has(source.url))) {
+      throw new Error('explore analysis result contains a source that was not provided by search');
+    }
+  };
 
   if (input.mode === 'idea') {
     requireExactKeys(input, ['schemaVersion', 'requestId', 'mode', 'ideas'], 'explore analysis result');
@@ -328,6 +373,7 @@ export function normalizeExploreAnalysisResult(
     if (ideas.some((idea) => !idea.sources.some((source) => source.type === 'zhihu'))) {
       throw new Error('each idea requires at least one zhihu source');
     }
+    ideas.forEach((idea) => requireKnownSources(idea.sources));
     return {
       schemaVersion: 1,
       requestId,
@@ -345,11 +391,37 @@ export function normalizeExploreAnalysisResult(
     ))) {
       throw new Error('each diagnosis hypothesis requires zhihu and web sources');
     }
+    diagnosis.hypotheses.forEach((hypothesis) => requireKnownSources([...hypothesis.communitySources, ...hypothesis.externalSources]));
     return {
       schemaVersion: 1,
       requestId,
       mode: 'diagnosis',
       diagnosis,
+    };
+  }
+
+  if (input.mode === 'plan') {
+    requireExactKeys(input, ['schemaVersion', 'requestId', 'mode', 'plan'], 'explore analysis result');
+    const plan = objectValue(input.plan, 'plan');
+    requireExactKeys(plan, ['summary', 'steps', 'risks'], 'plan');
+    if (!Array.isArray(plan.steps) || plan.steps.length === 0 || plan.steps.length > 20) throw new Error('plan.steps is invalid');
+    return {
+      schemaVersion: 1,
+      requestId,
+      mode: 'plan',
+      plan: {
+        summary: requiredText(plan.summary, 'plan.summary', 3_000),
+        steps: plan.steps.map((raw, index) => {
+          const step = objectValue(raw, `plan.steps[${index}]`);
+          requireExactKeys(step, ['id', 'title', 'detail'], `plan.steps[${index}]`);
+          return {
+            id: requiredText(step.id, `plan.steps[${index}].id`, 120),
+            title: requiredText(step.title, `plan.steps[${index}].title`, 240),
+            detail: requiredText(step.detail, `plan.steps[${index}].detail`, 2_000),
+          };
+        }),
+        risks: stringList(plan.risks, 'plan.risks', 20, 1_000),
+      },
     };
   }
 

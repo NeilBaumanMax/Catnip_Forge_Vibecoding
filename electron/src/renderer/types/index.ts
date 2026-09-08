@@ -1,4 +1,4 @@
-import type { AddVerificationRecordInput, ExploreRequest, ExploreRequestPreparation, ExploreZhihuConnectionLaunchResult, ExploreZhihuConnectionStatus, KnowledgeCard, SaveKnowledgeCardInput } from '../../common/explore';
+import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreAnalysisStartResult, ExplorePlanStartResult, ExploreRequest, ExploreRequestPreparation, ExploreZhihuConnectionLaunchResult, ExploreZhihuConnectionStatus, HandoffContext, KnowledgeCard, SaveKnowledgeCardInput } from '../../common/explore';
 
 export type ChatMessageKind = 'conversation' | 'progress' | 'detail' | 'status';
 
@@ -331,6 +331,10 @@ export interface WindowAPI {
   getExploreZhihuStatus: () => Promise<ExploreZhihuConnectionStatus>;
   beginExploreZhihuConnection: () => Promise<ExploreZhihuConnectionLaunchResult>;
   prepareExploreRequest: (request: ExploreRequest) => Promise<ExploreRequestPreparation>;
+  startExploreAnalysis: (request: ExploreRequest) => Promise<ExploreAnalysisStartResult>;
+  onExploreAnalysisResult: (cb: (result: ExploreAnalysisResult) => void) => void;
+  onExploreAnalysisError: (cb: (result: { mode: 'analysis' | 'plan'; message: string }) => void) => void;
+  startExplorePlan: (handoff: HandoffContext) => Promise<ExplorePlanStartResult>;
   isWorkbenchSmokeTest?: boolean;
   finishWorkbenchSmokeTest?: (result: unknown) => Promise<{ ok: boolean }>;
   activateBrowserTab: (id: string) => Promise<{ ok: boolean }>;

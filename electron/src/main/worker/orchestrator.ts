@@ -11,11 +11,14 @@ import { appendClaudeSessionTurn, buildClaudeSessionContext, getClaudeSessionFil
 import { listManagedSkills } from '../skill-manager';
 import { buildAttachmentPromptContext, type AttachmentReference } from '../attachment-store';
 import {
+  normalizeHandoffContext,
   normalizeExploreAnalysisResult,
   normalizeExploreRequest,
   type ExploreAnalysisExpectation,
   type ExploreAnalysisResult,
   type ExploreRequest,
+  type HandoffContext,
+  type SourceEvidence,
 } from '../../common/explore';
 
 export type PushUIFn = (channel: string, data: unknown) => void;
@@ -62,6 +65,14 @@ export function isExploreAnalysisToolAllowed(toolName: string): boolean {
   return toolName === 'Skill';
 }
 
+export function isRestrictedExploreProfile(profile: AgentExecutionProfile): boolean {
+  return profile === 'explore_analysis' || profile === 'explore_plan';
+}
+
+export function isExploreToolAllowed(profile: AgentExecutionProfile, toolName: string): boolean {
+  return profile === 'explore_analysis' && isExploreAnalysisToolAllowed(toolName);
+}
+
 export function canAppendTaskGuidance(
   activeProfile: AgentExecutionProfile,
   incomingProfile: AgentExecutionProfile,
@@ -70,13 +81,13 @@ export function canAppendTaskGuidance(
 }
 
 export function agentStderrForUI(profile: AgentExecutionProfile, text: string): string {
-  return profile === 'explore_analysis'
+  return isRestrictedExploreProfile(profile)
     ? '[Agent] Explore 受限分析进程报告错误，原始输出已隐藏。'
     : text;
 }
 
 export function agentTextForLog(profile: AgentExecutionProfile, text: string): string {
-  return profile === 'explore_analysis' ? '[restricted explore content hidden]' : text;
+  return isRestrictedExploreProfile(profile) ? '[restricted explore content hidden]' : text;
 }
 
 export function parseExploreAnalysisResultText(
@@ -196,6 +207,7 @@ export class Orchestrator {
     value: unknown,
     requestId = randomUUID(),
     conversationId?: string,
+    sources: SourceEvidence[] = [],
   ): TaskSubmitResult & { requestId: string } {
     const request = normalizeExploreRequest(value);
     const normalizedRequestId = requestId.trim();
@@ -207,12 +219,34 @@ export class Orchestrator {
     const targetConversationId = conversationId || listChatConversations().activeConversationId;
     const queuedTask: QueuedTask = {
       id: randomUUID(),
-      text: this.buildExploreAnalysisPrompt(selectedRequest, normalizedRequestId),
+      text: this.buildExploreAnalysisPrompt(selectedRequest, normalizedRequestId, sources),
       skillRefs: [],
       attachments: [],
       conversationId: targetConversationId,
       executionProfile: 'explore_analysis',
-      exploreExpectation: { requestId: normalizedRequestId, mode: selectedRequest.mode },
+      exploreExpectation: {
+        requestId: normalizedRequestId,
+        mode: selectedRequest.mode,
+        ...(sources.length ? { sourceUrls: sources.map((source) => source.url) } : {}),
+      },
+    };
+    const result = this.submitQueuedTask(queuedTask, this.getTaskStatus().busy ? 'queue' : 'auto');
+    return { ...result, requestId: normalizedRequestId };
+  }
+
+  submitExplorePlan(value: unknown, requestId = randomUUID(), conversationId?: string): TaskSubmitResult & { requestId: string } {
+    const handoff = normalizeHandoffContext(value);
+    const normalizedRequestId = requestId.trim();
+    if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/.test(normalizedRequestId)) throw new Error('Explore plan request id is invalid');
+    const targetConversationId = conversationId || listChatConversations().activeConversationId;
+    const queuedTask: QueuedTask = {
+      id: randomUUID(),
+      text: this.buildExplorePlanPrompt(handoff, normalizedRequestId),
+      skillRefs: [],
+      attachments: [],
+      conversationId: targetConversationId,
+      executionProfile: 'explore_plan',
+      exploreExpectation: { requestId: normalizedRequestId, mode: 'plan' },
     };
     const result = this.submitQueuedTask(queuedTask, this.getTaskStatus().busy ? 'queue' : 'auto');
     return { ...result, requestId: normalizedRequestId };
@@ -316,7 +350,7 @@ export class Orchestrator {
     } else if (continuation?.kind === 'skill-enforcement') {
       effectiveTask = `${task}\n\n【显式 Skill 调用校验未通过】\n${continuation.text}\n\n先补齐缺失的 Skill 工具调用，再复核已经完成的工作；不要忽略任何用户正文中的 @Skill。`;
     }
-    const restricted = this.currentExecutionProfile === 'explore_analysis';
+    const restricted = isRestrictedExploreProfile(this.currentExecutionProfile);
     const sessionData = restricted
       ? { session: { id: 'explore-analysis', turnCount: 0 }, text: '' }
       : buildClaudeSessionContext(this.currentConversationId);
@@ -471,7 +505,7 @@ export class Orchestrator {
       taskId: this.currentTaskId,
       task: agentTextForLog(this.currentExecutionProfile, task.slice(0, 100)),
     });
-    const restricted = this.currentExecutionProfile === 'explore_analysis';
+    const restricted = isRestrictedExploreProfile(this.currentExecutionProfile);
 
     const remaining = this.buffer.flush();
     for (const p of remaining) {
@@ -637,7 +671,7 @@ export class Orchestrator {
   }
 
   private async continueWithPendingGuidance(task: string): Promise<boolean> {
-    if (this.currentExecutionProfile === 'explore_analysis') {
+    if (isRestrictedExploreProfile(this.currentExecutionProfile)) {
       throw new Error('受限 Explore 分析不接受执行中追加要求');
     }
     if (this.pendingGuidance.length === 0) return false;
@@ -670,8 +704,14 @@ export class Orchestrator {
 
   private async handleAgentProcessExit(code: number): Promise<void> {
     const taskId = this.currentTaskId;
-    const restricted = this.currentExecutionProfile === 'explore_analysis';
+    const restricted = isRestrictedExploreProfile(this.currentExecutionProfile);
     if (restricted && code === 0 && !this.currentExploreResult) code = 4;
+    if (restricted && code !== 0) {
+      this.pushUI('explore:analysis:error', {
+        mode: this.currentExecutionProfile === 'explore_plan' ? 'plan' : 'analysis',
+        message: this.currentExecutionProfile === 'explore_plan' ? 'Catnip 暂时无法生成执行计划' : 'Catnip 暂时无法完成探索分析',
+      });
+    }
     logger.info('agent:close', { exitCode: code, taskId, queueLength: this.queuedTasks.length });
     this.pushUI('chat:message', {
       text: `[Agent] Claude Code 进程已退出 (code: ${code})`,
@@ -702,7 +742,7 @@ export class Orchestrator {
     p: ParsedChunk,
     sourceProfile: AgentExecutionProfile = this.currentExecutionProfile,
   ): void {
-    const restricted = sourceProfile === 'explore_analysis';
+    const restricted = isRestrictedExploreProfile(sourceProfile);
     if (p.type === 'init') {
       const failedMcp = p.mcpServers?.filter((server) => ['failed', 'needs-auth', 'disabled', 'blocked'].includes(server.status)) ?? [];
       if (failedMcp.length > 0) {
@@ -780,7 +820,7 @@ export class Orchestrator {
     }
 
     if (restricted) {
-      if (p.type === 'tool_call' && p.toolName && !isExploreAnalysisToolAllowed(p.toolName)) {
+      if (p.type === 'tool_call' && p.toolName && !isExploreToolAllowed(sourceProfile, p.toolName)) {
         this.failExploreAnalysis('EXPLORE_FORBIDDEN_TOOL');
       }
       return;
@@ -899,6 +939,12 @@ export class Orchestrator {
       return;
     }
     const message = error instanceof Error ? error.message : String(error);
+    if (isRestrictedExploreProfile(this.currentExecutionProfile)) {
+      this.pushUI('explore:analysis:error', {
+        mode: this.currentExecutionProfile === 'explore_plan' ? 'plan' : 'analysis',
+        message: this.currentExecutionProfile === 'explore_plan' ? 'Catnip 暂时无法生成执行计划' : 'Catnip 暂时无法完成探索分析',
+      });
+    }
     logger.error('task:error', { taskId: this.currentTaskId, stage: 'turn-complete', message });
     this.pushUI('chat:message', {
       text: `[Worker] 当前执行步骤失败: ${message}`,
@@ -913,7 +959,7 @@ export class Orchestrator {
   }
 
   private failExploreAnalysis(code: 'EXPLORE_FORBIDDEN_TOOL' | 'EXPLORE_RESULT_INVALID'): void {
-    if (this.currentExecutionProfile !== 'explore_analysis' || !this.currentTaskId) return;
+    if (!isRestrictedExploreProfile(this.currentExecutionProfile) || !this.currentTaskId) return;
     killAgent();
     this.observedAgentPid = null;
     this.handleTurnFailure(new Error(code), this.currentTaskId);
@@ -975,7 +1021,7 @@ export class Orchestrator {
     return '[Worker] 执行计划\n1. 读取必要上下文。\n2. 执行修改或工具操作。\n3. 汇报关键结果。';
   }
 
-  private buildExploreAnalysisPrompt(request: ExploreRequest, requestId: string): string {
+  private buildExploreAnalysisPrompt(request: ExploreRequest, requestId: string, sources: SourceEvidence[] = []): string {
     const outputShape = request.mode === 'idea'
       ? '{"schemaVersion":1,"requestId":"<same requestId>","mode":"idea","ideas":[IdeaResult]}'
       : '{"schemaVersion":1,"requestId":"<same requestId>","mode":"diagnosis","diagnosis":DiagnosisResult}';
@@ -986,6 +1032,18 @@ export class Orchestrator {
       `requestId 必须原样返回：${requestId}`,
       `输出结构：${outputShape}`,
       `请求：${JSON.stringify(request)}`,
+      `已校验来源：${JSON.stringify(sources)}`,
+    ].join('\n');
+  }
+
+  private buildExplorePlanPrompt(handoff: HandoffContext, requestId: string): string {
+    return [
+      '你正在执行 Catnip Forge Explore 只计划任务。',
+      '只能依据下方 Handoff 生成计划；不得调用工具、修改文件、执行命令、Build、Flash、Serial 或操作硬件。',
+      '最终只能返回一个没有 Markdown 围栏、没有前后说明的 JSON 对象。',
+      `requestId 必须原样返回：${requestId}`,
+      '输出结构：{"schemaVersion":1,"requestId":"<same requestId>","mode":"plan","plan":{"summary":"...","steps":[{"id":"...","title":"...","detail":"..."}],"risks":["..."]}}',
+      `Handoff：${JSON.stringify(handoff)}`,
     ].join('\n');
   }
 
@@ -1026,7 +1084,7 @@ export class Orchestrator {
   stop(): void {
     logger.info('task:state', { action: 'stop' });
     const stoppedTaskId = this.currentTaskId;
-    if (this.currentTask && this.currentExecutionProfile !== 'explore_analysis') {
+    if (this.currentTask && !isRestrictedExploreProfile(this.currentExecutionProfile)) {
       appendClaudeSessionTurn({
         user: this.currentUserTurns.length ? this.currentUserTurns.join('\n\n追加要求：\n') : this.currentTask,
         assistant: this.currentAgentTranscript || '[Worker] 任务已停止',

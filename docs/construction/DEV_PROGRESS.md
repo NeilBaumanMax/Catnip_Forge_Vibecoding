@@ -94,3 +94,5 @@ Phase 3 进行中。已完成第五页签“探索”、仅含“找灵感 / 解
 - 本次官方 status 复核：CLI installed/compatible=true，auth.configured=false；远端更新检查为 unavailable/network error，因此不能声称当前版本是最新版。没有执行搜索、凭证配置、DeepSeek 或硬件操作。
 
 Phase 3b1 软件实现完成：探索页可发起零参数连接动作，Main 打开固定知乎个人中心并启动独立遮蔽输入窗口，宿主脚本只经 stdin 调官方鉴权入口；页面/IPC/Agent 不接触 Secret。typecheck、连接专项、Explore UI 通过；未输入真实 Secret，live 状态保持 pending。
+
+Phase 3b2 已完成软件接线并进入 Phase 3c：Main 只开放官方知乎/全网搜索，校验来源后交给受限分析；页面展示 Idea/Diagnosis、原始来源并可交给 Catnip。3c 已实现结构化 Handoff 和无工具只计划档位，计划可展示；“确认并执行”保持禁用，留给后续执行闭环。真实搜索/模型仍待 Secret 与 DeepSeek 恢复。

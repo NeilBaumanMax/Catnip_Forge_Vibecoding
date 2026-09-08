@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { AddVerificationRecordInput, ExploreRequest, SaveKnowledgeCardInput } from '../common/explore';
+import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreRequest, HandoffContext, SaveKnowledgeCardInput } from '../common/explore';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getStartupStatus: () => ipcRenderer.invoke('startup:status'),
@@ -56,6 +56,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getExploreZhihuStatus: () => ipcRenderer.invoke('explore:zhihu:status'),
   beginExploreZhihuConnection: () => ipcRenderer.invoke('explore:zhihu:connect'),
   prepareExploreRequest: (request: ExploreRequest) => ipcRenderer.invoke('explore:request:prepare', request),
+  startExploreAnalysis: (request: ExploreRequest) => ipcRenderer.invoke('explore:analysis:start', request),
+  onExploreAnalysisResult: (cb: (result: ExploreAnalysisResult) => void) => {
+    ipcRenderer.on('explore:analysis:result', (_event, result) => cb(result));
+  },
+  onExploreAnalysisError: (cb: (result: { mode: 'analysis' | 'plan'; message: string }) => void) => {
+    ipcRenderer.on('explore:analysis:error', (_event, result) => cb(result));
+  },
+  startExplorePlan: (handoff: HandoffContext) => ipcRenderer.invoke('explore:handoff:plan', handoff),
   isWorkbenchSmokeTest: process.env.VIBEIDE_SMOKE_WORKBENCH_OPEN === '1',
   finishWorkbenchSmokeTest: (result: unknown) => ipcRenderer.invoke('smoke:workbench:finish', result),
   activateBrowserTab: (id: string) => ipcRenderer.invoke('browser:activateTab', id),

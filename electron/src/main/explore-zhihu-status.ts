@@ -38,14 +38,14 @@ export function mapOfficialZhihuStatus(payload: unknown): ExploreZhihuConnection
   return { state: 'connected', installed, compatible, authConfigured, message: '知乎开放平台已连接' };
 }
 
-function systemPowerShell(): string {
+export function systemPowerShell(): string {
   const systemRoot = process.env.SystemRoot || process.env.WINDIR;
   return systemRoot
     ? path.join(systemRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe')
     : 'powershell.exe';
 }
 
-function statusEnvironment(): NodeJS.ProcessEnv {
+export function exploreZhihuEnvironment(): NodeJS.ProcessEnv {
   const allowed = [
     'SystemRoot', 'WINDIR', 'ComSpec', 'PATH', 'PATHEXT',
     'TEMP', 'TMP', 'LOCALAPPDATA', 'APPDATA', 'USERPROFILE', 'HOMEDRIVE', 'HOMEPATH',
@@ -66,7 +66,7 @@ export async function readExploreZhihuConnectionStatus(): Promise<ExploreZhihuCo
   return new Promise((resolve) => {
     const child = spawn(systemPowerShell(), ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', scriptPath, 'status'], {
       cwd: path.dirname(scriptPath),
-      env: statusEnvironment(),
+      env: exploreZhihuEnvironment(),
       windowsHide: true,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
@@ -128,7 +128,7 @@ export function buildExploreZhihuConnectionLaunch(): {
     ],
     options: {
       cwd: path.dirname(hostScript),
-      env: statusEnvironment(),
+      env: exploreZhihuEnvironment(),
       windowsHide: false,
       detached: true,
       stdio: 'ignore',

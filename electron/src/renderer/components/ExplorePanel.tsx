@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import type { ExploreContextItem, ExploreRequest, ExploreZhihuConnectionStatus } from '../../common/explore';
+import type { ExploreAnalysisResult, ExploreContextItem, ExploreRequest, HandoffContext, IdeaResult, ExploreZhihuConnectionStatus } from '../../common/explore';
 
 type ExploreView = 'home' | 'idea' | 'diagnosis';
 
@@ -26,6 +26,11 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const [connection, setConnection] = useState<ExploreZhihuConnectionStatus | null>(null);
   const [checkingConnection, setCheckingConnection] = useState(false);
   const [startingConnection, setStartingConnection] = useState(false);
+  const [analysisPending, setAnalysisPending] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<ExploreAnalysisResult | null>(null);
+  const [analysisRequest, setAnalysisRequest] = useState<ExploreRequest | null>(null);
+  const [planResult, setPlanResult] = useState<Extract<ExploreAnalysisResult, { mode: 'plan' }> | null>(null);
+  const [planPending, setPlanPending] = useState(false);
 
   const contextOptions = useMemo<ContextOption[]>(() => [
     {
@@ -64,6 +69,22 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
 
   useEffect(() => {
     void refreshConnection();
+    window.electronAPI.onExploreAnalysisResult((result) => {
+      if (result.mode === 'plan') {
+        setPlanResult(result);
+        setPlanPending(false);
+        setNotice('执行计划已生成。确认执行功能将在后续执行闭环开放。');
+      } else {
+        setAnalysisResult(result);
+        setAnalysisPending(false);
+        setNotice('分析完成，以下结论均保留原始来源。');
+      }
+    });
+    window.electronAPI.onExploreAnalysisError((error) => {
+      setAnalysisPending(false);
+      setPlanPending(false);
+      setNotice(error.message);
+    });
   }, []);
 
   const beginConnection = async () => {
@@ -109,13 +130,48 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
     };
     try {
       const prepared = await window.electronAPI.prepareExploreRequest(request);
-      if (prepared.state === 'ready') {
-        setNotice(`${prepared.message} 当前 Agent 检索编排尚未恢复，本次没有发起搜索。`);
-      } else {
+      if (prepared.state !== 'ready') {
         setNotice(`${prepared.message} 本次没有发起搜索。`);
+        return;
       }
+      setAnalysisPending(true);
+      setAnalysisResult(null);
+      setPlanResult(null);
+      setAnalysisRequest(prepared.request);
+      const started = await window.electronAPI.startExploreAnalysis(prepared.request);
+      setNotice(`已取得 ${started.sourceCount} 条来源，Catnip 正在形成判断。`);
     } catch (error) {
+      setAnalysisPending(false);
       setNotice(error instanceof Error ? error.message : '无法准备探索请求');
+    }
+  };
+
+  const beginPlan = async (selectedIdea?: IdeaResult) => {
+    if (!analysisRequest || !analysisResult || analysisResult.mode === 'plan') return;
+    const diagnosis = analysisResult.mode === 'diagnosis' ? analysisResult.diagnosis : undefined;
+    const sources = selectedIdea?.sources || (diagnosis
+      ? diagnosis.hypotheses.flatMap((item) => [...item.communitySources, ...item.externalSources])
+      : []);
+    const handoff: HandoffContext = {
+      id: crypto.randomUUID(),
+      kind: selectedIdea ? 'idea' : 'investigation',
+      status: 'planning',
+      originalGoal: analysisRequest.goal,
+      environment: analysisRequest.context.items,
+      selectedIdea,
+      diagnosis,
+      sources,
+      suggestedFirstStep: selectedIdea?.implementationDirection || diagnosis?.hypotheses[0]?.nextValidation || '先核对现有工程和硬件状态',
+      createdAt: new Date().toISOString(),
+    };
+    setPlanPending(true);
+    setPlanResult(null);
+    try {
+      await window.electronAPI.startExplorePlan(handoff);
+      setNotice('已交给 Catnip，正在生成只读执行计划。');
+    } catch (error) {
+      setPlanPending(false);
+      setNotice(error instanceof Error ? error.message : '无法生成执行计划');
     }
   };
 
@@ -212,12 +268,66 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
         )}
 
         <div className="explore-submit-row">
-          <button className="nes-btn is-primary" type="submit" disabled={!(isIdea ? goal.trim() : problem.trim())}>
-            {isIdea ? '形成可实现的 Idea' : '分析当前问题'}
+          <button className="nes-btn is-primary" type="submit" disabled={analysisPending || !(isIdea ? goal.trim() : problem.trim())}>
+            {analysisPending ? '正在分析...' : isIdea ? '形成可实现的 Idea' : '分析当前问题'}
           </button>
           <span>分析阶段不会修改文件、Build、Flash 或操作串口。</span>
         </div>
         {notice ? <div className="explore-connection-notice" role="status">{notice}</div> : null}
+        {analysisResult?.mode === 'idea' && (
+          <div className="explore-results">
+            {analysisResult.ideas.map((idea) => (
+              <article className="explore-result-card" key={idea.id}>
+                <h3>{idea.title}</h3>
+                <p>{idea.value}</p>
+                <p><strong>怎么实现：</strong>{idea.implementationDirection}</p>
+                <p><strong>与当前条件的匹配：</strong>{idea.compatibility}</p>
+                <div className="explore-source-list">
+                  {idea.sources.map((source) => (
+                    <a key={source.url} href={source.url} onClick={(event) => { event.preventDefault(); void window.electronAPI.navigateBrowser(source.url); }}>
+                      {source.title}{source.author ? ` · ${source.author}` : ''}
+                    </a>
+                  ))}
+                </div>
+                <button type="button" className="nes-btn" onClick={() => void beginPlan(idea)} disabled={planPending}>
+                  {planPending ? '正在生成计划...' : '交给 Catnip'}
+                </button>
+              </article>
+            ))}
+          </div>
+        )}
+        {analysisResult?.mode === 'diagnosis' && (
+          <div className="explore-results">
+            <h3>{analysisResult.diagnosis.problem}</h3>
+            {analysisResult.diagnosis.hypotheses.map((hypothesis) => (
+              <article className="explore-result-card" key={hypothesis.id}>
+                <h3>{hypothesis.statement}</h3>
+                <p>{hypothesis.priorityReason}</p>
+                <p><strong>下一步验证：</strong>{hypothesis.nextValidation}</p>
+                <div className="explore-source-list">
+                  {[...hypothesis.communitySources, ...hypothesis.externalSources].map((source) => (
+                    <a key={source.url} href={source.url} onClick={(event) => { event.preventDefault(); void window.electronAPI.navigateBrowser(source.url); }}>{source.title}</a>
+                  ))}
+                </div>
+              </article>
+            ))}
+            <button type="button" className="nes-btn" onClick={() => void beginPlan()} disabled={planPending}>
+              {planPending ? '正在生成计划...' : '交给 Catnip'}
+            </button>
+          </div>
+        )}
+        {planResult && (
+          <section className="explore-plan-result">
+            <h3>Catnip 执行计划</h3>
+            <p>{planResult.plan.summary}</p>
+            <ol>
+              {planResult.plan.steps.map((step) => <li key={step.id}><strong>{step.title}</strong><p>{step.detail}</p></li>)}
+            </ol>
+            {planResult.plan.risks.length > 0 && <p><strong>风险：</strong>{planResult.plan.risks.join('；')}</p>}
+            <button type="button" className="nes-btn is-primary" disabled>确认并执行（将在执行闭环开放）</button>
+            <p>当前只生成计划，没有修改文件、Build、Flash 或操作串口。</p>
+          </section>
+        )}
       </form>
     </section>
   );

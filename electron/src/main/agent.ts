@@ -33,7 +33,7 @@ let agentSeq = 0;
 let agentMcpConfigPath: string | null = null;
 let agentExecutionProfile: AgentExecutionProfile | null = null;
 
-export type AgentExecutionProfile = 'default' | 'explore_analysis';
+export type AgentExecutionProfile = 'default' | 'explore_analysis' | 'explore_plan';
 
 export function ensureAgentProcess(profile: AgentExecutionProfile = 'default'): ChildProcess {
   if (agentProcess && !agentProcess.killed && agentProcess.exitCode == null && agentExecutionProfile === profile) {
@@ -66,8 +66,10 @@ export function ensureAgentProcess(profile: AgentExecutionProfile = 'default'): 
   }
 
   const systemPrompt = profile === 'explore_analysis'
-    ? `${buildAgentSystemPrompt()}\n\n当前任务是 Explore 只分析档位。只能读取和形成结构化判断；不得修改文件、执行命令、操作浏览器、调用 Runtime/Hardboard、Build、Flash 或 Serial。`
-    : buildAgentSystemPrompt();
+    ? `${buildAgentSystemPrompt()}\n\n当前任务是 Explore 只分析档位。只能依据已提供的请求和来源形成结构化判断；不得修改文件、执行命令、操作浏览器、调用 Runtime/Hardboard、Build、Flash 或 Serial。`
+    : profile === 'explore_plan'
+      ? `${buildAgentSystemPrompt()}\n\n当前任务是 Explore 只计划档位。只能依据已提供的 Handoff 生成结构化执行计划；不得调用任何工具、修改文件、执行命令、操作浏览器、调用 Runtime/Hardboard、Build、Flash 或 Serial。`
+      : buildAgentSystemPrompt();
   const args = buildAgentLaunchArgs(profile, mcpConfigPath, systemPrompt);
 
   logger.info('agent:spawn', {
@@ -183,7 +185,7 @@ export function buildAgentLaunchArgs(
     '--bare',
     '--permission-mode', 'plan',
     '--strict-mcp-config',
-    '--tools', 'Skill',
+    '--tools', profile === 'explore_analysis' ? 'Skill' : '',
     '--json-schema', JSON.stringify(EXPLORE_ANALYSIS_JSON_SCHEMA),
   );
   return args;
@@ -234,7 +236,7 @@ function buildAgentEnv(): NodeJS.ProcessEnv {
  *           （该 flag 让 Node.js 在 ESM 模式不要求 .js 后缀）
  */
 export function buildAgentMcpConfig(profile: AgentExecutionProfile): { mcpServers: Record<string, unknown> } {
-  if (profile === 'explore_analysis') return { mcpServers: {} };
+  if (profile !== 'default') return { mcpServers: {} };
   const runtimeDir = getRuntimeDir();
   const tsxCli = path.join(runtimeDir, 'node_modules', 'tsx', 'dist', 'cli.mjs');
   const devServerEntry = getRuntimeDevServerEntry();

@@ -191,3 +191,4 @@
 - 本提交只新增基线并同步计划/接力/日志；没有业务源码、Secret、DeepSeek、搜索或硬件操作。提交与远端结果在执行后动态核对。
 - 基线检查前两次因断言文案过窄失败：先要求精确“不得修改官方”，后又要求本闭环明确排除的 `search zhihu` 字面量；均未改业务文件。改为检查“Renderer 零参数、不执行知乎/全网搜索、不修改官方 vendor、stdin、可见窗口”五项实际语义后通过。
 - Phase 3b1 实现：新增宿主遮蔽输入脚本、无参数连接 IPC/类型和页面按钮；Main 只打开固定个人中心并启动可见窗口。Review 补充异步 spawn error 处理、首页结果提示，并将 Secret 写入改为 .NET 子进程 StandardInput，避免 Windows PowerShell 管道编码损坏不透明凭证。typecheck、连接专项、Explore UI 共 3 项通过；未真实配置或搜索。
+- Phase 3b2/3c 实现：新增固定参数搜索桥、来源清洗与已搜索 URL 约束、分析/结果 IPC 和 UI；新增结构化计划结果、Handoff IPC、`explore_plan` 空工具/空 MCP 档位及计划展示。确认执行按钮保持禁用。task-queue 首次失败定位为旧对象无 profile 被误判受限，改为只识别两个显式受限档位后通过；一次误用普通 Node 启动 Electron 专项失败，改用 npm 命令通过。最终关键测试通过，未调用真实 Secret、知乎 API、DeepSeek 或硬件。
