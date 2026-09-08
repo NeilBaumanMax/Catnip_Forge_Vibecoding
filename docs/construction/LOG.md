@@ -192,3 +192,10 @@
 - 基线检查前两次因断言文案过窄失败：先要求精确“不得修改官方”，后又要求本闭环明确排除的 `search zhihu` 字面量；均未改业务文件。改为检查“Renderer 零参数、不执行知乎/全网搜索、不修改官方 vendor、stdin、可见窗口”五项实际语义后通过。
 - Phase 3b1 实现：新增宿主遮蔽输入脚本、无参数连接 IPC/类型和页面按钮；Main 只打开固定个人中心并启动可见窗口。Review 补充异步 spawn error 处理、首页结果提示，并将 Secret 写入改为 .NET 子进程 StandardInput，避免 Windows PowerShell 管道编码损坏不透明凭证。typecheck、连接专项、Explore UI 共 3 项通过；未真实配置或搜索。
 - Phase 3b2/3c 实现：新增固定参数搜索桥、来源清洗与已搜索 URL 约束、分析/结果 IPC 和 UI；新增结构化计划结果、Handoff IPC、`explore_plan` 空工具/空 MCP 档位及计划展示。确认执行按钮保持禁用。task-queue 首次失败定位为旧对象无 profile 被误判受限，改为只识别两个显式受限档位后通过；一次误用普通 Node 启动 Electron 专项失败，改用 npm 命令通过。最终关键测试通过，未调用真实 Secret、知乎 API、DeepSeek 或硬件。
+
+## 2026-09-08 / DeepSeek 余额恢复复测
+
+- 用户明确说明 DeepSeek 已充值并恢复重试授权。Git 起点为 `idea_to_production`，local/remote 均为 `0ee83a31e832a0f392557946e7a1245d19836bd6`；Key 文件存在但内容未输出。
+- 第一次 CLI 试验因内联空 MCP JSON 被 Windows 参数解析成文件路径，在网络请求前失败；第二次产品档位烟测因测试输出与 Explore plan schema 冲突而超时，均不能用于判断余额。
+- 纠正 schema 后，复用产品现有 `explore_plan` Agent 启动逻辑，以 `deepseek-v4-pro`、`--bare`、plan 权限、空工具和空 MCP 完成真实调用；收到合法 `structured_output`，exit 0，HTTP 402 未复现。临时烟测文件已删除，没有业务源码改动。
+- `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE` 解除。未配置或读取知乎 Access Secret，未调用知乎搜索、Build、Flash、Serial 或硬件；`LIVE_INTEGRATION_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保持。

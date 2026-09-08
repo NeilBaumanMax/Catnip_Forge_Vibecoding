@@ -192,3 +192,12 @@ Phase 1核心检查2通过、0失败、4组未验证。不把CLI未就绪检查�
 Phase 3b1：`typecheck`、`verify:explore-zhihu-connection`、`verify:explore-ui` 共 3 项通过，0 最终失败。未执行真实凭证配置或业务 API。
 
 Phase 3b2/3c：`verify:explore-search-handoff`、`verify:explore-analysis-gate`、typecheck、build:main、build:renderer、Explore UI、task-queue 最终通过。task-queue 首次暴露未声明档位被误判为受限并已修复；一次用普通 Node 启动 Electron 专项失败属于测试启动命令错误，改用 npm 专项后通过。真实搜索与模型未验证。
+
+## 2026-09-08 DeepSeek 余额恢复复测
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run build:main` | 通过 | 当前主进程源码编译通过 |
+| 产品 `explore_plan` 受限档位真实调用 | 通过 | `deepseek-v4-pro`；空工具、空 MCP；合法结构化计划；exit 0；未出现 HTTP 402 |
+
+首次两次试验未形成有效 API 结论：第一次把内联 MCP JSON 当成路径，CLI 在请求前拒绝；第二次烟测输出与产品 plan schema 冲突并超时。纠正为真实 plan schema 后通过。`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE` 解除；知乎搜索仍为 `LIVE_INTEGRATION_PENDING`，硬件仍为 `REAL_HARDWARE_VALIDATION_PENDING`。

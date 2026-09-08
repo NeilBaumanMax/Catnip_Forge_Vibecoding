@@ -53,7 +53,7 @@ D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探�
 ## Blocker、Known Issues 与真实验证
 
 - `LIVE_INTEGRATION_PENDING`：没有获取或配置用户 Access Secret，Explore 也尚无安全配置入口；未执行真实知乎/全网搜索。2026-09-08 最近一次官方 status 仍为 installed/compatible=true、auth.configured=false，本次远端更新检查因网络不可用，不能宣称本地为最新版。
-- `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`：两次受限 smoke 都在 tool use 前返回 HTTP 402；用户已禁止重试。
+- `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE` 已解除：用户确认充值后，产品现有 `explore_plan` 档位以 `deepseek-v4-pro`、空工具和空 MCP 完成真实调用，返回合法 `structured_output`，退出码 0；本次没有调用知乎或硬件。
 - `REAL_HARDWARE_VALIDATION_PENDING`：未执行本轮真实 Build/Flash/Serial，不能声称硬件闭环完成。
 - Phase 6 的真实 Windows package、冷启动和 packaged Skill status 未执行。
 - Phase 0 的两次 Python pytest 均因环境缺 pytest，未进入断言；不得写成测试通过。
