@@ -19,7 +19,7 @@
 - Phase 1：离线宿主集成完成。官方 `zhihu` Skill 的 15 个 vendor 文件已保真导入、完整部署并进入 `@zhihu`/打包契约；官方 CLI 安装在 `D:\ZhihuCLI`。Skill 本身还支持热榜、直答、本人创作/关注/收藏、官方知识库和额度查询，但探索 MVP 只选用状态检查、知乎搜索和全网搜索；真实搜索和 Agent Skill 调用仍未验收。
 - Phase 2：完成。共享 Domain、运行时校验、Main JSON 知识 Store、五个知识 IPC、相关发现与显式选择已实现。
 - Phase 3：软件闭环完成。连接入口、固定知乎/全网搜索桥、受限分析、Idea/Diagnosis UI、结构化 Handoff 和无工具只计划档位已实现；DeepSeek 真实计划输出通过，真实知乎搜索按用户要求暂缓，“确认并执行”尚未开放。
-- Phase 4：进行中，4a 有界 Context 收集已实现并通过专项回归。Phase 5–6 未开始。
+- Phase 4：进行中，4a 有界 Context 收集与 4b 监视器/失败任务诊断入口已实现并通过专项回归。Phase 5–6 未开始。
 
 ## 当前实现边界
 
@@ -32,9 +32,9 @@
 知识数据位于 Electron `userData/explore/knowledge.json`；历史知识只发现，显式选择后才进入 Context。该本地 Store 与知乎官方 Knowledge Base 不同，MVP 不调用后者。
 ## 下一步 1–3 项
 
-1. 完成 Phase 4a 提交与远端核对。
-2. 实现 4b：从监视器和失败任务带入有界 Context，进入现有“解问题”流程。
-3. 复核已提前完成的双搜索 Diagnosis 后，进入 4d 同队列确认执行；真实知乎搜索继续按用户要求暂缓。
+1. 完成 Phase 4b 提交与远端核对。
+2. 进入 4d：复用同一 Worker 队列实现“确认并执行”的程序门禁和执行状态。
+3. 保持 4c 真实知乎验收暂缓；没有实机证据时继续标记硬件验证待完成。
 
 ## Decision 与 Assumption
 
@@ -43,7 +43,7 @@ D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探�
 - A1 TESTING：复用单队列/persistent Agent 的受限档位和内部返回通道已通过离线拒绝测试；真实模型进程仍未验证。
 - A2 TESTING：版本化 Idea/Diagnosis envelope、requestId/mode/来源校验和非法 UI 抑制已实现；真实模型结构化输出仍未验证。
 - A3 CONFIRMED：原子 JSON Store 的保存、重启、损坏保护和选择语义已验证。
-- A4/A5 TESTING：相关源码及 Build/Serial 的项目、时间和读取上限仍待 Phase 4。
+- A4/A5 TESTING：有界源码、同工程/时间 Runtime 与共享串口读取已通过软件反例；真实硬件归属仍待实机。
 - A6 TESTING：开发机 CLI/status 与 builder 规则通过；真实成品未验证。
 - A7 TESTING：安全连接入口已实现且 Secret 不经过 Renderer/Chat；官方 status 仍为 `auth.configured=false`，用户要求暂不做真实配置与搜索。
 - A8 UNVERIFIED：未选定并实测比赛硬件故障。
@@ -51,7 +51,7 @@ D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探�
 
 ## Blocker、Known Issues 与真实验证
 
-- `LIVE_INTEGRATION_PENDING`：没有获取或配置用户 Access Secret，Explore 也尚无安全配置入口；未执行真实知乎/全网搜索。2026-09-08 最近一次官方 status 仍为 installed/compatible=true、auth.configured=false，本次远端更新检查因网络不可用，不能宣称本地为最新版。
+- `LIVE_INTEGRATION_PENDING`：没有获取或配置用户 Access Secret；Explore 已有独立安全连接入口，但按用户要求暂不测试，未执行真实知乎/全网搜索。2026-09-08 最近一次官方 status 仍为 installed/compatible=true、auth.configured=false。
 - `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE` 已解除：用户确认充值后，产品现有 `explore_plan` 档位以 `deepseek-v4-pro`、空工具和空 MCP 完成真实调用，返回合法 `structured_output`，退出码 0；本次没有调用知乎或硬件。
 - `REAL_HARDWARE_VALIDATION_PENDING`：未执行本轮真实 Build/Flash/Serial，不能声称硬件闭环完成。
 - Phase 6 的真实 Windows package、冷启动和 packaged Skill status 未执行。

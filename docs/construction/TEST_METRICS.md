@@ -212,3 +212,6 @@ Phase 3b2/3c：`verify:explore-search-handoff`、`verify:explore-analysis-gate`�
 | `git diff --check` | 通过 | 无 whitespace error |
 
 首次专项失败：测试把“最多 6 个源码候选”写成“必须正好 6 个”，实际 32 KiB 总上限先触发并正确返回 5 个；修正错误断言后通过。首次 typecheck 启动前另有一次 package.json 字面换行导致 EJSONPARSE，修复编辑错误后 JSON 与 typecheck 通过。未调用知乎、DeepSeek 或硬件。
+## 2026-09-08 Phase 4b 监视器/失败任务诊断入口
+
+verify:explore-entry、Electron typecheck、Renderer build、Explore UI 回归和 git diff --check 均通过。Renderer 共转换 1262 modules，只有既有大 chunk warning。Review 修复了手动重开探索时重复载入旧诊断的问题；入口只预填可编辑元数据，原始串口文本不直接塞入问题描述，详细证据仍由可取消 Context 控制。未调用知乎、DeepSeek 或硬件。

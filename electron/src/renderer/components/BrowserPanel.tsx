@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom';
 import WorkspacePanel from './WorkspacePanel';
 import CodeEditor from './CodeEditor';
-import ExplorePanel from './ExplorePanel';
+import ExplorePanel, { type ExploreDiagnosisSeed } from './ExplorePanel';
 import type { BrowserTab, HardboardDevice, HardboardRuntimeState, RecordingSummary, RuntimeEvent, SerialMonitorEvent, SerialMonitorSnapshot, WorkbenchItem, WorkbenchOverview } from '../types';
 
 interface Props {
@@ -286,6 +286,7 @@ export default function BrowserPanel({
   const [explorerMessage, setExplorerMessage] = useState('');
   const [explorerContextMenu, setExplorerContextMenu] = useState<ExplorerContextMenu | null>(null);
   const [explorerDialog, setExplorerDialog] = useState<ExplorerDialog | null>(null);
+  const [exploreDiagnosisSeed, setExploreDiagnosisSeed] = useState<ExploreDiagnosisSeed | null>(null);
   const [editorFontSize, setEditorFontSize] = useState(() => {
     const stored = Number(window.localStorage.getItem(EDITOR_FONT_SIZE_KEY));
     return Number.isFinite(stored) && stored >= EDITOR_FONT_SIZE_MIN && stored <= EDITOR_FONT_SIZE_MAX ? stored : 13;
@@ -818,6 +819,35 @@ export default function BrowserPanel({
     setRuntimeCard('full');
   };
 
+  const openExploreHome = () => {
+    setExploreDiagnosisSeed(null);
+    setMode('explore');
+  };
+
+  const openExploreDiagnosis = (problem: string, diagnosisProjectDir?: string) => {
+    if (diagnosisProjectDir) setProjectDir(relativeProjectPath(diagnosisProjectDir));
+    setExploreDiagnosisSeed({ id: Date.now(), problem });
+    setMode('explore');
+  };
+
+  const analyzeSerialProblem = () => {
+    const port = serialPort || selectedDevicePort || '尚未选择端口';
+    const state = serialRunning ? '当前已打开' : '当前未打开';
+    const visibleCharacters = serialText.length;
+    openExploreDiagnosis(
+      `请分析当前串口问题。端口：${port}；状态：${state}；接收区当前有 ${visibleCharacters} 个字符。请结合我勾选的工程、最近串口片段和运行记录判断原因，并给出下一步验证方法。`
+    );
+  };
+
+  const analyzeFailedTask = (task: TaskHistoryItem) => {
+    const operation = task.kind === 'hardboard.build' ? 'Build（编译）' : 'Flash（烧录）';
+    const port = task.port ? `；端口：${task.port}` : '';
+    openExploreDiagnosis(
+      `请分析这次 ${operation} 失败。工程：${relativeProjectPath(task.projectDir)}${port}；退出码：${task.exitCode ?? '未记录'}。请结合我勾选的对应任务记录和工程源码判断原因，并给出下一步验证方法。`,
+      task.projectDir
+    );
+  };
+
   const clearRuntimeHistory = async () => {
     if (clearingRuntimeHistory) return;
 
@@ -877,7 +907,7 @@ export default function BrowserPanel({
         <button data-tour-id="tab-monitor" type="button" role="tab" aria-selected={mode === 'monitor'} className={`nes-btn${mode === 'monitor' ? ' is-primary' : ''}`} onClick={() => setMode('monitor')}>监视器</button>
         <button data-tour-id="tab-tasks" type="button" role="tab" aria-selected={mode === 'tasks'} className={`nes-btn${mode === 'tasks' ? ' is-primary' : ''}`} onClick={() => setMode('tasks')}>任务管理器</button>
         <button data-tour-id="tab-editor" type="button" role="tab" aria-selected={mode === 'editor'} className={`nes-btn${mode === 'editor' ? ' is-primary' : ''}`} onClick={() => setMode('editor')}>编辑器</button>
-        <button data-tour-id="tab-explore" type="button" role="tab" aria-selected={mode === 'explore'} className={`nes-btn${mode === 'explore' ? ' is-primary' : ''}`} onClick={() => setMode('explore')}>探索</button>
+        <button data-tour-id="tab-explore" type="button" role="tab" aria-selected={mode === 'explore'} className={`nes-btn${mode === 'explore' ? ' is-primary' : ''}`} onClick={openExploreHome}>探索</button>
         <span className="ui-build-label">{UI_BUILD_LABEL}</span>
       </div>
 
@@ -971,6 +1001,7 @@ export default function BrowserPanel({
           currentProject={projectDir || runtimeState?.activeProjectDir || ''}
           hardwareSummary={hardboardDevices.length ? `已检测到 ${hardboardDevices.length} 个设备` : '未检测到开发板'}
           runtimeSummary={runtimeState && runtimeState.status !== 'idle' ? `${runtimeState.phase} · ${runtimeState.status}` : '暂无运行记录'}
+          diagnosisSeed={exploreDiagnosisSeed}
         />
       ) : null}
 
@@ -987,6 +1018,7 @@ export default function BrowserPanel({
                 <span className={`serial-status${serialRunning ? ' serial-status--active' : ''}`} aria-live="polite">
                   <i aria-hidden="true" />{serialRunning ? `${serialPort} 已打开` : '串口未打开'}
                 </span>
+                <button className="serial-secondary-button" data-tour-id="monitor-analyze-problem" type="button" onClick={analyzeSerialProblem}>分析串口问题</button>
                 <button className="serial-secondary-button" type="button" onClick={() => void window.electronAPI?.clearSerialMonitor?.()}>清空接收区</button>
               </div>
             </fieldset>
@@ -1179,7 +1211,12 @@ export default function BrowserPanel({
                     <span>{new Date(task.startedAt).toLocaleTimeString('zh-CN', { hour12: false })}</span>
                     <span>{taskDuration(task)}</span>
                     <span>{task.exitCode ?? (task.status === 'failed' ? 'error' : '—')}</span>
-                    <button className="nes-btn" type="button" onClick={() => showTaskLog(task)}>查看</button>
+                    <div className="task-history-row-actions">
+                      <button className="nes-btn" type="button" onClick={() => showTaskLog(task)}>查看</button>
+                      {task.status === 'failed' ? (
+                        <button className="nes-btn is-warning" data-tour-id="task-analyze-problem" type="button" onClick={() => analyzeFailedTask(task)}>分析</button>
+                      ) : null}
+                    </div>
                   </div>
                 )) : (
                   <div className="task-history-empty">暂无编译或烧录记录。选择工程后执行 Build / Flash，结果会显示在这里。</div>

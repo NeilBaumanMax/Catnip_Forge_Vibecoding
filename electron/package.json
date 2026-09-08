@@ -36,6 +36,7 @@
     "verify:explore-analysis-gate": "npm run build:main && node node_modules/electron/cli.js scripts/verify_explore_analysis_gate.cjs",
     "verify:explore-search-handoff": "npm run build:main && node node_modules/electron/cli.js scripts/verify_explore_search_handoff.cjs",
     "verify:explore-context": "npm run build:main && node node_modules/electron/cli.js scripts/verify_explore_context.cjs",
+    "verify:explore-entry": "node scripts/verify_explore_entry.cjs",
     "verify:release": "node scripts/verify_win_unpacked_release.cjs",
     "verify:first-run": "node scripts/verify_packaged_first_run.cjs",
     "verify:first-run-restart": "node scripts/verify_first_run_restart.cjs",

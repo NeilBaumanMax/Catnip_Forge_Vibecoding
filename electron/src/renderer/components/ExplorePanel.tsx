@@ -7,6 +7,12 @@ interface Props {
   currentProject: string;
   hardwareSummary: string;
   runtimeSummary: string;
+  diagnosisSeed?: ExploreDiagnosisSeed | null;
+}
+
+export interface ExploreDiagnosisSeed {
+  id: number;
+  problem: string;
 }
 
 interface ContextOption {
@@ -17,7 +23,7 @@ interface ContextOption {
   available: boolean;
 }
 
-export default function ExplorePanel({ currentProject, hardwareSummary, runtimeSummary }: Props) {
+export default function ExplorePanel({ currentProject, hardwareSummary, runtimeSummary, diagnosisSeed }: Props) {
   const [view, setView] = useState<ExploreView>('home');
   const [goal, setGoal] = useState('');
   const [problem, setProblem] = useState('');
@@ -34,6 +40,18 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const [gatheredContext, setGatheredContext] = useState<ExploreContextGatherResult | null>(null);
   const [contextLoading, setContextLoading] = useState(false);
   const [contextError, setContextError] = useState('');
+
+  useEffect(() => {
+    if (!diagnosisSeed) return;
+    setView('diagnosis');
+    setProblem(diagnosisSeed.problem);
+    setNotice('已从工作区带入问题线索。请核对描述和 Context 后再开始分析。');
+    setAnalysisPending(false);
+    setAnalysisResult(null);
+    setAnalysisRequest(null);
+    setPlanResult(null);
+    setPlanPending(false);
+  }, [diagnosisSeed]);
 
   const fallbackContextOptions = useMemo<ContextOption[]>(() => [
     {
