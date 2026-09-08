@@ -33,9 +33,9 @@ Access Secret 是每个用户自己的知乎开放平台 API 凭证，用于鉴�
 
 ## 下一步 1–3 项
 
-1. 下一个业务小闭环先建立独立文档基线：分别设计“宿主安全配置 Access Secret”和“不开放通用 Bash 的官方 CLI 窄搜索桥”；未满足凭证边界前不得把 Secret 输入接入 Renderer 或 Chat。
-2. 搜索桥只开放探索 MVP 所需的 `search zhihu`、`search global`，不顺带接热榜、直答、本人数据、官方知识库、额度页或 OAuth；在真实来源可用前保持 Explore 表单不触发 Agent、不展示伪造结果。
-3. 外部条件恢复后做 live 验收：用户通过上述安全流程配置 Access Secret；DeepSeek 只有用户明确允许恢复后才调用。分别验证官方知乎/全网搜索和真实 `Skill(zhihu)`，保留真实来源，再接结果 UI 与 Handoff。
+1. 按 `PHASE_3B1_ZHIHU_CONNECTION_BASELINE.md` 实现宿主安全配置入口：页面不接触 Secret，独立 Windows 遮蔽输入窗口通过官方 CLI stdin 写系统凭证库。
+2. 3b1 独立完成、Review、测试、提交推送后，再为只开放 `search zhihu` / `search global` 的窄搜索桥建立下一份独立基线。
+3. 外部条件恢复后做 live 验收：用户亲自完成安全配置；DeepSeek 只有用户明确允许恢复后才调用。保留真实来源，再接结果 UI 与 Handoff。
 
 ## Decision 与 Assumption
 

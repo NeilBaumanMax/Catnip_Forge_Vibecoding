@@ -19,6 +19,7 @@
 - 只有 3a 的运行时拒绝测试通过后，才能让 Explore 表单触发现有 Agent。当前按钮只准备请求并明确没有搜索。
 - 窄搜索桥只允许官方 `search zhihu` / `search global`，不得顺带开放 Skill 的热榜、直答、本人数据、官方知识库、额度查询或 OAuth。找灵感为知乎必需、全网按需；解问题为两者均必需。
 - 搜索桥之前或同一独立基线中必须解决 Access Secret 配置门禁。当前 Explore 没有安全配置入口；设计必须由宿主持有交互并通过官方 CLI stdin 验证、写系统凭证库，完整值不得进入 Renderer IPC、产品 Chat、日志或 Agent 输出。若无法满足，保持 `LIVE_INTEGRATION_PENDING`，不得以普通输入框临时接通。
+- Phase 3b1 独立基线见 `PHASE_3B1_ZHIHU_CONNECTION_BASELINE.md`：先实现无参数页面动作、固定个人中心 URL 和独立 Windows 遮蔽输入窗口；该闭环不执行搜索。完成后另建搜索桥基线，不把两个外部风险混在同一实现提交。
 
 ## Phase 1 已定位的最小工程范围
 

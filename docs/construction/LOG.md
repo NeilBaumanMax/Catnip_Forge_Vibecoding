@@ -182,3 +182,11 @@
 - 开工首次 Git 命令因 PowerShell 将未加引号的 `@{u}` 解析为哈希字面量而在运行 Git 前失败；加引号后核对 branch/local/upstream 一致。此前两次补丁分别因重复目标声明和 Windows 沙箱 ACL 初始化失败而在写入前拒绝；均无文件改动，不计产品断言失败。
 - 本次只修改施工文档，不修改 Product Truth、业务源码或 vendor。文档检查和 Git 结果随后记录。
 - 文档检查第一次因扫描 `LOG.md` 全文的连续问号而失败，命中的是历史编码事故保留段；根因是断言范围过宽。收窄后，当前文档 UTF-8/关键口径、仅施工文档范围、`git diff --check` 共 3 项通过，0 最终失败；未重复应用构建。
+
+## 2026-09-08 / Phase 3b1 / 安全连接施工基线
+
+- 文档修正提交 `afc22fc8078b274886f5fb838668d30c18a3794f` 已推送，`git ls-remote` 与本地一致，工作区随后干净。
+- 审读官方 `run.ps1` 与 CLI 文档：官方入口支持 `auth set --secret-stdin` 并写操作系统密钥链；当前 Renderer 只有 status/request API。决定先独立完成安全连接入口，再另建窄搜索桥基线。
+- 本基线限定：Renderer 只发零参数动作；Main 打开固定官方 URL 并启动可见宿主 PowerShell；宿主脚本遮蔽输入并只经 stdin 调官方入口。不得改 vendor、不得把 Secret 放进 Renderer/Chat/参数/环境/日志。
+- 本提交只新增基线并同步计划/接力/日志；没有业务源码、Secret、DeepSeek、搜索或硬件操作。提交与远端结果在执行后动态核对。
+- 基线检查前两次因断言文案过窄失败：先要求精确“不得修改官方”，后又要求本闭环明确排除的 `search zhihu` 字面量；均未改业务文件。改为检查“Renderer 零参数、不执行知乎/全网搜索、不修改官方 vendor、stdin、可见窗口”五项实际语义后通过。
