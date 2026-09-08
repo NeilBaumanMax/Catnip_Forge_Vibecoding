@@ -190,3 +190,4 @@
 - 本基线限定：Renderer 只发零参数动作；Main 打开固定官方 URL 并启动可见宿主 PowerShell；宿主脚本遮蔽输入并只经 stdin 调官方入口。不得改 vendor、不得把 Secret 放进 Renderer/Chat/参数/环境/日志。
 - 本提交只新增基线并同步计划/接力/日志；没有业务源码、Secret、DeepSeek、搜索或硬件操作。提交与远端结果在执行后动态核对。
 - 基线检查前两次因断言文案过窄失败：先要求精确“不得修改官方”，后又要求本闭环明确排除的 `search zhihu` 字面量；均未改业务文件。改为检查“Renderer 零参数、不执行知乎/全网搜索、不修改官方 vendor、stdin、可见窗口”五项实际语义后通过。
+- Phase 3b1 实现：新增宿主遮蔽输入脚本、无参数连接 IPC/类型和页面按钮；Main 只打开固定个人中心并启动可见窗口。Review 补充异步 spawn error 处理、首页结果提示，并将 Secret 写入改为 .NET 子进程 StandardInput，避免 Windows PowerShell 管道编码损坏不透明凭证。typecheck、连接专项、Explore UI 共 3 项通过；未真实配置或搜索。

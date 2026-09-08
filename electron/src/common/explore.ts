@@ -118,6 +118,12 @@ export interface ExploreZhihuConnectionStatus {
   message: string;
 }
 
+export interface ExploreZhihuConnectionLaunchResult {
+  ok: boolean;
+  state: 'launched' | 'already_connected' | 'unavailable';
+  message: string;
+}
+
 export interface ExploreSourceStrategy {
   zhihu: 'required';
   web: 'conditional' | 'required';

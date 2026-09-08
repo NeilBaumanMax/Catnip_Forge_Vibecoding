@@ -92,3 +92,5 @@ Phase 3 进行中。已完成第五页签“探索”、仅含“找灵感 / 解
 - Access Secret 是每个用户自己的开放平台 API 凭证，用于鉴权和额度归属，不是知乎登录密码。当前 Explore 只有“重新检查”，没有安全配置入口，不能宣称用户已能在页面完成连接。
 - 后续配置必须由宿主通过官方 CLI stdin 验证并保存到操作系统凭证库；完整 Secret 不得经过 Renderer IPC、产品 Chat、日志、URL、Agent 输出或仓库。此路径与窄搜索桥都要先有独立施工基线和程序门禁。
 - 本次官方 status 复核：CLI installed/compatible=true，auth.configured=false；远端更新检查为 unavailable/network error，因此不能声称当前版本是最新版。没有执行搜索、凭证配置、DeepSeek 或硬件操作。
+
+Phase 3b1 软件实现完成：探索页可发起零参数连接动作，Main 打开固定知乎个人中心并启动独立遮蔽输入窗口，宿主脚本只经 stdin 调官方鉴权入口；页面/IPC/Agent 不接触 Secret。typecheck、连接专项、Explore UI 通过；未输入真实 Secret，live 状态保持 pending。

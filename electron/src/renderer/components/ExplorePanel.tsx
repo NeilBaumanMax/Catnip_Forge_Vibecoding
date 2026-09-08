@@ -25,6 +25,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const [notice, setNotice] = useState('');
   const [connection, setConnection] = useState<ExploreZhihuConnectionStatus | null>(null);
   const [checkingConnection, setCheckingConnection] = useState(false);
+  const [startingConnection, setStartingConnection] = useState(false);
 
   const contextOptions = useMemo<ContextOption[]>(() => [
     {
@@ -64,6 +65,18 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   useEffect(() => {
     void refreshConnection();
   }, []);
+
+  const beginConnection = async () => {
+    setStartingConnection(true);
+    try {
+      const result = await window.electronAPI.beginExploreZhihuConnection();
+      setNotice(result.message);
+    } catch {
+      setNotice('无法启动知乎开放平台安全连接');
+    } finally {
+      setStartingConnection(false);
+    }
+  };
 
   const enter = (next: Exclude<ExploreView, 'home'>) => {
     setView(next);
@@ -110,6 +123,11 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
     <div className={`explore-connection-badge explore-connection-badge--${connection?.state || 'checking'}`}>
       <span>知识来源</span>
       <strong>{checkingConnection ? '正在检查连接...' : connection?.message || '需要先连接知乎开放平台'}</strong>
+      {connection?.state === 'needs_secret' && (
+        <button type="button" onClick={() => void beginConnection()} disabled={startingConnection}>
+          {startingConnection ? '正在打开...' : '连接知乎开放平台'}
+        </button>
+      )}
       <button type="button" onClick={() => void refreshConnection()} disabled={checkingConnection}>重新检查</button>
     </div>
   );
@@ -123,6 +141,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
           <p>从真实开发经验中找到可实现的方向，或为当前硬件问题建立有证据的判断。</p>
         </div>
         {connectionBadge}
+        {notice ? <div className="explore-connection-notice" role="status">{notice}</div> : null}
         <div className="explore-entry-grid">
           <button className="explore-entry-card" type="button" onClick={() => enter('idea')} data-tour-id="explore-idea">
             <span className="explore-entry-index">01</span>

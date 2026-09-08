@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import type { IpcMain } from 'electron';
-import type { ExploreZhihuConnectionStatus } from '../common/explore';
+import { shell } from 'electron';
+import type { ExploreZhihuConnectionLaunchResult, ExploreZhihuConnectionStatus } from '../common/explore';
 import { getAgentDir } from './paths';
 
 interface OfficialStatusPayload {
@@ -15,6 +16,7 @@ interface OfficialStatusPayload {
 
 const MAX_OUTPUT_BYTES = 64 * 1024;
 const STATUS_TIMEOUT_MS = 30_000;
+export const ZHIHU_PROFILE_URL = 'https://developer.zhihu.com/profile';
 
 export function mapOfficialZhihuStatus(payload: unknown): ExploreZhihuConnectionStatus {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
@@ -108,6 +110,67 @@ export async function readExploreZhihuConnectionStatus(): Promise<ExploreZhihuCo
   });
 }
 
+export function buildExploreZhihuConnectionLaunch(): {
+  command: string;
+  args: string[];
+  options: Parameters<typeof spawn>[2];
+} {
+  const agentDir = getAgentDir();
+  const hostScript = path.join(agentDir, 'host-tools', 'configure-zhihu-secret.ps1');
+  const officialRunScript = path.join(agentDir, 'skills', 'zhihu', 'scripts', 'run.ps1');
+  return {
+    command: systemPowerShell(),
+    args: [
+      '-NoProfile',
+      '-ExecutionPolicy', 'Bypass',
+      '-File', hostScript,
+      '-OfficialRunScript', officialRunScript,
+    ],
+    options: {
+      cwd: path.dirname(hostScript),
+      env: statusEnvironment(),
+      windowsHide: false,
+      detached: true,
+      stdio: 'ignore',
+    },
+  };
+}
+
+export async function beginExploreZhihuConnection(): Promise<ExploreZhihuConnectionLaunchResult> {
+  const status = await readExploreZhihuConnectionStatus();
+  if (status.state === 'connected') {
+    return { ok: true, state: 'already_connected', message: '知乎开放平台已连接' };
+  }
+  if (status.state !== 'needs_secret') {
+    return { ok: false, state: 'unavailable', message: status.message };
+  }
+
+  const launch = buildExploreZhihuConnectionLaunch();
+  const hostScript = launch.args[4];
+  const officialRunScript = launch.args[6];
+  if (!hostScript || !officialRunScript || !fs.existsSync(hostScript) || !fs.existsSync(officialRunScript)) {
+    return { ok: false, state: 'unavailable', message: '知乎开放平台安全连接组件不完整' };
+  }
+
+  try {
+    await shell.openExternal(ZHIHU_PROFILE_URL);
+    const child = spawn(launch.command, launch.args, launch.options);
+    await new Promise<void>((resolve, reject) => {
+      child.once('spawn', resolve);
+      child.once('error', reject);
+    });
+    child.unref();
+    return {
+      ok: true,
+      state: 'launched',
+      message: '已打开知乎个人中心和安全输入窗口。配置完成后请点击“重新检查”。',
+    };
+  } catch {
+    return { ok: false, state: 'unavailable', message: '无法启动知乎开放平台安全连接' };
+  }
+}
+
 export function registerExploreZhihuStatusIpc(registrar: Pick<IpcMain, 'handle'>): void {
   registrar.handle('explore:zhihu:status', async () => readExploreZhihuConnectionStatus());
+  registrar.handle('explore:zhihu:connect', async () => beginExploreZhihuConnection());
 }
