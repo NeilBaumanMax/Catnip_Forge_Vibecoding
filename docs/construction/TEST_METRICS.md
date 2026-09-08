@@ -218,3 +218,6 @@ verify:explore-entry、Electron typecheck、Renderer build、Explore UI 回归�
 ## 2026-09-08 Phase 4d 一次性确认执行门禁
 
 verify:explore-search-handoff、Electron typecheck、Main/Renderer build、task queue、Explore analysis gate、Explore UI 和 git diff --check 均通过。专项覆盖显式 confirmed=true、Main 已签发且完成的计划、Handoff 绑定、30 分钟过期、伪造/未完成/错配/重复确认拒绝，以及确认后进入原有 default 队列。未执行真实工程修改、知乎或硬件；实机仍为 REAL_HARDWARE_VALIDATION_PENDING。
+## 2026-09-08 Phase 5a 主动收藏
+
+Explore UI 契约、知识 Store 持久化专项、Electron typecheck、Main/Renderer build 和 git diff --check 通过。来源旁收藏必须由用户点击；重复 URL 在当前 UI 显示已收藏；探索首页从既有 Store 展示最近收藏，且明确不会自动加入 Context。未调用知乎、DeepSeek 或硬件。

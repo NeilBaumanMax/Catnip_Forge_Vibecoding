@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextItem, ExploreRequest, HandoffContext, IdeaResult, ExploreZhihuConnectionStatus } from '../../common/explore';
+import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextItem, ExploreRequest, HandoffContext, IdeaResult, KnowledgeCard, SourceEvidence, ExploreZhihuConnectionStatus } from '../../common/explore';
 
 type ExploreView = 'home' | 'idea' | 'diagnosis';
 
@@ -43,6 +43,8 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const [gatheredContext, setGatheredContext] = useState<ExploreContextGatherResult | null>(null);
   const [contextLoading, setContextLoading] = useState(false);
   const [contextError, setContextError] = useState('');
+  const [knowledgeCards, setKnowledgeCards] = useState<KnowledgeCard[]>([]);
+  const [savingSourceUrl, setSavingSourceUrl] = useState('');
 
   useEffect(() => {
     if (!diagnosisSeed) return;
@@ -105,6 +107,12 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
       serial,
     ];
   }, [fallbackContextOptions, gatheredContext, view]);
+
+  useEffect(() => {
+    void window.electronAPI.listExploreKnowledge()
+      .then(setKnowledgeCards)
+      .catch((error) => setNotice(error instanceof Error ? error.message : '无法读取已收藏知识'));
+  }, []);
 
   const refreshConnection = async () => {
     setCheckingConnection(true);
@@ -270,6 +278,41 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
     }
   };
 
+  const saveSource = async (source: SourceEvidence) => {
+    if (knowledgeCards.some((card) => card.source.url === source.url)) {
+      setNotice('这条来源已经收藏。');
+      return;
+    }
+    setSavingSourceUrl(source.url);
+    try {
+      const card = await window.electronAPI.saveExploreKnowledge({
+        source,
+        taskSummary: analysisRequest?.goal || source.title,
+        associatedProjects: currentProject ? [currentProject] : [],
+      });
+      setKnowledgeCards((current) => [card, ...current]);
+      setNotice('已收藏到本地知识库；不会自动加入后续 Context。');
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : '无法收藏这条来源');
+    } finally {
+      setSavingSourceUrl('');
+    }
+  };
+
+  const renderSource = (source: SourceEvidence) => {
+    const saved = knowledgeCards.some((card) => card.source.url === source.url);
+    return (
+      <div className="explore-source-item" key={source.url}>
+        <a href={source.url} onClick={(event) => { event.preventDefault(); void window.electronAPI.navigateBrowser(source.url); }}>
+          {source.title}{source.author ? ` · ${source.author}` : ''}
+        </a>
+        <button type="button" disabled={saved || savingSourceUrl === source.url} onClick={() => void saveSource(source)}>
+          {saved ? '已收藏' : savingSourceUrl === source.url ? '收藏中...' : '收藏'}
+        </button>
+      </div>
+    );
+  };
+
   const connectionBadge = (
     <div className={`explore-connection-badge explore-connection-badge--${connection?.state || 'checking'}`}>
       <span>知识来源</span>
@@ -307,6 +350,17 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
             <em>开始分析问题</em>
           </button>
         </div>
+        <section className="explore-knowledge-preview" data-tour-id="explore-saved-knowledge">
+          <header><strong>已收藏知识</strong><span>{knowledgeCards.length} 条 · 由你主动收藏</span></header>
+          {knowledgeCards.length ? (
+            <ul>{knowledgeCards.slice(0, 6).map((card) => (
+              <li key={card.id}>
+                <button type="button" onClick={() => void window.electronAPI.navigateBrowser(card.source.url)}>{card.source.title}</button>
+                <small>{card.verificationStatus === 'unverified' ? '尚未验证' : card.verificationStatus === 'verified_effective' ? '已验证有效' : '已验证无效'}</small>
+              </li>
+            ))}</ul>
+          ) : <p>还没有收藏。完成一次分析后，可在来源旁点击“收藏”。</p>}
+        </section>
       </section>
     );
   }
@@ -379,11 +433,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
                 <p><strong>怎么实现：</strong>{idea.implementationDirection}</p>
                 <p><strong>与当前条件的匹配：</strong>{idea.compatibility}</p>
                 <div className="explore-source-list">
-                  {idea.sources.map((source) => (
-                    <a key={source.url} href={source.url} onClick={(event) => { event.preventDefault(); void window.electronAPI.navigateBrowser(source.url); }}>
-                      {source.title}{source.author ? ` · ${source.author}` : ''}
-                    </a>
-                  ))}
+                  {idea.sources.map((source) => renderSource(source))}
                 </div>
                 <button type="button" className="nes-btn" onClick={() => void beginPlan(idea)} disabled={planPending}>
                   {planPending ? '正在生成计划...' : '交给 Catnip'}
@@ -401,9 +451,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
                 <p>{hypothesis.priorityReason}</p>
                 <p><strong>下一步验证：</strong>{hypothesis.nextValidation}</p>
                 <div className="explore-source-list">
-                  {[...hypothesis.communitySources, ...hypothesis.externalSources].map((source) => (
-                    <a key={source.url} href={source.url} onClick={(event) => { event.preventDefault(); void window.electronAPI.navigateBrowser(source.url); }}>{source.title}</a>
-                  ))}
+                  {[...hypothesis.communitySources, ...hypothesis.externalSources].map((source) => renderSource(source))}
                 </div>
               </article>
             ))}

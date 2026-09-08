@@ -4,8 +4,8 @@
 
 - 当前 Phase：Phase 4 软件闭环已完成：4a 有界 Context、4b 诊断入口、4c 双搜索软件路径、4d 一次性确认执行门禁均已实现；真实知乎与实机验收仍暂缓/待完成。
 - 已完成：安全连接入口、固定知乎/全网搜索桥、受限分析、Idea/Diagnosis UI、结构化 Handoff 与只计划档位；DeepSeek 真实计划输出已通过；当前工程、target、最多 6 个源码候选、24 小时内同工程 Build/Flash 事件和最多 40 条共享串口记录可见且可取消。
-- 当前任务：收口并提交 Phase 4d，随后进入 Phase 5 主动收藏、相关发现和验证反馈 UI。
-- 未完成：真实知乎/全网搜索验收、确认后真实施工与实机验证、知识反馈 UI、真实 Windows 包。
+- 当前任务：Phase 5 进行中，5a 主动收藏与本地收藏预览已实现；下一项为 5b 相关知识发现与用户显式选择。
+- 未完成：真实知乎/全网搜索验收、确认后真实施工与实机验证、相关知识选择和验证反馈 UI、真实 Windows 包。
 - Blocker：`LIVE_INTEGRATION_PENDING`（Access Secret 未配置，用户要求暂不测试）与 `REAL_HARDWARE_VALIDATION_PENDING`。DeepSeek 余额阻塞已解除。
 - 测试：Phase 4a 专项、typecheck、Main/Renderer build、Explore UI/Request、task queue 通过；首次错误断言与修复见 TEST_METRICS/LOG。
 - Git：Phase 4 备份 `backup/pre-phase-4-20260908` 指向 `c0ca685f1460c7c5c539042d93bcc2d9ada1bfa0`；4a 独立基线提交 `cefd6331` 已推送。

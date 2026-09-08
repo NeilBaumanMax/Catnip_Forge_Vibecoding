@@ -19,7 +19,7 @@
 - Phase 1：离线宿主集成完成。官方 `zhihu` Skill 的 15 个 vendor 文件已保真导入、完整部署并进入 `@zhihu`/打包契约；官方 CLI 安装在 `D:\ZhihuCLI`。Skill 本身还支持热榜、直答、本人创作/关注/收藏、官方知识库和额度查询，但探索 MVP 只选用状态检查、知乎搜索和全网搜索；真实搜索和 Agent Skill 调用仍未验收。
 - Phase 2：完成。共享 Domain、运行时校验、Main JSON 知识 Store、五个知识 IPC、相关发现与显式选择已实现。
 - Phase 3：软件闭环完成。连接入口、固定知乎/全网搜索桥、受限分析、Idea/Diagnosis UI、结构化 Handoff 和无工具只计划档位已实现；DeepSeek 真实计划输出通过，真实知乎搜索按用户要求暂缓，“确认并执行”尚未开放。
-- Phase 4：软件闭环完成。4a 有界 Context、4b 诊断入口、4c 双搜索软件路径和 4d 一次性确认执行门禁均通过专项回归；真实知乎与实机证据仍 pending。Phase 5–6 未开始。
+- Phase 4 软件闭环完成；真实知乎与实机证据仍 pending。Phase 5 进行中：5a 主动收藏与本地收藏预览已实现，5b–5c 未完成；Phase 6 未开始。
 
 ## 当前实现边界
 
@@ -32,8 +32,8 @@
 知识数据位于 Electron `userData/explore/knowledge.json`；历史知识只发现，显式选择后才进入 Context。该本地 Store 与知乎官方 Knowledge Base 不同，MVP 不调用后者。
 ## 下一步 1–3 项
 
-1. 完成 Phase 4d 提交与远端核对。
-2. 进入 Phase 5：把既有知识 Store 接入主动收藏、相关发现与验证反馈 UI。
+1. 完成 Phase 5a 提交与远端核对。
+2. 实现 5b：分析时发现相关历史知识，但只在用户显式勾选后进入 Context。
 3. 保持 4c 真实知乎验收暂缓；没有实机证据时继续标记硬件验证待完成。
 
 ## Decision 与 Assumption

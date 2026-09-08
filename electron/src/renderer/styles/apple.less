@@ -3454,6 +3454,34 @@ select.nes-select {
   margin: 14px 0;
 }
 .explore-source-list a { color: var(--ui-accent); overflow-wrap: anywhere; }
+.explore-source-item,
+.explore-knowledge-preview li,
+.explore-knowledge-preview header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.explore-source-item button,
+.explore-knowledge-preview button {
+  border: 0;
+  color: var(--ui-accent);
+  background: transparent;
+  cursor: pointer;
+}
+.explore-source-item button:disabled { color: var(--ui-text-tertiary); cursor: default; }
+.explore-knowledge-preview {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid var(--ui-separator);
+  border-radius: var(--ui-radius);
+  background: var(--ui-control-bg);
+}
+.explore-knowledge-preview header span,
+.explore-knowledge-preview small,
+.explore-knowledge-preview p { color: var(--ui-text-secondary); }
+.explore-knowledge-preview ul { display: grid; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.explore-knowledge-preview li button { min-width: 0; padding: 0; overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
 .explore-plan-result ol { display: grid; gap: 10px; padding-left: 22px; }
 
 @media (max-width: 1180px) {
