@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import type { IpcMain } from 'electron';
-import { normalizeHandoffContext, type ExploreAnalysisStartResult, type ExplorePlanStartResult, type ExploreRequest, type SourceEvidence } from '../common/explore';
+import { normalizeHandoffContext, type ExploreAnalysisStartResult, type ExploreExecutionStartResult, type ExplorePlanStartResult, type ExploreRequest, type SourceEvidence } from '../common/explore';
 import type { Orchestrator } from './worker/orchestrator';
 import { searchForExplore } from './explore-zhihu-search';
 
 export function registerExploreAnalysisIpc(
   registrar: Pick<IpcMain, 'handle'>,
-  orchestrator: Pick<Orchestrator, 'submitExploreAnalysis' | 'submitExplorePlan'>,
+  orchestrator: Pick<Orchestrator, 'submitExploreAnalysis' | 'submitExplorePlan' | 'confirmExploreExecution'>,
   search = searchForExplore,
 ): void {
   registrar.handle('explore:analysis:start', async (_event, value: unknown): Promise<ExploreAnalysisStartResult> => {
@@ -19,6 +19,14 @@ export function registerExploreAnalysisIpc(
       requestId,
       disposition: submitted.disposition === 'queued' ? 'queued' : 'started',
       sourceCount: found.sources.length,
+    };
+  });
+  registrar.handle('explore:handoff:execute', async (_event, value: unknown): Promise<ExploreExecutionStartResult> => {
+    const submitted = orchestrator.confirmExploreExecution(value);
+    return {
+      ok: true,
+      taskId: submitted.taskId,
+      disposition: submitted.disposition === 'queued' ? 'queued' : 'started',
     };
   });
   registrar.handle('explore:handoff:plan', async (_event, value: unknown): Promise<ExplorePlanStartResult> => {

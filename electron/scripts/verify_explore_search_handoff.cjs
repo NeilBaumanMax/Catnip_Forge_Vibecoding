@@ -37,6 +37,10 @@ async function main() {
   registerExploreAnalysisIpc(
     { handle: (channel, handler) => registrations.set(channel, handler) },
     {
+      confirmExploreExecution: (confirmation) => {
+        calls.push({ kind: 'execution', confirmation });
+        return { disposition: 'queued', taskId: 'execution-task' };
+      },
       submitExploreAnalysis: (request, requestId, _conversation, sources) => {
         calls.push({ kind: 'analysis', request, requestId, sources });
         return { disposition: 'started', taskId: 'analysis-task' };
@@ -60,6 +64,11 @@ async function main() {
   };
   await registrations.get('explore:handoff:plan')({}, handoff);
   assert.equal(calls[1].kind, 'plan');
+  const ipcExecution = await registrations.get('explore:handoff:execute')({}, {
+    planRequestId: 'ipc-plan', handoffId: 'handoff-1', confirmed: true,
+  });
+  assert.equal(ipcExecution.disposition, 'queued');
+  assert.equal(calls[2].kind, 'execution');
 
   const planArgs = buildAgentLaunchArgs('explore_plan', 'empty.json', 'plan');
   assert(!planArgs.includes('--dangerously-skip-permissions'));
@@ -85,6 +94,39 @@ async function main() {
     plan: { summary: '先验证再实现', steps: [{ id: 's1', title: '核对工程', detail: '读取用户已交接的环境摘要' }], risks: ['需要真实开发板'] },
   }, { requestId: 'plan-request', mode: 'plan' });
   assert.equal(plan.mode, 'plan');
+  assert.throws(() => harness.confirmExploreExecution({
+    planRequestId: 'plan-request', handoffId: 'handoff-1', confirmed: true,
+  }), /尚未完成/);
+  assert.throws(() => harness.confirmExploreExecution({
+    planRequestId: 'plan-request', handoffId: 'handoff-1', confirmed: false,
+  }), /explicit confirmation/);
+  harness.markExplorePlanReady(plan);
+  assert.throws(() => harness.confirmExploreExecution({
+    planRequestId: 'plan-request', handoffId: 'wrong-handoff', confirmed: true,
+  }), /Handoff 不匹配/);
+  const execution = harness.confirmExploreExecution({
+    planRequestId: 'plan-request', handoffId: 'handoff-1', confirmed: true,
+  });
+  assert.equal(execution.disposition, 'started');
+  assert.equal(submissions[1].queued.executionProfile, 'default');
+  assert.equal(submissions[1].mode, 'auto');
+  assert.match(submissions[1].queued.text, /用户已.*明确确认执行/);
+  assert.match(submissions[1].queued.text, /REAL_HARDWARE_VALIDATION_PENDING/);
+  assert.throws(() => harness.confirmExploreExecution({
+    planRequestId: 'plan-request', handoffId: 'handoff-1', confirmed: true,
+  }), /不存在|已经确认/);
+  assert.throws(() => harness.confirmExploreExecution({
+    planRequestId: 'forged-plan', handoffId: 'handoff-1', confirmed: true,
+  }), /不存在/);
+  harness.submitExplorePlan(handoff, 'expired-plan', 'conversation');
+  const expiredPlan = normalizeExploreAnalysisResult({
+    ...plan, requestId: 'expired-plan',
+  }, { requestId: 'expired-plan', mode: 'plan' });
+  harness.markExplorePlanReady(expiredPlan);
+  harness.confirmableExplorePlans.get('expired-plan').completedAt = Date.now() - (31 * 60 * 1000);
+  assert.throws(() => harness.confirmExploreExecution({
+    planRequestId: 'expired-plan', handoffId: 'handoff-1', confirmed: true,
+  }), /过期|不存在/);
   assert.throws(() => normalizeExploreAnalysisResult({ ...plan, plan: { ...plan.plan, steps: [] } }, { requestId: 'plan-request', mode: 'plan' }), /steps/);
   assert.throws(() => normalizeExploreAnalysisResult({
     schemaVersion: 1, requestId: 'idea-request', mode: 'idea', ideas: [{
@@ -96,8 +138,10 @@ async function main() {
   const panel = fs.readFileSync(path.join(__dirname, '..', 'src', 'renderer', 'components', 'ExplorePanel.tsx'), 'utf8');
   assert.match(panel, /startExploreAnalysis/);
   assert.match(panel, /startExplorePlan/);
-  assert.match(panel, /确认并执行（将在执行闭环开放）/);
-  console.log('explore search/handoff passed: fixed commands, source mapping, result IPC, tool-free plan gate');
+  assert.match(panel, /data-tour-id="explore-confirm-execution"/);
+  assert.match(panel, /confirmExploreExecution/);
+  assert.match(panel, /确认前不会修改文件、Build、Flash 或操作串口/);
+  console.log('explore search/handoff passed: fixed search, source mapping, tool-free plan, one-time confirmed execution gate');
   app.quit();
 }
 

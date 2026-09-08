@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreContextGatherRequest, ExploreRequest, HandoffContext, SaveKnowledgeCardInput } from '../common/explore';
+import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreContextGatherRequest, ExploreExecutionConfirmRequest, ExploreRequest, HandoffContext, SaveKnowledgeCardInput } from '../common/explore';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getStartupStatus: () => ipcRenderer.invoke('startup:status'),
@@ -65,6 +65,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('explore:analysis:error', (_event, result) => cb(result));
   },
   startExplorePlan: (handoff: HandoffContext) => ipcRenderer.invoke('explore:handoff:plan', handoff),
+  confirmExploreExecution: (request: ExploreExecutionConfirmRequest) => ipcRenderer.invoke('explore:handoff:execute', request),
   isWorkbenchSmokeTest: process.env.VIBEIDE_SMOKE_WORKBENCH_OPEN === '1',
   finishWorkbenchSmokeTest: (result: unknown) => ipcRenderer.invoke('smoke:workbench:finish', result),
   activateBrowserTab: (id: string) => ipcRenderer.invoke('browser:activateTab', id),

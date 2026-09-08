@@ -11,11 +11,13 @@ import { appendClaudeSessionTurn, buildClaudeSessionContext, getClaudeSessionFil
 import { listManagedSkills } from '../skill-manager';
 import { buildAttachmentPromptContext, type AttachmentReference } from '../attachment-store';
 import {
+  normalizeExploreExecutionConfirmRequest,
   normalizeHandoffContext,
   normalizeExploreAnalysisResult,
   normalizeExploreRequest,
   type ExploreAnalysisExpectation,
   type ExploreAnalysisResult,
+  type ExplorePlanResult,
   type ExploreRequest,
   type HandoffContext,
   type SourceEvidence,
@@ -54,6 +56,15 @@ interface QueuedTask {
   conversationId: string;
   executionProfile: AgentExecutionProfile;
   exploreExpectation?: ExploreAnalysisExpectation;
+}
+
+interface ConfirmableExplorePlan {
+  handoff: HandoffContext;
+  conversationId: string;
+  createdAt: number;
+  completedAt?: number;
+  result?: ExplorePlanResult;
+  usedAt?: number;
 }
 
 interface TaskContinuation {
@@ -164,6 +175,7 @@ export class Orchestrator {
   private observedAgentPid: number | null = null;
   private queuedTasks: QueuedTask[] = [];
   private pendingGuidance: AgentTaskInput[] = [];
+  private confirmableExplorePlans = new Map<string, ConfirmableExplorePlan>();
   private currentUserTurns: string[] = [];
   private turnInFlight = false;
   private paused = false;
@@ -239,6 +251,12 @@ export class Orchestrator {
     const normalizedRequestId = requestId.trim();
     if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/.test(normalizedRequestId)) throw new Error('Explore plan request id is invalid');
     const targetConversationId = conversationId || listChatConversations().activeConversationId;
+    this.cleanupConfirmableExplorePlans();
+    this.confirmableExplorePlans.set(normalizedRequestId, {
+      handoff,
+      conversationId: targetConversationId,
+      createdAt: Date.now(),
+    });
     const queuedTask: QueuedTask = {
       id: randomUUID(),
       text: this.buildExplorePlanPrompt(handoff, normalizedRequestId),
@@ -248,10 +266,40 @@ export class Orchestrator {
       executionProfile: 'explore_plan',
       exploreExpectation: { requestId: normalizedRequestId, mode: 'plan' },
     };
-    const result = this.submitQueuedTask(queuedTask, this.getTaskStatus().busy ? 'queue' : 'auto');
-    return { ...result, requestId: normalizedRequestId };
+    try {
+      const result = this.submitQueuedTask(queuedTask, this.getTaskStatus().busy ? 'queue' : 'auto');
+      return { ...result, requestId: normalizedRequestId };
+    } catch (error) {
+      this.confirmableExplorePlans.delete(normalizedRequestId);
+      throw error;
+    }
   }
 
+  confirmExploreExecution(value: unknown): TaskSubmitResult {
+    const confirmation = normalizeExploreExecutionConfirmRequest(value);
+    this.cleanupConfirmableExplorePlans();
+    const record = this.confirmableExplorePlans.get(confirmation.planRequestId);
+    if (!record) throw new Error('执行计划不存在或已过期，请重新生成计划');
+    if (record.handoff.id !== confirmation.handoffId) throw new Error('执行确认与当前 Handoff 不匹配');
+    if (!record.result || !record.completedAt) throw new Error('执行计划尚未完成，不能确认执行');
+    if (record.usedAt) throw new Error('该执行计划已经确认过，不能重复执行');
+    if (Date.now() - record.completedAt > 30 * 60 * 1000) {
+      this.confirmableExplorePlans.delete(confirmation.planRequestId);
+      throw new Error('执行计划已过期，请重新生成计划');
+    }
+
+    const queuedTask: QueuedTask = {
+      id: randomUUID(),
+      text: this.buildExploreExecutionPrompt(record.handoff, record.result),
+      skillRefs: [],
+      attachments: [],
+      conversationId: record.conversationId,
+      executionProfile: 'default',
+    };
+    const result = this.submitQueuedTask(queuedTask, this.getTaskStatus().busy ? 'queue' : 'auto');
+    record.usedAt = Date.now();
+    return result;
+  }
   private submitQueuedTask(request: QueuedTask, mode: TaskSubmitMode): TaskSubmitResult {
     const input: AgentTaskInput = { text: request.text, skillRefs: request.skillRefs, attachments: request.attachments };
 
@@ -790,6 +838,7 @@ export class Orchestrator {
             ? parseExploreAnalysisResultText(p.content, this.currentExploreExpectation)
             : normalizeExploreAnalysisResult(p.structuredOutput, this.currentExploreExpectation);
           this.currentExploreResult = result;
+          if (result.mode === 'plan') this.markExplorePlanReady(result);
           this.pushUI('explore:analysis:result', result);
         } catch {
           this.failExploreAnalysis('EXPLORE_RESULT_INVALID');
@@ -1033,6 +1082,33 @@ export class Orchestrator {
       `输出结构：${outputShape}`,
       `请求：${JSON.stringify(request)}`,
       `已校验来源：${JSON.stringify(sources)}`,
+    ].join('\n');
+  }
+
+  private cleanupConfirmableExplorePlans(now = Date.now()): void {
+    this.confirmableExplorePlans ||= new Map<string, ConfirmableExplorePlan>();
+    for (const [requestId, record] of this.confirmableExplorePlans) {
+      const referenceTime = record.completedAt || record.createdAt;
+      const lifetime = record.completedAt ? 30 * 60 * 1000 : 2 * 60 * 60 * 1000;
+      if (record.usedAt || now - referenceTime > lifetime) this.confirmableExplorePlans.delete(requestId);
+    }
+  }
+
+  private markExplorePlanReady(result: ExplorePlanResult): void {
+    const record = this.confirmableExplorePlans.get(result.requestId);
+    if (!record) throw new Error('Explore plan result has no matching handoff');
+    record.result = structuredClone(result);
+    record.completedAt = Date.now();
+  }
+
+  private buildExploreExecutionPrompt(handoff: HandoffContext, result: ExplorePlanResult): string {
+    return [
+      '用户已在 Catnip Forge Explore 中明确确认执行下方计划。',
+      '先核对当前工作区真实状态，再按计划实施；不得把计划文本本身当作完成证据。',
+      '源码修改、Build、Flash、Serial 和实际验证必须分别依据真实结果汇报；没有设备或实机证据时明确标记 REAL_HARDWARE_VALIDATION_PENDING。',
+      '遵守现有工程规则和工具边界，不扩大到 Handoff 之外的目标。',
+      `Handoff：${JSON.stringify({ ...handoff, status: 'executing' })}`,
+      `已确认计划：${JSON.stringify(result.plan)}`,
     ].join('\n');
   }
 

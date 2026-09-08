@@ -162,6 +162,18 @@ export interface ExplorePlanStartResult {
   disposition: 'started' | 'queued';
 }
 
+export interface ExploreExecutionConfirmRequest {
+  planRequestId: string;
+  handoffId: string;
+  confirmed: true;
+}
+
+export interface ExploreExecutionStartResult {
+  ok: boolean;
+  taskId: string;
+  disposition: 'started' | 'queued';
+}
+
 export interface ExploreSourceStrategy {
   zhihu: 'required';
   web: 'conditional' | 'required';
@@ -473,6 +485,17 @@ export function normalizeHandoffContext(value: unknown): HandoffContext {
     sources: sourceList(input.sources, 'handoff.sources'),
     suggestedFirstStep: requiredText(input.suggestedFirstStep, 'handoff.suggestedFirstStep', 2_000),
     createdAt,
+  };
+}
+
+export function normalizeExploreExecutionConfirmRequest(value: unknown): ExploreExecutionConfirmRequest {
+  const input = objectValue(value, 'explore execution confirmation');
+  requireExactKeys(input, ['planRequestId', 'handoffId', 'confirmed'], 'explore execution confirmation');
+  if (input.confirmed !== true) throw new Error('explore execution requires explicit confirmation');
+  return {
+    planRequestId: requiredText(input.planRequestId, 'execution.planRequestId', 120),
+    handoffId: requiredText(input.handoffId, 'execution.handoffId', 120),
+    confirmed: true,
   };
 }
 

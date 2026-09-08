@@ -215,3 +215,6 @@ Phase 3b2/3c：`verify:explore-search-handoff`、`verify:explore-analysis-gate`�
 ## 2026-09-08 Phase 4b 监视器/失败任务诊断入口
 
 verify:explore-entry、Electron typecheck、Renderer build、Explore UI 回归和 git diff --check 均通过。Renderer 共转换 1262 modules，只有既有大 chunk warning。Review 修复了手动重开探索时重复载入旧诊断的问题；入口只预填可编辑元数据，原始串口文本不直接塞入问题描述，详细证据仍由可取消 Context 控制。未调用知乎、DeepSeek 或硬件。
+## 2026-09-08 Phase 4d 一次性确认执行门禁
+
+verify:explore-search-handoff、Electron typecheck、Main/Renderer build、task queue、Explore analysis gate、Explore UI 和 git diff --check 均通过。专项覆盖显式 confirmed=true、Main 已签发且完成的计划、Handoff 绑定、30 分钟过期、伪造/未完成/错配/重复确认拒绝，以及确认后进入原有 default 队列。未执行真实工程修改、知乎或硬件；实机仍为 REAL_HARDWARE_VALIDATION_PENDING。

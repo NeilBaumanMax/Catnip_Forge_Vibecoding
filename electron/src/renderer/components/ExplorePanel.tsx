@@ -37,6 +37,9 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const [analysisRequest, setAnalysisRequest] = useState<ExploreRequest | null>(null);
   const [planResult, setPlanResult] = useState<Extract<ExploreAnalysisResult, { mode: 'plan' }> | null>(null);
   const [planPending, setPlanPending] = useState(false);
+  const [planHandoff, setPlanHandoff] = useState<HandoffContext | null>(null);
+  const [executionPending, setExecutionPending] = useState(false);
+  const [executionStarted, setExecutionStarted] = useState(false);
   const [gatheredContext, setGatheredContext] = useState<ExploreContextGatherResult | null>(null);
   const [contextLoading, setContextLoading] = useState(false);
   const [contextError, setContextError] = useState('');
@@ -51,6 +54,9 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
     setAnalysisRequest(null);
     setPlanResult(null);
     setPlanPending(false);
+    setPlanHandoff(null);
+    setExecutionPending(false);
+    setExecutionStarted(false);
   }, [diagnosisSeed]);
 
   const fallbackContextOptions = useMemo<ContextOption[]>(() => [
@@ -117,7 +123,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
       if (result.mode === 'plan') {
         setPlanResult(result);
         setPlanPending(false);
-        setNotice('执行计划已生成。确认执行功能将在后续执行闭环开放。');
+        setNotice('执行计划已生成。请核对步骤和风险，确认后才会进入 Agent 队列。');
       } else {
         setAnalysisResult(result);
         setAnalysisPending(false);
@@ -230,6 +236,9 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
       suggestedFirstStep: selectedIdea?.implementationDirection || diagnosis?.hypotheses[0]?.nextValidation || '先核对现有工程和硬件状态',
       createdAt: new Date().toISOString(),
     };
+    setPlanHandoff(handoff);
+    setExecutionPending(false);
+    setExecutionStarted(false);
     setPlanPending(true);
     setPlanResult(null);
     try {
@@ -238,6 +247,26 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
     } catch (error) {
       setPlanPending(false);
       setNotice(error instanceof Error ? error.message : '无法生成执行计划');
+    }
+  };
+
+  const confirmExecution = async () => {
+    if (!planResult || !planHandoff || executionPending || executionStarted) return;
+    setExecutionPending(true);
+    try {
+      const started = await window.electronAPI.confirmExploreExecution({
+        planRequestId: planResult.requestId,
+        handoffId: planHandoff.id,
+        confirmed: true,
+      });
+      setExecutionStarted(true);
+      setNotice(started.disposition === 'queued'
+        ? '已确认执行，任务已进入现有 Agent 队列。'
+        : '已确认执行，现有 Agent 已开始处理。');
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : '无法确认执行当前计划');
+    } finally {
+      setExecutionPending(false);
     }
   };
 
@@ -391,8 +420,16 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
               {planResult.plan.steps.map((step) => <li key={step.id}><strong>{step.title}</strong><p>{step.detail}</p></li>)}
             </ol>
             {planResult.plan.risks.length > 0 && <p><strong>风险：</strong>{planResult.plan.risks.join('；')}</p>}
-            <button type="button" className="nes-btn is-primary" disabled>确认并执行（将在执行闭环开放）</button>
-            <p>当前只生成计划，没有修改文件、Build、Flash 或操作串口。</p>
+            <button
+              type="button"
+              className="nes-btn is-primary"
+              data-tour-id="explore-confirm-execution"
+              disabled={!planHandoff || executionPending || executionStarted}
+              onClick={() => void confirmExecution()}
+            >
+              {executionPending ? '正在提交...' : executionStarted ? '已进入执行队列' : '确认并执行'}
+            </button>
+            <p>{executionStarted ? '已交给现有 Agent 队列；源码、Build、Flash、Serial 与实机结果仍以真实执行证据为准。' : '确认前不会修改文件、Build、Flash 或操作串口。'}</p>
           </section>
         )}
       </form>
