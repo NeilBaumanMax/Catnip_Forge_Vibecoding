@@ -26,7 +26,7 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 | A4 | 可从当前工程和 main/CMakeLists 收集最小相关源码 | 已有受控读取/文件索引；相关性与限额尚未定 | 过量读取或漏掉关键证据 | 单工程白名单、路径越界、截断、用户取消测试 | TESTING | workbench readWorkbenchFile、hardboard/project-files.ts；不能直接把全部候选注入 | Main/Context |
 | A5 | EventBus 和共享串口能稳定提供最新 Context | 已有最近 500 事件与串口增量读取；项目关联/过期需验证 | 误用其他工程或旧运行数据 | taskId/projectDir/timestamp 筛选、无数据/过期/清空场景 | TESTING | event-store getRecentRuntimeEvents、SerialMonitorSession.read/wait | Runtime/Main |
 | A6 | 官方CLI在Windows开发和打包版可运行 | 开发机安装/status及部署脚本通过，真实成品尚未验证 | Phase 1成品运行受影响 | builder契约已测，Phase 6真实包/status | TESTING | D盘CLI compatible；部署run.ps1 status通过；package config通过 | Official Skill/Packaging |
-| A7 | 用户已配置可用Access Secret | 安装后的CLI实际status返回auth.configured=false | 真实知乎搜索只能保持待验收 | 用户本机安全配置，官方stdin验证及最小搜索 | BLOCKED | next_action=request_access_secret；未获取或配置凭据 | CLI/Main |
+| A7 | 用户已配置可用Access Secret，且产品存在不经过 Renderer/Chat 的安全配置路径 | 安装后的CLI实际status返回auth.configured=false；Explore 当前只有状态检查和重新检查按钮 | 真实知乎搜索只能保持待验收；若用普通输入框或 Chat 补洞会泄露高权限 API 凭证 | 先确定宿主拥有的安全交互，由宿主通过官方 CLI stdin 验证并写系统凭证库；测试 Renderer IPC/日志/Agent 输出无完整值，再做最小搜索 | BLOCKED | next_action=request_access_secret；未获取或配置凭据；安全配置 UI/流程未实现 | CLI/Main |
 | A8 | 有可复现运行异常的真实板/工程可做 Demo | 发现三个工程，未连接或选择故障 | 排障不能称完整闭环 | 用户确认项目/端口后实测 Build/Flash/Serial | UNVERIFIED | hello_world_esp32s3、touch_hello、wifi_connect_fmai；无板证据 | Hardboard/Demo |
 | A9 | 延续现有 UI 能容纳探索 | 功能入口和构建已验证；完整结果页与视觉验收尚未完成 | 若后续结果密度超出布局，需最小调整 | 继续沿用现有样式完成结果 UI，并在 Phase 6 做真实桌面验收 | CONFIRMED | BrowserPanel 已有五页签；ExplorePanel 两入口；verify:explore-ui 与 renderer build 通过 | Renderer |
 
@@ -39,3 +39,10 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 5. EventBus 最近事件虽有限，但当前实现读取日志文件再截尾；Explore 不得放大为全历史读取，需测性能和界限。
 
 第一性原理：最短路径是把知识搜集和证据交接加入现有能力边界，不把新页面当新执行系统；先验证官方 Skill 和受限结构化任务，再加用户界面。当前计划未引入新依赖服务或未确认产品功能。
+
+## 官方知乎能力选择与 Access Secret 门禁（2026-09-08）
+
+- 官方 Skill 的完整能力不等于探索页面已经使用的能力。当前页面只实际调用 `scripts/run.ps1 status`；`search zhihu`、`search global` 仍未接通，来源策略字段不能冒充业务调用。
+- 探索 MVP 后续只接知乎搜索和全网搜索。热榜、直答、本人创作/关注/收藏、官方知识库、额度页和 OAuth 保持不接；Catnip 本地知识卡不等于知乎官方知识库。
+- Access Secret 是用户个人的开放平台 API 鉴权凭证并决定额度归属，不是普通偏好设置。当前页面没有安全配置入口；在宿主安全交互与官方 CLI stdin 路径有程序测试前，不得增加 Renderer 文本框、Secret IPC 或 Chat 粘贴流程。
+- status 的 installed/compatible/authConfigured 只能证明安装与本地凭证状态。`authConfigured=false` 时不得调用业务搜索；update check unavailable 时不得宣称已是最新版。

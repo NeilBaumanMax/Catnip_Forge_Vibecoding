@@ -16,7 +16,7 @@
 产品保持 Electron 本地硬件 AI IDE。当前可见工作区为：仓库、监视器、任务管理器、编辑器、探索；探索首页只有找灵感和解问题。
 
 - Phase 0：完成，Product Truth、Decision/Assumption、Git/测试基线和施工文档已建立。
-- Phase 1：离线宿主集成完成。官方 `zhihu` Skill 的 15 个 vendor 文件已保真导入、完整部署并进入 `@zhihu`/打包契约；官方 CLI 安装在 `D:\ZhihuCLI`。真实搜索和 Agent Skill 调用仍未验收。
+- Phase 1：离线宿主集成完成。官方 `zhihu` Skill 的 15 个 vendor 文件已保真导入、完整部署并进入 `@zhihu`/打包契约；官方 CLI 安装在 `D:\ZhihuCLI`。Skill 本身还支持热榜、直答、本人创作/关注/收藏、官方知识库和额度查询，但探索 MVP 只选用状态检查、知乎搜索和全网搜索；真实搜索和 Agent Skill 调用仍未验收。
 - Phase 2：完成。共享 Domain、运行时校验、Main JSON 知识 Store、五个知识 IPC、相关发现与显式选择已实现。
 - Phase 3：进行中。第五页签、两入口表单、排障 Context 取消、官方 status 安全桥、Request 准备 IPC、Worker/Agent 只分析档位及内部结构化结果门禁已实现；真实搜索、真实模型结构化结果、结果 UI 和 Handoff 尚未实现。
 - Phase 4–6：未开始。
@@ -25,15 +25,17 @@
 
 `ExplorePanel.tsx` 生成共享 `ExploreRequest`，经 preload 到 `explore:request:prepare`。Main 运行时校验并剔除未选择 Context；找灵感声明知乎必需/全网按需，解问题声明两者均必需。该 IPC 不执行搜索、Agent、文件修改或硬件操作，准备成功不能称为已形成 Idea/Diagnosis。
 
-官方连接状态由 `explore-zhihu-status.ts` 调用 vendor `scripts/run.ps1 status` 并映射为安全字段。子进程使用环境白名单。知识数据位于 Electron `userData/explore/knowledge.json`，Renderer 不直接读写文件；历史知识只发现，显式选择后才进入 Context。
+官方连接状态由 `explore-zhihu-status.ts` 调用 vendor `scripts/run.ps1 status` 并映射为安全字段。子进程使用环境白名单。**这是探索页面当前唯一实际调用的官方知乎能力**：页面没有调用 `search zhihu` 或 `search global`；Request 中“知乎必需/全网按需或必需”只是后续来源策略，不是已发生搜索。知识数据位于 Electron `userData/explore/knowledge.json`，Renderer 不直接读写文件；历史知识只发现，显式选择后才进入 Context。该本地知识 Store 与知乎官方 Knowledge Base 是两套不同能力，MVP 不调用后者。
+
+Access Secret 是每个用户自己的知乎开放平台 API 凭证，用于鉴权并归属接口额度，不是知乎登录密码。当前 Explore 只有连接状态与“重新检查”，没有产品内安全配置入口，因此用户现在不能仅在探索页完成连接。后续必须先确定并验证宿主拥有的安全配置流程：引导用户在知乎开放平台个人中心申请，由宿主通过官方 CLI 的标准输入完成验证并交给操作系统凭证库；完整值不得经过 Renderer IPC、产品 Chat、日志、URL、Agent 输出或仓库。不得为了赶通搜索而新增普通文本框或让用户粘贴到 Chat。
 
 现有 Worker 继续使用单队列和 persistent Agent。默认 Chat 保留 `--dangerously-skip-permissions`；新增的 `explore_analysis` 档位会隔离重启进程，使用 `--bare`、`--permission-mode plan`、严格空 MCP 和仅 `Skill` 白名单。Worker 抑制受限原始文本，拒绝包括任意文件读取在内的其他工具，并只让绑定 requestId/mode、带规定来源的合法 JSON 进入内部结果通道。该通道尚未接 preload/Renderer，也未执行真实模型。
 
 ## 下一步 1–3 项
 
-1. 完成 Phase 3a 实现提交、推送和远端 hash 核对；专项已离线覆盖权限参数、档位隔离、副作用拒绝、来源 schema、Context 排除和 UI 抑制。
-2. 下一个业务小闭环先建立独立文档基线：设计不开放通用 Bash 的官方 CLI 窄搜索桥，并在真实来源可用前保持 Explore 表单不触发 Agent、不展示伪造结果。
-3. 外部条件恢复后做 live 验收：用户通过官方安全流程配置 Access Secret；DeepSeek 只有用户明确允许恢复后才调用。分别验证官方知乎/全网搜索和真实 `Skill(zhihu)`，保留真实来源，再接结果 UI 与 Handoff。
+1. 下一个业务小闭环先建立独立文档基线：分别设计“宿主安全配置 Access Secret”和“不开放通用 Bash 的官方 CLI 窄搜索桥”；未满足凭证边界前不得把 Secret 输入接入 Renderer 或 Chat。
+2. 搜索桥只开放探索 MVP 所需的 `search zhihu`、`search global`，不顺带接热榜、直答、本人数据、官方知识库、额度页或 OAuth；在真实来源可用前保持 Explore 表单不触发 Agent、不展示伪造结果。
+3. 外部条件恢复后做 live 验收：用户通过上述安全流程配置 Access Secret；DeepSeek 只有用户明确允许恢复后才调用。分别验证官方知乎/全网搜索和真实 `Skill(zhihu)`，保留真实来源，再接结果 UI 与 Handoff。
 
 ## Decision 与 Assumption
 
@@ -44,13 +46,13 @@ D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探�
 - A3 CONFIRMED：原子 JSON Store 的保存、重启、损坏保护和选择语义已验证。
 - A4/A5 TESTING：相关源码及 Build/Serial 的项目、时间和读取上限仍待 Phase 4。
 - A6 TESTING：开发机 CLI/status 与 builder 规则通过；真实成品未验证。
-- A7 BLOCKED：官方 status 为 `auth.configured=false`。
+- A7 BLOCKED：官方 status 为 `auth.configured=false`，且 Explore 尚无满足“Secret 不进 Renderer/Chat”的产品内配置路径。
 - A8 UNVERIFIED：未选定并实测比赛硬件故障。
 - A9 CONFIRMED：第五页签和两入口已通过 UI 契约与 Renderer build；完整结果页仍待实现。
 
 ## Blocker、Known Issues 与真实验证
 
-- `LIVE_INTEGRATION_PENDING`：没有获取或配置用户 Access Secret，未执行真实知乎/全网搜索。
+- `LIVE_INTEGRATION_PENDING`：没有获取或配置用户 Access Secret，Explore 也尚无安全配置入口；未执行真实知乎/全网搜索。2026-09-08 最近一次官方 status 仍为 installed/compatible=true、auth.configured=false，本次远端更新检查因网络不可用，不能宣称本地为最新版。
 - `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`：两次受限 smoke 都在 tool use 前返回 HTTP 402；用户已禁止重试。
 - `REAL_HARDWARE_VALIDATION_PENDING`：未执行本轮真实 Build/Flash/Serial，不能声称硬件闭环完成。
 - Phase 6 的真实 Windows package、冷启动和 packaged Skill status 未执行。

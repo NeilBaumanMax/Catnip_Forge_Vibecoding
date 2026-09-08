@@ -171,3 +171,14 @@
 - 本机 Claude CLI 二进制协议复核发现 JSON schema 成功事件使用 `structured_output`；在独立范围修订 `e480819c38be4ef22b9fc75ba6ec7c74b404f54f` 推送并远端核对后，补充 `ChatBuffer` 显式保留该对象。默认 `result` 文本解析不变，Worker 对 structured object 继续执行同一运行时 schema，不解析 Markdown。
 - 第一次补充 ChatBuffer 回归统计的文档 patch 因同一补丁重复声明 `TEST_METRICS.md` 更新段，被 `apply_patch` 在写入前拒绝；无文件改动。合并为单一更新段后成功，该失败记为编辑编排失败，不计产品断言失败。
 - 最终竞态 Review 将 stdout 处理绑定到创建监听器时的固定执行档位；即使任务清理已把当前状态重置为 default，受限进程的迟到文本仍按 restricted 抑制，不能落入 Chat UI。
+
+## 2026-09-08 / 探索页面知乎能力与 Access Secret 文档修正
+
+- 用户要求从使用者视角说明探索页面究竟用了官方 Skill 的哪些能力，并据此修正施工文档。动态 Git 起点为 `idea_to_production`，工作区干净且跟踪 `origin/idea_to_production`。
+- 复核代码确认：Renderer 只暴露 `getExploreZhihuStatus` 与 `prepareExploreRequest`；页面实际调用的官方知乎能力只有 `scripts/run.ps1 status`。Request 的来源策略只是声明“找灵感：知乎必需/全网按需；解问题：两者必需”，没有执行 `search zhihu` 或 `search global`。
+- 官方 Skill 的热榜、直答、本人创作/关注/收藏、官方知识库、额度查询和 OAuth 不属于探索 MVP 页面。Catnip 本地 JSON 知识卡不等于知乎官方 Knowledge Base。
+- Access Secret 被明确记录为用户个人的开放平台 API 鉴权和额度归属凭证，不是知乎登录密码。当前 Explore 没有安全配置入口；后续不得用 Renderer 文本框、携密 IPC 或产品 Chat 临时补洞，必须通过宿主安全交互与官方 CLI stdin 写入操作系统凭证库。
+- 按官方 Skill 首次状态规则复核 D 盘 CLI：installed/compatible=true、auth.configured=false、next_action=request_access_secret；update_check 因 NETWORK_ERROR unavailable，不能声称最新版。未配置 Secret，未调用搜索、DeepSeek 或硬件。
+- 开工首次 Git 命令因 PowerShell 将未加引号的 `@{u}` 解析为哈希字面量而在运行 Git 前失败；加引号后核对 branch/local/upstream 一致。此前两次补丁分别因重复目标声明和 Windows 沙箱 ACL 初始化失败而在写入前拒绝；均无文件改动，不计产品断言失败。
+- 本次只修改施工文档，不修改 Product Truth、业务源码或 vendor。文档检查和 Git 结果随后记录。
+- 文档检查第一次因扫描 `LOG.md` 全文的连续问号而失败，命中的是历史编码事故保留段；根因是断言范围过宽。收窄后，当前文档 UTF-8/关键口径、仅施工文档范围、`git diff --check` 共 3 项通过，0 最终失败；未重复应用构建。

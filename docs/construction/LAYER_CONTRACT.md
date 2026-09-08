@@ -4,7 +4,7 @@
 
 | 层 | 责任与复用入口 | 禁止 |
 | --- | --- | --- |
-| Renderer | 探索两个入口、目标/问题输入、Context 勾选、Idea/Diagnosis/来源展示、收藏、确认操作；复用 BrowserPanel/ChatPanel 设计 | Secret、知乎 HTTP、任意 shell/文件、直接 Hardboard、独立 Agent |
+| Renderer | 探索两个入口、目标/问题输入、Context 勾选、连接状态、未来 Idea/Diagnosis/来源展示、收藏、确认操作；复用 BrowserPanel/ChatPanel 设计 | Secret 输入/传输、知乎 HTTP、任意 shell/文件、直接 Hardboard、独立 Agent |
 | Preload / Gateway | 现有显式 IPC 白名单与 Main 注册；校验输入、ID、来源、选择、确认归属 | 暴露任意命令执行、路径读取或 Secret IPC |
 | Main | 用户数据、状态映射、受控 Context、必要编排、桥接；paths/workbench/serial controller | 重写官方 CLI auth、把计划提示当程序授权 |
 | Worker / Agent | 目标理解、动态检索策略、官方 Skill 调用、证据综合、结构化返回、现有 taskId/queue 的计划及执行 | 第二套队列/Agent、未确认写文件、来源伪造、自由文本猜测关键状态 |
@@ -37,6 +37,14 @@
 - Main 只保留 `selected=true` 的 Context；取消项不得返回给后续分析输入。
 - 找灵感声明知乎必需、全网按需；解问题声明知乎与全网均必需。
 - `explore:request:prepare` 不执行搜索、Agent、文件写入、Build、Flash 或 Serial。准备成功不等于已产生 Idea/Diagnosis。
+
+## 2026-09-08 官方能力与凭证边界
+
+- 当前探索页面实际只调用官方 `status`。页面展示 installed/compatible/authConfigured 的安全映射；不接收原始 CLI 输出，也不接触 Access Secret。
+- `sourceStrategy` 只描述未来检索要求，不表示 `search zhihu` / `search global` 已执行。两项搜索仍待窄桥和 live 验收。
+- 官方 Skill 还提供热榜、直答、本人创作/关注/收藏、官方知识库和额度查询；这些不是探索 MVP 页面能力。Main 不得因 Skill 已部署就自动开放。
+- 当前页面没有 Access Secret 配置入口。后续只能由宿主安全交互把用户在知乎开放平台申请的凭证通过官方 CLI stdin 配置到操作系统凭证库；Renderer/Preload 不得新增携带完整 Secret 的 IPC，Chat 不得作为输入通道。
+- Catnip 的 `userData/explore/knowledge.json` 是本地知识卡 Store，不是知乎官方 Knowledge Base，也不消耗或调用其知识库 API。
 
 ## 2026-09-08 Phase 3a 只分析程序边界
 

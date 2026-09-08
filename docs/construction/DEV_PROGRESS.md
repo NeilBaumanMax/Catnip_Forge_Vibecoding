@@ -3,10 +3,10 @@
 更新时间：2026-09-08。探索 MVP 未完成。
 
 - 当前 Phase：Phase 3 进行中。Phase 0 已完成；Phase 1 离线宿主集成完成、真实调用待外部条件；Phase 2 Domain 与本地知识底座完成。
-- 已完成：官方 `zhihu` Skill 15 文件导入与保真部署、D 盘 CLI 安装/status、安全打包过滤；Explore Domain/JSON Store/知识 IPC；第五工作区“探索”、找灵感/解问题入口、官方连接状态桥、Main Request 准备与 Context 排除。
-- 当前任务：施工规范自检与文档漂移修正。修正完成后，下一业务小闭环必须先做独立文档基线提交，再实现结构化结果通道和 Explore 只分析程序门禁。
+- 已完成：官方 `zhihu` Skill 15 文件导入与保真部署、D 盘 CLI 安装/status、安全打包过滤；Explore Domain/JSON Store/知识 IPC；第五工作区“探索”、找灵感/解问题入口、官方连接状态桥、Main Request 准备与 Context 排除；Worker/Agent 只分析档位和内部结构化结果门禁。
+- 当前任务：修正“官方 Skill 完整能力、探索页面实际使用能力、Access Secret 用户流程”施工口径。下一业务小闭环必须先做独立文档基线，再设计安全凭证配置路径和官方 CLI 窄搜索桥。
 - 未完成：真实知乎/全网搜索、结构化 Idea/Diagnosis UI、现有 Agent Handoff、用户确认执行门禁、Phase 4–6、真实包和真机闭环。
-- Blocker：`LIVE_INTEGRATION_PENDING`（官方 status 为 `auth.configured=false`）；`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`（用户明确禁止重试）；`REAL_HARDWARE_VALIDATION_PENDING`。这些外部项不阻止独立文档和软件门禁施工。
+- Blocker：`LIVE_INTEGRATION_PENDING`（官方 status 为 `auth.configured=false`，且 Explore 尚无安全配置 Access Secret 的产品入口）；`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`（用户明确禁止重试）；`REAL_HARDWARE_VALIDATION_PENDING`。这些外部项不阻止独立文档和软件门禁施工。
 - 测试：最新三个 Phase 3 小闭环分别为 3、4、4 组最终通过，0 组最终失败；首次失败和全部基线见 TEST_METRICS/LOG。Python pytest 仍因依赖缺失未启动到断言。
 - Git 审计起点：`idea_to_production`，local/remote `bff953900d1af98aa9e69f50308ed137c4b0b373`，工作区干净；baseline `f6e20e8e1d581a10fbd9c0e48d39bec5c4376112`。Phase 0–3 远端备份均已有核对记录。
 
@@ -84,3 +84,11 @@ Phase 3 进行中。已完成第五页签“探索”、仅含“找灵感 / 解
 已完成 Explore Request 的 Main 校验与准备 IPC：找灵感自动带入可用工程/硬件约束，解问题只保留用户勾选的 Context；知识源策略明确为灵感“知乎必需、全网按需”，排障“知乎与全网均必需”。Renderer 不执行搜索、不调用 Agent，也不生成假 Idea。
 
 软件验证 4 组通过、0 组最终失败。第一次 UI 契约因安全连接兜底文案被动态消息替换而失败，恢复固定安全兜底后通过。下一项是结构化检索结果契约和现有 Agent 的只分析执行门禁；DeepSeek 禁止重试，真实知乎搜索继续 `LIVE_INTEGRATION_PENDING`。
+
+## 2026-09-08 探索页面知乎能力与 Access Secret 口径修正
+
+- 用户当前在探索页面实际使用的官方知乎能力只有连接状态检查。页面提交只准备请求并声明来源策略，没有调用知乎搜索或全网搜索。
+- MVP 后续只接官方 `search zhihu` 和 `search global`。Skill 的热榜、直答、本人创作/关注/收藏、官方知识库、额度查询和 OAuth 不进入探索页面；本地知识卡不是知乎官方知识库。
+- Access Secret 是每个用户自己的开放平台 API 凭证，用于鉴权和额度归属，不是知乎登录密码。当前 Explore 只有“重新检查”，没有安全配置入口，不能宣称用户已能在页面完成连接。
+- 后续配置必须由宿主通过官方 CLI stdin 验证并保存到操作系统凭证库；完整 Secret 不得经过 Renderer IPC、产品 Chat、日志、URL、Agent 输出或仓库。此路径与窄搜索桥都要先有独立施工基线和程序门禁。
+- 本次官方 status 复核：CLI installed/compatible=true，auth.configured=false；远端更新检查为 unavailable/network error，因此不能声称当前版本是最新版。没有执行搜索、凭证配置、DeepSeek 或硬件操作。

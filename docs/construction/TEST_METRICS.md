@@ -178,3 +178,13 @@ Phase 1核心检查2通过、0失败、4组未验证。不把CLI未就绪检查�
 | `node --check electron/scripts/verify_explore_analysis_gate.cjs` / `git diff --check` | 通过 | 辅助语法和 whitespace 检查，不计入核心 6 项 |
 
 最终统计：6 个核心检查目标通过、0 最终失败。首轮专项即通过；Review 在最终复测前发现 requestId 换行注入风险、项目设置/插件隔离不足、结果来源可为空、受限 stderr 直达 Renderer、受限内容进入日志及任意 Read 绕过取消 Context，分别以严格 ID、`--bare`、来源门禁、固定安全摘要、日志抑制和仅 Skill 白名单修复并补反例。Electron 命令仍有既有 Windows `os_crypt`/GPU 退出警告，进程 exit 0。未调用 DeepSeek、知乎搜索、Access Secret 或硬件；真实模型、来源和硬件继续分别标记 pending。
+
+## 2026-09-08 探索知乎能力与 Access Secret 文档修正
+
+| 检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| 当前施工文档 UTF-8 与关键口径断言 | 通过 | HANDOFF/主约束/计划/分层/进度均明确 status-only、搜索未接、无安全凭证入口；LOG 只检查本次新增节 |
+| 变更范围 | 通过 | 仅 `docs/construction/*`，未修改 Product Truth、业务源码或 vendor |
+| `git diff --check` | 通过 | 仅有仓库既有 LF→CRLF 提示，无 whitespace error |
+
+第一次检查失败：对只追加 `LOG.md` 整文件使用连续问号断言，命中了历史保留的旧编码事故证据。根因是测试范围过宽；收窄为当前状态文档全文及本次日志标题/关键内容后通过。最终 3 个文档检查目标通过、0 最终失败；本轮无业务代码，因此未重复应用构建。未配置 Secret，未调用知乎搜索、DeepSeek 或硬件。

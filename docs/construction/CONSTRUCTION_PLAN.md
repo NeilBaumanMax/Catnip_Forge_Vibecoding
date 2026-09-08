@@ -17,6 +17,8 @@
 - Phase 0 完成；Phase 1 离线宿主集成完成但 live 调用待外部条件；Phase 2 完成；Phase 3 进行中。
 - Phase 3 已完成 3b 的安全 UI 外壳、status 和 Request 准备；3a 的独立基线、Worker/Agent 只分析档位、结构化结果校验与非法 UI 抑制也已实现并离线通过。表单仍未触发 Agent，真实搜索、真实模型结果与 Handoff 未开放。下一业务小项需先为官方 CLI 窄搜索桥建立独立文档基线。
 - 只有 3a 的运行时拒绝测试通过后，才能让 Explore 表单触发现有 Agent。当前按钮只准备请求并明确没有搜索。
+- 窄搜索桥只允许官方 `search zhihu` / `search global`，不得顺带开放 Skill 的热榜、直答、本人数据、官方知识库、额度查询或 OAuth。找灵感为知乎必需、全网按需；解问题为两者均必需。
+- 搜索桥之前或同一独立基线中必须解决 Access Secret 配置门禁。当前 Explore 没有安全配置入口；设计必须由宿主持有交互并通过官方 CLI stdin 验证、写系统凭证库，完整值不得进入 Renderer IPC、产品 Chat、日志或 Agent 输出。若无法满足，保持 `LIVE_INTEGRATION_PENDING`，不得以普通输入框临时接通。
 
 ## Phase 1 已定位的最小工程范围
 
