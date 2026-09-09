@@ -122,6 +122,8 @@ export function buildExploreZhihuConnectionLaunch(): {
     command: systemPowerShell(),
     args: [
       '-NoProfile',
+      '-Sta',
+      '-WindowStyle', 'Hidden',
       '-ExecutionPolicy', 'Bypass',
       '-File', hostScript,
       '-OfficialRunScript', officialRunScript,
@@ -129,7 +131,7 @@ export function buildExploreZhihuConnectionLaunch(): {
     options: {
       cwd: path.dirname(hostScript),
       env: exploreZhihuEnvironment(),
-      windowsHide: false,
+      windowsHide: true,
       detached: true,
       stdio: 'ignore',
     },
@@ -146,8 +148,10 @@ export async function beginExploreZhihuConnection(): Promise<ExploreZhihuConnect
   }
 
   const launch = buildExploreZhihuConnectionLaunch();
-  const hostScript = launch.args[4];
-  const officialRunScript = launch.args[6];
+  const fileArgumentIndex = launch.args.indexOf('-File');
+  const officialArgumentIndex = launch.args.indexOf('-OfficialRunScript');
+  const hostScript = fileArgumentIndex >= 0 ? launch.args[fileArgumentIndex + 1] : undefined;
+  const officialRunScript = officialArgumentIndex >= 0 ? launch.args[officialArgumentIndex + 1] : undefined;
   if (!hostScript || !officialRunScript || !fs.existsSync(hostScript) || !fs.existsSync(officialRunScript)) {
     return { ok: false, state: 'unavailable', message: '知乎开放平台安全连接组件不完整' };
   }
@@ -163,7 +167,7 @@ export async function beginExploreZhihuConnection(): Promise<ExploreZhihuConnect
     return {
       ok: true,
       state: 'launched',
-      message: '已打开知乎个人中心和安全输入窗口。配置完成后请点击“重新检查”。',
+      message: '已打开知乎个人中心和安全输入窗口。配置完成后，本页面会自动确认连接。',
     };
   } catch {
     return { ok: false, state: 'unavailable', message: '无法启动知乎开放平台安全连接' };

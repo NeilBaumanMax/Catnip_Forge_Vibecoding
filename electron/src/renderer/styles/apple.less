@@ -3206,18 +3206,19 @@ select.nes-select {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Explore extends the existing workspace language without a separate UI system. */
+/* Explore: calm, direct and source-first. Materials establish hierarchy; motion only confirms intent. */
 .explore-panel {
   min-height: 0;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: clamp(18px, 2.4vw, 28px);
   overflow: auto;
-  padding: clamp(24px, 5vw, 64px);
+  padding: clamp(24px, 4.5vw, 56px);
   color: var(--ui-text);
   background:
-    radial-gradient(circle at 88% 4%, rgb(var(--context-rgb) / 0.12), transparent 34%),
+    radial-gradient(circle at 82% -8%, rgb(var(--context-rgb) / 0.16), transparent 38%),
+    radial-gradient(circle at 8% 88%, rgb(var(--context-rgb) / 0.05), transparent 28%),
     var(--ui-surface);
   border: 1px solid var(--ui-separator);
   border-radius: var(--ui-radius);
@@ -3225,99 +3226,150 @@ select.nes-select {
   animation: ui-materialize 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.explore-hero { max-width: 720px; }
+.explore-hero { max-width: 760px; }
 .explore-eyebrow {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   color: var(--ui-accent);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 750;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
 }
 .explore-hero h2,
 .explore-flow-header h2 {
   margin: 0;
-  font-size: clamp(28px, 4vw, 46px);
-  line-height: 1.08;
-  letter-spacing: -0.035em;
+  font-size: clamp(34px, 4.8vw, 54px);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
 }
 .explore-hero p {
   max-width: 650px;
-  margin: 14px 0 0;
+  margin: 16px 0 0;
   color: var(--ui-text-secondary);
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: clamp(14px, 1.4vw, 17px);
+  line-height: 1.55;
 }
 .explore-entry-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  max-width: 920px;
+  gap: 14px;
+  width: min(960px, 100%);
 }
-.explore-connection-badge {
-  width: min(920px, 100%);
+.explore-connection-card {
+  width: min(960px, 100%);
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
-  padding: 11px 13px;
+  gap: 12px 14px;
+  padding: 16px;
   color: var(--ui-text-secondary);
-  background: var(--ui-fill);
-  border: 1px solid var(--ui-separator);
-  border-radius: 10px;
+  background: color-mix(in srgb, var(--ui-control-bg) 76%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ui-separator-strong) 72%, transparent);
+  border-radius: var(--ui-radius-lg);
+  box-shadow: var(--ui-shadow-sm);
+  backdrop-filter: blur(22px) saturate(150%);
   font-size: 12px;
 }
-.explore-connection-badge strong {
+.explore-connection-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--ui-accent) 12%, var(--ui-fill));
+}
+.explore-connection-icon span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ui-orange);
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--ui-orange) 13%, transparent);
+}
+.explore-connection-copy { min-width: 0; display: grid; gap: 3px; }
+.explore-connection-copy > span,
+.explore-section-kicker { color: var(--ui-text-tertiary); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.explore-connection-copy strong {
   color: var(--ui-text);
+  font-size: 14px;
   overflow-wrap: anywhere;
 }
-.explore-connection-badge button {
-  padding: 5px 8px;
+.explore-connection-copy p { margin: 0; line-height: 1.45; }
+.explore-connection-actions { display: flex; align-items: center; gap: 6px; }
+.explore-connection-actions button {
+  min-height: 36px;
+  padding: 7px 11px;
   color: var(--ui-accent);
   background: transparent;
-  border: 0;
-  border-radius: 7px;
+  border: 1px solid transparent;
+  border-radius: 9px;
   cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  transition: transform 100ms ease-out, background-color 180ms ease, border-color 180ms ease;
 }
-.explore-connection-badge button:hover:not(:disabled),
-.explore-connection-badge button:focus-visible {
+.explore-connection-actions .explore-primary-action { color: white; background: var(--ui-accent); }
+.explore-connection-actions button:hover:not(:disabled),
+.explore-connection-actions button:focus-visible {
   background: var(--ui-fill-hover);
   outline: none;
 }
-.explore-connection-badge--connected {
+.explore-connection-actions .explore-primary-action:hover:not(:disabled),
+.explore-connection-actions .explore-primary-action:focus-visible { background: color-mix(in srgb, var(--ui-accent) 88%, black); }
+.explore-connection-actions button:focus-visible { box-shadow: 0 0 0 3px var(--ui-focus); }
+.explore-connection-actions button:active:not(:disabled) { transform: scale(0.97); transition-duration: 70ms; }
+.explore-connection-actions button:disabled { opacity: 0.55; cursor: wait; }
+.explore-connection-card--connected {
   border-color: color-mix(in srgb, var(--ui-green) 38%, transparent);
 }
+.explore-connection-card--connected .explore-connection-icon span { background: var(--ui-green); box-shadow: 0 0 0 5px color-mix(in srgb, var(--ui-green) 13%, transparent); }
+.explore-connection-steps {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 2px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--ui-separator);
+  list-style: none;
+}
+.explore-connection-steps li { display: flex; align-items: center; gap: 7px; color: var(--ui-text-secondary); }
+.explore-connection-steps li > span { width: 19px; height: 19px; display: grid; place-items: center; border-radius: 50%; color: var(--ui-accent); background: color-mix(in srgb, var(--ui-accent) 12%, transparent); font-size: 10px; font-weight: 750; }
 .explore-entry-card {
-  min-height: 230px;
+  min-height: 244px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 14px;
-  padding: 24px;
+  gap: 10px;
+  padding: clamp(20px, 3vw, 28px);
   text-align: left;
   color: var(--ui-text);
-  background: var(--ui-control-bg);
-  border: 1px solid var(--ui-separator);
+  background: color-mix(in srgb, var(--ui-control-bg) 90%, rgb(var(--context-rgb)) 10%);
+  border: 1px solid color-mix(in srgb, var(--ui-separator-strong) 68%, transparent);
   border-radius: var(--ui-radius-lg);
   box-shadow: var(--ui-shadow-sm);
   cursor: pointer;
-  transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1), border-color 180ms ease, box-shadow 240ms ease;
 }
 .explore-entry-card:hover,
 .explore-entry-card:focus-visible {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   border-color: rgb(var(--context-rgb) / 0.5);
   box-shadow: 0 14px 35px rgba(0, 0, 0, 0.1);
   outline: none;
 }
+.explore-entry-card:active { transform: scale(0.985); transition-duration: 80ms; }
+.explore-entry-symbol { width: 42px; height: 42px; display: grid; place-items: center; margin-bottom: 8px; border-radius: 13px; color: var(--ui-accent); background: color-mix(in srgb, var(--ui-accent) 12%, var(--ui-fill)); font-size: 21px; }
+.explore-entry-symbol--diagnosis { color: color-mix(in srgb, var(--ui-accent) 68%, var(--ui-text)); background: color-mix(in srgb, var(--ui-accent) 8%, var(--ui-fill)); }
 .explore-entry-index {
   color: var(--ui-text-tertiary);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
+  letter-spacing: 0.04em;
 }
 .explore-entry-card strong {
-  font-size: 24px;
-  letter-spacing: -0.025em;
+  font-size: 26px;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
 }
 .explore-entry-card > span:not(.explore-entry-index) {
   color: var(--ui-text-secondary);
@@ -3331,6 +3383,8 @@ select.nes-select {
   font-style: normal;
   font-weight: 700;
 }
+.explore-entry-card em span { display: inline-block; margin-left: 4px; transition: transform 180ms ease; }
+.explore-entry-card:hover em span { transform: translateX(3px); }
 .explore-panel--flow { padding-top: clamp(20px, 3vw, 38px); }
 .explore-flow-header {
   display: flex;
@@ -3471,16 +3525,23 @@ select.nes-select {
 }
 .explore-source-item button:disabled { color: var(--ui-text-tertiary); cursor: default; }
 .explore-knowledge-preview {
-  margin-top: 18px;
-  padding: 16px;
+  width: min(960px, 100%);
+  margin-top: 2px;
+  padding: 18px;
   border: 1px solid var(--ui-separator);
   border-radius: var(--ui-radius);
-  background: var(--ui-control-bg);
+  background: color-mix(in srgb, var(--ui-control-bg) 84%, transparent);
+  backdrop-filter: blur(18px) saturate(140%);
 }
+.explore-knowledge-preview header > div { display: grid; gap: 4px; }
 .explore-knowledge-preview header span,
 .explore-knowledge-preview small,
 .explore-knowledge-preview p { color: var(--ui-text-secondary); }
 .explore-knowledge-preview ul { display: grid; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.explore-empty-state { display: flex; align-items: center; gap: 12px; min-height: 74px; margin-top: 10px; padding: 12px; color: var(--ui-text-secondary); background: var(--ui-fill); border-radius: 10px; }
+.explore-empty-state > span { color: var(--ui-text-tertiary); font-size: 24px; }
+.explore-empty-state strong { color: var(--ui-text); }
+.explore-empty-state p { margin: 3px 0 0; }
 .explore-knowledge-link { min-width: 0; padding: 0; overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
 .explore-verification-form {
   display: grid;
@@ -3517,20 +3578,32 @@ select.nes-select {
     align-items: stretch;
     flex-direction: column;
   }
-  .explore-connection-badge {
+  .explore-connection-card {
     grid-template-columns: 1fr auto;
   }
-  .explore-connection-badge > span {
-    grid-column: 1 / -1;
-  }
+  .explore-connection-icon { display: none; }
+  .explore-connection-steps { grid-column: 1 / -1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .explore-panel,
-  .explore-entry-card {
+  .explore-entry-card,
+  .explore-entry-card em span,
+  .explore-connection-actions button {
     animation: none;
     transition: none;
   }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .explore-connection-card,
+  .explore-knowledge-preview { background: var(--ui-control-bg); backdrop-filter: none; }
+}
+
+@media (prefers-contrast: more) {
+  .explore-connection-card,
+  .explore-entry-card,
+  .explore-knowledge-preview { border-color: var(--ui-text-secondary); }
 }
 
 /* Serial assistant: preserve the familiar tool layout while sharing the

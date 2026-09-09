@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextItem, ExploreRequest, HandoffContext, IdeaResult, KnowledgeCard, SourceEvidence, ExploreZhihuConnectionStatus } from '../../common/explore';
 
 type ExploreView = 'home' | 'idea' | 'diagnosis';
@@ -53,6 +53,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const [verificationSummary, setVerificationSummary] = useState('');
   const [verificationEvidence, setVerificationEvidence] = useState('');
   const [verificationSaving, setVerificationSaving] = useState(false);
+  const connectionWatchId = useRef(0);
 
   useEffect(() => {
     if (!diagnosisSeed) return;
@@ -165,6 +166,24 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
     }
   };
 
+  const watchConnection = async (watchId: number) => {
+    for (let attempt = 0; attempt < 45; attempt += 1) {
+      await new Promise((resolve) => window.setTimeout(resolve, 2000));
+      if (connectionWatchId.current !== watchId) return;
+      try {
+        const next = await window.electronAPI.getExploreZhihuStatus();
+        if (connectionWatchId.current !== watchId) return;
+        setConnection(next);
+        if (next.state === 'connected') {
+          setNotice('知乎开放平台已连接，现在可以开始探索。');
+          return;
+        }
+      } catch {
+        // Keep the independent input window usable through a transient status failure.
+      }
+    }
+  };
+
   useEffect(() => {
     void refreshConnection();
     window.electronAPI.onExploreAnalysisResult((result) => {
@@ -210,10 +229,13 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   }, [currentProject, hardwareSummary, view]);
 
   const beginConnection = async () => {
+    const watchId = ++connectionWatchId.current;
     setStartingConnection(true);
     try {
       const result = await window.electronAPI.beginExploreZhihuConnection();
       setNotice(result.message);
+      if (result.ok && result.state === 'launched') void watchConnection(watchId);
+      if (result.ok && result.state === 'already_connected') await refreshConnection();
     } catch {
       setNotice('无法启动知乎开放平台安全连接');
     } finally {
@@ -419,15 +441,32 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   };
 
   const connectionBadge = (
-    <div className={`explore-connection-badge explore-connection-badge--${connection?.state || 'checking'}`}>
-      <span>知识来源</span>
-      <strong>{checkingConnection ? '正在检查连接...' : connection?.message || '需要先连接知乎开放平台'}</strong>
-      {connection?.state === 'needs_secret' && (
-        <button type="button" onClick={() => void beginConnection()} disabled={startingConnection}>
-          {startingConnection ? '正在打开...' : '连接知乎开放平台'}
+    <div className={`explore-connection-card explore-connection-card--${connection?.state || 'checking'}`} data-tour-id="explore-zhihu-connection">
+      <div className="explore-connection-icon" aria-hidden="true"><span /></div>
+      <div className="explore-connection-copy">
+        <span>知乎开放平台</span>
+        <strong>{checkingConnection ? '正在检查连接…' : connection?.message || '需要先连接知乎开放平台'}</strong>
+        <p>{connection?.state === 'connected'
+          ? '探索时可检索知乎真实开发经验；每条结论仍会保留原始来源。'
+          : 'Access Secret 只交给知乎官方连接工具，不会出现在页面、聊天或日志中。'}</p>
+      </div>
+      <div className="explore-connection-actions">
+        {connection?.state === 'needs_secret' && (
+          <button className="explore-primary-action" type="button" onClick={() => void beginConnection()} disabled={startingConnection}>
+            {startingConnection ? '正在打开安全窗口…' : '配置 Access Secret'}
+          </button>
+        )}
+        <button className="explore-secondary-action" type="button" onClick={() => void refreshConnection()} disabled={checkingConnection}>
+          {checkingConnection ? '检查中…' : '重新检查'}
         </button>
-      )}
-      <button type="button" onClick={() => void refreshConnection()} disabled={checkingConnection}>重新检查</button>
+      </div>
+      {connection?.state === 'needs_secret' ? (
+        <ol className="explore-connection-steps" aria-label="连接步骤">
+          <li><span>1</span>在知乎个人中心生成新的 Secret</li>
+          <li><span>2</span>粘贴到弹出的安全窗口</li>
+          <li><span>3</span>连接成功后页面会自动确认</li>
+        </ol>
+      ) : null}
     </div>
   );
 
@@ -437,26 +476,28 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
         <div className="explore-hero">
           <span className="explore-eyebrow">CATNIP FORGE</span>
           <h2 id="explore-title">探索</h2>
-          <p>从真实开发经验中找到可实现的方向，或为当前硬件问题建立有证据的判断。</p>
+          <p>把模糊的想法变成可实现方向，或用真实来源定位硬件问题。</p>
         </div>
         {connectionBadge}
         {notice ? <div className="explore-connection-notice" role="status">{notice}</div> : null}
         <div className="explore-entry-grid">
           <button className="explore-entry-card" type="button" onClick={() => enter('idea')} data-tour-id="explore-idea">
-            <span className="explore-entry-index">01</span>
+            <span className="explore-entry-symbol explore-entry-symbol--idea" aria-hidden="true">✦</span>
+            <span className="explore-entry-index">从一个念头开始</span>
             <strong>找灵感</strong>
-            <span>告诉 Catnip 你想做什么，由它结合当前工程与硬件条件形成可实现的 Idea。</span>
-            <em>开始描述想法</em>
+            <span>描述你想做的东西，Catnip 会结合当前工程和硬件条件，给出真正能落地的方向。</span>
+            <em>描述我的想法 <span aria-hidden="true">→</span></em>
           </button>
           <button className="explore-entry-card" type="button" onClick={() => enter('diagnosis')} data-tour-id="explore-diagnosis">
-            <span className="explore-entry-index">02</span>
+            <span className="explore-entry-symbol explore-entry-symbol--diagnosis" aria-hidden="true">⌁</span>
+            <span className="explore-entry-index">从一条线索开始</span>
             <strong>解问题</strong>
-            <span>带上最小必要的工程和运行证据，交叉检索社区经验与权威资料。</span>
-            <em>开始分析问题</em>
+            <span>选择必要的工程和运行证据，再用社区经验与权威资料交叉判断。</span>
+            <em>分析当前问题 <span aria-hidden="true">→</span></em>
           </button>
         </div>
         <section className="explore-knowledge-preview" data-tour-id="explore-saved-knowledge">
-          <header><strong>已收藏知识</strong><span>{knowledgeCards.length} 条 · 由你主动收藏</span></header>
+          <header><div><span className="explore-section-kicker">你的资料库</span><strong>已收藏知识</strong></div><span>{knowledgeCards.length} 条 · 只在你选择后使用</span></header>
           {knowledgeCards.length ? (
             <ul>{knowledgeCards.slice(0, 6).map((card) => (
               <li key={card.id}>
@@ -465,7 +506,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
                 <button type="button" onClick={() => beginVerification(card.id)}>记录验证</button>
               </li>
             ))}</ul>
-          ) : <p>还没有收藏。完成一次分析后，可在来源旁点击“收藏”。</p>}
+          ) : <div className="explore-empty-state"><span aria-hidden="true">◇</span><div><strong>这里还没有内容</strong><p>完成一次分析后，可在可信来源旁点击“收藏”。</p></div></div>}
           {verificationCardId ? (
             <div className="explore-verification-form" data-tour-id="explore-verification-form">
               <strong>记录真实验证结果</strong>
