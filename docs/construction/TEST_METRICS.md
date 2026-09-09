@@ -228,3 +228,9 @@ Explore UI 契约、知识 Store 持久化专项、Electron typecheck、Main/Ren
 ## 2026-09-09 Phase 5c 验证反馈
 
 Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typecheck、Main/Renderer build 和 git diff --check 均通过。验证必须由用户主动打开表单并选择有效或无效，摘要必填，可保留证据引用；无实机证据时不声称硬件验证完成。未调用 DeepSeek、知乎、Access Secret 或硬件。
+
+## 2026-09-09 Phase 6a Windows 发布候选
+
+首次 `npm.cmd --prefix electron run pack:win` 在 GitHub 下载 Electron 33.4.11 时连接超时；改为复用已安装的同版本 Electron 后，施工执行环境又在大资源并发复制约 60 秒时以状态 -1 回收子进程，旧脚本随后错误尝试给半成品盖章并报 `Invalid binary format`。已修为本地 Electron 优先、builder 非零立即失败，并由自有盖章脚本同时写版本和产品图标；临时 EXE 盖章探针通过。
+
+当前候选用已通过的 Runtime/Main/Renderer 构建、electron-builder 基础包和按原 filter 分组复制完成。`verify:release` 通过：4,453,446,595 字节，Node v22.14.0、隔离 Python/pyserial 3.5、ESP-IDF v5.4.3、Claude Code 2.1.167；官方知乎 Skill 15 文件逐字节一致，用户 CLI 和真实 DeepSeek/Qwen Key 未入包。发布门禁新增 app.asar 内探索功能标记检查。`verify:first-run`、`verify:version`、`verify:explore-ui` 通过；首启未填写真实 Key，临时 userData 和成品进程已清理。完整单命令 `pack:win` 仍需在无 60 秒子进程限制的终端复核。未调用知乎、DeepSeek 或硬件。

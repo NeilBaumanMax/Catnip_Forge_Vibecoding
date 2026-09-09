@@ -19,7 +19,7 @@
 - Phase 1：离线宿主集成完成。官方 `zhihu` Skill 的 15 个 vendor 文件已保真导入、完整部署并进入 `@zhihu`/打包契约；官方 CLI 安装在 `D:\ZhihuCLI`。Skill 本身还支持热榜、直答、本人创作/关注/收藏、官方知识库和额度查询，但探索 MVP 只选用状态检查、知乎搜索和全网搜索；真实搜索和 Agent Skill 调用仍未验收。
 - Phase 2：完成。共享 Domain、运行时校验、Main JSON 知识 Store、五个知识 IPC、相关发现与显式选择已实现。
 - Phase 3：软件闭环完成。连接入口、固定知乎/全网搜索桥、受限分析、Idea/Diagnosis UI、结构化 Handoff 和无工具只计划档位已实现；DeepSeek 真实计划输出通过，真实知乎搜索按用户要求暂缓，“确认并执行”尚未开放。
-- Phase 4 软件闭环完成；Phase 5 已完成：主动收藏、相关历史显式选择和有效/无效验证反馈均已实现。Phase 6A 已开始，开工备份 `backup/pre-phase-6-20260909` 已推送；真实知乎与实机证据仍 pending。
+- Phase 4、Phase 5 软件闭环完成。Phase 6A 当前源码 Windows 发布候选、成品资源和无 Key 冷启动已通过；开工备份 `backup/pre-phase-6-20260909` 已推送。真实知乎与实机证据仍 pending。
 
 ## 当前实现边界
 
@@ -32,8 +32,8 @@
 知识数据位于 Electron `userData/explore/knowledge.json`；历史知识只发现，显式选择后才进入 Context。该本地 Store 与知乎官方 Knowledge Base 不同，MVP 不调用后者。
 ## 下一步 1–3 项
 
-1. 执行 Phase 6A 软件回归并重打 Windows 发布候选。
-2. 验证成品包含探索页面与官方 Skill 原字节、不包含 Secret/用户 CLI，并完成冷启动检查。
+1. 提交并远端核对 Phase 6A 打包可靠性与成品探索门禁。
+2. 执行 Phase 6 剩余回归与两条 Demo；不能获得的知乎/实机证据继续明确 pending。
 3. 保持 4c 真实知乎验收暂缓；没有实机证据时继续标记硬件验证待完成。
 
 ## Decision 与 Assumption

@@ -103,6 +103,13 @@ for (const entry of [
   assert(asarEntries.has(entry), `app.asar missing ${entry}`);
 }
 
+const rendererBundleEntry = [...asarEntries].find((entry) => /^\\dist\\renderer\\assets\\index-[^\\]+\.js$/i.test(entry));
+assert(rendererBundleEntry, 'app.asar missing the main renderer bundle');
+const rendererBundle = asar.extractFile(path.join(resources, 'app.asar'), rendererBundleEntry.slice(1));
+for (const marker of ['探索', '找灵感', '解问题', '记录验证', '验证有效', '验证无效']) {
+  assert(rendererBundle.includes(Buffer.from(marker)), `packaged renderer missing Explore marker: ${marker}`);
+}
+
 const nodeVersion = run(path.join(resources, 'runtime', 'nodejs', 'node.exe'), ['--version']);
 const packagedPython = path.join(resources, 'runtime', 'python', 'python.exe');
 const packagedPythonRoot = path.dirname(packagedPython);

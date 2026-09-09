@@ -10,6 +10,7 @@ const outputRoot = process.env.CATNIP_PACKAGE_OUTPUT
 const exePath = path.join(outputRoot, 'win-unpacked', `${versionInfo.productName}.exe`);
 const builder = path.join(electronRoot, 'node_modules', 'electron-builder', 'cli.js');
 const stamp = path.join(electronRoot, 'scripts', 'stamp_win_exe_version.cjs');
+const localElectronDist = path.join(electronRoot, 'node_modules', 'electron', 'dist');
 const requiredBundleSources = [
   path.join(electronRoot, '..', '_bundled', 'nodejs', 'node.exe'),
   path.join(electronRoot, '..', '_bundled', 'python', 'python.exe'),
@@ -44,18 +45,22 @@ if (pythonProbe.status !== 0) {
   process.exit(pythonProbe.status || 1);
 }
 
-const result = spawnSync(process.execPath, [builder, '--win', '--x64', '--dir', `--config.directories.output=${outputRoot}`], {
+const builderArgs = [builder, '--win', '--x64', '--dir', `--config.directories.output=${outputRoot}`];
+if (fs.existsSync(path.join(localElectronDist, 'electron.exe'))) {
+  builderArgs.push(`--config.electronDist=${localElectronDist}`);
+  console.log(`[pack:win] reusing installed Electron distribution: ${localElectronDist}`);
+}
+
+const result = spawnSync(process.execPath, builderArgs, {
   cwd: electronRoot,
   stdio: 'inherit',
   env: process.env,
 });
 
-if (result.status !== 0 && !fs.existsSync(exePath)) {
-  process.exit(result.status || 1);
-}
-
 if (result.status !== 0) {
-  console.warn('[pack:win] electron-builder failed after creating win-unpacked; continuing to stamp the unpacked exe.');
+  console.error(`[pack:win] electron-builder failed (status=${result.status}, signal=${result.signal || 'none'}).`);
+  if (result.error) console.error(result.error);
+  process.exit(result.status || 1);
 }
 
 const stampResult = spawnSync(process.execPath, [stamp, exePath], {

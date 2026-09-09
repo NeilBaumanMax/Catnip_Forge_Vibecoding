@@ -21,6 +21,7 @@ const res = ResEdit.NtExecutableResource.from(exe);
 const versions = ResEdit.Resource.VersionInfo.fromEntries(res.entries);
 const vi = versions[0] || ResEdit.Resource.VersionInfo.createEmpty();
 const language = { lang: 1033, codepage: 1200 };
+const iconFile = ResEdit.Data.IconFile.from(fs.readFileSync(path.join(electronRoot, 'assets', 'icon.ico')));
 
 vi.setFileVersion(version, language.lang);
 vi.setProductVersion(version, language.lang);
@@ -35,6 +36,12 @@ vi.setStringValues(language, {
   LegalCopyright: 'Copyright (C) Catnip Forge. All rights reserved.',
 }, true);
 vi.outputToResourceEntries(res.entries);
+ResEdit.Resource.IconGroupEntry.replaceIconsForResource(
+  res.entries,
+  101,
+  language.lang,
+  iconFile.icons.map((item) => item.data),
+);
 res.outputResource(exe);
 fs.writeFileSync(exePath, Buffer.from(exe.generate()));
 
