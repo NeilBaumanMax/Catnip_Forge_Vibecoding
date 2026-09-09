@@ -31,6 +31,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const [notice, setNotice] = useState('');
   const [connection, setConnection] = useState<ExploreZhihuConnectionStatus | null>(null);
   const [checkingConnection, setCheckingConnection] = useState(false);
+  const [installingConnection, setInstallingConnection] = useState(false);
   const [startingConnection, setStartingConnection] = useState(false);
   const [analysisPending, setAnalysisPending] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<ExploreAnalysisResult | null>(null);
@@ -54,6 +55,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const [verificationEvidence, setVerificationEvidence] = useState('');
   const [verificationSaving, setVerificationSaving] = useState(false);
   const connectionWatchId = useRef(0);
+  const autoConnectionPrompted = useRef(false);
 
   useEffect(() => {
     if (!diagnosisSeed) return;
@@ -242,6 +244,31 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
       setStartingConnection(false);
     }
   };
+
+  const installConnection = async () => {
+    setInstallingConnection(true);
+    try {
+      const result = await window.electronAPI.installExploreZhihuConnection();
+      setConnection(result.connection);
+      setNotice(result.message);
+      if (result.ok && result.connection.state === 'needs_secret') {
+        autoConnectionPrompted.current = true;
+        await beginConnection();
+      } else if (result.ok && result.connection.state === 'connected') {
+        setNotice('知乎开放平台已连接，现在可以开始探索。');
+      }
+    } catch {
+      setNotice('无法安装知乎开放平台连接组件');
+    } finally {
+      setInstallingConnection(false);
+    }
+  };
+
+  useEffect(() => {
+    if (connection?.state !== 'needs_secret' || checkingConnection || startingConnection || autoConnectionPrompted.current) return;
+    autoConnectionPrompted.current = true;
+    void beginConnection();
+  }, [connection?.state, checkingConnection, startingConnection]);
 
   const enter = (next: Exclude<ExploreView, 'home'>) => {
     setView(next);
@@ -451,6 +478,11 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
           : 'Access Secret 只交给知乎官方连接工具，不会出现在页面、聊天或日志中。'}</p>
       </div>
       <div className="explore-connection-actions">
+        {connection?.state === 'needs_install' && (
+          <button className="explore-primary-action" type="button" onClick={() => void installConnection()} disabled={installingConnection}>
+            {installingConnection ? '正在安装连接组件…' : '安装连接组件并继续'}
+          </button>
+        )}
         {connection?.state === 'needs_secret' && (
           <button className="explore-primary-action" type="button" onClick={() => void beginConnection()} disabled={startingConnection}>
             {startingConnection ? '正在打开安全窗口…' : '配置 Access Secret'}
@@ -465,6 +497,12 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
           <li><span>1</span>在知乎个人中心生成新的 Secret</li>
           <li><span>2</span>粘贴到弹出的安全窗口</li>
           <li><span>3</span>连接成功后页面会自动确认</li>
+        </ol>
+      ) : connection?.state === 'needs_install' ? (
+        <ol className="explore-connection-steps" aria-label="安装步骤">
+          <li><span>1</span>点击安装即授权从知乎官方地址下载并校验</li>
+          <li><span>2</span>安装在当前用户目录，不需要管理员权限，也不会修改 PATH</li>
+          <li><span>3</span>安装成功后自动弹出 Access Secret 安全窗口</li>
         </ol>
       ) : null}
     </div>

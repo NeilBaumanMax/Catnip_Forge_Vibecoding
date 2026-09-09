@@ -1,14 +1,14 @@
 # 开发进度
 
-更新时间：2026-09-09。探索 MVP 正在执行 Phase 6 验证。
+更新时间：2026-09-10。探索 MVP 正在执行 Phase 6 验证。
 
-- 当前 Phase：Phase 6 最终验收；Windows 发布候选、无 Key 冷启动和 Explore/队列/Skill/串口软件回归已通过，真实“找灵感”已通过，真实排障与实机仍 pending。
-- 已完成：Access Secret 经独立安全面板配置，官方凭证验证和最小本人内容请求成功；真实探索取得 8 条知乎来源，DeepSeek 返回 3 个合法 Idea，页面保留 5 个可点击原始来源。
-- 当前任务：完成真实“解问题”双搜索 Demo，并把本轮受限输出修复重打进 Windows 候选。
-- 未完成：真实知乎＋全网排障验收、确认后真实施工与实机验证、最新源码完整单命令打包。
+- 当前 Phase：Phase 6 最终验收；首次使用连接向导源码已完成，Windows 发布候选、真实排障与实机仍需最终验收。
+- 已完成：全新用户可明确点击安装官方连接组件；已有 CLI 但缺 Secret 时，进入探索会自动弹一次原生遮蔽窗口。安装与连接均不接收 Renderer/Chat Secret。此前真实“找灵感”已取得 8 条知乎来源并展示 3 个合法 Idea。
+- 当前任务：重打并实测全新 Windows 候选的安装/Secret 首次使用路径，然后执行真实“解问题”双搜索 Demo。
+- 未完成：最新 Windows 候选首次连接实测、真实知乎＋全网排障验收、确认后真实施工与实机验证。
 - Blocker：`REAL_HARDWARE_VALIDATION_PENDING`；Access Secret 与 DeepSeek 余额阻塞均已解除。
-- 测试：Phase 4a 专项、typecheck、Main/Renderer build、Explore UI/Request、task queue 通过；首次错误断言与修复见 TEST_METRICS/LOG。
-- Git：Phase 4 备份 `backup/pre-phase-4-20260908` 指向 `c0ca685f1460c7c5c539042d93bcc2d9ada1bfa0`；4a 独立基线提交 `cefd6331` 已推送。
+- 测试：Phase 6e 连接专项、官方 status、typecheck、Main/Renderer build、Explore UI、Request、搜索/Handoff 均通过；未执行真实安装、搜索或硬件。
+- Git：Phase 6e 备份 `backup/pre-phase-6e-connection-20260909` 指向 `77f2f8fc`；独立文档基线 `8edb385b` 已推送。
 
 以下按日期记录施工当时的状态与失败证据；其中“未配置”“待接入”等表述不得覆盖上方当前状态。
 ## 2026-09-07 官方 CLI 安装实测

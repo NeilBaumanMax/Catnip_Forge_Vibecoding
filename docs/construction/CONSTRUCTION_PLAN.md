@@ -25,7 +25,7 @@
 
 - Phase 0–5 的软件范围完成，Phase 6 最终验收中；安全连接、固定搜索桥、受限分析/计划、结构化结果、Handoff、一次性确认执行、知识收藏和验证反馈均已实现。
 - Access Secret 已通过独立宿主窗口配置；官方验证、最小本人内容请求和真实“找灵感”通过。该请求取得 8 条知乎来源并展示 3 个合法 Idea。
-- 下一小项按顺序为：真实“解问题”知乎＋全网双搜索 Demo；重打最新 Windows 候选；有设备后完成确认施工及 Build/Flash/Serial 实机验收。
+- Phase 6e 首次使用连接向导源码已完成：缺 CLI 需用户点击授权安装；CLI 可用但缺 Secret 时进入探索自动弹一次安全窗口。下一小项按顺序为：重打并实测全新 Windows 候选；真实“解问题”知乎＋全网双搜索 Demo；有设备后完成确认施工及 Build/Flash/Serial 实机验收。
 - `LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留；已有发布候选验收不能替代最新源码重新打包，软件门禁或串口 mock 不能替代真机。
 ## Phase 1 已定位的最小工程范围
 

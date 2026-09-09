@@ -1,6 +1,6 @@
 # Layer Contract
 
-依据当前源码核实后确定责任。知识 Store、安全连接、固定搜索桥、受限分析/计划、结果 UI、Handoff、有界 Context 与一次性确认执行门禁已实现；真实知乎“找灵感”已验收，真实知乎＋全网排障和硬件仍待验收。
+依据当前源码核实后确定责任。知识 Store、安全连接、首次使用安装/Secret 向导、固定搜索桥、受限分析/计划、结果 UI、Handoff、有界 Context 与一次性确认执行门禁已实现；真实知乎“找灵感”已验收，最新 Windows 包、真实知乎＋全网排障和硬件仍待验收。
 
 | 层 | 责任与复用入口 | 禁止 |
 | --- | --- | --- |
@@ -39,6 +39,8 @@
 - `explore:request:prepare` 不执行搜索、Agent、文件写入、Build、Flash 或 Serial。准备成功不等于已产生 Idea/Diagnosis。
 
 ## 2026-09-08 官方能力与凭证边界
+
+- CLI 缺失或不兼容时，Renderer 只提供显式安装授权动作；Main 固定调用官方 setup 并对并发请求去重。CLI 可用但缺 Secret 时，每次进入探索最多自动弹一次安全窗口，取消后不由轮询重复弹出。
 
 - Renderer 只触发零参数连接动作；Main 打开固定个人中心并启动独立遮蔽输入窗口，凭证只经官方 CLI stdin 写系统凭证库。
 - Main 固定搜索桥只允许 `search zhihu` / `search global`，不开放热榜、直答、本人数据、官方知识库、额度查询或 OAuth。Access Secret 已通过独立宿主窗口配置并由官方 CLI 验证；真实知乎“找灵感”已通过，`search global` 留待真实排障 Demo 验收。

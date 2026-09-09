@@ -147,6 +147,13 @@ export interface ExploreZhihuConnectionLaunchResult {
   message: string;
 }
 
+export interface ExploreZhihuSetupResult {
+  ok: boolean;
+  state: 'installed' | 'already_ready' | 'unavailable';
+  message: string;
+  connection: ExploreZhihuConnectionStatus;
+}
+
 export interface ExploreAnalysisStartResult {
   ok: boolean;
   taskId: string;

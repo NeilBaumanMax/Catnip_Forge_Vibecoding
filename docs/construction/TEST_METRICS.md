@@ -248,3 +248,17 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 ## 2026-09-09 Phase 6d 文档漂移与交接检查
 
 对 `ARCHITECTURE.md`、`LAYER_CONTRACT.md`、`CODEX_MASTER_REQUIREMENTS.md`、`CONSTRUCTION_PLAN.md`、`HANDOFF.md`、`DEV_PROGRESS.md` 执行严格 UTF-8 解码、本地 Markdown 链接存在性和当前态过时短语检查，结果 `docs_utf8_links_current_state=PASS`；`git diff --check` 通过。早期未配置 Secret、未接搜索和失败尝试保留为带日期历史证据，不改写成当前事实。本次仅修改施工文档，因此未重复业务构建。
+
+## 2026-09-10 Phase 6e 首次使用连接向导
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | 通过 | 共享类型、Main、preload、Renderer 严格类型 |
+| `npm.cmd --prefix electron run build:main` | 通过 | 首轮独立构建及多个专项内复跑均 exit 0 |
+| `npm.cmd --prefix electron run build:renderer` | 通过 | 1262 modules；保留既有大 chunk warning |
+| `verify:explore-zhihu-connection` | 通过 | 固定官方 setup、非 needs_install 不执行、成功转 needs_secret、Main 并发去重、原生 PasswordBox/stdin；注入假状态，不联网安装 |
+| `verify:explore-zhihu-status` | 通过 | 真实无副作用 status：connected/installed/compatible；不读取 Secret 内容 |
+| `verify:explore-ui` / `verify:explore-request` / `verify:explore-search-handoff` | 通过 | 自动弹窗单次 ref、安装点击授权、请求清洗、固定搜索与一次性确认门禁回归 |
+| `git diff --check` | 通过 | 无 whitespace error；LF→CRLF 为仓库行尾提示 |
+
+最终 7 组目标通过、0 最终失败。Review 在首轮通过后补充 Main 单一 in-flight Promise，避免绕过 Renderer disabled 并发启动多个 setup；安装说明改为复用已有步骤样式。未执行真实 setup、凭据配置、搜索、DeepSeek 或硬件。源码完成不替代最新 Windows 包的全新用户安装→Secret→status 实测。

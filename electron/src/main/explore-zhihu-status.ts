@@ -3,7 +3,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import type { IpcMain } from 'electron';
 import { shell } from 'electron';
-import type { ExploreZhihuConnectionLaunchResult, ExploreZhihuConnectionStatus } from '../common/explore';
+import type { ExploreZhihuConnectionLaunchResult, ExploreZhihuConnectionStatus, ExploreZhihuSetupResult } from '../common/explore';
 import { getAgentDir } from './paths';
 
 interface OfficialStatusPayload {
@@ -16,6 +16,7 @@ interface OfficialStatusPayload {
 
 const MAX_OUTPUT_BYTES = 64 * 1024;
 const STATUS_TIMEOUT_MS = 30_000;
+const SETUP_TIMEOUT_MS = 180_000;
 export const ZHIHU_PROFILE_URL = 'https://developer.zhihu.com/profile';
 
 export function mapOfficialZhihuStatus(payload: unknown): ExploreZhihuConnectionStatus {
@@ -29,13 +30,110 @@ export function mapOfficialZhihuStatus(payload: unknown): ExploreZhihuConnection
   if (!installed) {
     return { state: 'needs_install', installed, compatible, authConfigured, message: '需要安装知乎开放平台连接组件' };
   }
-  if (!compatible || status.ok !== true) {
+  if (!compatible) {
+    return { state: 'needs_install', installed, compatible, authConfigured, message: '需要更新知乎开放平台连接组件' };
+  }
+  if (status.ok !== true) {
     return { state: 'error', installed, compatible, authConfigured, message: '知乎开放平台连接组件需要检查' };
   }
   if (!authConfigured) {
     return { state: 'needs_secret', installed, compatible, authConfigured, message: '连接知乎开放平台' };
   }
   return { state: 'connected', installed, compatible, authConfigured, message: '知乎开放平台已连接' };
+}
+
+export function buildExploreZhihuSetupLaunch(): {
+  command: string;
+  args: string[];
+  options: Parameters<typeof spawn>[2];
+} {
+  const setupScript = path.join(getAgentDir(), 'skills', 'zhihu', 'scripts', 'setup.ps1');
+  return {
+    command: systemPowerShell(),
+    args: ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', setupScript],
+    options: {
+      cwd: path.dirname(setupScript),
+      env: exploreZhihuEnvironment(),
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  };
+}
+
+async function runExploreZhihuSetup(): Promise<void> {
+  const launch = buildExploreZhihuSetupLaunch();
+  const setupScript = launch.args.at(-1);
+  if (!setupScript || !fs.existsSync(setupScript)) throw new Error('知乎开放平台安装组件不完整');
+
+  return new Promise((resolve, reject) => {
+    const child = spawn(launch.command, launch.args, launch.options);
+    let outputBytes = 0;
+    let settled = false;
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (error) reject(error);
+      else resolve();
+    };
+    const timer = setTimeout(() => {
+      child.kill();
+      finish(new Error('安装知乎开放平台连接组件超时'));
+    }, SETUP_TIMEOUT_MS);
+    child.stdout?.on('data', (chunk: Buffer) => { outputBytes += chunk.length; });
+    child.stderr?.on('data', (chunk: Buffer) => { outputBytes += chunk.length; });
+    child.once('error', () => finish(new Error('无法启动知乎开放平台连接组件安装')));
+    child.once('close', (code) => {
+      if (outputBytes > MAX_OUTPUT_BYTES) finish(new Error('知乎开放平台连接组件安装输出过大'));
+      else if (code !== 0) finish(new Error('知乎开放平台连接组件安装失败'));
+      else finish();
+    });
+  });
+}
+
+export async function evaluateExploreZhihuInstallation(
+  readStatus: () => Promise<ExploreZhihuConnectionStatus>,
+  runSetup: () => Promise<void>,
+): Promise<ExploreZhihuSetupResult> {
+  const before = await readStatus();
+  if (before.state !== 'needs_install') {
+    const alreadyReady = before.state === 'connected' || before.state === 'needs_secret';
+    return {
+      ok: alreadyReady,
+      state: alreadyReady ? 'already_ready' : 'unavailable',
+      message: alreadyReady ? '知乎开放平台连接组件已经可用' : before.message,
+      connection: before,
+    };
+  }
+
+  try {
+    await runSetup();
+  } catch (error) {
+    return {
+      ok: false,
+      state: 'unavailable',
+      message: error instanceof Error ? error.message : '知乎开放平台连接组件安装失败',
+      connection: before,
+    };
+  }
+
+  const connection = await readStatus();
+  const ready = connection.state === 'connected' || connection.state === 'needs_secret';
+  return {
+    ok: ready,
+    state: ready ? 'installed' : 'unavailable',
+    message: ready ? '知乎开放平台连接组件已安装' : connection.message,
+    connection,
+  };
+}
+
+let setupInFlight: Promise<ExploreZhihuSetupResult> | null = null;
+
+export function installExploreZhihuConnection(): Promise<ExploreZhihuSetupResult> {
+  if (setupInFlight) return setupInFlight;
+  setupInFlight = evaluateExploreZhihuInstallation(readExploreZhihuConnectionStatus, runExploreZhihuSetup)
+    .finally(() => { setupInFlight = null; });
+  return setupInFlight;
 }
 
 export function systemPowerShell(): string {
@@ -176,5 +274,6 @@ export async function beginExploreZhihuConnection(): Promise<ExploreZhihuConnect
 
 export function registerExploreZhihuStatusIpc(registrar: Pick<IpcMain, 'handle'>): void {
   registrar.handle('explore:zhihu:status', async () => readExploreZhihuConnectionStatus());
+  registrar.handle('explore:zhihu:install', async () => installExploreZhihuConnection());
   registrar.handle('explore:zhihu:connect', async () => beginExploreZhihuConnection());
 }

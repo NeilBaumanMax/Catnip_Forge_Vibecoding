@@ -15,9 +15,20 @@ async function main() {
   const panel = fs.readFileSync(path.join(root, 'electron', 'src', 'renderer', 'components', 'ExplorePanel.tsx'), 'utf8');
   const hostScript = fs.readFileSync(path.join(root, 'agent', 'host-tools', 'configure-zhihu-secret.ps1'), 'utf8');
   const vendorRun = fs.readFileSync(path.join(root, 'agent', 'skills', 'zhihu', 'scripts', 'run.ps1'), 'utf8');
-  const { buildExploreZhihuConnectionLaunch, ZHIHU_PROFILE_URL } = require('../dist/main/explore-zhihu-status.js');
+  const {
+    buildExploreZhihuConnectionLaunch,
+    buildExploreZhihuSetupLaunch,
+    evaluateExploreZhihuInstallation,
+    mapOfficialZhihuStatus,
+    ZHIHU_PROFILE_URL,
+  } = require('../dist/main/explore-zhihu-status.js');
 
   assert.equal(ZHIHU_PROFILE_URL, 'https://developer.zhihu.com/profile');
+  assert.equal(
+    mapOfficialZhihuStatus({ ok: false, installed: true, cli: { compatible: false }, auth: { configured: false } }).state,
+    'needs_install',
+    'an incompatible CLI must require explicit update consent',
+  );
   const launch = buildExploreZhihuConnectionLaunch();
   assert.equal(launch.options.windowsHide, true);
   assert.equal(launch.options.detached, true);
@@ -30,9 +41,35 @@ async function main() {
   assert(!launch.args.join(' ').toLowerCase().includes('access secret'));
   assert(!JSON.stringify(launch.options.env).toLowerCase().includes('zhihu_access_secret'));
 
+  const setupLaunch = buildExploreZhihuSetupLaunch();
+  assert.equal(setupLaunch.options.windowsHide, true);
+  assert.deepEqual(setupLaunch.options.stdio, ['ignore', 'pipe', 'pipe']);
+  assert.match(setupLaunch.args.at(-1), /skills[\\/]zhihu[\\/]scripts[\\/]setup\.ps1$/);
+  assert(fs.existsSync(setupLaunch.args.at(-1)), 'official setup script must exist');
+
+  const connected = { state: 'connected', installed: true, compatible: true, authConfigured: true, message: '已连接' };
+  let setupCalls = 0;
+  const repeated = await evaluateExploreZhihuInstallation(async () => connected, async () => { setupCalls += 1; });
+  assert.equal(repeated.state, 'already_ready');
+  assert.equal(setupCalls, 0, 'setup must not run when the official CLI is already ready');
+
+  const statusSequence = [
+    { state: 'needs_install', installed: false, compatible: false, authConfigured: false, message: '需要安装' },
+    { state: 'needs_secret', installed: true, compatible: true, authConfigured: false, message: '需要连接' },
+  ];
+  const installed = await evaluateExploreZhihuInstallation(async () => statusSequence.shift(), async () => { setupCalls += 1; });
+  assert.equal(installed.state, 'installed');
+  assert.equal(installed.connection.state, 'needs_secret');
+  assert.equal(setupCalls, 1, 'one explicit install request must run setup exactly once');
+  assert.match(mainSource, /if \(setupInFlight\) return setupInFlight;/, 'Main must deduplicate concurrent install IPC calls');
+
   assert.match(preload, /beginExploreZhihuConnection:\s*\(\)\s*=>/);
+  assert.match(preload, /installExploreZhihuConnection:\s*\(\)\s*=>/);
   assert(!/beginExploreZhihuConnection:\s*\([^)]*(secret|accessSecret)/i.test(preload));
+  assert(!/installExploreZhihuConnection:\s*\([^)]*(secret|accessSecret)/i.test(preload));
   assert.match(panel, /连接知乎开放平台/);
+  assert.match(panel, /autoConnectionPrompted\.current = true;[\s\S]{0,120}void beginConnection\(\)/, 'missing one-shot automatic secret prompt');
+  assert.match(panel, /安装连接组件并继续/, 'fresh installs require a visible consent action');
   assert(!/<input[^>]+(?:secret|password)/i.test(panel));
   assert.match(mainSource, /shell\.openExternal\(ZHIHU_PROFILE_URL\)/);
   assert.match(hostScript, /auth set --secret-stdin/);
@@ -68,7 +105,7 @@ async function main() {
   });
   assert.equal(xamlResult.status, 0, `native secure panel must load on Windows: ${xamlResult.stderr}`);
 
-  console.log('explore zhihu connection passed: renderer isolation, native panel load, masked stdin-only auth');
+  console.log('explore zhihu connection passed: explicit setup gate, one-shot native prompt, renderer isolation, masked stdin-only auth');
   app.quit();
 }
 

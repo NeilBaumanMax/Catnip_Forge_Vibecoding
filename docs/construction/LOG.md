@@ -214,3 +214,11 @@
 - 代码核对发现现状需要用户额外点击“配置 Access Secret”；更关键的是官方 Skill 不携带 CLI，而 `needs_install` 没有用户授权安装入口，全新用户无法在产品内完成首次连接。
 - 最小方案继续复用官方 status/setup、既有原生 `PasswordBox` 安全窗口和系统凭据库。缺 Secret 每次进入探索最多自动弹一次；缺 CLI 必须由用户点击授权安装，成功后再弹安全窗口。Secret 不进入 Renderer、Chat、URL、日志或参数。
 - 已建立并推送 `backup/pre-phase-6e-connection-20260909`，远端核对为 `77f2f8fc9e97662e4539cb84c0b477dece20f74d`。本提交仅建立范围、验收与风险基线，不改业务源码，不执行安装、真实 Secret、搜索、模型或硬件。
+
+## 2026-09-10 / Phase 6e / 首次使用连接向导实现
+
+- 独立文档基线 `8edb385b96adbdef5ccfe258646f77efd12fa137` 已先提交、推送并经 `ls-remote` 核对，随后开始业务修改。
+- Main 新增零参数安装 IPC，只在官方 status 为 `needs_install` 时运行固定 Skill `scripts/setup.ps1`；输出只计字节并受 64 KiB/180 秒限制，不向 Renderer 透传 stdout/stderr。CLI 已可用时不重复 setup；并发 IPC 复用单一 in-flight Promise。
+- Renderer 不提供 Secret 输入。全新用户需点击“安装连接组件并继续”，该点击构成本次安装/修复授权；安装成功且缺 Secret 后立即打开既有原生安全窗口。已有 CLI 但缺 Secret 时，进入探索每次最多自动弹一次；取消后轮询不会重复打扰，仍保留手动按钮。
+- Review 发现 Renderer disabled 不能阻止伪造并发 IPC，已补 Main 去重；新增说明最初使用未定义 class，收敛为既有连接步骤样式。未修改官方 vendor、未打包用户 CLI、未新增 Secret 通道。
+- typecheck、Main/Renderer build、连接专项、官方 status、Explore UI、Request、搜索/Handoff 全部通过；连接专项注入假状态，不联网安装。未执行真实 setup、凭据配置、搜索、DeepSeek 或硬件；最新 Windows 包首次连接仍待验。

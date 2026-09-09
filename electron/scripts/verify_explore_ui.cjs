@@ -20,6 +20,10 @@ assert.match(explorePanel, /本次分析 Context/, 'diagnosis context picker is 
 assert.match(explorePanel, /取消勾选后，该项不会进入分析/, 'context exclusion promise is missing');
 assert.match(explorePanel, /需要先连接知乎开放平台/, 'safe connection wording is missing');
 assert.match(explorePanel, /getExploreZhihuStatus/, 'Explore must read connection status through preload');
+assert.match(explorePanel, /installExploreZhihuConnection/, 'fresh users need an explicit official CLI install action');
+assert.match(explorePanel, /connection\?\.state !== 'needs_secret'[\s\S]{0,220}autoConnectionPrompted\.current = true;[\s\S]{0,100}void beginConnection\(\)/, 'missing one-shot automatic Secret prompt');
+assert.match(explorePanel, /安装连接组件并继续/, 'install consent button is missing');
+assert.match(explorePanel, /不会修改 PATH/, 'official user-directory install boundary is missing');
 assert.match(explorePanel, /prepareExploreRequest/, 'Explore input must cross the validated Main request boundary');
 assert.match(explorePanel, /saveExploreKnowledge/, 'source save must use the existing preload store');
 assert.match(explorePanel, /data-tour-id="explore-saved-knowledge"/, 'saved knowledge preview is missing');
