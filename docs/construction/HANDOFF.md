@@ -1,6 +1,6 @@
 # 新 Agent 接力入口
 
-更新时间：2026-09-08。当前分支 `idea_to_production`，探索 MVP 未完成。开工必须动态运行 `git branch --show-current`、`git status --short`、`git rev-parse HEAD`，本文件的 hash 只代表最近一次核对快照。
+更新时间：2026-09-09。当前分支 `idea_to_production`，探索 MVP 软件功能已进入 Phase 6 前收尾。开工必须动态运行 `git branch --show-current`、`git status --short`、`git rev-parse HEAD`，本文件的 hash 只代表最近一次核对快照。
 
 ## 先读
 
@@ -19,7 +19,7 @@
 - Phase 1：离线宿主集成完成。官方 `zhihu` Skill 的 15 个 vendor 文件已保真导入、完整部署并进入 `@zhihu`/打包契约；官方 CLI 安装在 `D:\ZhihuCLI`。Skill 本身还支持热榜、直答、本人创作/关注/收藏、官方知识库和额度查询，但探索 MVP 只选用状态检查、知乎搜索和全网搜索；真实搜索和 Agent Skill 调用仍未验收。
 - Phase 2：完成。共享 Domain、运行时校验、Main JSON 知识 Store、五个知识 IPC、相关发现与显式选择已实现。
 - Phase 3：软件闭环完成。连接入口、固定知乎/全网搜索桥、受限分析、Idea/Diagnosis UI、结构化 Handoff 和无工具只计划档位已实现；DeepSeek 真实计划输出通过，真实知乎搜索按用户要求暂缓，“确认并执行”尚未开放。
-- Phase 4 软件闭环完成；真实知乎与实机证据仍 pending。Phase 5 进行中：5a 主动收藏、5b 相关历史发现和显式选择已实现，5c 未完成；Phase 6 未开始。
+- Phase 4 软件闭环完成；Phase 5 已完成：主动收藏、相关历史显式选择和有效/无效验证反馈均已实现。真实知乎与实机证据仍 pending；Phase 6 软件回归与发布检查未开始。
 
 ## 当前实现边界
 
@@ -27,13 +27,13 @@
 
 官方连接由固定个人中心 URL、独立宿主遮蔽输入和官方 CLI stdin 完成，Secret 不经过 Renderer/Chat。固定搜索桥只允许 `search zhihu` / `search global`；当前 Access Secret 未配置，用户要求暂不做真实搜索验收，保持 `LIVE_INTEGRATION_PENDING`。
 
-现有 Worker 继续使用单队列和 persistent Agent。`explore_analysis` 与 `explore_plan` 分别执行只分析和无工具只计划；合法结构化结果已接入 Idea/Diagnosis/来源和计划 UI。DeepSeek 真实计划输出已通过；“确认并执行”仍禁用，文件、Build、Flash、Serial 在用户确认前不开放。
+现有 Worker 继续使用单队列和 persistent Agent。`explore_analysis` 与 `explore_plan` 分别执行只分析和无工具只计划；合法结构化结果已接入 Idea/Diagnosis、来源和计划 UI。DeepSeek 真实计划输出已通过；计划完成后可由用户点击“确认并执行”，Main 以一次性、绑定计划与交接 ID、30 分钟过期的门禁提交到原有任务队列，确认前不开放文件、Build、Flash 或 Serial。
 
 知识数据位于 Electron `userData/explore/knowledge.json`；历史知识只发现，显式选择后才进入 Context。该本地 Store 与知乎官方 Knowledge Base 不同，MVP 不调用后者。
 ## 下一步 1–3 项
 
-1. 完成 Phase 5b 提交与远端核对。
-2. 实现 5c：由真实验证结果把收藏标记为有效或无效，并保留证据引用。
+1. 完成 Phase 5c 提交与远端核对。
+2. 进入 Phase 6：先做软件回归与发布门禁，再安排 Windows 包和冷启动验收。
 3. 保持 4c 真实知乎验收暂缓；没有实机证据时继续标记硬件验证待完成。
 
 ## Decision 与 Assumption

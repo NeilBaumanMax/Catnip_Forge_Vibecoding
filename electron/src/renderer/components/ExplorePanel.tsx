@@ -49,6 +49,10 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const [selectedKnowledgeIds, setSelectedKnowledgeIds] = useState<string[]>([]);
   const [relatedKnowledgeLoading, setRelatedKnowledgeLoading] = useState(false);
   const [relatedKnowledgeError, setRelatedKnowledgeError] = useState('');
+  const [verificationCardId, setVerificationCardId] = useState('');
+  const [verificationSummary, setVerificationSummary] = useState('');
+  const [verificationEvidence, setVerificationEvidence] = useState('');
+  const [verificationSaving, setVerificationSaving] = useState(false);
 
   useEffect(() => {
     if (!diagnosisSeed) return;
@@ -339,6 +343,46 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
     }
   };
 
+  const beginVerification = (cardId: string) => {
+    setVerificationCardId(cardId);
+    setVerificationSummary('');
+    setVerificationEvidence('');
+    setNotice('');
+  };
+
+  const saveVerification = async (status: 'verified_effective' | 'verified_ineffective') => {
+    const summary = verificationSummary.trim();
+    if (!verificationCardId || !summary || verificationSaving) {
+      setNotice('请先填写真实验证说明。');
+      return;
+    }
+    const evidenceRefs = verificationEvidence
+      .split(/[\n,，]+/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 30);
+    setVerificationSaving(true);
+    try {
+      const updated = await window.electronAPI.addExploreKnowledgeVerification({
+        cardId: verificationCardId,
+        status,
+        projectId: currentProject || undefined,
+        summary,
+        evidenceRefs,
+      });
+      setKnowledgeCards((current) => current.map((card) => card.id === updated.id ? updated : card));
+      setRelatedKnowledge((current) => current.map((card) => card.id === updated.id ? updated : card));
+      setVerificationCardId('');
+      setVerificationSummary('');
+      setVerificationEvidence('');
+      setNotice(status === 'verified_effective' ? '已记录：这条知识验证有效。' : '已记录：这条知识验证无效。');
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : '无法保存验证结果');
+    } finally {
+      setVerificationSaving(false);
+    }
+  };
+
   const saveSource = async (source: SourceEvidence) => {
     if (knowledgeCards.some((card) => card.source.url === source.url)) {
       setNotice('这条来源已经收藏。');
@@ -416,11 +460,35 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
           {knowledgeCards.length ? (
             <ul>{knowledgeCards.slice(0, 6).map((card) => (
               <li key={card.id}>
-                <button type="button" onClick={() => void window.electronAPI.navigateBrowser(card.source.url)}>{card.source.title}</button>
+                <button className="explore-knowledge-link" type="button" onClick={() => void window.electronAPI.navigateBrowser(card.source.url)}>{card.source.title}</button>
                 <small>{card.verificationStatus === 'unverified' ? '尚未验证' : card.verificationStatus === 'verified_effective' ? '已验证有效' : '已验证无效'}</small>
+                <button type="button" onClick={() => beginVerification(card.id)}>记录验证</button>
               </li>
             ))}</ul>
           ) : <p>还没有收藏。完成一次分析后，可在来源旁点击“收藏”。</p>}
+          {verificationCardId ? (
+            <div className="explore-verification-form" data-tour-id="explore-verification-form">
+              <strong>记录真实验证结果</strong>
+              <textarea
+                value={verificationSummary}
+                onChange={(event) => setVerificationSummary(event.target.value)}
+                placeholder="必填：说明实际做了什么、观察到了什么结果"
+                maxLength={2000}
+              />
+              <input
+                value={verificationEvidence}
+                onChange={(event) => setVerificationEvidence(event.target.value)}
+                placeholder="可选：证据引用，用逗号或换行分隔，例如任务 ID、日志时间"
+                maxLength={4000}
+              />
+              <div>
+                <button type="button" disabled={verificationSaving || !verificationSummary.trim()} onClick={() => void saveVerification('verified_effective')}>验证有效</button>
+                <button type="button" disabled={verificationSaving || !verificationSummary.trim()} onClick={() => void saveVerification('verified_ineffective')}>验证无效</button>
+                <button type="button" disabled={verificationSaving} onClick={() => setVerificationCardId('')}>取消</button>
+              </div>
+              <small>只记录你提供的验证结论；没有实机证据时不会声称硬件验证完成。</small>
+            </div>
+          ) : null}
         </section>
       </section>
     );

@@ -30,6 +30,12 @@ assert.match(explorePanel, /checked=\{selectedKnowledgeIds\.includes\(card\.id\)
 assert.match(explorePanel, /selectExploreKnowledgeForContext\(explicitlySelectedIds\)/, 'only explicitly selected ids may cross Main');
 assert.match(explorePanel, /kind: 'knowledge'/, 'selected history must become knowledge context');
 assert.match(explorePanel, /候选默认不加入分析/, 'default exclusion wording is missing');
+assert.match(explorePanel, /data-tour-id="explore-verification-form"/, 'verification form is missing');
+assert.match(explorePanel, /addExploreKnowledgeVerification/, 'verification must use the existing Main IPC');
+assert.match(explorePanel, /!verificationSummary\.trim\(\)/, 'empty verification summary must disable submission');
+assert.match(explorePanel, /saveVerification\('verified_effective'\)/, 'effective feedback action is missing');
+assert.match(explorePanel, /saveVerification\('verified_ineffective'\)/, 'ineffective feedback action is missing');
+assert.match(explorePanel, /不会声称硬件验证完成/, 'hardware evidence wording is missing');
 assert.match(explorePanel, /onClick=\{\(\) => void saveSource\(source\)\}/, 'source save must require a user click');
 assert.doesNotMatch(explorePanel, /useEffect\([\s\S]{0,300}saveExploreKnowledge/, 'knowledge must not be saved automatically');
 assert.match(explorePanel, /不会修改文件、Build、Flash 或操作串口/, 'Explore side-effect boundary is missing');
@@ -38,4 +44,4 @@ assert.match(globalStyles, /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)
 assert.match(appleStyles, /grid-template-columns: repeat\(5, minmax\(88px, 120px\)\) minmax\(120px, 1fr\)/);
 assert.match(appleStyles, /\.explore-panel\s*\{/);
 
-console.log('explore UI contract passed: 5 tabs, 2 entries, manual knowledge save, related history opt-in, context exclusion, safe connection boundary');
+console.log('explore UI contract passed: 5 tabs, 2 entries, manual knowledge save, related history opt-in, verification feedback, context exclusion, safe connection boundary');

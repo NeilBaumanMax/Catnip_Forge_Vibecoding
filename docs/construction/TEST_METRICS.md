@@ -224,3 +224,7 @@ Explore UI 契约、知识 Store 持久化专项、Electron typecheck、Main/Ren
 ## 2026-09-09 Phase 5b 相关历史显式选择
 
 用户明确授权：仅在其勾选并点击分析时，可把所选本地收藏的摘要、来源 URL 和验证状态发送给当前 DeepSeek；未选内容和 Access Secret 不发送。Explore UI 契约、知识 Store、Request 清洗、typecheck、Main/Renderer build 和 git diff --check 通过。问题变化会清空旧选择，提交前还会把 ID 限制为当前相关候选并经 Main Store 选择校验。未执行真实 DeepSeek、知乎或硬件调用。
+
+## 2026-09-09 Phase 5c 验证反馈
+
+Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typecheck、Main/Renderer build 和 git diff --check 均通过。验证必须由用户主动打开表单并选择有效或无效，摘要必填，可保留证据引用；无实机证据时不声称硬件验证完成。未调用 DeepSeek、知乎、Access Secret 或硬件。

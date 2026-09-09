@@ -55,6 +55,12 @@ async function main() {
     });
     assert.equal(verified.verificationStatus, 'verified_effective');
     assert.equal(verified.verificationRecords.length, 1);
+    assert.throws(() => restarted.addVerification({
+      cardId: card.id, status: 'verified_effective', summary: '   ', evidenceRefs: [],
+    }), /summary/);
+    assert.throws(() => restarted.addVerification({
+      cardId: 'missing-card', status: 'verified_ineffective', summary: '真实验证失败', evidenceRefs: [],
+    }), /not found/);
 
     const request = normalizeExploreRequest({
       mode: 'diagnosis',
