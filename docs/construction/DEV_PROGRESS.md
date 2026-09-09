@@ -2,9 +2,9 @@
 
 更新时间：2026-09-09。探索 MVP 正在执行 Phase 6 验证。
 
-- 当前 Phase：Phase 6 进行中；6A Windows 发布候选、成品资源和无 Key 冷启动已通过，真实知乎与实机验收仍暂缓/待完成。
+- 当前 Phase：Phase 6 软件范围已完成；Windows 发布候选、无 Key 冷启动和 Explore/队列/Skill/串口软件回归均通过，真实知乎与实机验收仍 pending。
 - 已完成：安全连接入口、固定知乎/全网搜索桥、受限分析、Idea/Diagnosis UI、结构化 Handoff 与只计划档位；DeepSeek 真实计划输出已通过；当前工程、target、最多 6 个源码候选、24 小时内同工程 Build/Flash 事件和最多 40 条共享串口记录可见且可取消。
-- 当前任务：收尾提交 Phase 6A；下一项为剩余回归与两条 Demo，外部知乎和真实硬件部分继续按 pending 处理。
+- 当前任务：软件闭环收尾；两条真实端到端 Demo 分别等待用户恢复 Access Secret 测试和提供实机验证条件。
 - 未完成：真实知乎/全网搜索验收、确认后真实施工与实机验证、两条端到端 Demo。
 - Blocker：`LIVE_INTEGRATION_PENDING`（Access Secret 未配置，用户要求暂不测试）与 `REAL_HARDWARE_VALIDATION_PENDING`。DeepSeek 余额阻塞已解除。
 - 测试：Phase 4a 专项、typecheck、Main/Renderer build、Explore UI/Request、task queue 通过；首次错误断言与修复见 TEST_METRICS/LOG。

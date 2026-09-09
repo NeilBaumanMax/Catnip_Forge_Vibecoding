@@ -234,3 +234,7 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 首次 `npm.cmd --prefix electron run pack:win` 在 GitHub 下载 Electron 33.4.11 时连接超时；改为复用已安装的同版本 Electron 后，施工执行环境又在大资源并发复制约 60 秒时以状态 -1 回收子进程，旧脚本随后错误尝试给半成品盖章并报 `Invalid binary format`。已修为本地 Electron 优先、builder 非零立即失败，并由自有盖章脚本同时写版本和产品图标；临时 EXE 盖章探针通过。
 
 当前候选用已通过的 Runtime/Main/Renderer 构建、electron-builder 基础包和按原 filter 分组复制完成。`verify:release` 通过：4,453,446,595 字节，Node v22.14.0、隔离 Python/pyserial 3.5、ESP-IDF v5.4.3、Claude Code 2.1.167；官方知乎 Skill 15 文件逐字节一致，用户 CLI 和真实 DeepSeek/Qwen Key 未入包。发布门禁新增 app.asar 内探索功能标记检查。`verify:first-run`、`verify:version`、`verify:explore-ui` 通过；首启未填写真实 Key，临时 userData 和成品进程已清理。完整单命令 `pack:win` 仍需在无 60 秒子进程限制的终端复核。未调用知乎、DeepSeek 或硬件。
+
+## 2026-09-09 Phase 6b 软件回归
+
+直接复用已完成的 Main 构建运行 8 项回归，全部通过：Explore Request、只分析门禁、搜索/Handoff/一次性确认、有限 Context、知识 Store、原 Agent 队列、Skill Manager（13 deployed）和共享串口会话 mock。mock 只证明软件会话语义，不作为真机证据。未调用知乎、DeepSeek、Access Secret 或硬件；真实知乎来源 Demo 与真实施工/Build/Flash/Serial Demo 继续分别标记 `LIVE_INTEGRATION_PENDING` 和 `REAL_HARDWARE_VALIDATION_PENDING`。
