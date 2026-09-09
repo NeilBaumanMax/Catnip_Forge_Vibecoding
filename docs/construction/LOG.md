@@ -230,3 +230,11 @@
 - 直接解包 app.asar 确认 Main 包含 `explore:zhihu:install`、固定 `setup.ps1` 与 `setupInFlight`，preload 含零参数安装 IPC，Renderer 含“安装连接组件并继续”、自动状态门禁与不修改 PATH 文案。
 - 第一次 app.asar 检查使用正斜杠内部路径而失败；列出真实归档路径后改用反斜杠通过。第一次 `verify:first-run` 未先启动成品，报 CDP target 不存在；根因是该脚本仅探测已运行实例。随后用隔离 APPDATA 隐藏启动候选，复跑首启门禁通过，并清理测试进程与目录。
 - 没有点击真实安装、读取/改写 Access Secret、搜索、DeepSeek 或硬件。全新 Windows 用户的真实安装授权→Secret 弹窗→status 仍保持人工验收待完成。
+
+## 2026-09-10 / Explore UI Refactor
+
+- 用户要求在完整保留当前 Explore 功能、IPC 和门禁的基础上，解决大屏空白、框套框、阶段不清和信息层级问题。动态核对 `EXPLORE_UI_REFACTOR` 从 `idea_to_production@d0265836` 创建且工作区干净；先推送 `backup/pre-explore-ui-refactor-20260910@d0265836`，再独立提交/推送施工基线 `b7063512`。
+- Main/IPC/Agent/Search/Runtime/Hardboard 未修改。Renderer 保留首页、Idea/Diagnosis、Context、Knowledge、Zhihu 四态/原生 Secret、Source 收藏、Plan/Handoff/Confirm，并正式显示已有的 `projectEvidence` 和 `sourceConflicts`。
+- 新增 Explore 专属 tokens 与 inline-size Container Query；Compact <700px、Normal 700–1200px、Wide >1200px。Wide 使用 320–420px 左轨与弹性右轨；主页/流程不再存在 760/820/960px 限宽。
+- 首次 DOM layout smoke 因测试注入 API 缺 BrowserPanel 的 `setBrowserBounds` 而无法挂载 Explore；补齐空 stub 后通过。测试没有调用真实搜索、Agent、安装、Secret 或硬件。
+- 最终 Runtime/Electron typecheck/build、10 项 Explore 契约/安全/UI 验证、workbench smoke、8 场景 layout smoke 和 diff check 通过；Renderer 控制台错误 0。大 chunk warning 保留。真实网络 Diagnosis、Agent 执行、硬件和实体 27 寸人工观感未验证。

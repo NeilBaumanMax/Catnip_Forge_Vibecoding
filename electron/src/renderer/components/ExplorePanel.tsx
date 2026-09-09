@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextItem, ExploreRequest, HandoffContext, IdeaResult, KnowledgeCard, SourceEvidence, ExploreZhihuConnectionStatus } from '../../common/explore';
+import ExploreSourceList from './explore/ExploreSourceList';
+import ExploreStageNav, { type ExploreStage } from './explore/ExploreStageNav';
 
 type ExploreView = 'home' | 'idea' | 'diagnosis';
 
@@ -23,6 +25,22 @@ interface ContextOption {
   available: boolean;
 }
 
+const CONTEXT_KIND_LABELS: Record<ExploreContextItem['kind'], string> = {
+  project: '工程',
+  target: 'Target',
+  hardware: '硬件',
+  source: '源码',
+  build: 'Build',
+  serial: 'Serial',
+  knowledge: 'Knowledge',
+};
+
+function verificationLabel(status: KnowledgeCard['verificationStatus']): string {
+  if (status === 'verified_effective') return '已验证有效';
+  if (status === 'verified_ineffective') return '已验证无效';
+  return '尚未验证';
+}
+
 export default function ExplorePanel({ currentProject, hardwareSummary, runtimeSummary, diagnosisSeed }: Props) {
   const [view, setView] = useState<ExploreView>('home');
   const [goal, setGoal] = useState('');
@@ -41,6 +59,8 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const [planHandoff, setPlanHandoff] = useState<HandoffContext | null>(null);
   const [executionPending, setExecutionPending] = useState(false);
   const [executionStarted, setExecutionStarted] = useState(false);
+  const [selectedIdeaId, setSelectedIdeaId] = useState('');
+  const [editingInput, setEditingInput] = useState(true);
   const [gatheredContext, setGatheredContext] = useState<ExploreContextGatherResult | null>(null);
   const [contextLoading, setContextLoading] = useState(false);
   const [contextError, setContextError] = useState('');
@@ -70,6 +90,8 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
     setPlanHandoff(null);
     setExecutionPending(false);
     setExecutionStarted(false);
+    setSelectedIdeaId('');
+    setEditingInput(true);
   }, [diagnosisSeed]);
 
   const fallbackContextOptions = useMemo<ContextOption[]>(() => [
@@ -273,7 +295,30 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const enter = (next: Exclude<ExploreView, 'home'>) => {
     setView(next);
     setNotice('');
+    setAnalysisPending(false);
+    setAnalysisResult(null);
+    setAnalysisRequest(null);
+    setPlanResult(null);
+    setPlanPending(false);
+    setPlanHandoff(null);
+    setExecutionPending(false);
+    setExecutionStarted(false);
+    setSelectedIdeaId('');
+    setEditingInput(true);
+  };
 
+  const editRequest = () => {
+    setEditingInput(true);
+    setAnalysisPending(false);
+    setAnalysisResult(null);
+    setAnalysisRequest(null);
+    setPlanResult(null);
+    setPlanPending(false);
+    setPlanHandoff(null);
+    setExecutionPending(false);
+    setExecutionStarted(false);
+    setSelectedIdeaId('');
+    setNotice('可以修改描述或资料选择；重新分析前不会执行旧计划。');
   };
 
   const toggleContext = (id: string) => {
@@ -332,7 +377,12 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
       setAnalysisPending(true);
       setAnalysisResult(null);
       setPlanResult(null);
+      setPlanHandoff(null);
+      setSelectedIdeaId('');
+      setExecutionPending(false);
+      setExecutionStarted(false);
       setAnalysisRequest(prepared.request);
+      setEditingInput(false);
       const started = await window.electronAPI.startExploreAnalysis(prepared.request);
       setNotice(`已取得 ${started.sourceCount} 条来源，Catnip 正在形成判断。`);
     } catch (error) {
@@ -358,6 +408,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
       suggestedFirstStep: selectedIdea?.implementationDirection || diagnosis?.hypotheses[0]?.nextValidation || '先核对现有工程和硬件状态',
       createdAt: new Date().toISOString(),
     };
+    setSelectedIdeaId(selectedIdea?.id || 'diagnosis');
     setPlanHandoff(handoff);
     setExecutionPending(false);
     setExecutionStarted(false);
@@ -453,29 +504,45 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
     }
   };
 
-  const renderSource = (source: SourceEvidence) => {
-    const saved = knowledgeCards.some((card) => card.source.url === source.url);
-    return (
-      <div className="explore-source-item" key={source.url}>
-        <a href={source.url} onClick={(event) => { event.preventDefault(); void window.electronAPI.navigateBrowser(source.url); }}>
-          {source.title}{source.author ? ` · ${source.author}` : ''}
-        </a>
-        <button type="button" disabled={saved || savingSourceUrl === source.url} onClick={() => void saveSource(source)}>
-          {saved ? '已收藏' : savingSourceUrl === source.url ? '收藏中...' : '收藏'}
-        </button>
-      </div>
-    );
+  const savedSourceUrls = useMemo(() => new Set(knowledgeCards.map((card) => card.source.url)), [knowledgeCards]);
+  const currentStage = useMemo<ExploreStage>(() => {
+    if (editingInput) return 'describe';
+    if (executionStarted) return 'execute';
+    if (planPending || planResult) return 'plan';
+    if (analysisPending || analysisResult) return 'analyze';
+    return 'describe';
+  }, [analysisPending, analysisResult, editingInput, executionStarted, planPending, planResult]);
+
+  const openSource = (url: string) => {
+    void window.electronAPI.navigateBrowser(url);
   };
 
+  const sourceList = (sources: SourceEvidence[], label: string) => (
+    <ExploreSourceList
+      sources={sources}
+      savedUrls={savedSourceUrls}
+      savingSourceUrl={savingSourceUrl}
+      label={label}
+      onOpen={openSource}
+      onSave={(source) => void saveSource(source)}
+    />
+  );
+
+  const connectionState = connection?.state || 'checking';
+  const connectionNeedsAction = connectionState === 'needs_secret' || connectionState === 'needs_install' || connectionState === 'error';
   const connectionBadge = (
-    <div className={`explore-connection-card explore-connection-card--${connection?.state || 'checking'}`} data-tour-id="explore-zhihu-connection">
-      <div className="explore-connection-icon" aria-hidden="true"><span /></div>
+    <section
+      className={`explore-connection-status explore-connection-status--${connectionState}${connectionNeedsAction ? ' is-actionable' : ''}`}
+      data-tour-id="explore-zhihu-connection"
+      role="status"
+    >
+      <span className="explore-connection-dot" aria-hidden="true" />
       <div className="explore-connection-copy">
         <span>知乎开放平台</span>
         <strong>{checkingConnection ? '正在检查连接…' : connection?.message || '需要先连接知乎开放平台'}</strong>
-        <p>{connection?.state === 'connected'
-          ? '探索时可检索知乎真实开发经验；每条结论仍会保留原始来源。'
-          : 'Access Secret 只交给知乎官方连接工具，不会出现在页面、聊天或日志中。'}</p>
+        {connectionNeedsAction ? (
+          <p>Access Secret 只交给知乎官方连接工具，不会出现在页面、聊天或日志中。</p>
+        ) : null}
       </div>
       <div className="explore-connection-actions">
         {connection?.state === 'needs_install' && (
@@ -505,28 +572,37 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
           <li><span>3</span>安装成功后自动弹出 Access Secret 安全窗口</li>
         </ol>
       ) : null}
-    </div>
+    </section>
   );
 
   if (view === 'home') {
     return (
       <section className="explore-panel" data-tour-id="panel-explore" aria-labelledby="explore-title">
-        <div className="explore-hero">
-          <span className="explore-eyebrow">CATNIP FORGE</span>
-          <h2 id="explore-title">探索</h2>
-          <p>把模糊的想法变成可实现方向，或用真实来源定位硬件问题。</p>
-        </div>
+        <header className="explore-home-header">
+          <div className="explore-hero">
+            <span className="explore-eyebrow">RESEARCH WORKSPACE</span>
+            <h2 id="explore-title">探索</h2>
+            <p className="explore-reading-copy">把模糊想法变成可实现方向，或者结合工程证据定位问题。</p>
+          </div>
+          <div className="explore-home-metrics" aria-label="探索状态摘要">
+            <span className={`explore-metric explore-metric--${connectionState}`}>
+              <i aria-hidden="true" />
+              {connectionState === 'connected' ? '知乎已连接' : connectionState === 'needs_secret' ? '知乎待连接' : connectionState === 'needs_install' ? '连接组件待安装' : connectionState === 'error' ? '连接异常' : '检查连接中'}
+            </span>
+            <span className="explore-metric"><strong>{knowledgeCards.length}</strong> 条本地知识</span>
+          </div>
+        </header>
         {connectionBadge}
         {notice ? <div className="explore-connection-notice" role="status">{notice}</div> : null}
         <div className="explore-entry-grid">
-          <button className="explore-entry-card" type="button" onClick={() => enter('idea')} data-tour-id="explore-idea">
+          <button className="explore-entry-card explore-entry-card--idea" type="button" onClick={() => enter('idea')} data-tour-id="explore-idea">
             <span className="explore-entry-symbol explore-entry-symbol--idea" aria-hidden="true">✦</span>
             <span className="explore-entry-index">从一个念头开始</span>
             <strong>找灵感</strong>
             <span>描述你想做的东西，Catnip 会结合当前工程和硬件条件，给出真正能落地的方向。</span>
-            <em>描述我的想法 <span aria-hidden="true">→</span></em>
+            <em>开始探索 <span aria-hidden="true">→</span></em>
           </button>
-          <button className="explore-entry-card" type="button" onClick={() => enter('diagnosis')} data-tour-id="explore-diagnosis">
+          <button className="explore-entry-card explore-entry-card--diagnosis" type="button" onClick={() => enter('diagnosis')} data-tour-id="explore-diagnosis">
             <span className="explore-entry-symbol explore-entry-symbol--diagnosis" aria-hidden="true">⌁</span>
             <span className="explore-entry-index">从一条线索开始</span>
             <strong>解问题</strong>
@@ -534,33 +610,54 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
             <em>分析当前问题 <span aria-hidden="true">→</span></em>
           </button>
         </div>
-        <section className="explore-knowledge-preview" data-tour-id="explore-saved-knowledge">
-          <header><div><span className="explore-section-kicker">你的资料库</span><strong>已收藏知识</strong></div><span>{knowledgeCards.length} 条 · 只在你选择后使用</span></header>
+        <section className="explore-knowledge-preview" data-tour-id="explore-saved-knowledge" aria-labelledby="explore-knowledge-title">
+          <header className="explore-section-header">
+            <div><span className="explore-section-kicker">LOCAL KNOWLEDGE</span><h3 id="explore-knowledge-title">已收藏知识</h3></div>
+            <span>{knowledgeCards.length} 条 · 只在你选择后使用</span>
+          </header>
           {knowledgeCards.length ? (
-            <ul>{knowledgeCards.slice(0, 6).map((card) => (
-              <li key={card.id}>
-                <button className="explore-knowledge-link" type="button" onClick={() => void window.electronAPI.navigateBrowser(card.source.url)}>{card.source.title}</button>
-                <small>{card.verificationStatus === 'unverified' ? '尚未验证' : card.verificationStatus === 'verified_effective' ? '已验证有效' : '已验证无效'}</small>
-                <button type="button" onClick={() => beginVerification(card.id)}>记录验证</button>
-              </li>
-            ))}</ul>
+            <ul className="explore-knowledge-list">{knowledgeCards.slice(0, 6).map((card) => {
+              const latestVerification = card.verificationRecords.at(-1);
+              return (
+                <li key={card.id} className="explore-knowledge-row">
+                  <div className="explore-knowledge-main">
+                    <div className="explore-knowledge-heading">
+                      <span className={`explore-verification-badge is-${card.verificationStatus}`}>{verificationLabel(card.verificationStatus)}</span>
+                      <button className="explore-knowledge-link" type="button" onClick={() => openSource(card.source.url)}>{card.source.title}</button>
+                    </div>
+                    <p>{card.taskSummary}</p>
+                    <small>{card.associatedProjects.length ? `关联工程：${card.associatedProjects.join('、')}` : '未关联工程'}</small>
+                    {latestVerification ? (
+                      <div className="explore-verification-summary">
+                        <strong>最近验证</strong>
+                        <span>{latestVerification.summary}</span>
+                        {latestVerification.evidenceRefs.length ? <small>证据：{latestVerification.evidenceRefs.join(' · ')}</small> : null}
+                      </div>
+                    ) : null}
+                  </div>
+                  <button className="explore-row-action" type="button" onClick={() => beginVerification(card.id)}>记录验证</button>
+                </li>
+              );
+            })}</ul>
           ) : <div className="explore-empty-state"><span aria-hidden="true">◇</span><div><strong>这里还没有内容</strong><p>完成一次分析后，可在可信来源旁点击“收藏”。</p></div></div>}
           {verificationCardId ? (
-            <div className="explore-verification-form" data-tour-id="explore-verification-form">
-              <strong>记录真实验证结果</strong>
+            <div className="explore-verification-form" data-tour-id="explore-verification-form" role="group" aria-label="记录真实验证结果">
+              <div><span className="explore-section-kicker">VERIFICATION</span><strong>记录真实验证结果</strong></div>
               <textarea
                 value={verificationSummary}
                 onChange={(event) => setVerificationSummary(event.target.value)}
                 placeholder="必填：说明实际做了什么、观察到了什么结果"
+                aria-label="验证说明"
                 maxLength={2000}
               />
               <input
                 value={verificationEvidence}
                 onChange={(event) => setVerificationEvidence(event.target.value)}
                 placeholder="可选：证据引用，用逗号或换行分隔，例如任务 ID、日志时间"
+                aria-label="验证证据引用"
                 maxLength={4000}
               />
-              <div>
+              <div className="explore-verification-actions">
                 <button type="button" disabled={verificationSaving || !verificationSummary.trim()} onClick={() => void saveVerification('verified_effective')}>验证有效</button>
                 <button type="button" disabled={verificationSaving || !verificationSummary.trim()} onClick={() => void saveVerification('verified_ineffective')}>验证无效</button>
                 <button type="button" disabled={verificationSaving} onClick={() => setVerificationCardId('')}>取消</button>
@@ -574,146 +671,268 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   }
 
   const isIdea = view === 'idea';
-  return (
-    <section className="explore-panel explore-panel--flow" data-tour-id={isIdea ? 'panel-explore-idea' : 'panel-explore-diagnosis'}>
-      <header className="explore-flow-header">
-        <button type="button" className="explore-back-button" onClick={() => { setView('home'); setNotice(''); }}>返回探索</button>
-        <div>
-          <span className="explore-eyebrow">{isIdea ? 'IDEA' : 'INVESTIGATION'}</span>
-          <h2>{isIdea ? '找灵感' : '解问题'}</h2>
-        </div>
+  const requestText = isIdea ? goal : problem;
+  const selectedContextCount = contextOptions.filter((item) => selectedContextIds.includes(item.id)).length;
+  const selectedKnowledgeCount = selectedKnowledgeIds.length;
+  const planFocused = planPending || Boolean(planResult);
+
+  const ideaResults = analysisResult?.mode === 'idea' ? (
+    <section className="explore-analysis-result explore-idea-results" aria-labelledby="explore-results-title">
+      <header className="explore-section-header">
+        <div><span className="explore-section-kicker">CATNIP SYNTHESIS</span><h3 id="explore-results-title">可实现方向</h3></div>
+        <span>{analysisResult.ideas.length} 个候选 · 选择后只生成计划</span>
       </header>
-
-      <form className="explore-form" onSubmit={(event) => void prepareRequest(event)}>
-        {connectionBadge}
-        <label className="explore-field">
-          <span>{isIdea ? '你想做什么？' : '现在遇到了什么问题？'}</span>
-          <textarea
-            value={isIdea ? goal : problem}
-            onChange={(event) => isIdea ? setGoal(event.target.value) : setProblem(event.target.value)}
-            placeholder={isIdea
-              ? '例如：我想做一个放在桌面上、有陪伴感的小设备。'
-              : '例如：固件可以 Build 和 Flash，但 Wi-Fi 在真实运行时反复断开。'}
-            maxLength={4000}
-          />
-        </label>
-
-        {isIdea ? (
-          <div className="explore-context-summary">
-            <span>当前实现约束</span>
-            <dl>
-              <div><dt>工程</dt><dd>{currentProject || '尚未选择，Catnip 将按新项目理解'}</dd></div>
-              <div><dt>硬件</dt><dd>{hardwareSummary}</dd></div>
+      <div className="explore-idea-grid">
+        {analysisResult.ideas.map((idea, index) => (
+          <article
+            className={`explore-idea-option${selectedIdeaId === idea.id ? ' is-selected' : ''}${selectedIdeaId && selectedIdeaId !== idea.id ? ' is-dimmed' : ''}`}
+            key={idea.id}
+          >
+            <header>
+              <span className="explore-idea-number">{String(index + 1).padStart(2, '0')}</span>
+              {selectedIdeaId === idea.id ? <span className="explore-selected-label">当前选择</span> : null}
+            </header>
+            <h4>{idea.title}</h4>
+            <p className="explore-idea-value explore-reading-copy">{idea.value}</p>
+            <dl className="explore-result-facts">
+              <div><dt>实现方向</dt><dd className="explore-reading-copy">{idea.implementationDirection}</dd></div>
+              <div><dt>条件匹配</dt><dd className="explore-reading-copy">{idea.compatibility}</dd></div>
             </dl>
-          </div>
-        ) : (
-          <>
-          <fieldset className="explore-context-picker">
-            <legend>本次分析 Context</legend>
-            <p>{contextLoading ? '正在收集有界工程证据...' : '已自动选择当前可用证据。取消勾选后，该项不会进入分析。'}</p>
-            {contextError ? <p className="explore-context-error">{contextError}</p> : null}
-            {contextOptions.map((item) => (
-              <label key={item.id} className={item.available ? '' : 'is-unavailable'}>
-                <input
-                  type="checkbox"
-                  checked={selectedContextIds.includes(item.id)}
-                  disabled={!item.available}
-                  onChange={() => toggleContext(item.id)}
-                />
-                <span><strong>{item.label}</strong><small>{item.summary}</small></span>
-              </label>
-            ))}
-          </fieldset>
-          <fieldset className="explore-context-picker explore-related-knowledge" data-tour-id="explore-related-knowledge">
-            <legend>相关历史收藏</legend>
-            <p>{relatedKnowledgeLoading
-              ? '正在本地查找相关收藏...'
-              : '候选默认不加入分析。只有你勾选的内容才会发送给当前分析服务。'}</p>
-            {relatedKnowledgeError ? <p className="explore-context-error">{relatedKnowledgeError}</p> : null}
-            {!problem.trim() ? <p>描述问题后，会从本地收藏中发现相关知识。</p> : null}
-            {problem.trim() && !relatedKnowledgeLoading && !relatedKnowledge.length && !relatedKnowledgeError
-              ? <p>没有发现相关收藏。</p>
-              : null}
-            {relatedKnowledge.map((card) => (
-              <label key={card.id}>
-                <input
-                  type="checkbox"
-                  checked={selectedKnowledgeIds.includes(card.id)}
-                  onChange={() => toggleKnowledge(card.id)}
-                />
-                <span>
-                  <strong>{card.source.title}</strong>
-                  <small>{card.taskSummary} · {card.verificationStatus === 'unverified' ? '尚未验证' : card.verificationStatus === 'verified_effective' ? '已验证有效' : '已验证无效'}</small>
-                </span>
-              </label>
-            ))}
-          </fieldset>
-          </>
-        )}
-
-        <div className="explore-submit-row">
-          <button className="nes-btn is-primary" type="submit" disabled={analysisPending || (!isIdea && contextLoading) || !(isIdea ? goal.trim() : problem.trim())}>
-            {!isIdea && contextLoading ? '正在收集 Context...' : analysisPending ? '正在分析...' : isIdea ? '形成可实现的 Idea' : '分析当前问题'}
-          </button>
-          <span>分析阶段不会修改文件、Build、Flash 或操作串口。</span>
-        </div>
-        {notice ? <div className="explore-connection-notice" role="status">{notice}</div> : null}
-        {analysisResult?.mode === 'idea' && (
-          <div className="explore-results">
-            {analysisResult.ideas.map((idea) => (
-              <article className="explore-result-card" key={idea.id}>
-                <h3>{idea.title}</h3>
-                <p>{idea.value}</p>
-                <p><strong>怎么实现：</strong>{idea.implementationDirection}</p>
-                <p><strong>与当前条件的匹配：</strong>{idea.compatibility}</p>
-                <div className="explore-source-list">
-                  {idea.sources.map((source) => renderSource(source))}
-                </div>
-                <button type="button" className="nes-btn" onClick={() => void beginPlan(idea)} disabled={planPending}>
-                  {planPending ? '正在生成计划...' : '交给 Catnip'}
-                </button>
-              </article>
-            ))}
-          </div>
-        )}
-        {analysisResult?.mode === 'diagnosis' && (
-          <div className="explore-results">
-            <h3>{analysisResult.diagnosis.problem}</h3>
-            {analysisResult.diagnosis.hypotheses.map((hypothesis) => (
-              <article className="explore-result-card" key={hypothesis.id}>
-                <h3>{hypothesis.statement}</h3>
-                <p>{hypothesis.priorityReason}</p>
-                <p><strong>下一步验证：</strong>{hypothesis.nextValidation}</p>
-                <div className="explore-source-list">
-                  {[...hypothesis.communitySources, ...hypothesis.externalSources].map((source) => renderSource(source))}
-                </div>
-              </article>
-            ))}
-            <button type="button" className="nes-btn" onClick={() => void beginPlan()} disabled={planPending}>
-              {planPending ? '正在生成计划...' : '交给 Catnip'}
+            {sourceList(idea.sources, '依据来源')}
+            <button type="button" className="explore-generate-plan" onClick={() => void beginPlan(idea)} disabled={planPending}>
+              {planPending && selectedIdeaId === idea.id ? '正在生成计划…' : '用这个方向生成计划'}
             </button>
+          </article>
+        ))}
+      </div>
+    </section>
+  ) : null;
+
+  const diagnosisResults = analysisResult?.mode === 'diagnosis' ? (
+    <section className="explore-analysis-result explore-diagnosis-report" aria-labelledby="explore-diagnosis-title">
+      <header className="explore-report-header">
+        <span className="explore-section-kicker">INVESTIGATION REPORT</span>
+        <h3 id="explore-diagnosis-title">分析结果</h3>
+        <p className="explore-reading-copy">{analysisResult.diagnosis.problem}</p>
+      </header>
+      {analysisResult.diagnosis.sourceConflicts.length ? (
+        <aside className="explore-conflict-notice" role="note" aria-labelledby="explore-conflicts-title">
+          <div>
+            <span aria-hidden="true">!</span>
+            <div><strong id="explore-conflicts-title">需要注意的来源分歧</strong><small>以下冲突需要通过工程或实机证据继续验证。</small></div>
           </div>
-        )}
-        {planResult && (
-          <section className="explore-plan-result">
-            <h3>Catnip 执行计划</h3>
-            <p>{planResult.plan.summary}</p>
-            <ol>
-              {planResult.plan.steps.map((step) => <li key={step.id}><strong>{step.title}</strong><p>{step.detail}</p></li>)}
-            </ol>
-            {planResult.plan.risks.length > 0 && <p><strong>风险：</strong>{planResult.plan.risks.join('；')}</p>}
+          <ul>{analysisResult.diagnosis.sourceConflicts.map((conflict) => <li key={conflict}>{conflict}</li>)}</ul>
+        </aside>
+      ) : null}
+      <ol className="explore-hypothesis-list">
+        {analysisResult.diagnosis.hypotheses.map((hypothesis, index) => (
+          <li className="explore-hypothesis" key={hypothesis.id}>
+            <div className="explore-hypothesis-index">{String(index + 1).padStart(2, '0')}</div>
+            <article>
+              <span className="explore-section-kicker">优先排查</span>
+              <h4>{hypothesis.statement}</h4>
+              <section className="explore-report-section">
+                <h5>为什么怀疑</h5>
+                <p className="explore-reading-copy">{hypothesis.priorityReason}</p>
+              </section>
+              <section className="explore-report-section explore-project-evidence">
+                <h5>你的工程证据</h5>
+                {hypothesis.projectEvidence.length ? (
+                  <ul>{hypothesis.projectEvidence.map((evidence) => <li key={evidence}>{evidence}</li>)}</ul>
+                ) : <p className="explore-muted-copy">当前结果没有引用可确认的工程证据，请优先执行下一步验证。</p>}
+              </section>
+              {sourceList(hypothesis.communitySources, '社区经验')}
+              {sourceList(hypothesis.externalSources, '外部资料')}
+              <section className="explore-next-validation">
+                <span>下一步验证</span>
+                <p className="explore-reading-copy">{hypothesis.nextValidation}</p>
+              </section>
+            </article>
+          </li>
+        ))}
+      </ol>
+      <button type="button" className="explore-generate-plan" onClick={() => void beginPlan()} disabled={planPending}>
+        {planPending ? '正在生成计划…' : '为这份调查生成计划'}
+      </button>
+    </section>
+  ) : null;
+
+  const planView = planPending || planResult ? (
+    <section className="explore-plan-view" aria-labelledby="explore-plan-title">
+      <header>
+        <div><span className="explore-section-kicker">READ-ONLY HANDOFF</span><h3 id="explore-plan-title">执行计划</h3></div>
+        <span className="explore-plan-lock">确认前只读</span>
+      </header>
+      <div className="explore-plan-selection">
+        <span>你选择</span>
+        <strong>{planHandoff?.selectedIdea?.title || planHandoff?.diagnosis?.problem || requestText}</strong>
+      </div>
+      {planPending ? (
+        <div className="explore-loading-state" role="status"><span aria-hidden="true" /><div><strong>Catnip 正在组织执行步骤</strong><p>只会生成计划，不会修改工程或操作硬件。</p></div></div>
+      ) : planResult ? (
+        <>
+          <p className="explore-plan-summary explore-reading-copy">{planResult.plan.summary}</p>
+          <ol className="explore-plan-steps">
+            {planResult.plan.steps.map((step, index) => (
+              <li key={step.id}>
+                <span>{String(index + 1).padStart(2, '0')}</span>
+                <div><strong>{step.title}</strong><p className="explore-reading-copy">{step.detail}</p></div>
+              </li>
+            ))}
+          </ol>
+          {planResult.plan.risks.length > 0 ? (
+            <section className="explore-risk-list">
+              <h4>风险与注意事项</h4>
+              <ul>{planResult.plan.risks.map((risk) => <li key={risk}>{risk}</li>)}</ul>
+            </section>
+          ) : null}
+          <div className="explore-confirm-zone">
+            <div><strong>准备交给 Catnip</strong><p>确认后才会进入现有 Agent 队列；后续修改、Build、Flash 与 Serial 仍以真实执行证据为准。</p></div>
             <button
               type="button"
-              className="nes-btn is-primary"
+              className="explore-confirm-action"
               data-tour-id="explore-confirm-execution"
               disabled={!planHandoff || executionPending || executionStarted}
               onClick={() => void confirmExecution()}
             >
-              {executionPending ? '正在提交...' : executionStarted ? '已进入执行队列' : '确认并执行'}
+              {executionPending ? '正在提交…' : executionStarted ? '已进入执行队列' : '确认并执行'}
             </button>
-            <p>{executionStarted ? '已交给现有 Agent 队列；源码、Build、Flash、Serial 与实机结果仍以真实执行证据为准。' : '确认前不会修改文件、Build、Flash 或操作串口。'}</p>
-          </section>
-        )}
+            <small>{executionStarted ? '已交给现有 Agent 队列。' : '确认前不会修改文件、Build、Flash 或操作串口。'}</small>
+          </div>
+        </>
+      ) : null}
+    </section>
+  ) : null;
+
+  return (
+    <section className={`explore-panel explore-panel--flow${planFocused ? ' is-plan-focused' : ''}`} data-tour-id={isIdea ? 'panel-explore-idea' : 'panel-explore-diagnosis'}>
+      <header className="explore-flow-header">
+        <button type="button" className="explore-back-button" onClick={() => { setView('home'); setNotice(''); }} aria-label="返回探索首页">←</button>
+        <div>
+          <span className="explore-eyebrow">{isIdea ? 'IDEA' : 'INVESTIGATION'}</span>
+          <h2>{isIdea ? '找灵感' : '解问题'}</h2>
+        </div>
+        <ExploreStageNav current={currentStage} />
+      </header>
+
+      {connectionBadge}
+      {notice ? <div className="explore-connection-notice" role="status">{notice}</div> : null}
+      <form className="explore-form" onSubmit={(event) => void prepareRequest(event)}>
+        <section className="explore-input-pane" aria-label={isIdea ? '想法与当前条件' : '问题与分析资料'}>
+          {editingInput || !analysisRequest ? (
+            <>
+              <label className="explore-field">
+                <span>{isIdea ? '你想做什么？' : '现在遇到了什么问题？'}</span>
+                <textarea
+                  value={requestText}
+                  onChange={(event) => isIdea ? setGoal(event.target.value) : setProblem(event.target.value)}
+                  placeholder={isIdea
+                    ? '例如：我想做一个放在桌面上、有陪伴感的小设备。'
+                    : '例如：固件可以 Build 和 Flash，但 Wi-Fi 在真实运行时反复断开。'}
+                  maxLength={4000}
+                />
+              </label>
+
+              {isIdea ? (
+                <section className="explore-condition-list" aria-labelledby="explore-condition-title">
+                  <h3 id="explore-condition-title">当前条件</h3>
+                  <dl>
+                    <div><dt><span className="is-project">P</span>工程</dt><dd>{currentProject || '尚未选择，Catnip 将按新项目理解'}</dd></div>
+                    <div><dt><span className="is-hardware">H</span>硬件</dt><dd>{hardwareSummary}</dd></div>
+                  </dl>
+                </section>
+              ) : (
+                <>
+                  <fieldset className="explore-context-picker">
+                    <legend>本次分析 Context</legend>
+                    <p>{contextLoading ? '正在收集有界工程证据...' : '已自动选择当前可用证据。取消勾选后，该项不会进入分析。'}</p>
+                    {contextError ? <p className="explore-context-error" role="alert">{contextError}</p> : null}
+                    <div className="explore-context-list">
+                      {contextOptions.map((item) => (
+                        <label key={item.id} className={`explore-context-row${item.available ? '' : ' is-unavailable'}`}>
+                          <input
+                            type="checkbox"
+                            checked={selectedContextIds.includes(item.id)}
+                            disabled={!item.available}
+                            onChange={() => toggleContext(item.id)}
+                          />
+                          <span className={`explore-context-kind is-${item.kind}`}>{CONTEXT_KIND_LABELS[item.kind]}</span>
+                          <span><strong>{item.label}</strong><small>{item.summary}</small></span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                  <fieldset className="explore-context-picker explore-related-knowledge" data-tour-id="explore-related-knowledge">
+                    <legend>相关历史收藏</legend>
+                    <p>{relatedKnowledgeLoading
+                      ? '正在本地查找相关收藏...'
+                      : '候选默认不加入分析。只有你勾选的内容才会发送给当前分析服务。'}</p>
+                    {relatedKnowledgeError ? <p className="explore-context-error" role="alert">{relatedKnowledgeError}</p> : null}
+                    {!problem.trim() ? <p>描述问题后，会从本地收藏中发现相关知识。</p> : null}
+                    {problem.trim() && !relatedKnowledgeLoading && !relatedKnowledge.length && !relatedKnowledgeError ? <p>没有发现相关收藏。</p> : null}
+                    <div className="explore-context-list">
+                      {relatedKnowledge.map((card) => (
+                        <label key={card.id} className="explore-context-row">
+                          <input
+                            type="checkbox"
+                            checked={selectedKnowledgeIds.includes(card.id)}
+                            onChange={() => toggleKnowledge(card.id)}
+                          />
+                          <span className="explore-context-kind is-knowledge">知识</span>
+                          <span>
+                            <strong>{card.source.title}</strong>
+                            <small>{card.taskSummary} · {verificationLabel(card.verificationStatus)}</small>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                </>
+              )}
+
+              <div className="explore-submit-row">
+                <button className="explore-primary-cta" type="submit" disabled={analysisPending || (!isIdea && contextLoading) || !(isIdea ? goal.trim() : problem.trim())}>
+                  {!isIdea && contextLoading ? '正在收集 Context…' : analysisPending ? '正在分析…' : isIdea ? '开始探索' : '开始分析'}
+                </button>
+                <span>分析阶段不会修改文件、Build、Flash 或操作串口。</span>
+              </div>
+            </>
+          ) : (
+            <section className="explore-request-summary">
+              <div><span className="explore-section-kicker">{isIdea ? '目标' : '问题'}</span><h3>{analysisRequest.goal}</h3></div>
+              <dl>
+                <div><dt>当前工程</dt><dd>{currentProject || '未选择'}</dd></div>
+                {isIdea ? <div><dt>硬件</dt><dd>{hardwareSummary}</dd></div> : <div><dt>分析资料</dt><dd>{selectedContextCount} 项 Context · {selectedKnowledgeCount} 条历史知识</dd></div>}
+              </dl>
+              <button type="button" onClick={editRequest} disabled={analysisPending || planPending}>修改描述与资料</button>
+            </section>
+          )}
+        </section>
+
+        <section className="explore-output-pane" aria-live="polite" aria-label="探索输出">
+          {analysisPending ? (
+            <div className="explore-loading-state" role="status"><span aria-hidden="true" /><div><strong>Catnip 正在形成判断</strong><p>正在整理真实来源与当前条件，不会修改工程。</p></div></div>
+          ) : null}
+          {!analysisPending && !analysisResult && !planPending && !planResult ? (
+            <div className="explore-output-empty">
+              <span aria-hidden="true">{isIdea ? '✦' : '⌁'}</span>
+              <div><strong>{isIdea ? '探索结果将在这里展开' : '调查报告将在这里展开'}</strong><p>{isIdea ? '输入目标后，候选方向、匹配度与来源会并列呈现。' : '工程证据、社区经验、外部资料与来源冲突会在这里交叉呈现。'}</p></div>
+            </div>
+          ) : null}
+          {planView}
+          {planFocused && analysisResult ? (
+            <details className="explore-prior-result">
+              <summary>查看分析结论与来源</summary>
+              {ideaResults}
+              {diagnosisResults}
+            </details>
+          ) : (
+            <>
+              {ideaResults}
+              {diagnosisResults}
+            </>
+          )}
+        </section>
       </form>
     </section>
   );

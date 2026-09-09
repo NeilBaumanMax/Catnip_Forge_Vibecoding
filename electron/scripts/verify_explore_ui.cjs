@@ -5,8 +5,12 @@ const path = require('node:path');
 const root = path.join(__dirname, '..');
 const browserPanel = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'BrowserPanel.tsx'), 'utf8');
 const explorePanel = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'ExplorePanel.tsx'), 'utf8');
+const exploreSourceList = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreSourceList.tsx'), 'utf8');
+const exploreStageNav = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreStageNav.tsx'), 'utf8');
 const globalStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'global.less'), 'utf8');
 const appleStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'apple.less'), 'utf8');
+const exploreStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'explore.less'), 'utf8');
+const rendererMain = fs.readFileSync(path.join(root, 'src', 'renderer', 'main.tsx'), 'utf8');
 
 assert.match(browserPanel, /type PanelMode = [^;]*'explore'/, 'PanelMode must include explore');
 assert.equal((browserPanel.match(/data-tour-id="tab-/g) || []).length, 5, 'exactly five visible workspace tabs are required');
@@ -40,12 +44,30 @@ assert.match(explorePanel, /!verificationSummary\.trim\(\)/, 'empty verification
 assert.match(explorePanel, /saveVerification\('verified_effective'\)/, 'effective feedback action is missing');
 assert.match(explorePanel, /saveVerification\('verified_ineffective'\)/, 'ineffective feedback action is missing');
 assert.match(explorePanel, /不会声称硬件验证完成/, 'hardware evidence wording is missing');
-assert.match(explorePanel, /onClick=\{\(\) => void saveSource\(source\)\}/, 'source save must require a user click');
+assert.match(explorePanel, /onSave=\{\(source\) => void saveSource\(source\)\}/, 'source save callback must remain connected to the existing store action');
+assert.match(exploreSourceList, /onClick=\{\(\) => onSave\(source\)\}/, 'source save must require a user click');
 assert.doesNotMatch(explorePanel, /useEffect\([\s\S]{0,300}saveExploreKnowledge/, 'knowledge must not be saved automatically');
 assert.match(explorePanel, /不会修改文件、Build、Flash 或操作串口/, 'Explore side-effect boundary is missing');
+assert.match(explorePanel, /hypothesis\.projectEvidence/, 'diagnosis project evidence must be rendered');
+assert.match(explorePanel, /diagnosis\.sourceConflicts/, 'diagnosis source conflicts must be rendered');
+assert.match(exploreSourceList, /source\.type/);
+assert.match(exploreSourceList, /source\.author/);
+assert.match(exploreSourceList, /source\.excerpt/);
+assert.match(exploreSourceList, /source\.url/);
+assert.match(exploreStageNav, /'describe'[\s\S]*'analyze'[\s\S]*'plan'[\s\S]*'execute'/, 'four-stage navigation is missing');
 
 assert.match(globalStyles, /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\) minmax\(160px, 0\.9fr\)/);
 assert.match(appleStyles, /grid-template-columns: repeat\(5, minmax\(88px, 120px\)\) minmax\(120px, 1fr\)/);
-assert.match(appleStyles, /\.explore-panel\s*\{/);
+assert.match(rendererMain, /import '\.\/styles\/explore\.less'/);
+assert.match(exploreStyles, /\.explore-panel\s*\{/);
+assert.match(exploreStyles, /container-type:\s*inline-size/);
+assert.match(exploreStyles, /@container explore \(min-width:\s*700px\)/);
+assert.match(exploreStyles, /@container explore \(min-width:\s*1200px\)/);
+assert.match(exploreStyles, /grid-template-columns:\s*minmax\(320px, 420px\) minmax\(0, 1fr\)/, 'wide workspace columns are missing');
+assert.doesNotMatch(exploreStyles, /(?:width|max-width):\s*min\((?:760|820|960)px/, 'legacy narrow Explore width cap returned');
+assert.match(exploreStyles, /:root\[data-theme="dark"\] \.explore-panel/, 'dark Explore tokens are missing');
+assert.match(exploreStyles, /prefers-reduced-motion/);
+assert.match(exploreStyles, /prefers-reduced-transparency/);
+assert.match(exploreStyles, /prefers-contrast/);
 
-console.log('explore UI contract passed: 5 tabs, 2 entries, manual knowledge save, related history opt-in, verification feedback, context exclusion, safe connection boundary');
+console.log('explore UI contract passed: existing flows retained; evidence/conflicts/source detail/stages/container layouts/theme accessibility present');
