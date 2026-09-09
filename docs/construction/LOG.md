@@ -207,3 +207,10 @@
 - 解问题页面自动加载候选并允许逐项取消；收集完成前禁止提交，Main prepare 继续剔除未选项。未新增任务系统，未修改工程或执行 Build/Flash/Serial。
 - 首次 package.json 编辑把换行写成字面字符，npm 在 TypeScript 前 EJSONPARSE；修正后通过。首次专项把“最多 6 个”误断言为“正好 6 个”，32 KiB 总上限先触发返回 5 个；修正测试语义后通过。Review 另修复整文件预读、最新日志可能被头部截断、外部状态失败丢弃源码、realpath 与普通 task 事件误收集。
 - 最终专项、typecheck、Main/Renderer build、Explore UI/Request、task queue 与 diff check 通过。没有调用知乎、DeepSeek 或硬件，`REAL_HARDWARE_VALIDATION_PENDING` 保持。
+
+## 2026-09-09 / Phase 6e / 首次使用连接向导施工基线
+
+- 用户确认下载压缩包后的期望流程：进入探索检测连接；缺 Access Secret 时弹出安全输入窗口供用户填写。
+- 代码核对发现现状需要用户额外点击“配置 Access Secret”；更关键的是官方 Skill 不携带 CLI，而 `needs_install` 没有用户授权安装入口，全新用户无法在产品内完成首次连接。
+- 最小方案继续复用官方 status/setup、既有原生 `PasswordBox` 安全窗口和系统凭据库。缺 Secret 每次进入探索最多自动弹一次；缺 CLI 必须由用户点击授权安装，成功后再弹安全窗口。Secret 不进入 Renderer、Chat、URL、日志或参数。
+- 已建立并推送 `backup/pre-phase-6e-connection-20260909`，远端核对为 `77f2f8fc9e97662e4539cb84c0b477dece20f74d`。本提交仅建立范围、验收与风险基线，不改业务源码，不执行安装、真实 Secret、搜索、模型或硬件。

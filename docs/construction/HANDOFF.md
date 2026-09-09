@@ -32,8 +32,8 @@
 知识数据位于 Electron `userData/explore/knowledge.json`；历史知识只发现，显式选择后才进入 Context。该本地 Store 与知乎官方 Knowledge Base 不同，MVP 不调用后者。
 ## 下一步 1–3 项
 
-1. 执行真实“解问题”知乎＋全网搜索 Demo。
-2. 重打包含最新安全连接与受限输出修复的 Windows 候选。
+1. 按用户确认完成 Phase 6e 首次使用连接向导：缺 Secret 进入探索自动弹一次安全窗口；全新用户经明确点击安装官方 CLI 后继续配置。
+2. 执行真实“解问题”知乎＋全网搜索 Demo，并重打包含最新安全连接与受限输出修复的 Windows 候选。
 3. 具备设备条件后执行真实施工/Build/Flash/Serial Demo；没有实机证据时继续标记硬件验证待完成。
 
 ## Decision 与 Assumption
