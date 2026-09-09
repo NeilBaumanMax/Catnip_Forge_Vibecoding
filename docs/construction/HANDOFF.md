@@ -1,6 +1,15 @@
 # 新 Agent 接力入口
 
-更新时间：2026-09-10。当前分支 `idea_to_production`，探索 MVP 正在执行 Phase 6 最终验收。开工必须动态运行 `git branch --show-current`、`git status --short`、`git rev-parse HEAD`，本文件的 hash 只代表最近一次核对快照。
+更新时间：2026-09-10。当前施工分支 `EXPLORE_UI_REFACTOR` 从目标基线 `idea_to_production` 的 `d0265836` 创建；探索 MVP 的 Phase 6 软件与 Windows 候选历史保持有效，本分支只重构 Explore 前端。开工必须动态运行 `git branch --show-current`、`git status --short`、`git rev-parse HEAD`，本文件的 hash 只代表最近一次核对快照。
+
+## Explore UI Refactor 当前状态
+
+- 独立施工基线 `b7063512` 已先于业务代码提交并推送；重构前远端备份 `backup/pre-explore-ui-refactor-20260910` 已核对为 `d0265836`。
+- Explore 首页、Idea、Diagnosis、Source、Knowledge 和 Plan 已按 Research Workspace 重排；保留全部原 IPC、连接、收藏、验证、相关知识显式选择、Handoff 与 Confirm 行为。
+- Explore 根元素使用 inline-size Container Query：小于 700px 单栏，700–1200px Normal，大于 1200px Wide 输入/Context + 结果/Plan 双栏。旧 760/820/960px 限宽已移除。
+- Diagnosis 正式显示 `projectEvidence` 与 `sourceConflicts`；Source Row 显示 type/title/author/excerpt/url 主机并保留打开/收藏。
+- DOM layout smoke 覆盖 1920×1080 下 Chat 24/34/45/52% 与折叠、2560×1440、3840×2160、Compact，以及 light/dark、阶段/Plan/Confirm 和控制台错误；最终通过并生成 `electron/.tmp/explore-layout-ui.png`。
+- 真实知乎 Diagnosis、真实 Agent 执行与真实硬件未在本 UI 闭环重跑，继续分别标记 `LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING`。
 
 ## 先读
 

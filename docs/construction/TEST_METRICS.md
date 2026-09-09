@@ -276,3 +276,20 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 失败历史：第一次直接运行 `verify:first-run` 未先启动成品，15 秒后报 `packaged main renderer CDP target not found`；根因是该脚本只连接已运行实例，不负责启动。按隔离 APPDATA 启动候选后复测通过。第一次 app.asar 检查错误使用正斜杠内部路径，报目标不存在；先只读列出归档真实反斜杠路径后复测通过。两项均为验收命令错误，不是产品断言失败，历史保留。
 
 最终 5 组候选目标通过、0 最终产品失败、2 次验收命令失败后纠正。未点击安装按钮、未修改或读取现有 Access Secret、未调用搜索/DeepSeek/硬件；因此全新 Windows 用户真实安装→Secret→status 仍待人工验收。
+
+## 2026-09-10 Explore UI Refactor
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix runtime run typecheck` / `build` | 通过 | Runtime 无改动，基线回归 exit 0 |
+| `npm.cmd --prefix electron run typecheck` / `build:main` / `build:renderer` | 通过 | 1265 modules；保留既有大 chunk warning |
+| `verify:explore-ui` / `verify:explore-entry` | 通过 | 五页签、两入口、功能保留、Evidence/Conflict/Source/Stage/Container/Theme 契约 |
+| `verify:explore-context` / `verify:explore-request` | 通过 | 有界收集、可取消、Knowledge 显式选择与 Request 清洗 |
+| `verify:explore-knowledge` | 通过 | 持久化、默认不注入、损坏保护、验证记录 |
+| `verify:explore-analysis-gate` / `verify:explore-search-handoff` | 通过 | 只分析、只读计划、一次性显式确认与来源约束 |
+| `verify:explore-zhihu-status` / `verify:explore-zhihu-connection` | 通过 | connected status；安装授权、原生遮蔽窗口、stdin-only 与 Renderer 隔离 |
+| `verify:explore-layout-ui` | 通过 | Headless Renderer DOM：1920/2560/3840、Chat 24/34/45/52%/折叠、Compact/Normal/Wide、Diagnosis/Plan、light/dark、console error 0 |
+| `smoke:workbench` | 通过 | 既有工作台 Electron smoke；打开真实仓库文件，不触硬件 |
+| `git diff --check` | 通过 | 无 whitespace error；LF→CRLF 仅为工作树提示 |
+
+首次 `verify:explore-layout-ui` 失败于测试 stub 缺 `setBrowserBounds`，导致 Explore 未挂载；补齐 BrowserPanel 所需的无副作用方法后复测通过。最终统计：上述 10 组目标通过、0 最终失败；1 次 smoke 基础设施失败后纠正。未验证真实知乎＋全网 Diagnosis、真实模型/Agent 执行、真实 Build/Flash/Serial、实体 27 寸人工观感或新 Windows 包。

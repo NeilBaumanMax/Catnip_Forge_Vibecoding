@@ -55,3 +55,21 @@
 - 风险：大屏视觉验证若只做静态 CSS 检查不足，需实际渲染并验证容器尺寸。
 
 必须通过：Electron typecheck、Renderer build、Explore UI/entry/context/request/knowledge/analysis/handoff/Zhihu 专项、`git diff --check`。应执行可用 UI smoke；light/dark、Compact/Normal/Wide、Chat 24/34/45/52% 与折叠、大屏等必须留真实验证证据。未执行真实知乎网络或真实硬件操作时分别标记 `NOT VERIFIED`，不得由 UI 回归替代。
+
+## 实现结果
+
+- 新增 `ExploreStageNav` 与 `ExploreSourceList` 两个无业务状态展示组件；所有请求、异步事件、Knowledge、Handoff 和确认逻辑仍集中在原 `ExplorePanel`。
+- 首页连接成功态缩为轻量状态行；需要安装、Secret 或错误时才使用带动作的 glass strip。Secret 仍只经 Main 原生安全窗口处理。
+- Context、相关历史知识、Knowledge、Source、工程证据、Plan Steps 和 Risks 改为行、分隔线与 tint；Card 保留给两入口、Idea、冲突、Plan/Confirm 和验证浮层。
+- 输入提交后折叠为目标/资料摘要；Idea 选择后突出当前方向；Plan 出现后成为主内容，原分析结论在明确的 details 入口中折叠。
+- `explore.less` 提供集中 deep-blue 与辅助色 tokens、light/dark 变体、70ch 行宽、focus-visible 与 reduced-motion/transparency/contrast。
+
+## 验证结果
+
+- PASS：Runtime typecheck/build；Electron typecheck、Main build、Renderer production build。
+- PASS：Explore UI、Entry、Context、Request、Knowledge、Analysis Gate、Search/Handoff、Zhihu Status、Zhihu Connection 全部专项。
+- PASS：现有 `smoke:workbench`。
+- PASS：新增 `verify:explore-layout-ui`；覆盖 8 个视口/分栏场景。1920×1080 的 Explore 实际宽度分别为 1412/1222/1013/880px（Chat 24/34/45/52%）及折叠 1854px；2560×1440 为 1365px；3840×2160 为 1801.6px；1200×900 + Chat 52% 为 534.4px。Wide flow 为 1644.4px、两栏，控制台错误 0。
+- 首次 layout smoke 失败：浏览器测试 stub 缺少 BrowserPanel mode 变化所需的 `setBrowserBounds`，Explore 未挂载；补齐无副作用 stub 和诊断后复测通过。产品代码未因此放宽或增加 fallback。
+- Renderer build 保留项目既有的 chunk >500kB warning；未更改构建配置掩盖。
+- NOT VERIFIED：真实知乎＋全网 Diagnosis、真实模型/Agent 执行、真实 Build/Flash/Serial、实体 27 寸显示器人工观感、重新打包 Windows 候选。
