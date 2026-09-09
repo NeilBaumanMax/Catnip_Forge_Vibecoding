@@ -1,14 +1,14 @@
 # 开发进度
 
-更新时间：2026-09-10。探索 MVP 正在执行 Phase 6 验证。
+更新时间：2026-09-10。Explore UI 重构已合入 `idea_to_production`，探索 MVP 继续执行 Phase 6 的真实集成与实机验收。
 
-- 当前 Phase：Phase 6 最终验收；Phase 6e 首次使用连接向导与最新 Windows 候选已完成源码/成品软件验收，真实排障与实机仍待最终验收。
-- 已完成：全新用户可明确点击安装官方连接组件；已有 CLI 但缺 Secret 时，进入探索会自动弹一次原生遮蔽窗口。最新候选完整单命令打包、release/version、app.asar 标记和隔离冷启动通过；此前真实“找灵感”已通过。
+- 当前 Phase：Phase 6 最终验收；首次使用连接向导、Windows 候选与 Explore Research Workspace 软件验收已完成，真实排障与实机仍待最终验收。
+- 已完成：`EXPLORE_UI_REFACTOR@48dd8d32` 已经 `669059c2` 合入本地 `idea_to_production`。Explore 使用 Container Query 的 Compact/Normal/Wide 布局，正式显示工程证据与来源冲突；原连接、Context、Knowledge、Handoff 和确认门禁保持。
 - 当前任务：执行真实“解问题”双搜索 Demo；具备设备条件后完成真实施工闭环。
 - 未完成：全新机器真实安装→Secret 配置人工验收、真实知乎＋全网排障验收、确认后真实施工与实机验证。
 - Blocker：`REAL_HARDWARE_VALIDATION_PENDING`；Access Secret 与 DeepSeek 余额阻塞均已解除。
-- 测试：Phase 6e 连接专项、官方 status、typecheck、Main/Renderer build、Explore UI、Request、搜索/Handoff 通过；最新 `pack:win`、release/version、app.asar 标记和隔离冷启动通过。未执行真实安装、搜索或硬件。
-- Git：Phase 6e 备份 `backup/pre-phase-6e-connection-20260909` 指向 `77f2f8fc`；独立文档基线 `8edb385b` 已推送。
+- 测试：合并后 Runtime/Electron typecheck/build、Explore 10 项专项、8 场景布局 smoke、Workbench smoke 与 diff check 通过；最新历史候选的 `pack:win`、release/version、app.asar 标记和隔离冷启动仍有效。未执行真实安装、Diagnosis 或硬件。
+- Git：合并前备份 `backup/pre-explore-ui-merge-20260910` 指向 `d0265836` 并已远端核对；合并提交为 `669059c2`，最终文档提交与远端 hash 需动态查询。
 
 以下按日期记录施工当时的状态与失败证据；其中“未配置”“待接入”等表述不得覆盖上方当前状态。
 ## 2026-09-07 官方 CLI 安装实测

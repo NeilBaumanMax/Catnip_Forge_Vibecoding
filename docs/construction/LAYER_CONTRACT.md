@@ -4,7 +4,7 @@
 
 | 层 | 责任与复用入口 | 禁止 |
 | --- | --- | --- |
-| Renderer | 探索两个入口、目标/问题输入、Context 勾选、连接状态、未来 Idea/Diagnosis/来源展示、收藏、确认操作；复用 BrowserPanel/ChatPanel 设计 | Secret 输入/传输、知乎 HTTP、任意 shell/文件、直接 Hardboard、独立 Agent |
+| Renderer | 探索两个入口、目标/问题输入、Context 勾选、连接状态、Idea/Diagnosis/来源展示、收藏、阶段导航与确认操作；复用 BrowserPanel/ChatPanel 设计 | Secret 输入/传输、知乎 HTTP、任意 shell/文件、直接 Hardboard、独立 Agent |
 | Preload / Gateway | 现有显式 IPC 白名单与 Main 注册；校验输入、ID、来源、选择、确认归属 | 暴露任意命令执行、路径读取或 Secret IPC |
 | Main | 用户数据、状态映射、受控 Context、必要编排、桥接；paths/workbench/serial controller | 重写官方 CLI auth、把计划提示当程序授权 |
 | Worker / Agent | 目标理解、动态检索策略、官方 Skill 调用、证据综合、结构化返回、现有 taskId/queue 的计划及执行 | 第二套队列/Agent、未确认写文件、来源伪造、自由文本猜测关键状态 |

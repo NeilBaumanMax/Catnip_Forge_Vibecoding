@@ -27,7 +27,7 @@ Electron UI -> Gateway -> Worker -> Agent -> Runtime MCP -> Electron Chromium / 
 ## 能力边界
 
 - 应用启动时显示 Catnip Forge 品牌启动页；工作区、开发环境和 Renderer 的真实加载节点驱动阶段文字、百分比与进度条，工作台可显示后自动切换主窗口。
-- Electron 桌面窗口采用 Apple 风格冷色界面，提供聊天区、Skill/工程资源仓库、串口监视、任务管理和 Monaco 代码编辑入口；仓库页显示硬件工程、参考代码与 Skills，编辑器仍可访问 Agent 工作区等受控根目录。浏览器工作台前端入口当前隐藏，相关后端能力暂时保留。
+- Electron 桌面窗口采用 Apple 风格冷色界面，提供聊天区、Skill/工程资源仓库、串口监视、任务管理、Monaco 代码编辑和“探索”入口；探索包含找灵感、解问题、可取消工程 Context、来源、知识收藏、只读计划与明确确认门禁，并按自身可用宽度切换 Compact/Normal/Wide Research Workspace。浏览器工作台前端入口当前隐藏，相关后端能力暂时保留。
 - 右下角“猫薄荷”悬浮助手复用本地 DeepSeek API Key，专门回答 Catnip Forge 的界面与操作问题；每次提问都会读取随包、可编辑的 `resources/CATNIP_FORGE_USER_GUIDE.md`，聊天浮层内保留深色/浅色切换，不占用左侧硬件 Agent 的任务队列。
 - Worker 负责快捷任务、搜索预处理、任务上下文构造和 Agent 生命周期；同一时间只运行一个活动任务，执行中消息默认追加到当前任务，显式“排队”才建立独立后续任务。
 - Agent 负责推理和任务执行规划，但所有浏览器操作必须通过 MCP 工具完成。
@@ -150,6 +150,6 @@ pytest tests/test_project.py
 
 ## 下一步
 
-1. 继续以 `E:\Agent\vibeide\vibeide` 为唯一施工目录，在当前本地分支精确提交；远端同步按 [GitHub 同步和接力](docs/GITHUB_SYNC.md) 由用户决定。
-2. 有真实开发板时回归 Agent/UI 共享串口会话、`hardboard.serial_capture` 与不同 ESP32 console 接口的兼容性；无硬件阶段只运行模拟串口测试。
-3. 按 [重构计划](docs/REFACTOR_PLAN.md) 清理旧 scaffold、整理 Runtime / Agent / Electron 边界。
+1. 经用户明确授权具体工程摘要外发后，完成真实“解问题”知乎＋全网双搜索验收。
+2. 在全新 Windows 用户环境人工验收官方连接组件安装授权、Access Secret 安全窗口与连接确认；Secret 不进入 Renderer、Chat、日志或安装包。
+3. 有真实开发板时完成用户确认后的修改、Build、Flash、Serial 和运行验证；无实机证据继续标记 `REAL_HARDWARE_VALIDATION_PENDING`。

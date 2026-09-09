@@ -1,10 +1,11 @@
 # 新 Agent 接力入口
 
-更新时间：2026-09-10。当前施工分支 `EXPLORE_UI_REFACTOR` 从目标基线 `idea_to_production` 的 `d0265836` 创建；探索 MVP 的 Phase 6 软件与 Windows 候选历史保持有效，本分支只重构 Explore 前端。开工必须动态运行 `git branch --show-current`、`git status --short`、`git rev-parse HEAD`，本文件的 hash 只代表最近一次核对快照。
+更新时间：2026-09-10。当前目标分支为 `idea_to_production`；`EXPLORE_UI_REFACTOR` 已通过合并验收并以 merge commit `669059c2` 合入本地目标分支。合并后的文档收尾提交与远端 hash 必须动态查询，不能把本文记录当作实时 Git 状态。开工仍须运行 `git branch --show-current`、`git status --short`、`git rev-parse HEAD`。
 
-## Explore UI Refactor 当前状态
+## 当前状态
 
-- 独立施工基线 `b7063512` 已先于业务代码提交并推送；重构前远端备份 `backup/pre-explore-ui-refactor-20260910` 已核对为 `d0265836`。
+- UI 独立施工基线 `b7063512` 与实现提交 `48dd8d32` 已推送；合并前远端备份 `backup/pre-explore-ui-merge-20260910` 已核对为 `d0265836`。
+- `EXPLORE_UI_REFACTOR` 已合入 `idea_to_production`。合并后 Electron/Runtime 构建、Explore 全专项、布局矩阵与 Workbench smoke 均通过；Main/Preload/IPC/Agent/Search/Runtime/Hardboard 未因 UI 重构改变。
 - Explore 首页、Idea、Diagnosis、Source、Knowledge 和 Plan 已按 Research Workspace 重排；保留全部原 IPC、连接、收藏、验证、相关知识显式选择、Handoff 与 Confirm 行为。
 - Explore 根元素使用 inline-size Container Query：小于 700px 单栏，700–1200px Normal，大于 1200px Wide 输入/Context + 结果/Plan 双栏。旧 760/820/960px 限宽已移除。
 - Diagnosis 正式显示 `projectEvidence` 与 `sourceConflicts`；Source Row 显示 type/title/author/excerpt/url 主机并保留打开/收藏。
@@ -69,7 +70,7 @@ D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探�
 
 ## 测试快照
 
-Phase 0：13 个检查目标通过、2 次 pytest 启动失败、3 组未验证。Phase 1 离线集成相关回归通过，后续官方验证、最小内容请求与真实知乎搜索已补验；显式 `@zhihu` Agent 调用未单独验收。Phase 2：5 组通过、0 最终失败。Phase 3a 受限门禁 6 个核心目标通过。Phase 6b 的 8 项软件回归全部通过；Phase 6c 真实找灵感通过；Phase 6e 的连接专项、status、类型/构建、UI、Request 与 Handoff 回归通过，真实全新包首次连接仍待验。
+Phase 0：13 个检查目标通过、2 次 pytest 启动失败、3 组未验证。Phase 1 离线集成相关回归通过，后续官方验证、最小内容请求与真实知乎搜索已补验；显式 `@zhihu` Agent 调用未单独验收。Phase 2：5 组通过、0 最终失败。Phase 3a 受限门禁 6 个核心目标通过。Phase 6b 的 8 项软件回归全部通过；Phase 6c 真实找灵感通过；Phase 6e 的连接专项、status、类型/构建、UI、Request 与 Handoff 回归通过。2026-09-10 UI 合并验收再次通过 Electron/Runtime typecheck/build、10 项 Explore 专项、8 场景布局 smoke、Workbench smoke 与 diff check；真实全新包首次连接仍待验。
 
 2026-09-08 文档漂移修正专项：3 个检查目标通过、0 失败；只修改 AGENTS/施工文档，未重复业务构建。
 
@@ -78,6 +79,7 @@ Phase 0：13 个检查目标通过、2 次 pytest 启动失败、3 组未验证�
 - baseline：`f6e20e8e1d581a10fbd9c0e48d39bec5c4376112`。
 - 审计开始时 local/remote：`bff953900d1af98aa9e69f50308ed137c4b0b373`；push 与 `ls-remote` 已核对，工作区当时干净。
 - 备份：`backup/pre-phase-0-20260907` → baseline；`backup/pre-phase-1-20260907` → `bba40d57`；`backup/pre-phase-2-20260907` → `b3b32a4b`；`backup/pre-phase-3-20260907` → `42d74e56`。local/remote 均已有核对记录。
+- UI 合并备份：`backup/pre-explore-ui-merge-20260910` → `d0265836`，已推送并经 `ls-remote` 核对；本地合并提交为 `669059c2`，最终远端状态以动态查询为准。
 - 只能精确暂存；禁止 `reset --hard`、`clean -fd`、`push --force`、擅自 stash 或覆盖用户修改。撤回已提交工作使用经审查的 `git revert <commit>` 并重新测试。
 
 本次文档漂移修正完成后的提交与远端 hash，必须用 Git 动态查询；不能让提交正文虚称包含自身 hash。

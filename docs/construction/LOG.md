@@ -238,3 +238,13 @@
 - 新增 Explore 专属 tokens 与 inline-size Container Query；Compact <700px、Normal 700–1200px、Wide >1200px。Wide 使用 320–420px 左轨与弹性右轨；主页/流程不再存在 760/820/960px 限宽。
 - 首次 DOM layout smoke 因测试注入 API 缺 BrowserPanel 的 `setBrowserBounds` 而无法挂载 Explore；补齐空 stub 后通过。测试没有调用真实搜索、Agent、安装、Secret 或硬件。
 - 最终 Runtime/Electron typecheck/build、10 项 Explore 契约/安全/UI 验证、workbench smoke、8 场景 layout smoke 和 diff check 通过；Renderer 控制台错误 0。大 chunk warning 保留。真实网络 Diagnosis、Agent 执行、硬件和实体 27 寸人工观感未验证。
+
+## 2026-09-10 / Explore UI 合并验收与文档接力
+
+- 动态核对起点：`EXPLORE_UI_REFACTOR` 本地/远端均为 `48dd8d32`，`idea_to_production` 本地/远端均为 `d0265836`，工作区干净。创建并推送 `backup/pre-explore-ui-merge-20260910@d0265836`，`ls-remote` 核对一致。
+- 切换到 `idea_to_production` 后以非快进 merge 保留功能分支边界，生成本地合并提交 `669059c2`；没有冲突，没有修改 Main/Preload/IPC/Agent/Search/Runtime/Hardboard。
+- 合并后 Runtime typecheck/build、Electron typecheck/Main build/Renderer build、Explore 10 项专项、8 场景布局 smoke、Workbench smoke 与 `git diff --check` 全部通过。Renderer 保留既有大 chunk warning；无控制台错误。
+- 文档漂移审计只修正当前状态：HANDOFF、DEV_PROGRESS、CONSTRUCTION_PLAN、LAYER_CONTRACT、ARCHITECTURE、README 与 UI 基线/测试指标；历史日期段和失败证据保留。
+- 文档补丁第一次因 Windows sandbox helper 无法锁定 `.codex/.sandbox-bin` 而在写入前失败；改走同一系统 `apply_patch.bat` 时又因 `%*` 展开丢失补丁末行而被拒绝。直接把单一补丁参数交给该包装器指向的 Codex apply-patch 引擎后成功；两次失败均无文件改动。
+- 第一次文档本地链接检查在处理根目录 `README.md` 时把空父路径传给 `Join-Path`，因此在链接断言前退出；改为根目录使用 `.` 后复跑，9 个当前文档中的 16 个本地链接全部存在，一致性断言与 `git diff --check` 通过。该失败属于验收脚本编排，不是文档断言失败。
+- 本闭环未调用真实 Diagnosis、Agent 执行、Windows 重新打包或硬件；`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留。最终文档提交、push 与远端 hash 在执行后动态核对，不在提交前虚写。

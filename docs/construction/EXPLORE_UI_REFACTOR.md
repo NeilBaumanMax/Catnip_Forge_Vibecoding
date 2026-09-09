@@ -2,9 +2,11 @@
 
 日期：2026-09-10
 
-施工分支：`EXPLORE_UI_REFACTOR`（从 `idea_to_production` 的 `d0265836` 创建）
+施工分支（历史）：`EXPLORE_UI_REFACTOR`（从 `idea_to_production` 的 `d0265836` 创建）
 
 重构前备份：`origin/backup/pre-explore-ui-refactor-20260910` → `d0265836`
+
+合并状态：实现提交 `48dd8d32` 已通过 merge commit `669059c2` 合入本地 `idea_to_production`；合并前远端备份 `origin/backup/pre-explore-ui-merge-20260910` → `d0265836`。最终文档提交和远端 hash 以动态 Git 查询为准。
 
 ## 目标与范围
 
@@ -73,3 +75,10 @@
 - 首次 layout smoke 失败：浏览器测试 stub 缺少 BrowserPanel mode 变化所需的 `setBrowserBounds`，Explore 未挂载；补齐无副作用 stub 和诊断后复测通过。产品代码未因此放宽或增加 fallback。
 - Renderer build 保留项目既有的 chunk >500kB warning；未更改构建配置掩盖。
 - NOT VERIFIED：真实知乎＋全网 Diagnosis、真实模型/Agent 执行、真实 Build/Flash/Serial、实体 27 寸显示器人工观感、重新打包 Windows 候选。
+
+## 合并验收
+
+- `idea_to_production` 合并后重新执行 Runtime typecheck/build、Electron typecheck/Main build/Renderer build，全部 exit 0；Renderer 仍只有既有 chunk >500kB warning。
+- 重新执行 Explore Context、Request、Knowledge、Analysis Gate、Search/Handoff、UI、Entry、Zhihu Status、Zhihu Connection 与 Layout UI 专项，全部通过。
+- Layout UI 再次覆盖 1920×1080 的 Chat 24/34/45/52% 与折叠、2560×1440、3840×2160、Compact/Normal/Wide、light/dark、Diagnosis/Plan 和 console error 0。
+- `smoke:workbench` 与 `git diff --check` 通过。未执行真实网络 Diagnosis、真实 Agent 执行、Windows 重新打包或硬件动作，原 NOT VERIFIED 结论不变。

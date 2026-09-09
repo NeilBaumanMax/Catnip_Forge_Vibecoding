@@ -27,6 +27,15 @@
 - Access Secret 已通过独立宿主窗口配置；官方验证、最小本人内容请求和真实“找灵感”通过。该请求取得 8 条知乎来源并展示 3 个合法 Idea。
 - Phase 6e 首次使用连接向导与最新 Windows 候选软件验收已完成：缺 CLI 需用户点击授权安装；CLI 可用但缺 Secret 时进入探索自动弹一次安全窗口；完整 `pack:win`、release/version、app.asar 标记与隔离冷启动通过。下一小项按顺序为：真实“解问题”知乎＋全网双搜索 Demo；全新 Windows 用户真实安装/连接人工验收；有设备后完成确认施工及 Build/Flash/Serial 实机验收。
 - `LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留；已有发布候选验收不能替代最新源码重新打包，软件门禁或串口 mock 不能替代真机。
+
+以上是 2026-09-09 当时快照。2026-09-10 的当前状态如下。
+
+## 2026-09-10 当前执行状态
+
+- Explore UI Research Workspace 已由 `EXPLORE_UI_REFACTOR` 合入 `idea_to_production`；合并后 Runtime/Electron 构建、Explore 全专项、布局矩阵与 Workbench smoke 通过。
+- 当前不新增第二套后端。下一业务小闭环仍是经用户授权具体工程摘要外发后，完成真实“解问题”知乎＋全网双搜索 Demo，并验证来源、工程证据与冲突的结构化返回。
+- 随后在全新 Windows 用户环境人工验收安装授权→Secret 安全窗口→连接确认；有设备后再执行用户确认后的真实修改、Build、Flash、Serial 与知识验证回写。
+- `LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 继续保留。UI、mock、软件门禁和历史 Windows 候选都不能替代真实网络、最新包或实机证据。
 ## Phase 1 已定位的最小工程范围
 
 - 新增 `agent/skills/zhihu`，按用户 ZIP 原字节导入，不创建假 Skill。

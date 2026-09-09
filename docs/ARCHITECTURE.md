@@ -2,7 +2,7 @@
 
 ## 一句话
 
-`Catnip Forge`（中文全称：Catnip 硬件智能开发平台；英文定位：Autonomous Hardware Development Agent）是一个 Electron 桌面硬件开发 IDE：用户在左侧对话，右侧提供 Skill/工程资源仓库、串口监视器、任务管理器和编辑器；浏览器工作台后端暂时保留。任务由 Worker 编排，Agent 通过 Runtime MCP tools 控制同一个 Electron Chromium。
+`Catnip Forge`（中文全称：Catnip 硬件智能开发平台；英文定位：Autonomous Hardware Development Agent）是一个 Electron 桌面硬件开发 IDE：用户在左侧对话，右侧提供 Skill/工程资源仓库、串口监视器、任务管理器、编辑器和探索；浏览器工作台后端暂时保留。任务由 Worker 编排，Agent 通过 Runtime MCP tools 控制同一个 Electron Chromium。
 
 ## 分层
 
@@ -43,6 +43,7 @@ Runtime MCP Server
 - `electron/src/main/bootstrap.ts` / `user-data-path.ts`：在其他主进程模块初始化前设置 Catnip Forge 客户数据目录，并执行旧目录安全迁移。
 - `electron/assets/splash.html`：不依赖 Renderer bundle 的品牌启动页，使用随包 `splash-*.png` 素材并响应主进程进度更新。
 - `electron/src/main/gateway.ts`：IPC 注册，唯一入口。
+- `electron/src/main/explore-*.ts`：探索的官方 Zhihu 状态/固定搜索桥、请求准备、有界工程 Context、结构化分析/Handoff 和本地知识 Store；Secret 仅由 Main 拉起的独立宿主窗口经官方 CLI stdin 处理。
 - `electron/src/main/browser-view.ts`：右侧 WebContentsView tabs、持久 session、bounds 同步。
 - `electron/src/main/browser-recorder.ts`：Electron 侧录制和回放。
 - `electron/src/main/workbench.ts`：提供 Agent 工作区、硬件工程、参考代码和 Skills 四个受控根目录及编辑器文件系统边界；仓库概览前端不展示 Agent 工作区卡片。打包资源通过 `getAgentDir()`、`getResourcesDir()`、`getHardboardDir()` 解析，Skills 位于 `resources/agent/skills`。
@@ -64,7 +65,8 @@ Runtime MCP Server
 - `electron/src/renderer/components/ChatPanel.tsx`：左侧历史会话栏与右侧 Agent 对话；支持新建、切换、收起，以及“⋯”菜单中的重命名、置顶和带确认删除，同时负责主要回复、执行过程和专业视图。
 - `electron/src/renderer/components/TaskProgress.tsx`：当前任务的紧凑运行仪表盘，挂在活动“执行过程”下方且只在 Agent 工作期间呈现，不再作为左栏独立面板。
 - `electron/src/renderer/components/MarkdownContent.tsx`：把 Agent Markdown 安全渲染为 React 节点，不执行原始 HTML，并限制外部链接协议。
-- `electron/src/renderer/components/BrowserPanel.tsx`：仓库、监视器、任务管理器和编辑器；工作台前端入口隐藏，但组件内部浏览器工作台实现保留。任务管理器负责工程/设备刷新、相对工程选择、Build/Flash 控制、语义状态胶囊、可直接清除的 EventBus 历史和最近任务结果；监视器提供文本/HEX 双向收发及完整串口参数，并同步 Agent 打开、关闭、发送和清空操作；编辑器负责多根资源树、懒加载目录、等宽标签、Portal 右键菜单、字号持久化和保存状态同步。
+- `electron/src/renderer/components/BrowserPanel.tsx`：仓库、监视器、任务管理器、编辑器和探索五个工作区；工作台前端入口隐藏，但组件内部浏览器工作台实现保留。任务管理器负责工程/设备刷新、相对工程选择、Build/Flash 控制、语义状态胶囊、可直接清除的 EventBus 历史和最近任务结果；监视器提供文本/HEX 双向收发及完整串口参数，并同步 Agent 打开、关闭、发送和清空操作；编辑器负责多根资源树、懒加载目录、等宽标签、Portal 右键菜单、字号持久化和保存状态同步。
+- `electron/src/renderer/components/ExplorePanel.tsx`：探索首页、Idea/Diagnosis、可取消 Context、Knowledge、来源、Plan/Handoff 与明确确认；使用独立 `explore.less` 和 inline-size Container Query 形成 Compact/Normal/Wide Research Workspace，不接触 Secret 或直接调用知乎。
 - `electron/src/renderer/components/WorkspacePanel.tsx`：显示硬件工程、参考代码和 Skills 三类资源，不显示 Agent 生成卡片；Skills 卡片可新增、编辑、回收站删除、同步并查看源仓库可写/部署状态。
 - `electron/src/renderer/components/ChatPanel.tsx`：输入 `@` 或点击 Skills 按钮可在当前光标位置插入多个 `@skill-id`；发送时保留正文位置并传输结构化引用，历史消息原位渲染内联 Skill 标签。
 - `electron/src/renderer/styles/apple.less`：1.0.0-7201 最终视觉覆盖，使用 `data-theme="dark|light"` 定义显式主题令牌，并提供冷色材质、排版层级、圆角、可拖动助手浮层、反馈动效和 reduced-motion/reduced-transparency 适配。

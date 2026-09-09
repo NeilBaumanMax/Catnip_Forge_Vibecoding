@@ -293,3 +293,16 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 | `git diff --check` | 通过 | 无 whitespace error；LF→CRLF 仅为工作树提示 |
 
 首次 `verify:explore-layout-ui` 失败于测试 stub 缺 `setBrowserBounds`，导致 Explore 未挂载；补齐 BrowserPanel 所需的无副作用方法后复测通过。最终统计：上述 10 组目标通过、0 最终失败；1 次 smoke 基础设施失败后纠正。未验证真实知乎＋全网 Diagnosis、真实模型/Agent 执行、真实 Build/Flash/Serial、实体 27 寸人工观感或新 Windows 包。
+
+## 2026-09-10 Explore UI 合并验收
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix runtime run typecheck` / `build` | 通过 | 合并后 Runtime 回归 exit 0 |
+| `npm.cmd --prefix electron run typecheck` / `build:main` / `build:renderer` | 通过 | Renderer 1265 modules；保留既有 4.1MB chunk warning |
+| Explore 10 项专项 | 通过 | Context、Request、Knowledge、Analysis Gate、Search/Handoff、UI、Entry、Zhihu Status/Connection、Layout UI |
+| `verify:explore-layout-ui` | 通过 | 8 个视口/分栏场景、三档 Container Query、light/dark、Diagnosis/Plan、console error 0 |
+| `smoke:workbench` | 通过 | 打开真实仓库 CMake 文件；未触发硬件 |
+| `git diff --check` | 通过 | 合并后无 whitespace error |
+
+合并验收 5 组目标全部通过、0 最终失败。没有执行真实知乎＋全网 Diagnosis、真实 Agent 执行、Windows 重新打包或真实 Build/Flash/Serial；`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 不变。
