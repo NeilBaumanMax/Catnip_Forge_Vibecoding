@@ -2,11 +2,11 @@
 
 更新时间：2026-09-09。探索 MVP 正在执行 Phase 6 验证。
 
-- 当前 Phase：Phase 6 软件范围已完成；Windows 发布候选、无 Key 冷启动和 Explore/队列/Skill/串口软件回归均通过，真实知乎与实机验收仍 pending。
-- 已完成：安全连接入口、固定知乎/全网搜索桥、受限分析、Idea/Diagnosis UI、结构化 Handoff 与只计划档位；DeepSeek 真实计划输出已通过；当前工程、target、最多 6 个源码候选、24 小时内同工程 Build/Flash 事件和最多 40 条共享串口记录可见且可取消。
-- 当前任务：软件闭环收尾；两条真实端到端 Demo 分别等待用户恢复 Access Secret 测试和提供实机验证条件。
-- 未完成：真实知乎/全网搜索验收、确认后真实施工与实机验证、两条端到端 Demo。
-- Blocker：`LIVE_INTEGRATION_PENDING`（Access Secret 未配置，用户要求暂不测试）与 `REAL_HARDWARE_VALIDATION_PENDING`。DeepSeek 余额阻塞已解除。
+- 当前 Phase：Phase 6 最终验收；Windows 发布候选、无 Key 冷启动和 Explore/队列/Skill/串口软件回归已通过，真实“找灵感”已通过，真实排障与实机仍 pending。
+- 已完成：Access Secret 经独立安全面板配置，官方凭证验证和最小本人内容请求成功；真实探索取得 8 条知乎来源，DeepSeek 返回 3 个合法 Idea，页面保留 5 个可点击原始来源。
+- 当前任务：完成真实“解问题”双搜索 Demo，并把本轮受限输出修复重打进 Windows 候选。
+- 未完成：真实知乎＋全网排障验收、确认后真实施工与实机验证、最新源码完整单命令打包。
+- Blocker：`REAL_HARDWARE_VALIDATION_PENDING`；Access Secret 与 DeepSeek 余额阻塞均已解除。
 - 测试：Phase 4a 专项、typecheck、Main/Renderer build、Explore UI/Request、task queue 通过；首次错误断言与修复见 TEST_METRICS/LOG。
 - Git：Phase 4 备份 `backup/pre-phase-4-20260908` 指向 `c0ca685f1460c7c5c539042d93bcc2d9ada1bfa0`；4a 独立基线提交 `cefd6331` 已推送。
 ## 2026-09-07 官方 CLI 安装实测

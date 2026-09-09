@@ -73,7 +73,7 @@ interface TaskContinuation {
 }
 
 export function isExploreAnalysisToolAllowed(toolName: string): boolean {
-  return toolName === 'Skill';
+  return toolName === 'Skill' || toolName === 'StructuredOutput';
 }
 
 export function isRestrictedExploreProfile(profile: AgentExecutionProfile): boolean {
@@ -81,7 +81,8 @@ export function isRestrictedExploreProfile(profile: AgentExecutionProfile): bool
 }
 
 export function isExploreToolAllowed(profile: AgentExecutionProfile, toolName: string): boolean {
-  return profile === 'explore_analysis' && isExploreAnalysisToolAllowed(toolName);
+  if (toolName === 'StructuredOutput') return isRestrictedExploreProfile(profile);
+  return profile === 'explore_analysis' && toolName === 'Skill';
 }
 
 export function canAppendTaskGuidance(
@@ -1080,6 +1081,10 @@ export class Orchestrator {
       '最终只能返回一个没有 Markdown 围栏、没有前后说明的 JSON 对象。',
       `requestId 必须原样返回：${requestId}`,
       `输出结构：${outputShape}`,
+      'idea 模式只返回 3 个差异明确、按可实现性排序的 Idea；每个 Idea 只选择 1–2 条最能支撑它的来源。',
+      '保持简洁，不要在思考或输出中重复罗列全部来源正文。',
+      'IdeaResult 字段固定为 id、title、value、implementationDirection、compatibility、sources；不得改用 summary、approach、feasibility 等近义字段。',
+      '来源对象必须逐项复用“已校验来源”中提供的 type、title、author（如有）、url、excerpt，不得生成新 URL 或改写 URL。',
       `请求：${JSON.stringify(request)}`,
       `已校验来源：${JSON.stringify(sources)}`,
     ].join('\n');

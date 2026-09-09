@@ -85,7 +85,13 @@ async function main() {
   assert.equal(valueAfter(restrictedArgs, '--permission-mode'), 'plan');
   assert.equal(valueAfter(restrictedArgs, '--tools'), 'Skill');
   assert(restrictedArgs.includes('--strict-mcp-config'));
-  assert.doesNotThrow(() => JSON.parse(valueAfter(restrictedArgs, '--json-schema')));
+  const outputSchema = JSON.parse(valueAfter(restrictedArgs, '--json-schema'));
+  const ideaSchema = outputSchema.oneOf.find((branch) => branch.properties.mode.const === 'idea');
+  assert.equal(ideaSchema.properties.ideas.minItems, 3);
+  assert.equal(ideaSchema.properties.ideas.maxItems, 3);
+  assert.deepEqual(ideaSchema.properties.ideas.items.required, ['id', 'title', 'value', 'implementationDirection', 'compatibility', 'sources']);
+  assert.equal(ideaSchema.properties.ideas.items.properties.sources.maxItems, 2);
+  assert.deepEqual(ideaSchema.properties.ideas.items.properties.sources.items.required, ['type', 'title', 'url', 'excerpt']);
   assert.deepEqual(buildAgentMcpConfig('explore_analysis'), { mcpServers: {} });
   const claudeBin = path.join(__dirname, '..', '..', 'agent', 'node_modules', '@anthropic-ai', 'claude-code', 'bin', 'claude.exe');
   const cliHelp = execFileSync(claudeBin, ['--help'], { encoding: 'utf8', windowsHide: true });
@@ -94,6 +100,7 @@ async function main() {
   }
 
   assert.equal(isExploreAnalysisToolAllowed('Skill'), true);
+  assert.equal(isExploreAnalysisToolAllowed('StructuredOutput'), true);
   for (const tool of ['Read', 'Write', 'Edit', 'MultiEdit', 'NotebookEdit', 'Bash', 'mcp__vibeide-runtime__hardboard_idf_build', 'hardboard.serial_read']) {
     assert.equal(isExploreAnalysisToolAllowed(tool), false, `${tool} must be forbidden`);
   }
@@ -196,6 +203,8 @@ async function main() {
   orchestrator.handleParsedChunk({ type: 'text', content: 'late restricted text must stay hidden' }, 'explore_analysis');
   assert.deepEqual(events, []);
   orchestrator.currentExecutionProfile = 'explore_analysis';
+  orchestrator.handleParsedChunk({ type: 'tool_call', toolName: 'StructuredOutput', content: 'schema result submission' });
+  assert.deepEqual(failures, [], 'the CLI internal structured-result submission must remain available');
   orchestrator.handleParsedChunk({ type: 'tool_call', toolName: 'Write', content: 'write secret.txt' });
   assert.deepEqual(failures, ['EXPLORE_FORBIDDEN_TOOL']);
   assert.deepEqual(events, []);

@@ -220,6 +220,48 @@ export interface ExploreAnalysisExpectation {
   sourceUrls?: string[];
 }
 
+const SOURCE_EVIDENCE_JSON_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['type', 'title', 'url', 'excerpt'],
+  properties: {
+    type: { enum: ['zhihu', 'web', 'local'] },
+    title: { type: 'string', minLength: 1, maxLength: 300 },
+    author: { type: 'string', minLength: 1, maxLength: 160 },
+    url: { type: 'string', minLength: 1, maxLength: 2048 },
+    excerpt: { type: 'string', minLength: 1, maxLength: 800 },
+  },
+} as const;
+
+const IDEA_RESULT_JSON_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['id', 'title', 'value', 'implementationDirection', 'compatibility', 'sources'],
+  properties: {
+    id: { type: 'string', minLength: 1, maxLength: 120 },
+    title: { type: 'string', minLength: 1, maxLength: 240 },
+    value: { type: 'string', minLength: 1, maxLength: 800 },
+    implementationDirection: { type: 'string', minLength: 1, maxLength: 1600 },
+    compatibility: { type: 'string', minLength: 1, maxLength: 800 },
+    sources: { type: 'array', minItems: 1, maxItems: 2, items: SOURCE_EVIDENCE_JSON_SCHEMA },
+  },
+} as const;
+
+const DIAGNOSIS_HYPOTHESIS_JSON_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['id', 'statement', 'priorityReason', 'projectEvidence', 'communitySources', 'externalSources', 'nextValidation'],
+  properties: {
+    id: { type: 'string', minLength: 1, maxLength: 120 },
+    statement: { type: 'string', minLength: 1, maxLength: 2000 },
+    priorityReason: { type: 'string', minLength: 1, maxLength: 2000 },
+    projectEvidence: { type: 'array', maxItems: 30, items: { type: 'string', minLength: 1, maxLength: 2000 } },
+    communitySources: { type: 'array', minItems: 1, maxItems: 30, items: SOURCE_EVIDENCE_JSON_SCHEMA },
+    externalSources: { type: 'array', minItems: 1, maxItems: 30, items: SOURCE_EVIDENCE_JSON_SCHEMA },
+    nextValidation: { type: 'string', minLength: 1, maxLength: 2000 },
+  },
+} as const;
+
 export const EXPLORE_ANALYSIS_JSON_SCHEMA = {
   type: 'object',
   oneOf: [
@@ -230,7 +272,7 @@ export const EXPLORE_ANALYSIS_JSON_SCHEMA = {
         schemaVersion: { const: 1 },
         requestId: { type: 'string', minLength: 1, maxLength: 120 },
         mode: { const: 'idea' },
-        ideas: { type: 'array', minItems: 1, maxItems: 8, items: { type: 'object' } },
+        ideas: { type: 'array', minItems: 3, maxItems: 3, items: IDEA_RESULT_JSON_SCHEMA },
       },
     },
     {
@@ -240,7 +282,16 @@ export const EXPLORE_ANALYSIS_JSON_SCHEMA = {
         schemaVersion: { const: 1 },
         requestId: { type: 'string', minLength: 1, maxLength: 120 },
         mode: { const: 'diagnosis' },
-        diagnosis: { type: 'object' },
+        diagnosis: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['problem', 'hypotheses', 'sourceConflicts'],
+          properties: {
+            problem: { type: 'string', minLength: 1, maxLength: 3000 },
+            hypotheses: { type: 'array', minItems: 1, maxItems: 20, items: DIAGNOSIS_HYPOTHESIS_JSON_SCHEMA },
+            sourceConflicts: { type: 'array', maxItems: 30, items: { type: 'string', minLength: 1, maxLength: 2000 } },
+          },
+        },
       },
     },
     {
@@ -250,7 +301,26 @@ export const EXPLORE_ANALYSIS_JSON_SCHEMA = {
         schemaVersion: { const: 1 },
         requestId: { type: 'string', minLength: 1, maxLength: 120 },
         mode: { const: 'plan' },
-        plan: { type: 'object' },
+        plan: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['summary', 'steps', 'risks'],
+          properties: {
+            summary: { type: 'string', minLength: 1, maxLength: 3000 },
+            steps: {
+              type: 'array', minItems: 1, maxItems: 30,
+              items: {
+                type: 'object', additionalProperties: false, required: ['id', 'title', 'detail'],
+                properties: {
+                  id: { type: 'string', minLength: 1, maxLength: 120 },
+                  title: { type: 'string', minLength: 1, maxLength: 240 },
+                  detail: { type: 'string', minLength: 1, maxLength: 3000 },
+                },
+              },
+            },
+            risks: { type: 'array', maxItems: 30, items: { type: 'string', minLength: 1, maxLength: 2000 } },
+          },
+        },
       },
     },
   ],

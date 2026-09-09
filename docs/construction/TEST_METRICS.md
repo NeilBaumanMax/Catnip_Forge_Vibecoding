@@ -238,3 +238,9 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 ## 2026-09-09 Phase 6b 软件回归
 
 直接复用已完成的 Main 构建运行 8 项回归，全部通过：Explore Request、只分析门禁、搜索/Handoff/一次性确认、有限 Context、知识 Store、原 Agent 队列、Skill Manager（13 deployed）和共享串口会话 mock。mock 只证明软件会话语义，不作为真机证据。未调用知乎、DeepSeek、Access Secret 或硬件；真实知乎来源 Demo 与真实施工/Build/Flash/Serial Demo 继续分别标记 `LIVE_INTEGRATION_PENDING` 和 `REAL_HARDWARE_VALIDATION_PENDING`。
+
+## 2026-09-09 Phase 6c 真实找灵感
+
+官方 `auth status --verify` 与 `me contents --type all --limit 1` 成功。探索页真实请求连续取得 8 条知乎来源；最终 DeepSeek 返回 3 个合法 Idea，页面显示完成并保留 5 个可点击知乎原始 URL。未调用全网搜索或硬件。
+
+首次失败为内部 `StructuredOutput` 被误判为越权工具；加入仅用于结果提交的白名单后，文件/命令/硬件工具仍保持拒绝。第二次失败为下发 Schema 没有定义 IdeaResult 字段；补齐完整 Schema 后，第三次因模型尝试输出 8 个含长摘要的 Idea 命中 32,002 output token 上限。最终限制为 3 个 Idea、每项 1–2 条来源、摘要 800 字后真实通过。专项 `verify:explore-analysis-gate`、`verify:explore-search-handoff`、typecheck 与 diff check 通过；曾误调用不存在的 `verify:explore-search`，随后改用真实脚本名补跑成功。

@@ -41,7 +41,7 @@ export function normalizeExploreSearchResponse(value: unknown, kind: ExploreSear
     const url = typeof item.Url === 'string' ? item.Url : '';
     if (!title || !excerpt || !url) continue;
     try {
-      sources.push(normalizeSourceEvidence({ type: kind === 'zhihu' ? 'zhihu' : 'web', title, author: author || undefined, url, excerpt: excerpt.slice(0, 2_000) }));
+      sources.push(normalizeSourceEvidence({ type: kind === 'zhihu' ? 'zhihu' : 'web', title, author: author || undefined, url, excerpt: excerpt.slice(0, 800) }));
     } catch {
       // Ignore malformed individual rows returned alongside valid official rows.
     }
