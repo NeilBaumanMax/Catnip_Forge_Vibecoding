@@ -24,6 +24,12 @@ assert.match(explorePanel, /prepareExploreRequest/, 'Explore input must cross th
 assert.match(explorePanel, /saveExploreKnowledge/, 'source save must use the existing preload store');
 assert.match(explorePanel, /data-tour-id="explore-saved-knowledge"/, 'saved knowledge preview is missing');
 assert.match(explorePanel, /不会自动加入后续 Context/, 'manual context selection promise is missing');
+assert.match(explorePanel, /findRelatedExploreKnowledge\(query, 6\)/, 'related knowledge discovery is missing');
+assert.match(explorePanel, /setSelectedKnowledgeIds\(\[\]\)/, 'query changes must invalidate prior selections');
+assert.match(explorePanel, /checked=\{selectedKnowledgeIds\.includes\(card\.id\)\}/, 'related knowledge requires a visible checkbox');
+assert.match(explorePanel, /selectExploreKnowledgeForContext\(explicitlySelectedIds\)/, 'only explicitly selected ids may cross Main');
+assert.match(explorePanel, /kind: 'knowledge'/, 'selected history must become knowledge context');
+assert.match(explorePanel, /候选默认不加入分析/, 'default exclusion wording is missing');
 assert.match(explorePanel, /onClick=\{\(\) => void saveSource\(source\)\}/, 'source save must require a user click');
 assert.doesNotMatch(explorePanel, /useEffect\([\s\S]{0,300}saveExploreKnowledge/, 'knowledge must not be saved automatically');
 assert.match(explorePanel, /不会修改文件、Build、Flash 或操作串口/, 'Explore side-effect boundary is missing');
@@ -32,4 +38,4 @@ assert.match(globalStyles, /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)
 assert.match(appleStyles, /grid-template-columns: repeat\(5, minmax\(88px, 120px\)\) minmax\(120px, 1fr\)/);
 assert.match(appleStyles, /\.explore-panel\s*\{/);
 
-console.log('explore UI contract passed: 5 tabs, 2 entries, manual knowledge save, context exclusion, safe connection boundary');
+console.log('explore UI contract passed: 5 tabs, 2 entries, manual knowledge save, related history opt-in, context exclusion, safe connection boundary');

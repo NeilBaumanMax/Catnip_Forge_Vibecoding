@@ -221,3 +221,6 @@ verify:explore-search-handoff、Electron typecheck、Main/Renderer build、task 
 ## 2026-09-08 Phase 5a 主动收藏
 
 Explore UI 契约、知识 Store 持久化专项、Electron typecheck、Main/Renderer build 和 git diff --check 通过。来源旁收藏必须由用户点击；重复 URL 在当前 UI 显示已收藏；探索首页从既有 Store 展示最近收藏，且明确不会自动加入 Context。未调用知乎、DeepSeek 或硬件。
+## 2026-09-09 Phase 5b 相关历史显式选择
+
+用户明确授权：仅在其勾选并点击分析时，可把所选本地收藏的摘要、来源 URL 和验证状态发送给当前 DeepSeek；未选内容和 Access Secret 不发送。Explore UI 契约、知识 Store、Request 清洗、typecheck、Main/Renderer build 和 git diff --check 通过。问题变化会清空旧选择，提交前还会把 ID 限制为当前相关候选并经 Main Store 选择校验。未执行真实 DeepSeek、知乎或硬件调用。

@@ -45,6 +45,10 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
   const [contextError, setContextError] = useState('');
   const [knowledgeCards, setKnowledgeCards] = useState<KnowledgeCard[]>([]);
   const [savingSourceUrl, setSavingSourceUrl] = useState('');
+  const [relatedKnowledge, setRelatedKnowledge] = useState<KnowledgeCard[]>([]);
+  const [selectedKnowledgeIds, setSelectedKnowledgeIds] = useState<string[]>([]);
+  const [relatedKnowledgeLoading, setRelatedKnowledgeLoading] = useState(false);
+  const [relatedKnowledgeError, setRelatedKnowledgeError] = useState('');
 
   useEffect(() => {
     if (!diagnosisSeed) return;
@@ -113,6 +117,38 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
       .then(setKnowledgeCards)
       .catch((error) => setNotice(error instanceof Error ? error.message : '无法读取已收藏知识'));
   }, []);
+
+  useEffect(() => {
+    const query = problem.trim();
+    setSelectedKnowledgeIds([]);
+    setRelatedKnowledgeError('');
+    if (view !== 'diagnosis' || query.length < 2) {
+      setRelatedKnowledge([]);
+      setRelatedKnowledgeLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setRelatedKnowledgeLoading(true);
+    const timer = window.setTimeout(() => {
+      void window.electronAPI.findRelatedExploreKnowledge(query, 6)
+        .then((cards) => {
+          if (!cancelled) setRelatedKnowledge(cards);
+        })
+        .catch((error) => {
+          if (cancelled) return;
+          setRelatedKnowledge([]);
+          setRelatedKnowledgeError(error instanceof Error ? error.message : '无法查找相关收藏');
+        })
+        .finally(() => {
+          if (!cancelled) setRelatedKnowledgeLoading(false);
+        });
+    }, 350);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [problem, view]);
 
   const refreshConnection = async () => {
     setCheckingConnection(true);
@@ -193,22 +229,48 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
       : [...current, id]);
   };
 
+  const toggleKnowledge = (id: string) => {
+    setSelectedKnowledgeIds((current) => current.includes(id)
+      ? current.filter((item) => item !== id)
+      : [...current, id]);
+  };
+
   const prepareRequest = async (event: React.FormEvent) => {
     event.preventDefault();
-    const request: ExploreRequest = {
-      mode: view === 'idea' ? 'idea' : 'diagnosis',
-      goal: (view === 'idea' ? goal : problem).trim(),
-      context: {
-        items: contextOptions.map((item) => ({
-          id: item.id,
-          kind: item.kind,
-          label: item.label,
-          summary: item.summary,
-          selected: view === 'idea' ? item.available && item.id !== 'recent-runtime' : selectedContextIds.includes(item.id),
-        })),
-      },
-    };
     try {
+      const relatedIds = new Set(relatedKnowledge.map((card) => card.id));
+      const explicitlySelectedIds = selectedKnowledgeIds.filter((id) => relatedIds.has(id));
+      const selectedKnowledge = view === 'diagnosis' && explicitlySelectedIds.length
+        ? await window.electronAPI.selectExploreKnowledgeForContext(explicitlySelectedIds)
+        : [];
+      const knowledgeContext: ExploreContextItem[] = selectedKnowledge.map((card) => ({
+        id: `history:${card.id}`,
+        kind: 'knowledge',
+        label: `历史收藏：${card.source.title}`,
+        summary: [
+          card.taskSummary,
+          card.source.excerpt,
+          `来源：${card.source.url}`,
+          `验证状态：${card.verificationStatus}`,
+        ].join('；'),
+        selected: true,
+      }));
+      const request: ExploreRequest = {
+        mode: view === 'idea' ? 'idea' : 'diagnosis',
+        goal: (view === 'idea' ? goal : problem).trim(),
+        context: {
+          items: [
+            ...contextOptions.map((item) => ({
+              id: item.id,
+              kind: item.kind,
+              label: item.label,
+              summary: item.summary,
+              selected: view === 'idea' ? item.available && item.id !== 'recent-runtime' : selectedContextIds.includes(item.id),
+            })),
+            ...knowledgeContext,
+          ],
+        },
+      };
       const prepared = await window.electronAPI.prepareExploreRequest(request);
       if (prepared.state !== 'ready') {
         setNotice(`${prepared.message} 本次没有发起搜索。`);
@@ -225,7 +287,6 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
       setNotice(error instanceof Error ? error.message : '无法准备探索请求');
     }
   };
-
   const beginPlan = async (selectedIdea?: IdeaResult) => {
     if (!analysisRequest || !analysisResult || analysisResult.mode === 'plan') return;
     const diagnosis = analysisResult.mode === 'diagnosis' ? analysisResult.diagnosis : undefined;
@@ -399,6 +460,7 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
             </dl>
           </div>
         ) : (
+          <>
           <fieldset className="explore-context-picker">
             <legend>本次分析 Context</legend>
             <p>{contextLoading ? '正在收集有界工程证据...' : '已自动选择当前可用证据。取消勾选后，该项不会进入分析。'}</p>
@@ -415,6 +477,31 @@ export default function ExplorePanel({ currentProject, hardwareSummary, runtimeS
               </label>
             ))}
           </fieldset>
+          <fieldset className="explore-context-picker explore-related-knowledge" data-tour-id="explore-related-knowledge">
+            <legend>相关历史收藏</legend>
+            <p>{relatedKnowledgeLoading
+              ? '正在本地查找相关收藏...'
+              : '候选默认不加入分析。只有你勾选的内容才会发送给当前分析服务。'}</p>
+            {relatedKnowledgeError ? <p className="explore-context-error">{relatedKnowledgeError}</p> : null}
+            {!problem.trim() ? <p>描述问题后，会从本地收藏中发现相关知识。</p> : null}
+            {problem.trim() && !relatedKnowledgeLoading && !relatedKnowledge.length && !relatedKnowledgeError
+              ? <p>没有发现相关收藏。</p>
+              : null}
+            {relatedKnowledge.map((card) => (
+              <label key={card.id}>
+                <input
+                  type="checkbox"
+                  checked={selectedKnowledgeIds.includes(card.id)}
+                  onChange={() => toggleKnowledge(card.id)}
+                />
+                <span>
+                  <strong>{card.source.title}</strong>
+                  <small>{card.taskSummary} · {card.verificationStatus === 'unverified' ? '尚未验证' : card.verificationStatus === 'verified_effective' ? '已验证有效' : '已验证无效'}</small>
+                </span>
+              </label>
+            ))}
+          </fieldset>
+          </>
         )}
 
         <div className="explore-submit-row">
