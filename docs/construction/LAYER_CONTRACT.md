@@ -1,6 +1,6 @@
 # Layer Contract
 
-依据当前源码核实后确定责任。知识 Store、安全连接、固定搜索桥、受限分析/计划、结果 UI、Handoff、有界 Context 与一次性确认执行门禁已实现；真实知乎搜索和硬件仍待验收。
+依据当前源码核实后确定责任。知识 Store、安全连接、固定搜索桥、受限分析/计划、结果 UI、Handoff、有界 Context 与一次性确认执行门禁已实现；真实知乎“找灵感”已验收，真实知乎＋全网排障和硬件仍待验收。
 
 | 层 | 责任与复用入口 | 禁止 |
 | --- | --- | --- |
@@ -41,7 +41,7 @@
 ## 2026-09-08 官方能力与凭证边界
 
 - Renderer 只触发零参数连接动作；Main 打开固定个人中心并启动独立遮蔽输入窗口，凭证只经官方 CLI stdin 写系统凭证库。
-- Main 固定搜索桥只允许 `search zhihu` / `search global`，不开放热榜、直答、本人数据、官方知识库、额度查询或 OAuth。真实搜索因用户暂缓配置 Secret 继续记 `LIVE_INTEGRATION_PENDING`。
+- Main 固定搜索桥只允许 `search zhihu` / `search global`，不开放热榜、直答、本人数据、官方知识库、额度查询或 OAuth。Access Secret 已通过独立宿主窗口配置并由官方 CLI 验证；真实知乎“找灵感”已通过，`search global` 留待真实排障 Demo 验收。
 - Catnip 的 `userData/explore/knowledge.json` 是本地知识卡 Store，不是知乎官方 Knowledge Base。
 ## 2026-09-08 Phase 3a 只分析程序边界
 
@@ -50,7 +50,7 @@
 - Worker 对受限任务只允许观察 `Skill`；任意文件读取/写入及其他工具调用立即失败。普通模型文本、工具结果和非法 JSON 不进入 Renderer。
 - 只有 schemaVersion=1、requestId/mode 与活动请求一致、灵感含知乎来源、排障每个假设同时含知乎与 Web 来源的对象，才进入内部 `explore:analysis:result`。
 - CLI JSON schema 模式的 `structured_output` 由 `ChatBuffer` 显式保留；默认 Chat 的 `result` 文本语义不变，不从文本或代码围栏猜测对象。
-- preload/Renderer 已消费合法结构化结果；DeepSeek 真实只计划输出已通过。真实知乎来源仍未验收，不能用软件门禁替代。
+- preload/Renderer 已消费合法结构化结果；DeepSeek 真实计划与真实知乎 Idea 输出均已通过。Diagnosis 的知乎＋全网双来源仍未验收，不能用软件门禁或找灵感结果替代。
 ## 2026-09-08 Phase 4a 有界 Context
 
 - Main 只接受 Hardboard projects 内且包含顶层 `CMakeLists.txt` 的工程；同时检查 lexical path 与 realpath，跳过符号链接及 `.git`、`build`、`node_modules`、`managed_components`、`dist*`。

@@ -244,3 +244,7 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 官方 `auth status --verify` 与 `me contents --type all --limit 1` 成功。探索页真实请求连续取得 8 条知乎来源；最终 DeepSeek 返回 3 个合法 Idea，页面显示完成并保留 5 个可点击知乎原始 URL。未调用全网搜索或硬件。
 
 首次失败为内部 `StructuredOutput` 被误判为越权工具；加入仅用于结果提交的白名单后，文件/命令/硬件工具仍保持拒绝。第二次失败为下发 Schema 没有定义 IdeaResult 字段；补齐完整 Schema 后，第三次因模型尝试输出 8 个含长摘要的 Idea 命中 32,002 output token 上限。最终限制为 3 个 Idea、每项 1–2 条来源、摘要 800 字后真实通过。专项 `verify:explore-analysis-gate`、`verify:explore-search-handoff`、typecheck 与 diff check 通过；曾误调用不存在的 `verify:explore-search`，随后改用真实脚本名补跑成功。
+
+## 2026-09-09 Phase 6d 文档漂移与交接检查
+
+对 `ARCHITECTURE.md`、`LAYER_CONTRACT.md`、`CODEX_MASTER_REQUIREMENTS.md`、`CONSTRUCTION_PLAN.md`、`HANDOFF.md`、`DEV_PROGRESS.md` 执行严格 UTF-8 解码、本地 Markdown 链接存在性和当前态过时短语检查，结果 `docs_utf8_links_current_state=PASS`；`git diff --check` 通过。早期未配置 Secret、未接搜索和失败尝试保留为带日期历史证据，不改写成当前事实。本次仅修改施工文档，因此未重复业务构建。

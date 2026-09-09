@@ -18,6 +18,15 @@
 - Phase 4 进行中：4a 有界 Context 收集已实现；4c 双搜索 Diagnosis 的软件路径已在 3b2 提前完成，但真实来源仍待验。下一项为 4b 监视器/失败任务入口，然后进入 4d 同队列确认执行。
 - 用户确认前，“确认并执行”保持禁用；不得修改工程或调用 Build/Flash/Serial。无实机证据继续记 `REAL_HARDWARE_VALIDATION_PENDING`。
 - Access Secret 未配置且用户要求暂不测试，真实知乎/全网检索继续记 `LIVE_INTEGRATION_PENDING`，不以 mock 或静态门禁冒充。
+
+以上是 2026-09-08 当时快照，不代表当前状态。
+
+## 2026-09-09 当前执行状态
+
+- Phase 0–5 的软件范围完成，Phase 6 最终验收中；安全连接、固定搜索桥、受限分析/计划、结构化结果、Handoff、一次性确认执行、知识收藏和验证反馈均已实现。
+- Access Secret 已通过独立宿主窗口配置；官方验证、最小本人内容请求和真实“找灵感”通过。该请求取得 8 条知乎来源并展示 3 个合法 Idea。
+- 下一小项按顺序为：真实“解问题”知乎＋全网双搜索 Demo；重打最新 Windows 候选；有设备后完成确认施工及 Build/Flash/Serial 实机验收。
+- `LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留；已有发布候选验收不能替代最新源码重新打包，软件门禁或串口 mock 不能替代真机。
 ## Phase 1 已定位的最小工程范围
 
 - 新增 `agent/skills/zhihu`，按用户 ZIP 原字节导入，不创建假 Skill。

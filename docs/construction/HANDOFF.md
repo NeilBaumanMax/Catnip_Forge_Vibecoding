@@ -1,6 +1,6 @@
 # 新 Agent 接力入口
 
-更新时间：2026-09-09。当前分支 `idea_to_production`，探索 MVP 软件功能已进入 Phase 6 前收尾。开工必须动态运行 `git branch --show-current`、`git status --short`、`git rev-parse HEAD`，本文件的 hash 只代表最近一次核对快照。
+更新时间：2026-09-09。当前分支 `idea_to_production`，探索 MVP 正在执行 Phase 6 最终验收。开工必须动态运行 `git branch --show-current`、`git status --short`、`git rev-parse HEAD`，本文件的 hash 只代表最近一次核对快照。
 
 ## 先读
 
@@ -18,8 +18,8 @@
 - Phase 0：完成，Product Truth、Decision/Assumption、Git/测试基线和施工文档已建立。
 - Phase 1：官方 `zhihu` Skill 的 15 个 vendor 文件已保真导入、完整部署并进入 `@zhihu`/打包契约；官方 CLI 安装在 `D:\ZhihuCLI`。Access Secret、官方验证、最小本人内容请求和真实知乎搜索已通过；显式 `@zhihu` Agent Skill 调用仍未单独验收。
 - Phase 2：完成。共享 Domain、运行时校验、Main JSON 知识 Store、五个知识 IPC、相关发现与显式选择已实现。
-- Phase 3：软件闭环完成。连接入口、固定知乎/全网搜索桥、受限分析、Idea/Diagnosis UI、结构化 Handoff 和无工具只计划档位已实现；DeepSeek 真实计划输出通过，真实知乎搜索按用户要求暂缓，“确认并执行”尚未开放。
-- Phase 4、Phase 5 和 Phase 6 软件范围已完成。当前源码 Windows 发布候选、成品资源、无 Key 冷启动及 Explore/队列/Skill/串口软件回归通过；真实“找灵感”已取得 8 条知乎来源并展示 3 个合法 Idea。真实双搜索排障与实机证据仍 pending。
+- Phase 3：软件闭环完成。连接入口、固定知乎/全网搜索桥、受限分析、Idea/Diagnosis UI、结构化 Handoff 和无工具只计划档位已实现；DeepSeek 真实计划输出及知乎“找灵感”通过，一次性“确认并执行”门禁已开放。
+- Phase 4、Phase 5 和 Phase 6 软件范围已完成。Phase 6a Windows 候选、成品资源、无 Key 冷启动及 Explore/队列/Skill/串口软件回归通过；真实“找灵感”已取得 8 条知乎来源并展示 3 个合法 Idea。最新源码仍需重打，真实双搜索排障与实机证据仍 pending。
 
 ## 当前实现边界
 
@@ -40,11 +40,11 @@
 
 D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探索；知乎只是知识渠道；Explore 只分析；交给 Catnip 先出计划；用户确认后才施工；排障交叉验证；知识主动收藏且历史卡加入 Context 前由用户决定。
 
-- A1 TESTING：复用单队列/persistent Agent 的受限档位和内部返回通道已通过离线拒绝测试；真实模型进程仍未验证。
-- A2 TESTING：版本化 Idea/Diagnosis envelope、requestId/mode/来源校验和非法 UI 抑制已实现；真实模型结构化输出仍未验证。
+- A1 TESTING：单队列/persistent Agent 的受限档位、内部返回通道、真实分析/计划和一次性确认门禁已验证；真实硬件执行仍待验收。
+- A2 TESTING：真实模型已返回合法 Idea；真实 Diagnosis 的知乎＋全网双来源仍待验收。
 - A3 CONFIRMED：原子 JSON Store 的保存、重启、损坏保护和选择语义已验证。
 - A4/A5 TESTING：有界源码、同工程/时间 Runtime 与共享串口读取已通过软件反例；真实硬件归属仍待实机。
-- A6 TESTING：开发机 CLI/status 与 builder 规则通过；真实成品未验证。
+- A6 TESTING：已有 Windows 候选的 packaged Skill、release 门禁和冷启动通过；最新连接与受限输出修复仍需重打。
 - A7 CONFIRMED：安全连接入口不经过 Renderer/Chat；官方凭证验证、最小本人内容请求与真实知乎搜索均成功。
 - A8 UNVERIFIED：未选定并实测比赛硬件故障。
 - A9 CONFIRMED：第五页签、两个入口、Idea/Diagnosis 来源结果和计划展示均已实现并通过 Renderer build。
@@ -60,7 +60,7 @@ D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探�
 
 ## 测试快照
 
-Phase 0：13 个检查目标通过、2 次 pytest 启动失败、3 组未验证。Phase 1 离线集成相关回归通过，live 搜索与 Agent 调用待验。Phase 2：5 组通过、0 最终失败、2 个外部项未验证。Phase 3 前三个小闭环最终分别为 3/4/4 组通过；Phase 3a 受限门禁本轮 6 个核心目标通过、0 最终失败。既有 UI、GPU、环境白名单失败历史均保留在 `TEST_METRICS.md` 和 `LOG.md`。
+Phase 0：13 个检查目标通过、2 次 pytest 启动失败、3 组未验证。Phase 1 离线集成相关回归通过，后续官方验证、最小内容请求与真实知乎搜索已补验；显式 `@zhihu` Agent 调用未单独验收。Phase 2：5 组通过、0 最终失败。Phase 3a 受限门禁 6 个核心目标通过。Phase 6b 的 8 项软件回归全部通过；Phase 6c 真实找灵感通过，失败尝试与最终修复证据完整保留在 `TEST_METRICS.md` 和 `LOG.md`。
 
 2026-09-08 文档漂移修正专项：3 个检查目标通过、0 失败；只修改 AGENTS/施工文档，未重复业务构建。
 

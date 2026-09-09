@@ -24,7 +24,7 @@ Main 另有 Workbench 受控文件、Skill Manager、会话 JSON、用户目录�
 
 本地知识卡在 Main user-data store；相关候选先交 UI 选择，再形成 Context。相关源码从确定工程和 CMake 候选有限读取；Build/Serial 从既有记录取有限窗口并绑定任务/项目/时间，不复制日志系统。
 
-截至 2026-09-08，已实现探索第五页签、找灵感/解问题表单、官方 Skill status 安全映射、共享 Domain 校验、Main JSON 知识 Store 和 `explore:request:prepare`。Request 准备只保留已选择 Context，并声明灵感/排障的来源策略；它不执行搜索或 Agent。受限分析、真实搜索、结构化结果 UI、Handoff 与确认执行仍未实现。
+截至 2026-09-09，探索软件链路已进入 Phase 6 最终验收：第五页签、找灵感/解问题、安全连接、固定知乎/全网搜索桥、共享 Domain、Main JSON 知识 Store、有界 Context、受限分析、结构化 Idea/Diagnosis、Handoff、无工具计划和一次性确认执行门禁均已实现。真实“找灵感”已取得 8 条知乎来源并由 DeepSeek 返回 3 个合法 Idea；真实双搜索排障和实机 Build/Flash/Serial 仍待验收。已验证的 Windows 候选包含官方 Skill，最新安全连接与受限输出修复仍需重新打包。
 
 ## 先验证再定型
 
@@ -40,3 +40,7 @@ Main 另有 Workbench 受控文件、Skill Manager、会话 JSON、用户目录�
 Explore 共享契约位于 `electron/src/common/explore.ts`，由 Main、preload 和 Renderer 类型共同引用。知识卡由 `electron/src/main/explore-knowledge.ts` 保存到 `userData/explore/knowledge.json`；Gateway 注册 IPC，preload 暴露窄方法。Renderer 无文件系统能力，Store 不调用 Agent、Skill 或 Runtime。
 
 官方连接状态由 `electron/src/main/explore-zhihu-status.ts` 通过 vendor `scripts/run.ps1 status` 获取，子进程使用环境白名单；Renderer 不接触 Secret。请求准备位于 `electron/src/main/explore-request.ts`，复用连接状态和 Domain 校验，不直连知乎 API。
+
+连接动作由 Renderer 发出零参数请求，Main 打开固定知乎个人中心并启动独立遮蔽输入窗口；Secret 仅经宿主进程 stdin 交给官方 CLI 并写入系统凭证库。搜索由 Main 的固定桥调用官方 `search zhihu` / `search global`，校验来源后再交给 Worker 的 `explore_analysis`；Renderer 只收到连接状态、结构化结论和来源，不收到 Secret。
+
+Worker 仍复用原单队列。`explore_analysis` 只允许官方 Skill 检索和结构化结果提交，`explore_plan` 不开放工具；用户确认后，Main 只接受与已完成计划和 Handoff 绑定、30 分钟内有效且只能消费一次的执行许可，再提交回原有默认执行队列。知识卡必须由用户主动收藏，历史卡必须经用户选择才进入 Context。

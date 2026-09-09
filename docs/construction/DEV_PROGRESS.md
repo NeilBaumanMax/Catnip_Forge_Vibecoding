@@ -9,6 +9,8 @@
 - Blocker：`REAL_HARDWARE_VALIDATION_PENDING`；Access Secret 与 DeepSeek 余额阻塞均已解除。
 - 测试：Phase 4a 专项、typecheck、Main/Renderer build、Explore UI/Request、task queue 通过；首次错误断言与修复见 TEST_METRICS/LOG。
 - Git：Phase 4 备份 `backup/pre-phase-4-20260908` 指向 `c0ca685f1460c7c5c539042d93bcc2d9ada1bfa0`；4a 独立基线提交 `cefd6331` 已推送。
+
+以下按日期记录施工当时的状态与失败证据；其中“未配置”“待接入”等表述不得覆盖上方当前状态。
 ## 2026-09-07 官方 CLI 安装实测
 
 用户明确同意安装并要求告知位置。安装前已说明默认用户目录；未覆盖 ZHIHU_CLI_HOME，未修改 PATH。
@@ -37,15 +39,15 @@
 
 已完成离线宿主小闭环：13个Skill部署通过；官方zhihu多行描述正确，SKILL.md与14个support文件保真；@zhihu进入现有结构化引用和Worker加载约束；builder自动包含15文件且排除用户CLI；release门禁已增强。旧Skill、任务队列、Hardboard上下文回归通过。
 
-当前Blocker：`LIVE_INTEGRATION_PENDING`（官方CLI auth.configured=false）和`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`（受限真实Agent调用在tool_use前HTTP 402）。不能称Phase 1完整通过，也不进入Phase 2。真实成品检查留Phase 6，REAL_HARDWARE_VALIDATION_PENDING保持。
+当时 Blocker：`LIVE_INTEGRATION_PENDING`（官方CLI auth.configured=false）和`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`（受限真实Agent调用在tool_use前HTTP 402）。当时不能称Phase 1完整通过，也不进入Phase 2。真实成品检查留Phase 6，REAL_HARDWARE_VALIDATION_PENDING保持。
 
 ## 2026-09-07 Phase 1 离线实现提交
 
 - 已完成：宿主 YAML block scalar 兼容、官方 `SKILL.md` 原字节部署、14 个 support 文件同步、`@zhihu` 引用/Worker 提示契约、builder 资源契约、release 包文件保真与 CLI 排除门禁。
 - 已通过：6 项相关回归、3 项脚本语法检查、部署目录官方 status、vendor 对 ZIP 保真。
 - 实现提交：`9d7efb3a2cb97aad3132da0c4396663b4ef7839e`；已 push，并与 `origin/idea_to_production` 远端 hash 核对一致；提交后工作区干净。
-- 当前任务：等待安全配置用户 Access Secret，以及恢复 DeepSeek 模型余额后完成真实只读调用。
-- Blocker：`LIVE_INTEGRATION_PENDING`、`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`。Phase 2 未开始；`REAL_HARDWARE_VALIDATION_PENDING` 保持。
+- 当时任务：等待安全配置用户 Access Secret，以及恢复 DeepSeek 模型余额后完成真实只读调用。
+- 当时 Blocker：`LIVE_INTEGRATION_PENDING`、`AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE`。Phase 2 未开始；`REAL_HARDWARE_VALIDATION_PENDING` 保持。
 
 
 ## 2026-09-07 外部依赖状态

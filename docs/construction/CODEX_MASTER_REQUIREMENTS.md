@@ -12,37 +12,37 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 
 官方 Skill 缺失；产品与代码根本冲突；必须覆盖大量用户工作；未提交修改高度冲突；需要真实 Secret；官方 CLI 安装/升级或授权需用户确认；无权限的实机操作；两方案产生明显不同产品行为；核心 API 实测无法满足需求。报告事实、冲突、影响和一个具体决定，不开始其他分支工作。
 
-当前缺口（权限门禁、结构化输出、多行 Skill 描述）是拟实现/验证范围，不是改变产品方向的理由。未证明不可实现；若运行验证证明根本不可行，再停止。
+权限门禁、结构化输出和多行 Skill 描述兼容缺口均已实现并通过专项检查；当前外部验证缺口是双搜索 Diagnosis、最新源码重新打包和真实硬件闭环。若运行验证证明核心能力根本不可行，再停止。
 
 ## Assumption Register
 
-状态仅限 UNVERIFIED / TESTING / CONFIRMED / REJECTED / BLOCKED。以下按 2026-09-07 Phase 0 证据登记。
+状态仅限 UNVERIFIED / TESTING / CONFIRMED / REJECTED / BLOCKED。下表创建于 2026-09-07，并按 2026-09-09 真实证据更新。
 
 | ID | 假设内容 | 为什么仍是假设 | 错误时影响 | 验证方式 | 状态 | 验证证据 | 模块 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| A1 | 复用 chat/worker/skillRefs/queue 可支撑 Explore | 只分析档位、队列隔离和内部结果通道已离线验证，尚无真实模型进程证据 | Handoff 安全与返回通道受阻 | 恢复模型后验证真实任务 ID、取消、模式切换及确认门禁 | TESTING | `explore_analysis` 使用 plan/bare/空 MCP/仅 Skill 白名单；专项拒绝文件读写/Runtime/硬件工具并保留默认队列回归 | Main/Worker/Agent |
-| A2 | 现有 Agent 能可靠返回结构化 Idea/Diagnosis | 版本化 envelope 与非法结果拒绝已实现，但 DeepSeek 被用户要求停止调用，尚无真实模型输出证据 | UI 无法稳定消费判断 | 恢复模型后验证合法结构化返回、真实来源及非法响应拒绝 | TESTING | `common/explore.ts` 校验 requestId/mode/Idea/Diagnosis/来源；Worker 仅推送合法对象；真实模型仍待验 | Agent/domain |
+| A1 | 复用 chat/worker/skillRefs/queue 可支撑 Explore | 真实分析、真实计划、队列隔离和一次性确认门禁均已验证；真实硬件执行仍未验收 | Handoff 安全与返回通道受阻 | 用真实排障与实机闭环补齐执行侧证据 | TESTING | `explore_analysis` 真实返回 Idea；`explore_plan` 真实返回计划；受限工具拒绝、默认队列与确认门禁专项通过 | Main/Worker/Agent |
+| A2 | 现有 Agent 能可靠返回结构化 Idea/Diagnosis | 真实 Idea 已通过；真实 Diagnosis 尚未完成双来源验收 | UI 无法稳定消费判断 | 执行真实知乎＋全网排障并验证合法/非法响应 | TESTING | 真实 DeepSeek 返回 3 个合法 Idea；`common/explore.ts` 与 Worker 对 requestId/mode/来源/Schema 执行程序校验 | Agent/domain |
 | A3 | 原子 JSON user-data 足以存知识卡 | 已按现有 Main user-data 路径实现并完成当前 MVP 容量/损坏场景验证 | 跨重启丢失、损坏或混入安装目录 | 原子替换、重启、语法/结构损坏保留、项目关联测试 | CONFIRMED | `explore-knowledge.ts`；`verify:explore-knowledge` 通过，坏文件不覆盖 | Local Store/Main |
 | A4 | 可从当前工程和 main/CMakeLists 收集最小相关源码 | 已有受控读取/文件索引；相关性与限额尚未定 | 过量读取或漏掉关键证据 | 单工程白名单、路径越界、截断、用户取消测试 | TESTING | workbench readWorkbenchFile、hardboard/project-files.ts；不能直接把全部候选注入 | Main/Context |
 | A5 | EventBus 和共享串口能稳定提供最新 Context | 已有最近 500 事件与串口增量读取；项目关联/过期需验证 | 误用其他工程或旧运行数据 | taskId/projectDir/timestamp 筛选、无数据/过期/清空场景 | TESTING | event-store getRecentRuntimeEvents、SerialMonitorSession.read/wait | Runtime/Main |
-| A6 | 官方CLI在Windows开发和打包版可运行 | 开发机安装/status及部署脚本通过，真实成品尚未验证 | Phase 1成品运行受影响 | builder契约已测，Phase 6真实包/status | TESTING | D盘CLI compatible；部署run.ps1 status通过；package config通过 | Official Skill/Packaging |
-| A7 | 用户已配置可用Access Secret，且产品存在不经过 Renderer/Chat 的安全配置路径 | 安装后的CLI实际status返回auth.configured=false；Explore 当前只有状态检查和重新检查按钮 | 真实知乎搜索只能保持待验收；若用普通输入框或 Chat 补洞会泄露高权限 API 凭证 | 先确定宿主拥有的安全交互，由宿主通过官方 CLI stdin 验证并写系统凭证库；测试 Renderer IPC/日志/Agent 输出无完整值，再做最小搜索 | BLOCKED | next_action=request_access_secret；未获取或配置凭据；安全配置 UI/流程未实现 | CLI/Main |
+| A6 | 官方CLI在Windows开发和打包版可运行 | 已有 Windows 候选的 packaged Skill、冷启动和 release 门禁通过；最新连接与输出修复尚未重打 | 最新候选可能缺少已完成修复 | 重打最新源码并复跑 release/first-run/status | TESTING | 已验证候选含官方 Skill 15 文件且不含用户 CLI/Key；开发环境 status 与真实搜索通过 | Official Skill/Packaging |
+| A7 | 用户已配置可用Access Secret，且产品存在不经过 Renderer/Chat 的安全配置路径 | 已以官方验证、最小本人内容请求和真实知乎搜索完成端到端验收 | 路径回归可能泄露高权限 API 凭证 | 持续保留 Renderer/IPC/日志/包无 Secret 的门禁 | CONFIRMED | 独立遮蔽宿主窗口经 stdin 调官方 CLI；`auth status --verify`、最小内容请求及真实知乎搜索成功 | CLI/Main |
 | A8 | 有可复现运行异常的真实板/工程可做 Demo | 发现三个工程，未连接或选择故障 | 排障不能称完整闭环 | 用户确认项目/端口后实测 Build/Flash/Serial | UNVERIFIED | hello_world_esp32s3、touch_hello、wifi_connect_fmai；无板证据 | Hardboard/Demo |
-| A9 | 延续现有 UI 能容纳探索 | 功能入口和构建已验证；完整结果页与视觉验收尚未完成 | 若后续结果密度超出布局，需最小调整 | 继续沿用现有样式完成结果 UI，并在 Phase 6 做真实桌面验收 | CONFIRMED | BrowserPanel 已有五页签；ExplorePanel 两入口；verify:explore-ui 与 renderer build 通过 | Renderer |
+| A9 | 延续现有 UI 能容纳探索 | 两入口、连接面板、结果卡、来源、计划、收藏和验证反馈已完成桌面验收 | 若真实 Diagnosis 信息密度超出布局，需最小调整 | 在真实排障 Demo 复核结果密度与交互 | CONFIRMED | BrowserPanel 五页签；ExplorePanel 完整软件流程；真实 Idea 卡与来源可见；UI 专项及 Renderer build 通过 | Renderer |
 
 ## 风险与 Review 结论
 
-1. 标准 Skill 多行 description 当前会变成 `>-`，部署重写文件；属于宿主兼容 Bug。
+1. 标准 Skill 多行 description 的 `>-` 解析和 vendor 文件部署改写问题已修复，并以原字节保真检查防回归。
 2. `agent/CLAUDE.md` 和自动建议的 browser/search Skills 有旧“所有搜索先平台 URL”规则。官方 Skill 搜索必须通过最小显式能力路由解除不适用约束，保留旧浏览器功能。
-3. 现有 Agent `--dangerously-skip-permissions`、系统提示“先创建骨架”不适用于 Explore/Plan。需要执行层拒绝，而非自由文本 heuristic。
-4. 本地 JSON 现状不是对写入可靠性的保证；新 store 必须原子写与损坏显式报错。
+3. Explore/Plan 已使用独立受限档位和程序门禁；默认 Agent 的执行权限不能被 Explore 继承。
+4. 本地知识 Store 已使用原子替换和损坏显式报错；不得因当前专项通过而移除这些保护。
 5. EventBus 最近事件虽有限，但当前实现读取日志文件再截尾；Explore 不得放大为全历史读取，需测性能和界限。
 
 第一性原理：最短路径是把知识搜集和证据交接加入现有能力边界，不把新页面当新执行系统；先验证官方 Skill 和受限结构化任务，再加用户界面。当前计划未引入新依赖服务或未确认产品功能。
 
-## 官方知乎能力选择与 Access Secret 门禁（2026-09-08）
+## 官方知乎能力选择与 Access Secret 门禁（2026-09-09 当前口径）
 
-- 官方 Skill 的完整能力不等于探索页面已经使用的能力。当前页面只实际调用 `scripts/run.ps1 status`；`search zhihu`、`search global` 仍未接通，来源策略字段不能冒充业务调用。
-- 探索 MVP 后续只接知乎搜索和全网搜索。热榜、直答、本人创作/关注/收藏、官方知识库、额度页和 OAuth 保持不接；Catnip 本地知识卡不等于知乎官方知识库。
-- Access Secret 是用户个人的开放平台 API 鉴权凭证并决定额度归属，不是普通偏好设置。当前页面没有安全配置入口；在宿主安全交互与官方 CLI stdin 路径有程序测试前，不得增加 Renderer 文本框、Secret IPC 或 Chat 粘贴流程。
-- status 的 installed/compatible/authConfigured 只能证明安装与本地凭证状态。`authConfigured=false` 时不得调用业务搜索；update check unavailable 时不得宣称已是最新版。
+- 官方 Skill 的完整能力不等于探索页面使用的能力。页面只开放 status、连接和固定的 `search zhihu` / `search global`；真实找灵感已调用知乎搜索，全网搜索留待排障 Demo。
+- 热榜、直答、本人创作/关注/收藏、官方知识库、额度页和 OAuth 保持不接；Catnip 本地知识卡不等于知乎官方知识库。
+- Access Secret 是用户个人的开放平台 API 鉴权凭证并决定额度归属，不是普通偏好设置。页面只触发零参数连接动作；完整值在独立宿主遮蔽窗口中输入，经官方 CLI stdin 验证并写系统凭证库，不进入 Renderer、Chat、URL、日志、Agent 输出或仓库。
+- `auth status --verify`、最小本人内容请求和真实知乎搜索均已成功；update check unavailable 时仍不得宣称已是最新版。
