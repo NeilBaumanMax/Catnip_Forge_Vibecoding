@@ -19,7 +19,7 @@
 - Phase 1：官方 `zhihu` Skill 的 15 个 vendor 文件已保真导入、完整部署并进入 `@zhihu`/打包契约；官方 CLI 安装在 `D:\ZhihuCLI`。Access Secret、官方验证、最小本人内容请求和真实知乎搜索已通过；显式 `@zhihu` Agent Skill 调用仍未单独验收。
 - Phase 2：完成。共享 Domain、运行时校验、Main JSON 知识 Store、五个知识 IPC、相关发现与显式选择已实现。
 - Phase 3：软件闭环完成。连接入口、固定知乎/全网搜索桥、受限分析、Idea/Diagnosis UI、结构化 Handoff 和无工具只计划档位已实现；DeepSeek 真实计划输出及知乎“找灵感”通过，一次性“确认并执行”门禁已开放。
-- Phase 4、Phase 5 和 Phase 6 软件范围已完成。Phase 6e 又补齐首次使用连接向导源码：全新用户明确点击安装官方 CLI，已有 CLI 但缺 Secret 时进入探索自动弹一次原生遮蔽窗口。此前 Windows 候选、无 Key 冷启动及软件回归通过，真实“找灵感”已通过；最新源码仍需重打，真实双搜索排障与实机证据仍 pending。
+- Phase 4、Phase 5 和 Phase 6 软件范围已完成。Phase 6e 补齐首次使用连接向导：全新用户明确点击安装官方 CLI，已有 CLI 但缺 Secret 时进入探索自动弹一次原生遮蔽窗口。最新 Windows 候选已完整重打并通过 release/version、app.asar 标记和隔离冷启动；真实“找灵感”已通过，真实双搜索排障与实机证据仍 pending。
 
 ## 当前实现边界
 
@@ -32,8 +32,8 @@
 知识数据位于 Electron `userData/explore/knowledge.json`；历史知识只发现，显式选择后才进入 Context。该本地 Store 与知乎官方 Knowledge Base 不同，MVP 不调用后者。
 ## 下一步 1–3 项
 
-1. 重打包含 Phase 6e 首次使用向导及受限输出修复的 Windows 候选，实测全新用户安装授权→Secret 弹窗→连接确认。
-2. 执行真实“解问题”知乎＋全网搜索 Demo。
+1. 经用户明确授权具体工程摘要外发后，执行真实“解问题”知乎＋全网搜索 Demo。
+2. 在不影响当前真实凭据的全新 Windows 用户环境人工验收安装授权→Secret 弹窗→连接确认。
 3. 具备设备条件后执行真实施工/Build/Flash/Serial Demo；没有实机证据时继续标记硬件验证待完成。
 
 ## Decision 与 Assumption
@@ -44,7 +44,7 @@ D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探�
 - A2 TESTING：真实模型已返回合法 Idea；真实 Diagnosis 的知乎＋全网双来源仍待验收。
 - A3 CONFIRMED：原子 JSON Store 的保存、重启、损坏保护和选择语义已验证。
 - A4/A5 TESTING：有界源码、同工程/时间 Runtime 与共享串口读取已通过软件反例；真实硬件归属仍待实机。
-- A6 TESTING：已有 Windows 候选的 packaged Skill、release 门禁和冷启动通过；Phase 6e 首次使用向导源码与离线门禁通过，仍需重打后实测全新安装/连接。
+- A6 TESTING：最新 Windows 候选已完整重打，packaged Skill、release/version、Phase 6e app.asar 标记和隔离冷启动通过；全新 Windows 用户的真实安装/连接仍待人工验收。
 - A7 CONFIRMED：安全连接入口不经过 Renderer/Chat；官方凭证验证、最小本人内容请求与真实知乎搜索均成功。
 - A8 UNVERIFIED：未选定并实测比赛硬件故障。
 - A9 CONFIRMED：第五页签、两个入口、Idea/Diagnosis 来源结果和计划展示均已实现并通过 Renderer build。
@@ -54,7 +54,7 @@ D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探�
 - `LIVE_DIAGNOSIS_PENDING`：Access Secret 与真实知乎找灵感已通过；真实排障所需的知乎＋全网双搜索尚未验收。
 - `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE` 已解除：用户确认充值后，产品现有 `explore_plan` 档位以 `deepseek-v4-pro`、空工具和空 MCP 完成真实调用，返回合法 `structured_output`，退出码 0；本次没有调用知乎或硬件。
 - `REAL_HARDWARE_VALIDATION_PENDING`：未执行本轮真实 Build/Flash/Serial，不能声称硬件闭环完成。
-- Phase 6 Windows 候选、冷启动和 packaged Skill 已验证；本轮新增修复仍需重打完整候选。
+- 最新 Phase 6 Windows 候选、冷启动、packaged Skill 与 Phase 6e 标记已验证；全新用户真实安装/连接仍待人工验收。
 - Phase 0 的两次 Python pytest 均因环境缺 pytest，未进入断言；不得写成测试通过。
 - 过程审计发现 Phase 2/3 若干小闭环把实现和收尾文档放在同一提交，缺少严格的“小闭环先文档”提交证据。WORKFLOW 已收紧；下一业务小项必须先有独立文档提交。
 

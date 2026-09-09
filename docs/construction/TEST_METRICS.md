@@ -262,3 +262,17 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 | `git diff --check` | 通过 | 无 whitespace error；LF→CRLF 为仓库行尾提示 |
 
 最终 7 组目标通过、0 最终失败。Review 在首轮通过后补充 Main 单一 in-flight Promise，避免绕过 Renderer disabled 并发启动多个 setup；安装说明改为复用已有步骤样式。未执行真实 setup、凭据配置、搜索、DeepSeek 或硬件。源码完成不替代最新 Windows 包的全新用户安装→Secret→status 实测。
+
+## 2026-09-10 Phase 6f 最新 Windows 候选
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run pack:win` | 通过 | 完整单命令完成 Runtime/Main/Renderer build、electron-builder 与盖章；复用本地 Electron 33.4.11 |
+| `npm.cmd --prefix electron run verify:release` | 通过 | 4,464,576,308 字节；Node v22.14.0、Python/pyserial 3.5、ESP-IDF v5.4.3、Claude Code 2.1.167；DeepSeek/Qwen Key 未入包 |
+| `npm.cmd --prefix electron run verify:version` | 通过 | Catnip Forge `1.0.0.7201`，public v1.5.0/build 7201 |
+| app.asar Phase 6e 标记检查 | 通过 | Main 含安装 IPC、固定 setup、in-flight 锁；preload 含零参数 IPC；Renderer 含安装按钮、自动状态门禁和不改 PATH 文案 |
+| 隔离 APPDATA 启动 + `npm.cmd --prefix electron run verify:first-run` | 通过 | 主窗口、品牌、首启弹层、Skills、Playwright、占位 Key 拒绝均通过；临时进程与目录已清理 |
+
+失败历史：第一次直接运行 `verify:first-run` 未先启动成品，15 秒后报 `packaged main renderer CDP target not found`；根因是该脚本只连接已运行实例，不负责启动。按隔离 APPDATA 启动候选后复测通过。第一次 app.asar 检查错误使用正斜杠内部路径，报目标不存在；先只读列出归档真实反斜杠路径后复测通过。两项均为验收命令错误，不是产品断言失败，历史保留。
+
+最终 5 组候选目标通过、0 最终产品失败、2 次验收命令失败后纠正。未点击安装按钮、未修改或读取现有 Access Secret、未调用搜索/DeepSeek/硬件；因此全新 Windows 用户真实安装→Secret→status 仍待人工验收。

@@ -222,3 +222,11 @@
 - Renderer 不提供 Secret 输入。全新用户需点击“安装连接组件并继续”，该点击构成本次安装/修复授权；安装成功且缺 Secret 后立即打开既有原生安全窗口。已有 CLI 但缺 Secret 时，进入探索每次最多自动弹一次；取消后轮询不会重复打扰，仍保留手动按钮。
 - Review 发现 Renderer disabled 不能阻止伪造并发 IPC，已补 Main 去重；新增说明最初使用未定义 class，收敛为既有连接步骤样式。未修改官方 vendor、未打包用户 CLI、未新增 Secret 通道。
 - typecheck、Main/Renderer build、连接专项、官方 status、Explore UI、Request、搜索/Handoff 全部通过；连接专项注入假状态，不联网安装。未执行真实 setup、凭据配置、搜索、DeepSeek 或硬件；最新 Windows 包首次连接仍待验。
+
+## 2026-09-10 / Phase 6f / 最新 Windows 候选
+
+- 从已推送的 Phase 6e 实现 `b8341e629766e043982d7086d787f229792e16b7` 执行完整 `npm.cmd --prefix electron run pack:win`，一次成功完成 Runtime/Main/Renderer build、electron-builder 和 EXE 盖章；之前记录的约 60 秒子进程回收问题未复现。
+- `verify:release` 通过，候选总计 4,464,576,308 字节，随包 Node/Python/pyserial/ESP-IDF/Claude Code 正常，DeepSeek/Qwen 真实 Key 和用户知乎 CLI 均未入包；`verify:version` 通过，EXE 为 `1.0.0.7201`。
+- 直接解包 app.asar 确认 Main 包含 `explore:zhihu:install`、固定 `setup.ps1` 与 `setupInFlight`，preload 含零参数安装 IPC，Renderer 含“安装连接组件并继续”、自动状态门禁与不修改 PATH 文案。
+- 第一次 app.asar 检查使用正斜杠内部路径而失败；列出真实归档路径后改用反斜杠通过。第一次 `verify:first-run` 未先启动成品，报 CDP target 不存在；根因是该脚本仅探测已运行实例。随后用隔离 APPDATA 隐藏启动候选，复跑首启门禁通过，并清理测试进程与目录。
+- 没有点击真实安装、读取/改写 Access Secret、搜索、DeepSeek 或硬件。全新 Windows 用户的真实安装授权→Secret 弹窗→status 仍保持人工验收待完成。
