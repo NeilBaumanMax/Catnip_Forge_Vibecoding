@@ -40,7 +40,7 @@ function formatSerialEvent(event: SerialMonitorEvent, receiveMode: 'text' | 'hex
   return receiveMode === 'hex' ? `${event.hex || ''}${event.hex ? ' ' : ''}` : event.text;
 }
 type RuntimeCard = 'live' | 'full' | 'events';
-const UI_BUILD_LABEL = 'Catnip Forge · v1.0.0';
+const UI_BUILD_LABEL = 'Catnip Forge · v2.0.0';
 const EDITOR_FONT_SIZE_KEY = 'vibeide.editor.fontSize';
 const EDITOR_FONT_SIZE_MIN = 10;
 const EDITOR_FONT_SIZE_MAX = 24;
@@ -948,10 +948,10 @@ export default function BrowserPanel({
         <button data-tour-id="tab-tasks" type="button" role="tab" aria-selected={mode === 'tasks'} className={`nes-btn${mode === 'tasks' ? ' is-primary' : ''}`} onClick={() => setMode('tasks')}>任务管理器</button>
         <button data-tour-id="tab-editor" type="button" role="tab" aria-selected={mode === 'editor'} className={`nes-btn${mode === 'editor' ? ' is-primary' : ''}`} onClick={() => setMode('editor')}>编辑器</button>
         <button data-tour-id="tab-explore" type="button" role="tab" aria-selected={mode === 'explore'} className={`nes-btn${mode === 'explore' ? ' is-primary' : ''}`} onClick={openExploreHome}>探索</button>
+        <button data-tour-id="tab-skill-hub" type="button" role="tab" aria-selected={mode === 'skillHub'} className={`nes-btn${mode === 'skillHub' ? ' is-primary' : ''}`} onClick={openSkillHub}>Neil 的 skill 小站</button>
         <button className="active-project-switch" type="button" onClick={requestProjectChange} title={projectDir || '尚未选择工程'}>
           <span>当前工程</span><strong>{activeProject?.name || '请选择'}</strong>
         </button>
-        <button data-tour-id="tab-skill-hub" type="button" role="tab" aria-selected={mode === 'skillHub'} className={`nes-btn${mode === 'skillHub' ? ' is-primary' : ''}`} onClick={openSkillHub}>Neil 的 skill 小站</button>
         <span className="ui-build-label">{UI_BUILD_LABEL}</span>
       </div>
 
@@ -1004,13 +1004,13 @@ export default function BrowserPanel({
               </div>
             </div>
           </div>
-          <div className="browser-toolbar nes-container is-rounded">
+          <div className={`browser-toolbar browser-toolbar--${mode} nes-container is-rounded`}>
             <span className="browser-label">Browser Workbench</span>
             <form onSubmit={handleNavigate}>
               <input className="nes-input" value={inputUrl} onChange={(event) => setInputUrl(event.target.value)} placeholder="https:// 或本地 HTML 路径" />
               <button className="nes-btn is-primary" type="submit">打开</button>
             </form>
-            <div className="browser-recording-controls">
+            {mode === 'workbench' ? <div className="browser-recording-controls">
               <input className="nes-input" value={recordingName} onChange={(event) => setRecordingName(event.target.value)} placeholder="录制名" />
               <button className="nes-btn" type="button" onClick={() => onStartRecording(recordingName)}>录</button>
               <select value={selectedReplay} onChange={(event) => setSelectedReplay(event.target.value)}>
@@ -1022,7 +1022,7 @@ export default function BrowserPanel({
               <button className="nes-btn" type="button" onClick={() => onReplayRecording(selectedReplay)}>播</button>
               <button className="nes-btn is-success" type="button" onClick={() => onStopRecording(recordingName)} disabled={!isRecording}>停止</button>
               <span className="browser-recording-status nes-container is-rounded">{recordingSummary}</span>
-            </div>
+            </div> : null}
           </div>
           <div className="browser-current-url">{selectedTab?.url || inputUrl || 'about:blank'}</div>
           <div className="browser-stage" ref={browserStageRef}>

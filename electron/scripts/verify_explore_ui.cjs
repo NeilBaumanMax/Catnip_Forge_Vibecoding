@@ -74,8 +74,10 @@ assert.match(explorePanel, /确认提交给工程 Agent/, 'explicit engineering 
 assert.match(exploreSourceList, /打开知乎原文/, 'Zhihu source action must be explicit');
 assert.match(exploreSourceList, /收藏到知识库/, 'knowledge save action must be prominent and explicit');
 
-assert.match(globalStyles, /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\) minmax\(160px, 0\.9fr\)/);
-assert.match(appleStyles, /grid-template-columns: repeat\(5, minmax\(88px, 120px\)\) minmax\(120px, 1fr\)/);
+assert.match(globalStyles, /grid-template-columns: repeat\(5, minmax\(70px, 1fr\)\) minmax\(145px, 1\.35fr\) minmax\(160px, 1\.1fr\) auto/);
+assert.match(appleStyles, /grid-template-columns: repeat\(5, minmax\(72px, 110px\)\) minmax\(145px, 180px\) minmax\(160px, 1fr\) auto/);
+assert.match(browserPanel, /mode === 'workbench' \? <div className="browser-recording-controls">/, 'Skill Hub must not expose browser recording controls');
+assert.match(browserPanel, /Catnip Forge · v2\.0\.0/, 'workspace release label must show v2.0.0');
 assert.match(rendererMain, /import '\.\/styles\/explore\.less'/);
 assert.match(exploreStyles, /\.explore-panel\s*\{/);
 assert.match(exploreStyles, /container-type:\s*inline-size/);

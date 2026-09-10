@@ -421,7 +421,7 @@ body.is-resizing-panels * {
 
 .workbench-mode-tabs {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr)) minmax(160px, 0.9fr) auto;
+  grid-template-columns: repeat(5, minmax(70px, 1fr)) minmax(145px, 1.35fr) minmax(160px, 1.1fr) auto;
   gap: 4px;
   padding: 4px !important;
   background: var(--chrome-top) !important;
@@ -1795,6 +1795,10 @@ body.is-resizing-panels * {
   padding: 0 !important;
   background: var(--nes-white);
   border-color: var(--nes-border) !important;
+}
+
+.browser-toolbar--skillHub {
+  grid-template-columns: minmax(130px, 0.28fr) minmax(320px, 1.72fr);
 }
 
 .workspace-resource-section {
