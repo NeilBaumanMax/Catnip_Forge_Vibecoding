@@ -52,6 +52,14 @@
 - 8c：`COMPLETE`。四阶段可回看；第三阶段生成三份材料，第四阶段从磁盘展示并经摘要/绑定/一次性门禁确认提交。
 - 8d：`COMPLETE`。Source/Idea 操作层级、36px 命中区、keyboard、reduced-motion、wide/normal/compact 和 light/dark 回归已完成。
 - 8e 自动 Review/专项/Runtime/Electron build：`COMPLETE`；成品人工验收、真实 Diagnosis、真实 Agent 改码与硬件：`NOT VERIFIED`。本轮未重新打包 Windows 成品。
+
+## Phase 9：使用记录清理、四个 Skill 移除与重新打包
+
+- 施工与删除边界见 [Phase 9 文档](PHASE_9_USAGE_RESET_SKILL_REMOVAL_PACKAGE.md)；远端恢复点 `backup/pre-phase-9-20260910` 已核对为 `f976be8e`。
+- 9a：停止开发进程，精确删除工程 `.catnip`、收藏 Store、当前/旧工程会话记录。
+- 9b：删除四个指定 Skill 的开发源、开发部署与 userData 部署副本，同时移除产品快捷映射和残留引用。
+- 9c：专项、Runtime/Electron 构建、安全检查、Windows 打包、release/version 与包内容核对。
+- 真实搜索、真实 Agent 改码和真机 Build/Flash/Serial 不属于本轮。
 ## Phase 1 已定位的最小工程范围
 
 - 新增 `agent/skills/zhihu`，按用户 ZIP 原字节导入，不创建假 Skill。
