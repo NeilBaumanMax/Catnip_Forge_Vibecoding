@@ -1,7 +1,7 @@
 # Phase 13：探索入口学院呱呱插画
 
-日期：2026-09-11  
-分支：`catnip-GUAGUA`  
+日期：2026-09-11
+分支：`catnip-GUAGUA`
 基线：`2a7ae185`
 
 ## 目标与设计
@@ -31,3 +31,9 @@
 - `npm.cmd --prefix electron run typecheck`：通过。
 - `npm.cmd --prefix electron run build:renderer`：通过；Vite 仅保留既有大 chunk 提示。
 - `npm.cmd --prefix electron run verify:explore-layout-ui`：通过；8 组响应式场景、完整诊断流程和主题切换均通过，无 Renderer error。Windows 偶发报告临时 Chromium profile `EPERM` 清理提示，但脚本最终退出码为 `0`。
+- `npm.cmd --prefix runtime run typecheck`：通过。
+- `npm.cmd --prefix electron run build:main`：通过。
+- `npm.cmd --prefix electron run pack:win`：通过；生成 `electron/dist-package/win-unpacked/Catnip Forge.exe`。
+- `npm.cmd --prefix electron run verify:release`：通过；公开版本 `v2.0.0`、Build `7201`、完整资源 `4,468,679,868` bytes，未打包 DeepSeek/Qwen API Key。
+- `npm.cmd --prefix electron run verify:version`：通过；Windows 文件版本 `2.0.0.7201`。
+- `git diff --check`：通过；仅保留 Git 对 Windows 后续 CRLF 转换的提示。
