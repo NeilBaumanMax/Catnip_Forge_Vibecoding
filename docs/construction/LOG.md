@@ -265,3 +265,13 @@
 - 本轮没有修改 TypeScript/LESS/CJS，没有创建工程、发起搜索、调用 Agent、Build、Flash 或 Serial。应用测试记 `NOT RUN (DOCS ONLY)`；源码实现与新包仍待用户确认开工。
 - 第一次文档状态检查连续两次被损坏的 sandbox helper ACL 拒绝；用户明确“继续”后获准只读/文档操作。一次批量文档 patch 因 `LAYER_CONTRACT.md` 上下文不匹配而部分应用，随后逐文件核对并补齐；不计产品断言失败。
 - 第一次 UTF-8/链接验证把两个命令结果嵌套成数组，`Join-Path` 在真正逐文件断言前失败且尾部输出无效 PASS；修正为显式展平文件数组后，14 个文档的范围、严格 UTF-8 与本地链接检查真实通过。
+
+## 2026-09-10 / Phase 7 实现、回归与 Windows 成品
+
+- 实现提交 `6d8187e4`：Main Project Session 成为唯一工程真相；冷启动不自动激活；受控选择/创建、realpath/符号链接边界与活动任务切换门禁落地。App/BrowserPanel/Workbench/Build/Flash/Serial/Runtime 事件和 Explore Handoff 全部消费同一 active project。
+- Agent 对话按工程隔离，旧全局历史保留为未归属只读；Explore Idea/Diagnosis 按 `projectId/mode/sessionId` 分目录保存输入、主动选择的 Context/Knowledge、结果、Plan 与执行归属。返回首页、切工作区和重启不会清空；无法续接的 pending 状态转为 interrupted，不自动重试。
+- TypeScript 6 的 `moduleResolution=node10` 编辑器错误通过迁移 Electron tsconfig 到 Node16 module/moduleResolution 消除，没有用 ignoreDeprecations 静音。
+- Runtime/Electron 构建、Project/Explore/Agent session、Explore/Knowledge/Zhihu/Handoff/Context、Hardboard、Serial mock、Qwen attachment mock、Skills、Workbench 与 8 场景布局回归最终通过。没有调用真实搜索、Agent 改码或硬件。
+- 首次 `pack:win` 在 electron-builder 复制约 4.4 GB extraResources 时被外部回收，release 门禁拒绝不完整产物。打包脚本改为 electron-builder 生成应用骨架后，由顶层 Node 进程按原过滤契约分组复制资源；复制完成且确认无 DeepSeek/Qwen Key 后才 stamp。最终包为 4,464,648,810 字节、`1.0.0.7201`。
+- 打包版无 Key 首启、冷启动工程选择与激活、激活后的 Chat UI 全部通过。工程选择测试使用明确的假 Key，结束后已删除；最终 `verify:release` 再次确认两类 Key 均未入包。
+- `NOT VERIFIED` 保留：用户成品人工复测、真实知乎＋全网 Diagnosis、真实 Agent 执行、真实 Build/Flash/Serial、全新 Windows 安装与代码签名。

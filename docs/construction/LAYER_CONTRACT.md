@@ -32,7 +32,7 @@
 - project-sessions 位于 Main user-data，不写入安装资源或默认污染源码工程。目录索引、Agent 对话和 Explore session 文件版本化、限额、原子替换并保留损坏证据。
 - Project Session 激活是原子转换；消费者不能各自保存另一份权威 projectDir。Runtime 最近工程只能作为历史证据，不能成为启动选择 fallback。
 - Agent conversation、Worker task、Explore request/plan/handoff、Build/Flash/Serial task 都必须绑定 projectId/projectDir 快照；迟到结果只能回到原工程记录。
-- 本节是待施工契约。通过 Phase 7 专项和成品验收前，不得声称已实现。
+- 本节已由 Phase 7 源码和专项自动化落地；打包版冷启动工程门禁与 Chat UI 已验证。用户成品人工复测仍不得用自动化替代。
 
 
 ## 2026-09-07 知识底座程序边界

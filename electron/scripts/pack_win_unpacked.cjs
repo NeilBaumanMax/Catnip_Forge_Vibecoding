@@ -7,6 +7,8 @@ const versionInfo = JSON.parse(fs.readFileSync(path.join(electronRoot, '..', 'co
 const outputRoot = process.env.CATNIP_PACKAGE_OUTPUT
   ? path.resolve(electronRoot, process.env.CATNIP_PACKAGE_OUTPUT)
   : path.join(electronRoot, 'dist-package');
+const packageRoot = path.join(outputRoot, 'win-unpacked');
+const resourcesRoot = path.join(packageRoot, 'resources');
 const exePath = path.join(outputRoot, 'win-unpacked', `${versionInfo.productName}.exe`);
 const builder = path.join(electronRoot, 'node_modules', 'electron-builder', 'cli.js');
 const stamp = path.join(electronRoot, 'scripts', 'stamp_win_exe_version.cjs');
@@ -45,7 +47,11 @@ if (pythonProbe.status !== 0) {
   process.exit(pythonProbe.status || 1);
 }
 
-const builderArgs = [builder, '--win', '--x64', '--dir', `--config.directories.output=${outputRoot}`];
+const builderArgs = [
+  builder, '--win', '--x64', '--dir',
+  `--config.directories.output=${outputRoot}`,
+  '--config.extraResources=[]',
+];
 if (fs.existsSync(path.join(localElectronDist, 'electron.exe'))) {
   builderArgs.push(`--config.electronDist=${localElectronDist}`);
   console.log(`[pack:win] reusing installed Electron distribution: ${localElectronDist}`);
@@ -61,6 +67,61 @@ if (result.status !== 0) {
   console.error(`[pack:win] electron-builder failed (status=${result.status}, signal=${result.signal || 'none'}).`);
   if (result.error) console.error(result.error);
   process.exit(result.status || 1);
+}
+
+function copyTree(source, target, excluded = () => false) {
+  if (!fs.existsSync(source)) throw new Error(`[pack:win] missing resource source: ${source}`);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.cpSync(source, target, {
+    recursive: true,
+    force: true,
+    filter: (candidate) => {
+      const relative = path.relative(source, candidate).replace(/\\/g, '/');
+      return !excluded(relative, path.basename(candidate));
+    },
+  });
+}
+
+function hasSegment(relative, names) {
+  return relative.split('/').some((segment) => names.has(segment));
+}
+
+console.log('[pack:win] copying packaged resources in the top-level process');
+copyTree(path.join(electronRoot, 'apikey.txt.example'), path.join(resourcesRoot, 'apikey.txt.example'));
+copyTree(path.join(electronRoot, 'CATNIP_FORGE_USER_GUIDE.md'), path.join(resourcesRoot, 'CATNIP_FORGE_USER_GUIDE.md'));
+copyTree(path.join(electronRoot, 'assets', 'icon.ico'), path.join(resourcesRoot, 'electron', 'assets', 'icon.ico'));
+copyTree(path.join(electronRoot, 'assets', 'icon.png'), path.join(resourcesRoot, 'electron', 'assets', 'icon.png'));
+copyTree(path.join(electronRoot, '..', 'agent'), path.join(resourcesRoot, 'agent'), (relative) => {
+  const first = relative.split('/')[0];
+  return new Set(['logs', 'screenshots', 'recordings']).has(first)
+    || relative.endsWith('.html') || relative.endsWith('.png')
+    || relative.includes('node_modules/.cache/');
+});
+copyTree(path.join(electronRoot, '..', 'runtime', 'dist'), path.join(resourcesRoot, 'runtime', 'dist'));
+copyTree(path.join(electronRoot, '..', 'runtime', 'package.json'), path.join(resourcesRoot, 'runtime', 'package.json'));
+copyTree(path.join(electronRoot, '..', 'runtime', 'node_modules'), path.join(resourcesRoot, 'runtime', 'node_modules'), (relative) => (
+  hasSegment(relative, new Set(['.cache', 'chrome_profile', 'recordings', 'workflows', 'logs']))
+));
+copyTree(path.join(electronRoot, '..', 'runtime', 'hardboard'), path.join(resourcesRoot, 'runtime', 'hardboard'), (relative) => (
+  hasSegment(relative, new Set(['build', '.git', '.cache', 'logs', 'events']))
+  || /(?:^|\/)esptools\/esp-idf-v[^/]+\/esp-idf\/examples(?:\/|$)/.test(relative)
+  || /(?:^|\/)idf-tools\/python_env(?:\/|$)/.test(relative)
+));
+copyTree(path.join(electronRoot, '..', 'scripts'), path.join(resourcesRoot, 'scripts'), (relative) => hasSegment(relative, new Set(['__pycache__'])));
+copyTree(path.join(electronRoot, '..', 'config'), path.join(resourcesRoot, 'config'));
+copyTree(path.join(electronRoot, '..', '_bundled', 'nodejs'), path.join(resourcesRoot, 'runtime', 'nodejs'));
+copyTree(path.join(electronRoot, '..', '_bundled', 'python'), path.join(resourcesRoot, 'runtime', 'python'), (_relative, name) => name.startsWith('python312._pth.disabled'));
+copyTree(path.join(electronRoot, '..', '_bundled', 'python', 'python.exe'), path.join(resourcesRoot, 'runtime', 'python', 'Scripts', 'python.exe'));
+copyTree(path.join(electronRoot, '..', '_bundled', 'python', 'python312.dll'), path.join(resourcesRoot, 'runtime', 'python', 'Scripts', 'python312.dll'));
+copyTree(path.join(electronRoot, '..', 'runtime', 'python', 'python312-scripts._pth'), path.join(resourcesRoot, 'runtime', 'python', 'Scripts', 'python312._pth'));
+copyTree(path.join(electronRoot, '..', 'runtime', 'python', 'sitecustomize.py'), path.join(resourcesRoot, 'runtime', 'python', 'Lib', 'site-packages', 'sitecustomize.py'));
+copyTree(path.join(electronRoot, '..', '_bundled', 'playwright'), path.join(resourcesRoot, 'runtime', 'playwright'));
+
+for (const forbidden of ['apikey.txt', 'qwen-apikey.txt']) {
+  if (fs.existsSync(path.join(resourcesRoot, forbidden))) {
+    console.error(`[pack:win] forbidden credential file exists in package: resources/${forbidden}`);
+    process.exit(1);
+  }
 }
 
 const stampResult = spawnSync(process.execPath, [stamp, exePath], {

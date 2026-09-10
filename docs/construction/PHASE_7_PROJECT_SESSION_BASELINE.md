@@ -2,7 +2,7 @@
 
 日期：2026-09-10
 
-状态：仅计划与施工基线，尚未修改产品源码。用户试用最新 Windows `win-unpacked` 后确认 D021–D026；本 Phase 优先于真实双搜索 Diagnosis 验收。
+状态：源码、专项回归和 Windows `win-unpacked` 已完成；实现提交为 `6d8187e4`，最终远端 hash 仍以动态查询为准。用户成品人工复测、真实双搜索 Diagnosis 与真机闭环仍待执行。
 
 施工前备份：`origin/backup/pre-phase-7-20260910` → `8f28ca3d131ab315aed4f8205181737f9181568a`，已远端核对。
 
@@ -122,4 +122,13 @@ userData/project-sessions/
 
 - 真实双搜索 Diagnosis：`LIVE_DIAGNOSIS_PENDING`。
 - 真实开发板闭环：`REAL_HARDWARE_VALIDATION_PENDING`。
-- Phase 7 源码与最新包：尚未施工，不能把本文当实现证据。
+- Phase 7 用户成品人工复测：`NOT VERIFIED`。自动化已验证冷启动无默认工程、显式激活、工程 A/B 会话隔离、Explore 多历史及 interrupted 恢复、返回/切工作区保持、Build/Flash/Serial 路径门禁。
+
+## 2026-09-10 实施结果
+
+- Main 已建立唯一 Project Session：工程列表、受控新建、显式激活、规范路径/realpath 校验和活动任务切换门禁均在 Main；Renderer 不再以项目列表第一项或旧 Runtime 状态猜测当前工程。
+- App 在 API Key 门禁之后显示独立工程选择窗口；每次冷启动 `activeProject === null`，上次工程只作为建议。编辑器未保存内容会阻止切换；切换后仓库树、编辑器 tab、Runtime/Serial 视图按新工程重置或过滤。
+- Agent conversation store 已按 `projectId` 隔离；旧全局历史一次性保留为“未归属 · 只读”，不会自动进入任何工程上下文。Worker、Explore Plan 和确认执行均再次校验工程归属。
+- Explore Idea/Diagnosis 使用 `project-sessions/<projectId>/explore/<mode>/<sessionId>/session.json` 多会话目录；输入、用户主动选择的 Context/Knowledge、结果、Plan、确认状态和 request/task 归属可恢复。返回首页或切换工作区不清空；重启后无法续接的 pending 工作显示 `interrupted`，不会自动重试。
+- Workbench 文件读写与 Build/Flash/Serial 使用 Main 当前工程；跨工程、符号链接逃逸和无当前工程请求被拒绝。Knowledge 仍为全局资源，历史知识仍只有用户主动选择后才进入 Context。
+- 最新包位于 `electron/dist-package/win-unpacked`，版本 `1.0.0.7201`，总计 4,464,648,810 字节。发布校验确认 DeepSeek/Qwen Key 均未入包。

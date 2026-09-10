@@ -10,8 +10,8 @@
 - Explore 根元素使用 inline-size Container Query：小于 700px 单栏，700–1200px Normal，大于 1200px Wide 输入/Context + 结果/Plan 双栏。旧 760/820/960px 限宽已移除。
 - Diagnosis 正式显示 `projectEvidence` 与 `sourceConflicts`；Source Row 显示 type/title/author/excerpt/url 主机并保留打开/收藏。
 - DOM layout smoke 覆盖 1920×1080 下 Chat 24/34/45/52% 与折叠、2560×1440、3840×2160、Compact，以及 light/dark、阶段/Plan/Confirm 和控制台错误；最终通过并生成 `electron/.tmp/explore-layout-ui.png`。
-- UI 合并后的 `idea_to_production@8f28ca3d` 已重新完整生成 `electron/dist-package/win-unpacked`；release/version、隔离冷启动、打包版 UI 与 app.asar Explore/连接标记通过，包体 4,464,604,893 字节，EXE 为 `1.0.0.7201`。未配置代码签名。
-- 用户随即在成品试用确认工程会话阻断：Explore 重新进入/切工作区会丢失工作；未显式选择工程时会自动使用项目列表第一项或旧 Runtime 工程；工程切换还必须同步 Agent 对话历史、编辑器、Build/Flash/Serial。找灵感/解问题需按工程、模式保存多次已完成/未完成/中断历史目录。D021–D026 与 [Phase 7 施工基线](PHASE_7_PROJECT_SESSION_BASELINE.md) 已建立；尚未修改产品源码。
+- Phase 7 最新源码已重新完整生成 `electron/dist-package/win-unpacked`；release/version、无 Key 隔离冷启动、显式工程选择和打包版 Chat UI 通过，包体 4,464,648,810 字节，EXE 为 `1.0.0.7201`。未配置代码签名。
+- 用户成品试用确认的工程会话阻断已完成源码修复：冷启动显式选择/创建工程；Agent 历史、编辑器、Build/Flash/Serial 与 Explore Context/Handoff 统一绑定当前工程；找灵感/解问题按工程和模式保存多次完成、未完成与中断历史。实现提交为 `6d8187e4`，详见 [Phase 7 施工基线](PHASE_7_PROJECT_SESSION_BASELINE.md)。
 - 真实知乎 Diagnosis、真实 Agent 执行与真实硬件未在本 UI 闭环重跑，继续分别标记 `LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING`。
 
 ## 先读
@@ -44,8 +44,8 @@
 知识数据位于 Electron `userData/explore/knowledge.json`；历史知识只发现，显式选择后才进入 Context。该本地 Store 与知乎官方 Knowledge Base 不同，MVP 不调用后者。
 ## 下一步 1–3 项
 
-1. 经用户确认开工后执行 Phase 7：冷启动显式选择/创建当前工程，原子切换 Agent/编辑器/Build/Flash/Serial，并建立 Explore 多历史目录。
-2. Phase 7 专项和 Review 通过后重打 Windows 包，由用户复测返回、切工作区、重启、切工程、Agent 历史、编辑器/烧录目标与新建工程。
+1. 由用户对最新 `electron/dist-package/win-unpacked` 人工复测：返回、切工作区、重启、切工程、Agent 历史、编辑器/烧录目标与新建工程。
+2. 在用户明确授权且不暴露 Secret 的条件下完成真实知乎＋全网 Diagnosis；有设备后再执行确认后的修改、Build、Flash、Serial 与 Knowledge 验证回写。
 3. 再经用户授权具体工程摘要外发，执行真实“解问题”双搜索 Demo；具备设备条件后完成 Build/Flash/Serial 实机闭环。
 
 ## Decision 与 Assumption
@@ -70,7 +70,7 @@ D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探�
 - `LIVE_DIAGNOSIS_PENDING`：Access Secret 与真实知乎找灵感已通过；真实排障所需的知乎＋全网双搜索尚未验收。
 - `AGENT_LIVE_LOAD_PENDING_DEEPSEEK_BALANCE` 已解除：用户确认充值后，产品现有 `explore_plan` 档位以 `deepseek-v4-pro`、空工具和空 MCP 完成真实调用，返回合法 `structured_output`，退出码 0；本次没有调用知乎或硬件。
 - `REAL_HARDWARE_VALIDATION_PENDING`：未执行本轮真实 Build/Flash/Serial，不能声称硬件闭环完成。
-- 最新 Phase 6 Windows 候选已由 `idea_to_production@8f28ca3d` 重建；冷启动、packaged UI/Skill 与 Explore/Phase 6e 标记已验证。代码签名、全新用户真实安装/连接仍待人工验收。
+- 最新 Phase 7 Windows 候选已重建；冷启动、工程选择、packaged UI/Skill 与 Explore 标记已验证。代码签名、全新用户真实安装/连接仍待人工验收。
 - Phase 0 的两次 Python pytest 均因环境缺 pytest，未进入断言；不得写成测试通过。
 - 过程审计发现 Phase 2/3 若干小闭环把实现和收尾文档放在同一提交，缺少严格的“小闭环先文档”提交证据。WORKFLOW 已收紧；下一业务小项必须先有独立文档提交。
 

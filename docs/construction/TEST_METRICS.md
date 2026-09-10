@@ -319,6 +319,23 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 
 首次 packaged UI smoke 误连正在运行的开发版 Renderer，因此不能作为包证据；停止 dev server、隔离启动 packaged app 后复测通过。app.asar 检查先后修正模块解析目录、归档内反斜杠路径和根元素 class 假设后通过。未执行代码签名、真实新用户安装、真实搜索或硬件。
 
-## 2026-09-10 Phase 7 工程会话施工基线
+## 2026-09-10 Phase 7 工程会话与 Explore 工作保存
 
-本轮只建立 D021–D026、目录结构、分层契约、施工顺序与验收矩阵，没有修改产品源码，因此未运行应用构建并明确记为 `NOT RUN (DOCS ONLY)`。实施阶段必须新增并通过：冷启动无工程拒绝；安全创建/路径逃逸；工程 A/B 的编辑器、Agent 对话、Explore 多历史、Build/Flash/Serial 与事件隔离；旧全局对话保留式迁移；返回/切页/reload/restart 恢复；迟到 requestId/task 归属；运行任务和未保存编辑的切换门禁；Store 损坏与 Secret 不落盘。
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| Runtime `typecheck` / `build` | 通过 | Runtime 契约未被工程会话改造破坏 |
+| Electron `typecheck` / `build:main` / `build:renderer` | 通过 | Renderer 1265 modules；保留既有约 4.1 MB chunk warning |
+| `verify:project-session` / `verify:explore-session` | 通过 | 冷启动 null、显式激活、安全创建、路径逃逸、A/B 隔离、多历史、interrupted 与 Secret 排除 |
+| Agent session / task queue 回归 | 通过 | 按工程会话、未归属只读迁移、任务归属与确认门禁 |
+| Explore 全专项与布局 smoke | 通过 | 返回首页和切工作区保持；wide/normal/compact、light/dark、console error 0 |
+| `smoke:workbench` | 通过 | sandbox 内 GPU/AppData 首次失败；改为隔离 userData 并在允许的 Electron 环境运行后通过 |
+| `pack:win` | 通过 | 首次 electron-builder 在复制 4.4 GB extraResources 时被外部回收；脚本改为 builder 生成骨架、Node 分组复制、无 Key 门禁后再 stamp，最终成功 |
+| `verify:first-run` | 通过 | 实际打包程序、隔离 userData、无密钥安全窗口；占位 Key 被拒绝 |
+| `verify:project-session-ui` | 通过 | `activeProject === null`，3 个候选，用户显式进入 `hello_world_esp32s3` 后显示当前工程 |
+| `smoke:chat-ui:packaged` | 通过 | 工程激活后的真实 app.asar Renderer；历史/编辑器交互未被门禁阻断 |
+| `verify:release` / `verify:version` | 通过 | 4,464,648,810 字节；`1.0.0.7201`；DeepSeek/Qwen Key 均未入包 |
+| `git diff --check` | 通过 | 仅 LF→CRLF 提示，无 whitespace error |
+
+首次打包产物因子进程被回收而不完整，`verify:release` 正确拒绝了包含 NUL 的指南和遗留 `resources/apikey.txt`；该失败产物已被完整重建覆盖，不能作为发布证据。首次打包版首启测试误带 Workbench smoke 环境变量，应用按设计写出结果并主动退出；移除该变量后真实首次启动验收通过。另有两次布局测试误连固定端口残留进程，清理精确 PID 后通过。以上失败均保留为过程证据。
+
+`NOT VERIFIED`：用户在真实成品上的返回/重启/切工程人工复测；真实知乎＋全网 Diagnosis；真实 Agent 改码；真实 Build/Flash/Serial；全新 Windows 用户安装与代码签名。

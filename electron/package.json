@@ -26,6 +26,7 @@
     "verify:chat-presentation": "node scripts/verify_chat_presentation.cjs",
     "verify:session": "node node_modules/electron/cli.js scripts/verify_claude_session.cjs",
     "verify:project-session": "npm run build:main && node node_modules/electron/cli.js scripts/verify_project_session.cjs",
+    "verify:project-session-ui": "node scripts/verify_project_session_ui.cjs",
     "verify:explore-session": "npm run build:main && node node_modules/electron/cli.js scripts/verify_explore_session.cjs",
     "verify:hardboard": "node node_modules/electron/cli.js scripts/verify_hardboard_context_rules.cjs",
     "verify:skills": "node node_modules/electron/cli.js scripts/verify_skill_manager.cjs",

@@ -26,7 +26,7 @@
 - Phase 0–5 的软件范围完成，Phase 6 最终验收中；安全连接、固定搜索桥、受限分析/计划、结构化结果、Handoff、一次性确认执行、知识收藏和验证反馈均已实现。
 - Access Secret 已通过独立宿主窗口配置；官方验证、最小本人内容请求和真实“找灵感”通过。该请求取得 8 条知乎来源并展示 3 个合法 Idea。
 - Phase 6e 首次使用连接向导与最新 Windows 候选软件验收已完成：缺 CLI 需用户点击授权安装；CLI 可用但缺 Secret 时进入探索自动弹一次安全窗口；完整 `pack:win`、release/version、app.asar 标记与隔离冷启动通过。下一小项按顺序为：真实“解问题”知乎＋全网双搜索 Demo；全新 Windows 用户真实安装/连接人工验收；有设备后完成确认施工及 Build/Flash/Serial 实机验收。
-- `LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留；已有发布候选验收不能替代最新源码重新打包，软件门禁或串口 mock 不能替代真机。
+- `LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留；Phase 7 最新源码已重新打包，但软件门禁、打包 UI 或串口 mock 仍不能替代真实网络与真机。
 
 以上是 2026-09-09 当时快照。2026-09-10 的当前状态如下。
 
@@ -34,19 +34,15 @@
 
 - Explore UI Research Workspace 已由 `EXPLORE_UI_REFACTOR` 合入 `idea_to_production`；合并后 Runtime/Electron 构建、Explore 全专项、布局矩阵与 Workbench smoke 通过。
 - UI 合并后的 `idea_to_production@8f28ca3d` 已完整重建 Windows `win-unpacked`；release/version、隔离首启、打包版 UI 与 app.asar Explore/连接标记通过。包未配置代码签名，全新用户真实安装/连接仍待人工验收。
-- 用户成品试用确认 Explore 工作会在重新进入/切工作区时丢失，且未显式选工程时会自动落到列表第一项或旧 Runtime 工程。下一业务小闭环调整为 [Phase 7 当前工程会话与 Explore 工作保存](PHASE_7_PROJECT_SESSION_BASELINE.md)，优先于真实双搜索验收。
-- Phase 7 完成并由用户复测后，再在全新 Windows 用户环境人工验收安装授权→Secret 安全窗口→连接确认；随后经用户授权工程摘要执行真实 Diagnosis，有设备后执行确认后的修改、Build、Flash、Serial 与知识验证回写。
+- [Phase 7 当前工程会话与 Explore 工作保存](PHASE_7_PROJECT_SESSION_BASELINE.md) 已完成源码、专项、构建与 Windows 包自动化验收；冷启动工程门禁、工程隔离、Agent/Editor/Build/Flash/Serial 联动和 Explore 多历史已落地。
+- 下一步由用户复测最新成品；随后在全新 Windows 用户环境人工验收安装授权→Secret 安全窗口→连接确认，并经用户授权执行真实 Diagnosis；有设备后执行确认后的修改、Build、Flash、Serial 与知识验证回写。
 - `LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 继续保留。UI、mock、软件门禁和最新 Windows 包都不能替代真实网络或实机证据。
 
 ## Phase 7：当前工程会话与 Explore 工作保存
 
-- 7a 先建立失败回归：Explore 重新进入/切工作区丢状态、空工程自动选第一项、旧 Runtime 工程 fallback。
-- 7b 建立 Main 受控 Project Session 与启动工程选择/创建门禁；每次冷启动必须由用户确认。
-- 7c 将 App、BrowserPanel、Editor、Build/Flash/Serial、运行证据与 Explore Context/Handoff 统一到唯一 active project，并建立有副作用任务的切换门禁。
-- 7d 将 Agent Conversation Store 升级为按工程隔离；工程切换同步切换会话列表、当前会话和持续上下文，旧全局对话保留为未归属历史。
-- 7e 建立 `project-sessions/<projectId>/explore/{idea,diagnosis}/<sessionId>/` 历史目录，覆盖多次已完成、未完成、中断记录及 result/plan/confirm 状态。
-- 7f 完成路径逃逸、跨工程隔离、requestId/task 归属、切换竞态、损坏 Store、Secret 隔离和全功能回归。
-- 7g 重打 Windows 包并由用户验收返回、切页、重启、切工程、Agent 历史、编辑器、烧录目标和新建工程；通过前不恢复真实 Diagnosis 验收。
+- 7a–7f：`COMPLETE`。失败回归、Main Project Session、全模块 active project、Agent 会话隔离、Explore 多历史、路径/request/task/Secret 门禁均已实现并通过专项。
+- 7g 软件与打包自动化：`COMPLETE`。Windows 包、无 Key 首启、显式工程选择、打包版 Chat UI、release/version 已通过。
+- 7g 用户人工成品验收：`NOT VERIFIED`。需复测返回、切页、重启、切工程、Agent 历史、编辑器、烧录目标和新建工程；完成后再恢复真实 Diagnosis 验收。
 ## Phase 1 已定位的最小工程范围
 
 - 新增 `agent/skills/zhihu`，按用户 ZIP 原字节导入，不创建假 Skill。

@@ -12,7 +12,7 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 
 官方 Skill 缺失；产品与代码根本冲突；必须覆盖大量用户工作；未提交修改高度冲突；需要真实 Secret；官方 CLI 安装/升级或授权需用户确认；无权限的实机操作；两方案产生明显不同产品行为；核心 API 实测无法满足需求。报告事实、冲突、影响和一个具体决定，不开始其他分支工作。
 
-权限门禁、结构化输出和多行 Skill 描述兼容缺口均已实现并通过专项检查；当前外部验证缺口是双搜索 Diagnosis、最新源码重新打包和真实硬件闭环。若运行验证证明核心能力根本不可行，再停止。
+权限门禁、结构化输出、多行 Skill 描述兼容与 Phase 7 工程会话均已实现并通过专项检查；最新源码 Windows 包已重建。当前外部验证缺口是用户成品复测、双搜索 Diagnosis 和真实硬件闭环。若运行验证证明核心能力根本不可行，再停止。
 
 ## Phase 7 工程会话硬约束
 
@@ -20,7 +20,7 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 - active project 是编辑器、Agent 会话、Explore、Build/Flash/Serial 和项目证据的唯一上下文，切换必须原子且经过运行任务/未保存编辑门禁。
 - Agent 对话按工程隔离；旧全局对话保留为未归属历史，不自动注入新工程。
 - 找灵感与解问题按 `projectId + mode + sessionId` 保存多次历史目录，包含完成、未完成和中断状态；Secret 与未选择资料不得落盘。
-- 详细施工与验收以 [Phase 7 施工基线](PHASE_7_PROJECT_SESSION_BASELINE.md) 为准；该基线当前仅是计划，不是实现证据。
+- 详细施工与验收以 [Phase 7 施工基线](PHASE_7_PROJECT_SESSION_BASELINE.md) 为准；实现与自动化证据已回写，用户成品人工复测仍单列为 `NOT VERIFIED`。
 
 ## Assumption Register
 
