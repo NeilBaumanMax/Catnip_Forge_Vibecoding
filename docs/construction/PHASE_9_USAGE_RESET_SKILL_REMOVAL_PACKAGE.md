@@ -8,13 +8,13 @@
 
 ## 删除范围
 
-1. 所有已登记工程内的 `.catnip/`：工程 Agent conversations、Explore Idea/Diagnosis 草稿与独立对话、handoff artifact 及状态 manifest。工程业务源码不删除；下次打开工程时可生成新的空状态目录。
-2. 当前 Catnip userData 的 `explore/knowledge.json` 与 `project-sessions/`，以及开发目录的旧 `runtime/claude-session/session.json`。这会删除收藏知识、旧工程会话副本、未归属 Agent 历史和最近工程记录；API Key、浏览器资料、录屏、日志、Runtime 事件与硬件工程不在范围内。
+1. 所有已登记工程内 `.catnip/` 的 `agent/`、`explore/`、`handoffs/`：工程 Agent conversations、Explore Idea/Diagnosis 草稿与独立对话、handoff artifact。工程业务源码、`.catnip/manifest.json` 和 `.gitignore` 保留；下次打开工程时生成新的空记录。
+2. 当前 Catnip userData 的 `explore/knowledge.json`、`project-sessions/<projectId>/agent|explore`、`project-sessions/unassigned/agent`，以及开发目录的旧 `runtime/claude-session/session.json`。这会删除收藏知识、旧工程会话副本和未归属 Agent 历史；工程注册表 `project-sessions/index.json`、API Key、浏览器资料、录屏、日志、Runtime 事件与硬件工程不在范围内。
 3. 四个 Skill：`1688-source-finding`、`bilibili-search-workflow`、`douyin-product-rank`、`taobao-listing`。删除开发源 `agent/skills/<id>`、开发部署 `runtime/agent-workspace/.claude/skills/<id>`、当前 userData 部署副本，并移除源码中的快捷映射/残留引用。旧打包目录会在重新打包时由新产物覆盖。
 
 ## 安全与恢复
 
-- 删除前停止本轮启动的开发进程，逐个解析并核对绝对路径；不得使用仓库根、用户目录或未解析变量作为递归删除目标。
+- 删除前停止本轮启动的开发进程，逐个解析并核对绝对路径；不得使用仓库根、用户目录或未解析变量作为递归删除目标。安全审查已拒绝过一次整删 `project-sessions`/`.catnip` 的过宽命令且该命令未执行，随后按上述叶子目录收窄。
 - Git 跟踪的 Skill 源文件可从施工前备份分支恢复；被删除的用户会话、Explore 草稿/交接和收藏不建立副本，符合用户“删除使用记录”的意图，删除后不可从产品内恢复。
 - 不读取或输出 API Key，不修改官方 `zhihu` vendor，不删除其他 Skill。
 
@@ -24,4 +24,3 @@
 - 全仓库产品代码/Skill 中不再引用四个 ID；Skill Manager 专项、Runtime/Electron typecheck/build、相关 Explore/Project/Session 回归通过。
 - `pack:win` 成功；新 `win-unpacked`/安装包不含四个 Skill，`verify:release`、`verify:version` 和 app.asar/资源检查通过。
 - 不把清空后的用户数据或打包产物提交到 Git；只精确提交 Skill 源删除、引用修正与施工文档。
-

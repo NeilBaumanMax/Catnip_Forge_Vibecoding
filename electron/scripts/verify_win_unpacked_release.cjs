@@ -82,6 +82,10 @@ for (const relative of officialZhihuSkillFiles) {
   assert.deepEqual(packaged, source, `packaged official zhihu skill file changed: ${relative}`);
 }
 assert(!fs.existsSync(path.join(resources, 'agent', 'skills', 'zhihu', 'zhihu-cli.exe')), 'release must not bundle the user-installed zhihu CLI');
+for (const removedId of ['1688-source-finding', 'bilibili-search-workflow', 'douyin-product-rank', 'taobao-listing']) {
+  assert(!fs.existsSync(path.join(resources, 'agent', 'skills', removedId)), `release still contains removed skill: ${removedId}`);
+}
+assert(!fs.existsSync(path.join(resources, 'runtime', 'hardboard', 'projects', 'hello_world_esp32s3', '.catnip')), 'release must not contain project usage state');
 
 const packagedVersion = JSON.parse(fs.readFileSync(path.join(resources, 'config', 'version.json'), 'utf-8'));
 assert.deepEqual(packagedVersion, version, 'packaged version metadata drifted');

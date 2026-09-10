@@ -216,22 +216,6 @@ function selectSkillIds(task: string, allIds: string[]): string[] {
     return [...selected];
   }
 
-  if (/1688/i.test(task)) {
-    add('1688-source-finding', 'data-extract');
-  }
-
-  if (/(b站|哔哩|bilibili)/i.test(task)) {
-    add('bilibili-search-workflow');
-  }
-
-  if (/淘宝|taobao/i.test(task)) {
-    add('taobao-listing', 'data-extract');
-  }
-
-  if (/抖音|douyin/i.test(task)) {
-    add('douyin-product-rank', 'data-extract');
-  }
-
   if (/采集|提取|抽取|解析|理解页面|page/i.test(task)) {
     add('data-extract', 'page-understanding');
   }

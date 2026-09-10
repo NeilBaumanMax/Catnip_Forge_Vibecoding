@@ -306,3 +306,11 @@
 - 用户明确要求删除 Explore Agent 聊天/草稿、收藏和 Agent 对话记录，删除 `1688-source-finding`、`bilibili-search-workflow`、`douyin-product-rank`、`taobao-listing` 四个 Skill，最后执行打包。
 - 动态核对 `idea_to_production` local/remote 均为 `f976be8e`；工作区仅有应用试用生成且被工程 `.catnip/.gitignore` 保护的状态目录。创建并推送 `backup/pre-phase-9-20260910`，远端核对同 hash。
 - 现场发现当前工程 `.catnip`、Roaming userData 的 Knowledge/project-sessions、开发旧 session，以及四个 Skill 的源码、开发部署、userData 部署和旧包副本。删除边界先写入独立 Phase 9 文档；不删除其他 Skill、工程源码、API Key、浏览器资料、日志、录屏或 Runtime 事件。
+
+## 2026-09-10 / Phase 9 精确清理与 Skill 源码移除
+
+- 第一条删除命令因包含整个 `project-sessions` 和 `.catnip` 根目录被安全审查拒绝，命令未创建进程、未删除数据。根因是该范围会连工程注册表和状态 manifest 一并删除，超过聊天/探索/收藏的必要边界。
+- 随后逐个核对绝对叶子路径，只删除各工程/旧 userData 的 `agent`、`explore`、`handoffs`、全局 `knowledge.json` 和旧 `runtime/claude-session/session.json`；保留 `project-sessions/index.json`、`.catnip/manifest.json`、工程源码和其他用户数据。删除完成后逐项检查目标均不存在。
+- 删除四个 Skill 的 Git 源文件、开发部署、当前 userData 部署和旧包副本；移除 Worker 自动推荐映射，并把 replay Skill 中仅作示例的同名文本改为平台无关名称。Skill Manager 同步后仅部署剩余 9 个 Skill，四个旧部署不会复生。
+- 打包脚本新增 `.catnip` 排除，release 门禁新增四个 Skill 不存在和工程使用状态不入包断言，避免清理后的本机记录被复制进新包。
+- Runtime/Electron typecheck/build、Skill Manager、Project/Agent/Explore session、Knowledge 和 Explore UI 专项通过；Renderer 仍有既有大 chunk warning。打包结果在后续条目记录。

@@ -38,7 +38,7 @@ preload `sendMessage` → gateway `chat:send` → Orchestrator `submitTask`，�
 
 ## Skills 与官方源
 
-基线 12 个标准目录：1688-source-finding、bilibili-search-workflow、browser-guide、data-extract、douyin-product-rank、espidf-hardboard、html-game-generation、page-understanding、recording-workflow、replay-workflow-tooling、search-workflow、taobao-listing。实际 `verify:skills` 返回 12 deployed。
+Phase 1 当时基线为 12 个普通标准目录；2026-09-10 用户明确移除 `1688-source-finding`、`bilibili-search-workflow`、`douyin-product-rank`、`taobao-listing` 后，当前保留 browser-guide、data-extract、espidf-hardboard、html-game-generation、page-understanding、recording-workflow、replay-workflow-tooling、search-workflow，加上官方 vendor `zhihu` 共 9 个。历史 `verify:skills` 的 12 deployed 仅是当时证据。
 
 `skill-manager.ts` 支持 sourceEntries、support tree、树哈希、部署 manifest、同名非托管保护、CRUD。开发源 `agent/skills`；部署 `runtime/agent-workspace/.claude/skills`；打包源 `resources/agent/skills`，部署在 userData/runtime-data 下。标准 Skill 当前会 parse/serialize 后写部署文档；`description: >-` 未解析多行，是已定位兼容缺口。
 
