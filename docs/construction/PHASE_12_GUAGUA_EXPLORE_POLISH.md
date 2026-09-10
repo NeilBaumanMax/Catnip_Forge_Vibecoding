@@ -18,3 +18,12 @@
 - 删除探索历史继续不删除收藏；收藏内的会话快照因此仍可独立查看。
 - GitHub 外链继续复用固定白名单 IPC，不扩大可打开地址范围。
 - 本轮不修改工程业务源码、不执行 Build/Flash/Serial；`REAL_HARDWARE_VALIDATION_PENDING`。
+
+## 施工结果与验证
+
+- 学院呱呱头部已使用用户提供的 `guagua-avatar.png`，作者按钮包含用户提供的 GitHub 标识；按钮增大并与外观控制分行，仍走固定地址白名单。
+- 输入区补齐 grid 子项的最小宽度与 border-box 约束；UI 测试确认 textarea 和 30px 发送按钮均在 composer 边界内。
+- Knowledge Card 新增受限的来源会话快照；首页可展开“查看原对话”，也可经二次确认“删除收藏”。既有无快照收藏保持兼容。
+- 找灵感使用紫色强调，解问题使用青色强调，均增加彩色边框、顶部光带、阴影与独立 hover 反馈。
+- `typecheck`、`build:main`、`build:renderer`、`verify:explore-knowledge`、`verify:explore-session`、`verify:explore-ui`、`verify:explore-layout-ui`、`verify:onboarding`、`verify:software-assistant-guide`、`verify:software-assistant-ui`、`verify:version` 均通过。
+- Electron 测试仍输出 Windows `os_crypt`/GPU 环境噪声；Explore layout 临时 profile 退出时仍有一次 `EPERM` 最佳努力清理提示，均未影响断言结果。

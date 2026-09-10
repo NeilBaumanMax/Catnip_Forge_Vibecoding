@@ -40,6 +40,9 @@ assert.match(explorePanel, /listExploreWorkSessions/, 'project Explore history l
 assert.match(explorePanel, /saveExploreWorkSession/, 'Explore work autosave is missing');
 assert.match(explorePanel, /openWorkSession\(session\.mode, session\.id\)/, 'Explore history resume action is missing');
 assert.match(explorePanel, /saveExploreKnowledge/, 'source save must use the existing preload store');
+assert.match(explorePanel, /origin:\s*activeWorkSession[\s\S]{0,500}conversation:\s*conversation\.map/, 'saved knowledge must retain its origin Explore conversation');
+assert.match(explorePanel, /deleteExploreKnowledge\(card\.id\)/, 'saved knowledge needs an explicit delete action');
+assert.match(explorePanel, /查看原对话/, 'saved knowledge must expose its retained conversation');
 assert.match(explorePanel, /data-tour-id="explore-saved-knowledge"/, 'saved knowledge preview is missing');
 assert.match(explorePanel, /不会自动加入后续 Context/, 'manual context selection promise is missing');
 assert.match(explorePanel, /findRelatedExploreKnowledge\(query, 6\)/, 'related knowledge discovery is missing');
@@ -93,5 +96,7 @@ assert.match(exploreStyles, /prefers-reduced-transparency/);
 assert.match(exploreStyles, /prefers-contrast/);
 assert.match(exploreStyles, /\.explore-source-actions button \{ min-height: 36px/, 'source buttons need a stable 36px hit target');
 assert.match(exploreStyles, /\.explore-idea-action-bar/, 'Idea cards need a stable footer action area');
+assert.match(exploreStyles, /\.explore-entry-card--diagnosis[\s\S]{0,500}var\(--explore-cyan\)/, 'diagnosis entry needs a distinct cyan treatment');
+assert.match(exploreStyles, /\.explore-entry-card--idea em[\s\S]{0,100}var\(--explore-purple\)/, 'idea entry needs a distinct purple treatment');
 
 console.log('explore UI contract passed: existing flows retained; evidence/conflicts/source detail/stages/container layouts/theme accessibility present');

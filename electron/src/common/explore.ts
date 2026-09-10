@@ -104,6 +104,22 @@ export interface VerificationRecord {
   createdAt: string;
 }
 
+export interface KnowledgeConversationMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  kind: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface KnowledgeOrigin {
+  sessionId: string;
+  mode: ExploreMode;
+  title: string;
+  projectPath?: string;
+  conversation: KnowledgeConversationMessage[];
+}
+
 export interface KnowledgeCard {
   id: string;
   source: SourceEvidence;
@@ -115,6 +131,7 @@ export interface KnowledgeCard {
   updatedAt: string;
   verificationStatus: KnowledgeVerificationStatus;
   verificationRecords: VerificationRecord[];
+  origin?: KnowledgeOrigin;
 }
 
 export interface SaveKnowledgeCardInput {
@@ -123,6 +140,7 @@ export interface SaveKnowledgeCardInput {
   tags?: string[];
   note?: string;
   associatedProjects?: string[];
+  origin?: KnowledgeOrigin;
 }
 
 export interface AddVerificationRecordInput {
@@ -582,12 +600,40 @@ export function normalizeExploreExecutionConfirmRequest(value: unknown): Explore
 
 export function normalizeSaveKnowledgeCardInput(value: unknown): SaveKnowledgeCardInput {
   const input = objectValue(value, 'knowledge card');
+  let origin: KnowledgeOrigin | undefined;
+  if (input.origin != null) {
+    const rawOrigin = objectValue(input.origin, 'knowledge card.origin');
+    if (rawOrigin.mode !== 'idea' && rawOrigin.mode !== 'diagnosis') throw new Error('knowledge card.origin.mode is invalid');
+    if (!Array.isArray(rawOrigin.conversation) || rawOrigin.conversation.length > 200) throw new Error('knowledge card.origin.conversation is invalid');
+    origin = {
+      sessionId: requiredText(rawOrigin.sessionId, 'knowledge card.origin.sessionId', 120),
+      mode: rawOrigin.mode,
+      title: requiredText(rawOrigin.title, 'knowledge card.origin.title', 200),
+      projectPath: optionalText(rawOrigin.projectPath, 'knowledge card.origin.projectPath', 1_000),
+      conversation: rawOrigin.conversation.map((value, index) => {
+        const message = objectValue(value, `knowledge card.origin.conversation[${index}]`);
+        if (message.role !== 'user' && message.role !== 'assistant' && message.role !== 'system') {
+          throw new Error(`knowledge card.origin.conversation[${index}].role is invalid`);
+        }
+        const createdAt = requiredText(message.createdAt, `knowledge card.origin.conversation[${index}].createdAt`, 40);
+        if (!Number.isFinite(Date.parse(createdAt))) throw new Error(`knowledge card.origin.conversation[${index}].createdAt is invalid`);
+        return {
+          id: requiredText(message.id, `knowledge card.origin.conversation[${index}].id`, 120),
+          role: message.role,
+          kind: requiredText(message.kind, `knowledge card.origin.conversation[${index}].kind`, 60),
+          text: requiredText(message.text, `knowledge card.origin.conversation[${index}].text`, 8_000),
+          createdAt,
+        };
+      }),
+    };
+  }
   return {
     source: normalizeSourceEvidence(input.source),
     taskSummary: requiredText(input.taskSummary, 'knowledge card.taskSummary', 1_500),
     tags: stringList(input.tags, 'knowledge card.tags', 20, 60),
     note: optionalText(input.note, 'knowledge card.note', 1_500),
     associatedProjects: stringList(input.associatedProjects, 'knowledge card.associatedProjects', 20, 500),
+    origin,
   };
 }
 

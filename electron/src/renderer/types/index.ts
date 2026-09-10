@@ -334,6 +334,7 @@ export interface WindowAPI {
   syncManagedSkills: () => Promise<SkillManagerResult>;
   listExploreKnowledge: () => Promise<KnowledgeCard[]>;
   saveExploreKnowledge: (input: SaveKnowledgeCardInput) => Promise<KnowledgeCard>;
+  deleteExploreKnowledge: (cardId: string) => Promise<KnowledgeCard[]>;
   addExploreKnowledgeVerification: (input: AddVerificationRecordInput) => Promise<KnowledgeCard>;
   findRelatedExploreKnowledge: (query: string, limit?: number) => Promise<KnowledgeCard[]>;
   selectExploreKnowledgeForContext: (selectedIds: string[]) => Promise<KnowledgeCard[]>;

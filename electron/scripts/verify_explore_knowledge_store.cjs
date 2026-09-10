@@ -24,6 +24,7 @@ async function main() {
     registerExploreKnowledgeIpc({ handle: (channel, handler) => routes.set(channel, handler) }, first);
     assert.deepEqual([...routes.keys()].sort(), [
       'explore:knowledge:addVerification',
+      'explore:knowledge:delete',
       'explore:knowledge:findRelated',
       'explore:knowledge:list',
       'explore:knowledge:save',
@@ -34,6 +35,16 @@ async function main() {
       taskSummary: '排查 ESP32-S3 Wi-Fi 反复断开',
       tags: ['ESP32-S3', 'Wi-Fi'],
       associatedProjects: ['desk-companion'],
+      origin: {
+        sessionId: 'explore-session-1',
+        mode: 'diagnosis',
+        title: 'Wi-Fi 断线调查',
+        projectPath: 'D:\\projects\\desk-companion',
+        conversation: [
+          { id: 'message-1', role: 'user', kind: 'request', text: '为什么 Wi-Fi 会反复断开？', createdAt: new Date().toISOString(), secret: 'MUST_NOT_PERSIST' },
+          { id: 'message-2', role: 'assistant', kind: 'result', text: '先结合串口日志核对断线原因码。', createdAt: new Date().toISOString() },
+        ],
+      },
       fullArticleBody: 'MUST_NOT_PERSIST',
     });
     assert.equal(card.verificationStatus, 'unverified');
@@ -42,6 +53,8 @@ async function main() {
 
     const restarted = createExploreKnowledgeHandlers(new ExploreKnowledgeStore(file));
     assert.equal(restarted.list()[0].id, card.id, 'knowledge card must survive store restart');
+    assert.equal(restarted.list()[0].origin.conversation.length, 2, 'origin Explore conversation must survive store restart');
+    assert.equal(restarted.list()[0].origin.sessionId, 'explore-session-1', 'origin Explore session identity must survive store restart');
     assert.equal((await routes.get('explore:knowledge:findRelated')(null, 'ESP32-S3 Wi-Fi')).length, 1, 'related card should be discoverable through IPC');
     assert.deepEqual(await routes.get('explore:knowledge:selectForContext')(null, []), [], 'discovery must not inject an unselected card');
     assert.equal(restarted.selectForContext([card.id])[0].id, card.id, 'explicitly selected card should enter context');
@@ -61,6 +74,13 @@ async function main() {
     assert.throws(() => restarted.addVerification({
       cardId: 'missing-card', status: 'verified_ineffective', summary: '真实验证失败', evidenceRefs: [],
     }), /not found/);
+
+    const legacyCard = restarted.save({ source: { ...source, url: 'https://www.zhihu.com/question/legacy' }, taskSummary: '旧版无对话收藏仍可读取' });
+    assert.equal(legacyCard.origin, undefined, 'origin-less legacy knowledge must remain compatible');
+    const remaining = await routes.get('explore:knowledge:delete')(null, card.id);
+    assert.deepEqual(remaining.map((entry) => entry.id), [legacyCard.id], 'knowledge delete must remove only the selected card');
+    assert.throws(() => restarted.delete(card.id), /not found/, 'deleting a missing card must fail safely');
+    assert.equal(restarted.delete(legacyCard.id).length, 0, 'legacy knowledge card must also be deletable');
 
     const request = normalizeExploreRequest({
       mode: 'diagnosis',
@@ -117,7 +137,7 @@ async function main() {
     assert.throws(() => restarted.save({ source, taskSummary: 'must fail safely' }), /original file was preserved/);
     assert.equal(fs.readFileSync(file, 'utf8'), invalidStructure, 'invalid card structure must not be overwritten');
 
-    console.log('explore knowledge store verification passed: 1 persisted, selection gated, corruption preserved');
+    console.log('explore knowledge store verification passed: origin conversation persisted, selection gated, single delete and corruption preserved');
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
     app.quit();

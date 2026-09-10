@@ -84,6 +84,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   const [contextLoading, setContextLoading] = useState(false);
   const [contextError, setContextError] = useState('');
   const [knowledgeCards, setKnowledgeCards] = useState<KnowledgeCard[]>([]);
+  const [expandedKnowledgeId, setExpandedKnowledgeId] = useState('');
   const [savingSourceUrl, setSavingSourceUrl] = useState('');
   const [relatedKnowledge, setRelatedKnowledge] = useState<KnowledgeCard[]>([]);
   const [selectedKnowledgeIds, setSelectedKnowledgeIds] = useState<string[]>([]);
@@ -818,6 +819,19 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
         source,
         taskSummary: analysisRequest?.goal || source.title,
         associatedProjects: currentProject ? [currentProject] : [],
+        origin: activeWorkSession ? {
+          sessionId: activeWorkSession.id,
+          mode: activeWorkSession.mode,
+          title: latestWorkSession.current?.title || activeWorkSession.title,
+          projectPath: currentProject || undefined,
+          conversation: conversation.map((message) => ({
+            id: message.id,
+            role: message.role,
+            kind: message.kind,
+            text: message.text,
+            createdAt: message.createdAt,
+          })),
+        } : undefined,
       });
       setKnowledgeCards((current) => [card, ...current]);
       setNotice('已收藏到本地知识库；不会自动加入后续 Context。');
@@ -846,6 +860,21 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       catch (error) { setNotice(error instanceof Error ? error.message : '无法读取工程内交接材料'); return; }
     }
     setDisplayStage(stage);
+  };
+
+  const deleteKnowledgeCard = async (card: KnowledgeCard) => {
+    if (!window.confirm(`确定删除收藏“${card.source.title}”吗？对应的探索历史不会被删除。`)) return;
+    try {
+      const cards = await window.electronAPI.deleteExploreKnowledge(card.id);
+      setKnowledgeCards(cards);
+      setRelatedKnowledge((current) => current.filter((entry) => entry.id !== card.id));
+      setSelectedKnowledgeIds((current) => current.filter((id) => id !== card.id));
+      if (expandedKnowledgeId === card.id) setExpandedKnowledgeId('');
+      if (verificationCardId === card.id) setVerificationCardId('');
+      setNotice('收藏已删除；对应的探索对话记录仍然保留。');
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : '无法删除这条收藏');
+    }
   };
 
   const openSource = (url: string) => {
@@ -985,6 +1014,18 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
                     </div>
                     <p>{card.taskSummary}</p>
                     <small>{card.associatedProjects.length ? `关联工程：${card.associatedProjects.join('、')}` : '未关联工程'}</small>
+                    {expandedKnowledgeId === card.id && card.origin ? (
+                      <section className="explore-knowledge-conversation" aria-label={'收藏来源对话：' + card.source.title}>
+                        <header><strong>{card.origin.mode === 'idea' ? '找灵感' : '解问题'} · {card.origin.title}</strong><small>{card.origin.conversation.length} 条对话</small></header>
+                        {card.origin.conversation.length ? <ol>{card.origin.conversation.map((message) => (
+                          <li key={message.id} className={'is-' + message.role}>
+                            <span>{message.role === 'user' ? '你' : message.role === 'assistant' ? '探索 AI' : '系统'}</span>
+                            <p>{message.text}</p>
+                            <time>{new Date(message.createdAt).toLocaleTimeString()}</time>
+                          </li>
+                        ))}</ol> : <p>收藏时还没有产生对话内容。</p>}
+                      </section>
+                    ) : null}
                     {latestVerification ? (
                       <div className="explore-verification-summary">
                         <strong>最近验证</strong>
@@ -993,7 +1034,11 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
                       </div>
                     ) : null}
                   </div>
-                  <button className="explore-row-action" type="button" onClick={() => beginVerification(card.id)}>记录验证</button>
+                  <div className="explore-knowledge-actions">
+                    {card.origin ? <button className="explore-row-action" type="button" onClick={() => setExpandedKnowledgeId((current) => current === card.id ? '' : card.id)}>{expandedKnowledgeId === card.id ? '收起原对话' : '查看原对话'}</button> : null}
+                    <button className="explore-row-action" type="button" onClick={() => beginVerification(card.id)}>记录验证</button>
+                    <button className="explore-row-action is-danger" type="button" onClick={() => void deleteKnowledgeCard(card)}>删除收藏</button>
+                  </div>
                 </li>
               );
             })}</ul>

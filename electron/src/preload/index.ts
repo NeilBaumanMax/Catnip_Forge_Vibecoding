@@ -55,6 +55,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   syncManagedSkills: () => ipcRenderer.invoke('skills:sync'),
   listExploreKnowledge: () => ipcRenderer.invoke('explore:knowledge:list'),
   saveExploreKnowledge: (input: SaveKnowledgeCardInput) => ipcRenderer.invoke('explore:knowledge:save', input),
+  deleteExploreKnowledge: (cardId: string) => ipcRenderer.invoke('explore:knowledge:delete', cardId),
   addExploreKnowledgeVerification: (input: AddVerificationRecordInput) => ipcRenderer.invoke('explore:knowledge:addVerification', input),
   findRelatedExploreKnowledge: (query: string, limit?: number) => ipcRenderer.invoke('explore:knowledge:findRelated', query, limit),
   selectExploreKnowledgeForContext: (selectedIds: string[]) => ipcRenderer.invoke('explore:knowledge:selectForContext', selectedIds),

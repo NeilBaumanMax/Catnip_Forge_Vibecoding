@@ -5,6 +5,8 @@ import CatnipOnboarding from './components/CatnipOnboarding';
 import MarkdownContent from './components/MarkdownContent';
 import catnipForgeIcon from './assets/catnip-forge.png';
 import catnipAssistantImage from './assets/catnip-assistant.png';
+import guaguaAvatarImage from './assets/guagua-avatar.png';
+import githubMarkImage from './assets/github-mark.png';
 import type { AgentTaskInput, AgentTaskStatus, BrowserTab, ChatConversation, ChatConversationSummary, ChatMessage, ChatMessageKind, HardboardDevice, ProjectSessionStatus, RecordingSummary, SoftwareAssistantMessage, StartupStatus, TaskStep, TaskSubmitMode, WorkbenchOverview } from './types';
 
 const LEFT_PANEL_WIDTH_KEY = 'vibeide.ui.leftPanelWidth';
@@ -1031,7 +1033,7 @@ export default function App() {
           <section className="appearance-popover software-assistant-popover" role="dialog" aria-label="Neil·Bauman's 学院呱呱软件助手">
             <header className="software-assistant-header">
               <div className="software-assistant-identity">
-                <span className="software-assistant-avatar" aria-hidden="true"><img src={catnipAssistantImage} alt="" /></span>
+                <span className="software-assistant-avatar" aria-hidden="true"><img src={guaguaAvatarImage} alt="" /></span>
                 <span className="software-assistant-identity-copy">
                   <strong>Neil·Bauman's 学院呱呱</strong>
                   <small>Catnip Forge 吉祥物与使用助手</small>
@@ -1042,7 +1044,9 @@ export default function App() {
                     title="在系统默认浏览器打开作者 GitHub"
                     aria-label="在系统浏览器打开作者 Neil Bauman 的 GitHub"
                   >
-                    作者 Neil Bauman · GitHub ↗
+                    <img src={githubMarkImage} alt="" aria-hidden="true" />
+                    <span>作者 Neil Bauman · GitHub</span>
+                    <span aria-hidden="true">↗</span>
                   </button>
                 </span>
               </div>

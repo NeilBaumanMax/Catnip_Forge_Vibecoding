@@ -48,11 +48,20 @@ async function main() {
           await new Promise((resolve) => setTimeout(resolve, 180));
         }
         const popover = document.querySelector('.software-assistant-popover');
+        const avatarImage = popover?.querySelector('.software-assistant-avatar img');
+        const githubMark = popover?.querySelector('.software-assistant-author-link img');
+        const composer = popover?.querySelector('.software-assistant-composer');
+        const composerTextarea = composer?.querySelector('textarea');
+        const sendButton = composer?.querySelector('[aria-label="发送问题"]');
+        await Promise.all([avatarImage, githubMark].map((image) => image instanceof HTMLImageElement ? image.decode().catch(() => undefined) : undefined));
         const triggerImage = trigger?.querySelector('img');
         const rect = popover?.getBoundingClientRect();
         const triggerRect = trigger?.getBoundingClientRect();
         const triggerStyle = trigger ? getComputedStyle(trigger) : null;
         const imageStyle = triggerImage ? getComputedStyle(triggerImage) : null;
+        const composerRect = composer?.getBoundingClientRect();
+        const textareaRect = composerTextarea?.getBoundingClientRect();
+        const sendRect = sendButton?.getBoundingClientRect();
         const growButton = popover?.querySelector('[aria-label="放大学院呱呱"]');
         const shrinkButton = popover?.querySelector('[aria-label="缩小学院呱呱"]');
         const storedSizeBefore = localStorage.getItem('vibeide.assistant.size');
@@ -68,6 +77,10 @@ async function main() {
         else localStorage.setItem('vibeide.assistant.size', storedSizeBefore);
         return {
           triggerImageLoaded: Boolean(triggerImage?.complete && triggerImage?.naturalWidth > 0),
+          avatarImageLoaded: Boolean(avatarImage?.complete && avatarImage?.naturalWidth >= 500),
+          githubMarkLoaded: Boolean(githubMark?.complete && githubMark?.naturalWidth >= 32),
+          avatarImageState: avatarImage ? { complete: avatarImage.complete, width: avatarImage.naturalWidth, src: avatarImage.getAttribute('src') } : null,
+          githubMarkState: githubMark ? { complete: githubMark.complete, width: githubMark.naturalWidth, src: githubMark.getAttribute('src') } : null,
           fullBodyTrigger: Boolean(triggerRect?.width >= 110 && triggerRect?.height >= 110
             && triggerStyle?.backgroundColor === 'rgba(0, 0, 0, 0)'
             && triggerStyle?.borderTopWidth === '0px'
@@ -82,6 +95,9 @@ async function main() {
           onboardingButton: Boolean(popover?.querySelector('[aria-label="打开新手教程"]')),
           authorLink: popover?.querySelector('.software-assistant-author-link')?.textContent,
           authorLinkLabel: popover?.querySelector('.software-assistant-author-link')?.getAttribute('aria-label'),
+          composerContained: Boolean(composerRect && textareaRect && sendRect
+            && textareaRect.left >= composerRect.left && textareaRect.right <= sendRect.left
+            && sendRect.right <= composerRect.right && sendRect.width >= 28),
           sizeAdjusted,
         };
       })()`,
@@ -92,7 +108,7 @@ async function main() {
     const rect = result?.rect;
     const inViewport = rect && rect.left >= 0 && rect.top >= 0
       && rect.right <= result.viewport.width && rect.bottom <= result.viewport.height;
-    if (!result?.triggerImageLoaded || !result?.fullBodyTrigger || !result?.popoverVisible || !result?.textarea || result?.actionButtons !== 6 || !result?.onboardingButton || !result?.sizeAdjusted
+    if (!result?.triggerImageLoaded || !result?.avatarImageLoaded || !result?.githubMarkLoaded || !result?.fullBodyTrigger || !result?.popoverVisible || !result?.textarea || !result?.composerContained || result?.actionButtons !== 6 || !result?.onboardingButton || !result?.sizeAdjusted
       || result?.title !== "Neil·Bauman's 学院呱呱" || !result?.welcome?.includes('Catnip Forge')
       || !result?.authorLink?.includes('Neil Bauman') || !result?.authorLinkLabel?.includes('系统浏览器') || !inViewport) {
       throw new Error(`software assistant UI verification failed: ${JSON.stringify(result)}`);

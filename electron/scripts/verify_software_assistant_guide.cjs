@@ -19,6 +19,7 @@ async function main() {
   assert(productGuide.includes("Neil·Bauman's 学院呱呱"), 'guide does not identify the current mascot assistant');
   assert(productGuide.includes('当前发布版为 v2.0.0'), 'guide has stale release version');
   assert(productGuide.includes('.catnip/explore/<模式>/<会话 ID>/session.json') && productGuide.includes('重启软件后仍可'), 'guide does not explain durable Explore dialogue history');
+  assert(productGuide.includes('查看原对话') && productGuide.includes('删除收藏') && productGuide.includes('不会删除对应的探索历史'), 'guide does not explain saved-conversation and knowledge deletion behavior');
   assert(productGuide.includes('Neil 的 skill 小站') && productGuide.includes('网页内容不会自动加入 Agent Context'), 'guide does not explain the Skill Hub boundary');
   assert(appSource.includes('software-assistant-author-link') && appSource.includes('https://github.com/NeilBaumanMax'), 'assistant author link is missing');
   assert(preloadSource.includes("ipcRenderer.invoke('app:open-external', url)"), 'author link IPC is not exposed through preload');

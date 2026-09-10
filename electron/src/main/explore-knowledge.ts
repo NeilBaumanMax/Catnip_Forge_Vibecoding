@@ -84,6 +84,14 @@ function normalizeStoredCard(value: unknown, index: number): KnowledgeCard {
     verificationStatus: card.verificationStatus as KnowledgeVerificationStatus,
     verificationRecords: card.verificationRecords.map((record, recordIndex) =>
       normalizeVerificationRecord(record, `${label}.verificationRecords[${recordIndex}]`)),
+    origin: card.origin == null ? undefined : normalizeSaveKnowledgeCardInput({
+      source: card.source,
+      taskSummary: card.taskSummary,
+      tags: card.tags,
+      note: card.note,
+      associatedProjects: card.associatedProjects,
+      origin: card.origin,
+    }).origin,
   };
 }
 
@@ -149,6 +157,7 @@ export class ExploreKnowledgeStore {
       updatedAt: now,
       verificationStatus: 'unverified',
       verificationRecords: [],
+      origin: input.origin,
     };
     state.cards.unshift(card);
     this.writeState(state);
@@ -179,6 +188,15 @@ export class ExploreKnowledgeStore {
     card.updatedAt = record.createdAt;
     this.writeState(state);
     return clone(card);
+  }
+
+  delete(cardIdValue: unknown): KnowledgeCard[] {
+    const cardId = requiredText(cardIdValue, 'knowledge card id', 120);
+    const state = this.readState();
+    const nextCards = state.cards.filter((entry) => entry.id !== cardId);
+    if (nextCards.length === state.cards.length) throw new Error('Knowledge card was not found');
+    this.writeState({ version: 1, cards: nextCards });
+    return clone(nextCards);
   }
 
   findRelated(query: unknown, limit: unknown = 10): KnowledgeCard[] {
@@ -212,6 +230,7 @@ export class ExploreKnowledgeStore {
 export interface ExploreKnowledgeHandlers {
   list(): KnowledgeCard[];
   save(input: SaveKnowledgeCardInput): KnowledgeCard;
+  delete(cardId: string): KnowledgeCard[];
   addVerification(input: AddVerificationRecordInput): KnowledgeCard;
   findRelated(query: string, limit?: number): KnowledgeCard[];
   selectForContext(selectedIds: string[]): KnowledgeCard[];
@@ -221,6 +240,7 @@ export function createExploreKnowledgeHandlers(store = new ExploreKnowledgeStore
   return {
     list: () => store.list(),
     save: (input) => store.save(input),
+    delete: (cardId) => store.delete(cardId),
     addVerification: (input) => store.addVerification(input),
     findRelated: (query, limit) => store.findRelated(query, limit),
     selectForContext: (selectedIds) => store.selectForContext(selectedIds),
@@ -233,6 +253,7 @@ export function registerExploreKnowledgeIpc(
 ): void {
   registrar.handle('explore:knowledge:list', async () => handlers.list());
   registrar.handle('explore:knowledge:save', async (_event, input) => handlers.save(input));
+  registrar.handle('explore:knowledge:delete', async (_event, cardId: string) => handlers.delete(cardId));
   registrar.handle('explore:knowledge:addVerification', async (_event, input) => handlers.addVerification(input));
   registrar.handle('explore:knowledge:findRelated', async (_event, query: string, limit?: number) => handlers.findRelated(query, limit));
   registrar.handle('explore:knowledge:selectForContext', async (_event, selectedIds: string[]) => handlers.selectForContext(selectedIds));
