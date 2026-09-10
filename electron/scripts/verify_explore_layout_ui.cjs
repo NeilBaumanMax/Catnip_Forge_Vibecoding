@@ -104,7 +104,7 @@ async function measure(width, height, leftPercent, collapsed = false) {
     await wait(160);
     const panel = document.querySelector('.explore-panel');
     const entries = document.querySelector('.explore-entry-grid');
-    if (!panel || !entries) throw new Error('Explore home geometry missing');
+    if (!panel || !entries) return { missing: true, text: document.body.innerText.slice(0, 600), panelClass: panel?.className || '' };
     const panelWidth = panel.getBoundingClientRect().width;
     const entryColumns = getComputedStyle(entries).gridTemplateColumns.split(' ').filter(Boolean).length;
     return {
@@ -136,7 +136,7 @@ async function main() {
   ], { stdio: 'ignore' });
 
   const targets = await waitForJson(cdpList, (items) => items.some((item) => item.type === 'page'));
-  const target = targets.find((item) => item.type === 'page');
+  const target = targets.find((item) => item.type === 'page' && item.url.includes('127.0.0.1')) || targets.find((item) => item.type === 'page');
   socket = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((resolve, reject) => {
     socket.addEventListener('open', resolve, { once: true });
@@ -144,12 +144,12 @@ async function main() {
   });
   socket.addEventListener('message', (event) => {
     const message = JSON.parse(String(event.data));
-    if (message.method === 'Runtime.exceptionThrown') consoleErrors.push(message.params.exceptionDetails?.text || 'renderer exception');
+    if (message.method === 'Runtime.exceptionThrown') consoleErrors.push(message.params.exceptionDetails?.exception?.description || message.params.exceptionDetails?.text || 'renderer exception');
     if (message.method === 'Log.entryAdded' && message.params.entry?.level === 'error') consoleErrors.push(message.params.entry.text);
   });
   await call('Runtime.enable');
   await call('Log.enable');
-  await wait(1_800);
+  await wait(3_000);
 
   const setup = await evaluate(`(async () => {
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -165,7 +165,20 @@ async function main() {
       verificationStatus: 'verified_effective',
       verificationRecords: [{ id: 'verification-ui-smoke', status: 'verified_effective', projectId: 'hardboard/projects/demo', summary: '降低 SPI 时钟后实机显示恢复。', evidenceRefs: ['serial:42', 'build:7'], createdAt: new Date().toISOString() }],
     };
+    const sessions = [];
+    const makeSession = (mode) => ({
+      version: 1, id: 'explore-' + crypto.randomUUID(), projectId: 'project-ui-smoke', mode,
+      title: mode === 'idea' ? '新灵感探索' : '新问题调查', status: 'draft',
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      snapshot: { input: '', selectedContextIds: [], selectedKnowledgeIds: [], analysisRequest: null, analysisResult: null, planResult: null, planHandoff: null, selectedIdeaId: '', editingInput: true, gatheredContext: null, analysisTaskId: null, analysisRequestId: null, planTaskId: null, planRequestId: null, executionStarted: false, executionTaskId: null, executionDisposition: null, notice: '' },
+    });
     window.electronAPI = {
+      getStartupStatus: async () => ({ firstRun: false, playwrightReady: true }),
+      getProjectSessionStatus: async () => ({ projectsRoot: 'hardboard/projects', activeProject: { id: 'project-ui-smoke', name: 'demo', projectDir: 'hardboard/projects/demo', relativePath: 'hardboard/projects/demo', available: true }, suggestedProjectId: null, projects: [] }),
+      listExploreWorkSessions: async (mode) => sessions.filter((item) => !mode || item.mode === mode).map(({ snapshot, version, ...item }) => item),
+      createExploreWorkSession: async (mode) => { const item = makeSession(mode); sessions.unshift(item); return structuredClone(item); },
+      getExploreWorkSession: async (mode, id) => structuredClone(sessions.find((item) => item.mode === mode && item.id === id)),
+      saveExploreWorkSession: async (record) => { const index = sessions.findIndex((item) => item.id === record.id); if (index >= 0) sessions[index] = structuredClone(record); return structuredClone(record); },
       listExploreKnowledge: async () => [knowledge],
       findRelatedExploreKnowledge: async () => [knowledge],
       selectExploreKnowledgeForContext: async () => [knowledge],
@@ -215,7 +228,7 @@ async function main() {
       setBrowserBounds: async () => ({ ok: true }),
     };
     const exploreTab = document.querySelector('[data-tour-id="tab-explore"]');
-    if (!exploreTab) return { mounted: false, reason: 'Explore tab missing', text: document.body.innerText.slice(0, 400) };
+    if (!exploreTab) return { mounted: false, reason: 'Explore tab missing', url: location.href, readyState: document.readyState, text: document.body.innerText.slice(0, 400), html: document.documentElement.outerHTML.slice(0, 800) };
     exploreTab.click();
     for (let attempt = 0; attempt < 40 && !document.querySelector('.explore-panel'); attempt += 1) await wait(50);
     return {
@@ -224,7 +237,7 @@ async function main() {
       text: document.body.innerText.slice(0, 400),
     };
   })()`);
-  if (!setup?.mounted) throw new Error(`Explore panel did not mount: ${JSON.stringify(setup)}`);
+  if (!setup?.mounted) throw new Error(`Explore panel did not mount: ${JSON.stringify({ setup, consoleErrors })}`);
 
   const scenarios = [];
   for (const leftPercent of [24, 34, 45, 52]) scenarios.push(await measure(1920, 1080, leftPercent, false));
@@ -233,6 +246,7 @@ async function main() {
   scenarios.push(await measure(3840, 2160, 52, false));
   scenarios.push(await measure(1200, 900, 52, false));
   for (const scenario of scenarios) {
+    if (scenario.missing) throw new Error(`Explore home geometry missing: ${JSON.stringify(scenario)}`);
     const expectedEntries = scenario.expectedTier === 'compact' ? 1 : 2;
     if (scenario.entryColumns !== expectedEntries || !scenario.panelUsesWorkspace) {
       throw new Error(`home layout mismatch: ${JSON.stringify(scenario)}`);
@@ -271,11 +285,23 @@ async function main() {
       const style = getComputedStyle(document.querySelector('.explore-panel'));
       themes[theme] = { primary: style.getPropertyValue('--explore-primary').trim(), color: style.color, background: style.backgroundColor };
     }
+    document.querySelector('.explore-back-button').click();
+    await wait(50);
+    document.querySelector('[data-tour-id="explore-diagnosis"]').click();
+    await wait(100);
+    const returnPreserved = Boolean(document.querySelector('.explore-plan-steps'));
+    document.querySelector('[data-tour-id="tab-editor"]').click();
+    await wait(50);
+    document.querySelector('[data-tour-id="tab-explore"]').click();
+    await wait(100);
+    const workspaceSwitchPreserved = Boolean(document.querySelector('.explore-plan-steps'));
     return {
       panelWidth, formColumns, evidence, conflicts, sourceExcerpt, analysisStage, planStage,
       planSteps: document.querySelectorAll('.explore-plan-steps li').length,
       confirmEnabled: confirm && !confirm.disabled,
       priorResultCollapsed: !document.querySelector('.explore-prior-result')?.open,
+      returnPreserved,
+      workspaceSwitchPreserved,
       themes,
     };
   })()`);
@@ -283,6 +309,7 @@ async function main() {
   if (!flowResult.evidence.includes('80MHz') || !flowResult.conflicts.includes('官方时序') || !flowResult.sourceExcerpt.includes('来源摘要')) throw new Error(`diagnosis evidence UI incomplete: ${JSON.stringify(flowResult)}`);
   if (!flowResult.analysisStage.includes('查看结论') || !flowResult.planStage.includes('确认计划')) throw new Error(`stage navigation mismatch: ${JSON.stringify(flowResult)}`);
   if (flowResult.planSteps !== 2 || !flowResult.confirmEnabled || !flowResult.priorResultCollapsed) throw new Error(`plan focus/gate UI mismatch: ${JSON.stringify(flowResult)}`);
+  if (!flowResult.returnPreserved || !flowResult.workspaceSwitchPreserved) throw new Error(`Explore work was lost during navigation: ${JSON.stringify(flowResult)}`);
   if (!flowResult.themes.light.primary || flowResult.themes.light.primary === flowResult.themes.dark.primary) throw new Error(`theme tokens did not change: ${JSON.stringify(flowResult.themes)}`);
   if (consoleErrors.length) throw new Error(`renderer errors: ${JSON.stringify(consoleErrors)}`);
 
@@ -299,6 +326,11 @@ main().catch((error) => {
   try { socket?.close(); } catch {}
   killTree(chrome);
   killTree(vite);
+  try { chrome?.unref(); } catch {}
+  try { vite?.unref(); } catch {}
   const resolved = path.resolve(tempProfile);
-  if (resolved.startsWith(path.resolve(os.tmpdir()) + path.sep)) fs.rmSync(resolved, { recursive: true, force: true });
+  if (resolved.startsWith(path.resolve(os.tmpdir()) + path.sep)) {
+    try { fs.rmSync(resolved, { recursive: true, force: true, maxRetries: 8, retryDelay: 150 }); }
+    catch (error) { console.warn('temporary layout profile cleanup pending:', error.message); }
+  }
 });

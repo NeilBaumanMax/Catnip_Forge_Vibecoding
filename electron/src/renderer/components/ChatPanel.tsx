@@ -438,6 +438,7 @@ export default function ChatPanel({
   }, [messages]);
 
   const submit = (mode: TaskSubmitMode) => {
+    if (readOnlyConversation) return;
     const text = input.trim() || (attachments.length ? '请分析这些附件，并根据其中与当前任务相关的信息继续处理。' : '');
     if (!text) return;
     onSend({ text, skillRefs: skillReferencesFromText(text, skills), attachments }, mode);
@@ -480,6 +481,7 @@ export default function ChatPanel({
   const renderedExecutions = new Set<string>();
   const activeExecutionKey = taskStatus.activeTaskId ? `task:${taskStatus.activeTaskId}` : null;
   const activeConversation = conversations.find((conversation) => conversation.id === activeConversationId);
+  const readOnlyConversation = Boolean(activeConversation?.readOnly);
   const inputSkillRefs = useMemo(() => skillReferencesFromText(input, skills), [input, skills]);
   const visibleSkills = useMemo(() => {
     const query = skillQuery.trim().toLowerCase();
@@ -499,7 +501,7 @@ export default function ChatPanel({
         </div>
         <div className="chat-history-list">
           {conversations.map((conversation) => (
-            <div key={conversation.id} className={`chat-history-item${conversation.id === activeConversationId ? ' is-active' : ''}${conversation.pinned ? ' is-pinned' : ''}`}>
+            <div key={conversation.id} className={`chat-history-item${conversation.id === activeConversationId ? ' is-active' : ''}${conversation.pinned ? ' is-pinned' : ''}${conversation.readOnly ? ' is-read-only' : ''}`}>
               <button
                 type="button"
                 className="chat-history-select"
@@ -507,10 +509,10 @@ export default function ChatPanel({
                 onClick={() => onSelectConversation(conversation.id)}
                 title={conversation.title}
               >
-                <span>{conversation.pinned ? <i className="chat-history-pin" aria-hidden="true">●</i> : null}{conversation.title}</span>
+                <span>{conversation.pinned ? <i className="chat-history-pin" aria-hidden="true">●</i> : null}{conversation.title}{conversation.readOnly ? <i className="chat-history-read-only">未归属 · 只读</i> : null}</span>
                 <small>{conversationTime(conversation.updatedAt)} · {conversation.messageCount} 条</small>
               </button>
-              <div className="chat-history-menu-wrap">
+              {!conversation.readOnly ? <div className="chat-history-menu-wrap">
                 <button
                   type="button"
                   className="chat-history-more"
@@ -533,7 +535,7 @@ export default function ChatPanel({
                     <button type="button" role="menuitem" className="is-danger" onClick={() => { setOpenMenuId(null); setPendingDeleteId(conversation.id); }}>删除</button>
                   </div>
                 ) : null}
-              </div>
+              </div> : null}
               {renamingId === conversation.id ? (
                 <form className="chat-history-rename" onSubmit={(event) => event.preventDefault()}>
                   <input
@@ -668,6 +670,7 @@ export default function ChatPanel({
             className="nes-input"
             rows={2}
             value={input}
+            disabled={readOnlyConversation}
             onChange={(event) => {
               const next = event.target.value;
               const mention = mentionAtCaret(next, event.target.selectionStart ?? next.length);
@@ -708,7 +711,7 @@ export default function ChatPanel({
                 submit(taskStatus.busy ? 'guide' : 'auto');
               }
             }}
-            placeholder={taskStatus.busy ? '输入对当前任务的追加要求；Shift+Enter 换行' : '描述要交给 Agent 的任务；Shift+Enter 换行'}
+            placeholder={readOnlyConversation ? '这是未归属的旧历史，只能查看' : taskStatus.busy ? '输入对当前任务的追加要求；Shift+Enter 换行' : '描述要交给 Agent 的任务；Shift+Enter 换行'}
           />
         </div>
         <div className="chat-input-actions">
@@ -716,7 +719,7 @@ export default function ChatPanel({
             className="chat-attachment-button nes-btn"
             data-tour-id="attachment-button"
             type="button"
-            disabled={attachmentPicking || !activeConversationId || attachments.length >= 6}
+            disabled={readOnlyConversation || attachmentPicking || !activeConversationId || attachments.length >= 6}
             title="添加图片、PDF、Word、PPT 或文本附件"
             onClick={() => {
               if (!activeConversationId) return;
@@ -741,6 +744,7 @@ export default function ChatPanel({
               className={`chat-skill-button nes-btn${skillPickerOpen ? ' is-active' : ''}`}
               data-tour-id="skill-button"
               type="button"
+              disabled={readOnlyConversation}
               aria-haspopup="listbox"
               aria-expanded={skillPickerOpen}
               onClick={() => {
@@ -801,7 +805,7 @@ export default function ChatPanel({
               </div>
             ) : null}
           </div>
-          <button className="nes-btn is-primary" type="submit" disabled={!input.trim() && !attachments.length}>{taskStatus.busy ? '追加要求' : '发送'}</button>
+          <button className="nes-btn is-primary" type="submit" disabled={readOnlyConversation || (!input.trim() && !attachments.length)}>{taskStatus.busy ? '追加要求' : '发送'}</button>
           {taskStatus.busy ? <button className="nes-btn is-warning" type="button" disabled={!input.trim() && !attachments.length} onClick={() => submit('queue')}>排队</button> : null}
           {taskStatus.busy ? <button className="nes-btn is-error" type="button" onClick={onStop}>停止</button> : null}
         </div>

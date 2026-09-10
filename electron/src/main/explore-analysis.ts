@@ -3,25 +3,41 @@ import type { IpcMain } from 'electron';
 import { normalizeHandoffContext, type ExploreAnalysisStartResult, type ExploreExecutionStartResult, type ExplorePlanStartResult, type ExploreRequest, type SourceEvidence } from '../common/explore';
 import type { Orchestrator } from './worker/orchestrator';
 import { searchForExplore } from './explore-zhihu-search';
+import { requireActiveProject } from './project-session';
+
+let exploreRequestsInFlight = 0;
+
+export function isExploreRequestInFlight(): boolean {
+  return exploreRequestsInFlight > 0;
+}
 
 export function registerExploreAnalysisIpc(
   registrar: Pick<IpcMain, 'handle'>,
   orchestrator: Pick<Orchestrator, 'submitExploreAnalysis' | 'submitExplorePlan' | 'confirmExploreExecution'>,
   search = searchForExplore,
+  requireProject = requireActiveProject,
 ): void {
   registrar.handle('explore:analysis:start', async (_event, value: unknown): Promise<ExploreAnalysisStartResult> => {
-    const found: { request: ExploreRequest; sources: SourceEvidence[] } = await search(value);
-    const requestId = randomUUID();
-    const submitted = orchestrator.submitExploreAnalysis(found.request, requestId, undefined, found.sources);
-    return {
-      ok: true,
-      taskId: submitted.taskId,
-      requestId,
-      disposition: submitted.disposition === 'queued' ? 'queued' : 'started',
-      sourceCount: found.sources.length,
-    };
+    const project = requireProject();
+    exploreRequestsInFlight += 1;
+    try {
+      const found: { request: ExploreRequest; sources: SourceEvidence[] } = await search(value);
+      if (requireProject().id !== project.id) throw new Error('探索期间当前工程已改变，请重新发起分析');
+      const requestId = randomUUID();
+      const submitted = orchestrator.submitExploreAnalysis(found.request, requestId, undefined, found.sources);
+      return {
+        ok: true,
+        taskId: submitted.taskId,
+        requestId,
+        disposition: submitted.disposition === 'queued' ? 'queued' : 'started',
+        sourceCount: found.sources.length,
+      };
+    } finally {
+      exploreRequestsInFlight -= 1;
+    }
   });
   registrar.handle('explore:handoff:execute', async (_event, value: unknown): Promise<ExploreExecutionStartResult> => {
+    requireProject();
     const submitted = orchestrator.confirmExploreExecution(value);
     return {
       ok: true,
@@ -30,6 +46,7 @@ export function registerExploreAnalysisIpc(
     };
   });
   registrar.handle('explore:handoff:plan', async (_event, value: unknown): Promise<ExplorePlanStartResult> => {
+    requireProject();
     const handoff = normalizeHandoffContext(value);
     const requestId = randomUUID();
     const submitted = orchestrator.submitExplorePlan(handoff, requestId);

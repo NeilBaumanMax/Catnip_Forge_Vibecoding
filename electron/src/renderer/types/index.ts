@@ -1,4 +1,7 @@
 import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreAnalysisStartResult, ExploreContextGatherRequest, ExploreContextGatherResult, ExploreExecutionConfirmRequest, ExploreExecutionStartResult, ExplorePlanStartResult, ExploreRequest, ExploreRequestPreparation, ExploreZhihuConnectionLaunchResult, ExploreZhihuConnectionStatus, ExploreZhihuSetupResult, HandoffContext, KnowledgeCard, SaveKnowledgeCardInput } from '../../common/explore';
+import type { ExploreWorkSessionRecord, ExploreWorkSessionSummary, ProjectSessionStatus, ProjectSummary } from '../../common/project-session';
+
+export type { ExploreWorkSessionRecord, ExploreWorkSessionSummary, ProjectSessionStatus, ProjectSummary } from '../../common/project-session';
 
 export type ChatMessageKind = 'conversation' | 'progress' | 'detail' | 'status';
 
@@ -47,6 +50,7 @@ export interface ChatConversationSummary {
   updatedAt: string;
   messageCount: number;
   turnCount: number;
+  readOnly?: boolean;
 }
 
 export interface ChatConversation {
@@ -57,6 +61,7 @@ export interface ChatConversation {
   updatedAt: string;
   turnCount: number;
   messages: ChatMessage[];
+  readOnly?: boolean;
 }
 
 export type TaskSubmitMode = 'auto' | 'guide' | 'queue';
@@ -288,6 +293,9 @@ export interface WindowAPI {
   getStartupStatus: () => Promise<StartupStatus>;
   saveStartupApiKey: (key: string, qwenKey?: string) => Promise<{ ok: boolean; qwenSaved: boolean; restarting: boolean; status: Pick<StartupStatus, 'apiKeyReady' | 'qwenApiKeyReady' | 'playwrightReady' | 'firstRun'> }>;
   askSoftwareAssistant: (messages: Array<Pick<SoftwareAssistantMessage, 'role' | 'content'>>) => Promise<{ ok: true; text: string }>;
+  getProjectSessionStatus: () => Promise<ProjectSessionStatus>;
+  activateProjectSession: (projectId: string) => Promise<ProjectSessionStatus & { ok: true }>;
+  createProjectSession: (name: string) => Promise<ProjectSessionStatus & { ok: true; createdProject: ProjectSummary }>;
   sendMessage: (request: AgentTaskInput, mode?: TaskSubmitMode, conversationId?: string, messageId?: string, timestamp?: number) => Promise<TaskSubmitResult & { message?: ChatMessage }>;
   onMessage: (cb: (msg: { id?: string; text: string; timestamp: number; kind?: ChatMessageKind; toolName?: string; error?: boolean; taskId?: string | null; conversationId?: string }) => void) => void;
   listChatConversations: () => Promise<{ activeConversationId: string; conversations: ChatConversationSummary[] }>;
@@ -328,6 +336,11 @@ export interface WindowAPI {
   addExploreKnowledgeVerification: (input: AddVerificationRecordInput) => Promise<KnowledgeCard>;
   findRelatedExploreKnowledge: (query: string, limit?: number) => Promise<KnowledgeCard[]>;
   selectExploreKnowledgeForContext: (selectedIds: string[]) => Promise<KnowledgeCard[]>;
+  listExploreWorkSessions: (mode?: 'idea' | 'diagnosis') => Promise<ExploreWorkSessionSummary[]>;
+  createExploreWorkSession: (mode: 'idea' | 'diagnosis') => Promise<ExploreWorkSessionRecord>;
+  getExploreWorkSession: (mode: 'idea' | 'diagnosis', id: string) => Promise<ExploreWorkSessionRecord>;
+  saveExploreWorkSession: (session: ExploreWorkSessionRecord) => Promise<ExploreWorkSessionRecord>;
+  deleteExploreWorkSession: (mode: 'idea' | 'diagnosis', id: string) => Promise<ExploreWorkSessionSummary[]>;
   getExploreZhihuStatus: () => Promise<ExploreZhihuConnectionStatus>;
   installExploreZhihuConnection: () => Promise<ExploreZhihuSetupResult>;
   beginExploreZhihuConnection: () => Promise<ExploreZhihuConnectionLaunchResult>;
@@ -335,7 +348,7 @@ export interface WindowAPI {
   prepareExploreRequest: (request: ExploreRequest) => Promise<ExploreRequestPreparation>;
   startExploreAnalysis: (request: ExploreRequest) => Promise<ExploreAnalysisStartResult>;
   onExploreAnalysisResult: (cb: (result: ExploreAnalysisResult) => void) => void;
-  onExploreAnalysisError: (cb: (result: { mode: 'analysis' | 'plan'; message: string }) => void) => void;
+  onExploreAnalysisError: (cb: (result: { mode: 'analysis' | 'plan'; requestId?: string; message: string }) => void) => void;
   startExplorePlan: (handoff: HandoffContext) => Promise<ExplorePlanStartResult>;
   confirmExploreExecution: (request: ExploreExecutionConfirmRequest) => Promise<ExploreExecutionStartResult>;
   isWorkbenchSmokeTest?: boolean;

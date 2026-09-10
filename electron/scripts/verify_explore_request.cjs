@@ -31,7 +31,7 @@ async function main() {
   assert.throws(() => prepareExploreRequest({ ...base, mode: 'idea', goal: ' ' }, connected), /required/);
 
   const registrations = new Map();
-  registerExploreRequestIpc({ handle: (channel, handler) => registrations.set(channel, handler) }, async () => connected);
+  registerExploreRequestIpc({ handle: (channel, handler) => registrations.set(channel, handler) }, async () => connected, () => ({ id: 'project-test', projectDir: 'hardboard/projects/test' }));
   assert(registrations.has('explore:request:prepare'));
   const ipcResult = await registrations.get('explore:request:prepare')({}, { ...base, mode: 'idea' });
   assert.equal(ipcResult.state, 'ready');

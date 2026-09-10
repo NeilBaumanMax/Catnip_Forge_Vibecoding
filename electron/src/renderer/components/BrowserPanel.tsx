@@ -3,9 +3,11 @@ import { createPortal } from 'react-dom';
 import WorkspacePanel from './WorkspacePanel';
 import CodeEditor from './CodeEditor';
 import ExplorePanel, { type ExploreDiagnosisSeed } from './ExplorePanel';
-import type { BrowserTab, HardboardDevice, HardboardRuntimeState, RecordingSummary, RuntimeEvent, SerialMonitorEvent, SerialMonitorSnapshot, WorkbenchItem, WorkbenchOverview } from '../types';
+import type { BrowserTab, HardboardDevice, HardboardRuntimeState, ProjectSummary, RecordingSummary, RuntimeEvent, SerialMonitorEvent, SerialMonitorSnapshot, WorkbenchItem, WorkbenchOverview } from '../types';
 
 interface Props {
+  activeProject: ProjectSummary | null;
+  onRequestProjectChange: () => void;
   url: string;
   onNavigate: (url: string) => void;
   tabs: BrowserTab[];
@@ -62,10 +64,6 @@ interface ExplorerDialog {
   mode: 'create-file' | 'create-dir' | 'rename' | 'delete';
   item: WorkbenchItem;
   parentPath: string;
-  value: string;
-}
-
-interface ProjectOption {
   value: string;
 }
 
@@ -128,6 +126,12 @@ function relativeProjectPath(value: string): string {
   const match = normalized.match(/(?:^|\/)hardboard\/projects\/([^/]+)|(?:^|\/)projects\/([^/]+)/i);
   const name = match?.[1] || match?.[2];
   return name ? `hardboard/projects/${name}` : value || 'unknown';
+}
+
+function projectPathMatches(value: string | null | undefined, project: ProjectSummary | null): boolean {
+  if (!value || !project) return false;
+  const normalized = relativeProjectPath(value).replace(/\\/g, '/').toLowerCase();
+  return normalized === project.relativePath.replace(/\\/g, '/').toLowerCase();
 }
 
 function taskStatusLabel(status: TaskHistoryItem['status']): string {
@@ -228,6 +232,8 @@ function eventText(event: RuntimeEvent): string {
 }
 
 export default function BrowserPanel({
+  activeProject,
+  onRequestProjectChange,
   url,
   onNavigate,
   tabs,
@@ -268,7 +274,7 @@ export default function BrowserPanel({
   const [runtimeState, setRuntimeState] = useState<HardboardRuntimeState | null>(null);
   const [runtimeEvents, setRuntimeEvents] = useState<RuntimeEvent[]>([]);
   const [runtimePollGeneration, setRuntimePollGeneration] = useState(0);
-  const [projectDir, setProjectDir] = useState('');
+  const projectDir = activeProject?.projectDir || '';
   const [runtimeMessage, setRuntimeMessage] = useState('');
   const [clearingRuntimeHistory, setClearingRuntimeHistory] = useState(false);
   const [runtimeClearFeedback, setRuntimeClearFeedback] = useState('');
@@ -287,6 +293,7 @@ export default function BrowserPanel({
   const [explorerContextMenu, setExplorerContextMenu] = useState<ExplorerContextMenu | null>(null);
   const [explorerDialog, setExplorerDialog] = useState<ExplorerDialog | null>(null);
   const [exploreDiagnosisSeed, setExploreDiagnosisSeed] = useState<ExploreDiagnosisSeed | null>(null);
+  const [exploreMounted, setExploreMounted] = useState(false);
   const [editorFontSize, setEditorFontSize] = useState(() => {
     const stored = Number(window.localStorage.getItem(EDITOR_FONT_SIZE_KEY));
     return Number.isFinite(stored) && stored >= EDITOR_FONT_SIZE_MIN && stored <= EDITOR_FONT_SIZE_MAX ? stored : 13;
@@ -303,19 +310,25 @@ export default function BrowserPanel({
   );
   const activeTab = visibleTabs.find((tab) => tab.active) ?? null;
   const selectedTab = visibleTabs.find((tab) => tab.id === selectedTabId) ?? activeTab ?? null;
-  const projectOptions = useMemo<ProjectOption[]>(() => {
-    return (workbench?.hardboardProjects || [])
-      .map((name) => ({ value: `hardboard/projects/${name}` }));
-  }, [workbench]);
   const explorerRoots = useMemo(() => {
-    const seen = new Set<string>();
-    return (workbench?.sections || []).filter((section) => {
-      if (!section.folderPath || seen.has(section.folderPath)) return false;
-      seen.add(section.folderPath);
-      return true;
-    });
-  }, [workbench]);
-  const availableRuntimeEvents = runtimeEvents.length ? runtimeEvents : runtimeState?.recent || [];
+    if (!activeProject) return [];
+    return [{
+      id: 'active-project',
+      title: activeProject.name,
+      description: '当前工作工程',
+      folderPath: activeProject.projectDir,
+      items: [],
+      emptyText: '工程为空',
+    }];
+  }, [activeProject]);
+  const allRuntimeEvents = runtimeEvents.length ? runtimeEvents : runtimeState?.recent || [];
+  const availableRuntimeEvents = useMemo(() => allRuntimeEvents.filter((event) => {
+    const payloadProject = event.payload?.task && typeof event.payload.task === 'object'
+      ? (event.payload.task as Record<string, unknown>).projectDir
+      : undefined;
+    const eventProject = event.projectDir || (typeof payloadProject === 'string' ? payloadProject : '');
+    return projectPathMatches(eventProject, activeProject);
+  }), [activeProject, allRuntimeEvents]);
   const visibleRuntimeEvents = useMemo(() => availableRuntimeEvents.slice(-500), [availableRuntimeEvents]);
   const liveLogEvents = useMemo(
     () => visibleRuntimeEvents.filter((event) => event.seq > liveLogClearedSeq),
@@ -461,7 +474,7 @@ export default function BrowserPanel({
         // legacy duplicate/regressed sequences. Stable event ids deduplicate it.
         const result = await window.electronAPI?.getHardboardRuntimeEvents?.(0);
         if (!result || cancelled || generation !== runtimePollGenerationRef.current) return;
-        setRuntimeState(result.state);
+        setRuntimeState(projectPathMatches(result.state.activeProjectDir, activeProject) ? result.state : null);
         setRuntimeEvents((current) => mergeRuntimeEventWindow(current, result.events));
         setRuntimeMessage((current) => current.startsWith('事件订阅读取失败：') ? '' : current);
       } catch (error) {
@@ -478,13 +491,7 @@ export default function BrowserPanel({
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [projectDir, runtimePollGeneration]);
-
-  useEffect(() => {
-    if (!projectDir && projectOptions[0]) {
-      setProjectDir(projectOptions[0].value);
-    }
-  }, [projectDir, projectOptions]);
+  }, [activeProject, projectDir, runtimePollGeneration]);
 
   useEffect(() => {
     if (mode !== 'editor' || !explorerRoots.length) return;
@@ -492,6 +499,22 @@ export default function BrowserPanel({
     setExplorerExpandedPaths((current) => [...new Set([...current, ...rootPaths])]);
     for (const rootPath of rootPaths) void loadExplorerDirectory(rootPath);
   }, [explorerRoots, loadExplorerDirectory, mode]);
+
+  useEffect(() => {
+    setEditorTabs([]);
+    setActiveEditorFile('');
+    setExplorerChildren({});
+    setExplorerExpandedPaths([]);
+    setExplorerMessage(activeProject ? `已切换到工程：${activeProject.name}` : '尚未选择工作工程');
+    setTaskLogFocus(null);
+    setRuntimeCard(null);
+    setRuntimeState(null);
+    setRuntimeEvents([]);
+    runtimePollGenerationRef.current += 1;
+    setRuntimePollGeneration(runtimePollGenerationRef.current);
+    setSerialText('');
+    setExploreDiagnosisSeed(null);
+  }, [activeProject?.id]);
 
   useEffect(() => {
     serialBottomRef.current?.scrollIntoView({ block: 'end' });
@@ -802,7 +825,7 @@ export default function BrowserPanel({
   const progressValue = runtimeState?.progress ?? 0;
   const runtimeBusy = runtimeState?.status === 'running';
   const selectedPort = selectedDevicePort || serialPort;
-  const hasSelectedProject = projectOptions.some((project) => project.value === projectDir);
+  const hasSelectedProject = Boolean(activeProject && projectDir);
   const buildStatusTone = !hasSelectedProject
     ? 'needs-input'
     : runtimeState?.phase === 'build' ? runtimeState.status : 'idle';
@@ -820,14 +843,24 @@ export default function BrowserPanel({
   };
 
   const openExploreHome = () => {
+    setExploreMounted(true);
     setExploreDiagnosisSeed(null);
     setMode('explore');
   };
 
   const openExploreDiagnosis = (problem: string, diagnosisProjectDir?: string) => {
-    if (diagnosisProjectDir) setProjectDir(relativeProjectPath(diagnosisProjectDir));
+    if (diagnosisProjectDir && !projectPathMatches(diagnosisProjectDir, activeProject)) {
+      setRuntimeMessage('该记录属于其他工程，请先切换到对应工程后再分析');
+      return;
+    }
+    setExploreMounted(true);
     setExploreDiagnosisSeed({ id: Date.now(), problem });
     setMode('explore');
+  };
+
+  const requestProjectChange = () => {
+    if (editorTabs.some((tab) => tab.dirty) && !window.confirm('当前工程有未保存的编辑。切换工程会关闭这些编辑，确定继续吗？')) return;
+    onRequestProjectChange();
   };
 
   const analyzeSerialProblem = () => {
@@ -908,6 +941,9 @@ export default function BrowserPanel({
         <button data-tour-id="tab-tasks" type="button" role="tab" aria-selected={mode === 'tasks'} className={`nes-btn${mode === 'tasks' ? ' is-primary' : ''}`} onClick={() => setMode('tasks')}>任务管理器</button>
         <button data-tour-id="tab-editor" type="button" role="tab" aria-selected={mode === 'editor'} className={`nes-btn${mode === 'editor' ? ' is-primary' : ''}`} onClick={() => setMode('editor')}>编辑器</button>
         <button data-tour-id="tab-explore" type="button" role="tab" aria-selected={mode === 'explore'} className={`nes-btn${mode === 'explore' ? ' is-primary' : ''}`} onClick={openExploreHome}>探索</button>
+        <button className="active-project-switch" type="button" onClick={requestProjectChange} title={projectDir || '尚未选择工程'}>
+          <span>当前工程</span><strong>{activeProject?.name || '请选择'}</strong>
+        </button>
         <span className="ui-build-label">{UI_BUILD_LABEL}</span>
       </div>
 
@@ -996,14 +1032,15 @@ export default function BrowserPanel({
         </div>
       ) : null}
 
-      {mode === 'explore' ? (
+      {exploreMounted ? <div className="explore-panel-host" hidden={mode !== 'explore'}>
         <ExplorePanel
-          currentProject={projectDir || runtimeState?.activeProjectDir || ''}
+          projectId={activeProject?.id || ''}
+          currentProject={projectDir}
           hardwareSummary={hardboardDevices.length ? `已检测到 ${hardboardDevices.length} 个设备` : '未检测到开发板'}
           runtimeSummary={runtimeState && runtimeState.status !== 'idle' ? `${runtimeState.phase} · ${runtimeState.status}` : '暂无运行记录'}
           diagnosisSeed={exploreDiagnosisSeed}
         />
-      ) : null}
+      </div> : null}
 
       {mode === 'monitor' ? (
         <div className="serial-monitor serial-assistant" data-tour-id="panel-monitor">
@@ -1107,12 +1144,9 @@ export default function BrowserPanel({
               <div className="compile-control-row compile-control-row--build nes-container is-rounded" data-tour-id="task-build-controls">
                 <strong>Build</strong>
                 <button className="nes-btn compile-refresh-button" type="button" onClick={onRefreshWorkbench}>刷新工程</button>
-                <select className="nes-select project-select" value={projectDir} onChange={(e) => setProjectDir(e.target.value)}>
-                  <option value="">请选择 hardboard 工程</option>
-                  {projectOptions.map((project) => (
-                    <option key={project.value} value={project.value}>{project.value}</option>
-                  ))}
-                </select>
+                <button className="nes-btn project-select" type="button" onClick={requestProjectChange}>
+                  {activeProject ? activeProject.name : '选择工作工程'}
+                </button>
                 <button className="nes-btn is-warning" type="button" onClick={handleManualBuild} disabled={!hasSelectedProject || runtimeBusy}>编译</button>
                 <span className={`compile-action-status is-${buildStatusTone}`} aria-live="polite">
                   {!hasSelectedProject ? '请先选择工作工程' : runtimeState?.phase === 'build' ? `${runtimeState.status} · ${progressValue}%` : '等待编译'}

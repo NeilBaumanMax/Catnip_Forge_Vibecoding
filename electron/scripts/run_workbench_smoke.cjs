@@ -18,6 +18,9 @@ const child = spawn(process.execPath, [electronCli, '--disable-gpu', `--user-dat
   cwd: root,
   env: {
     ...process.env,
+    APPDATA: smokeUserData,
+    LOCALAPPDATA: smokeUserData,
+    VIBEIDE_SMOKE_APP_DATA: smokeUserData,
     NODE_ENV: 'production',
     VIBEIDE_SMOKE_WORKBENCH_OPEN: '1',
     VIBEIDE_SMOKE_RESULT_FILE: resultFile,

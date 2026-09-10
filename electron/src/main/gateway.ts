@@ -31,8 +31,10 @@ import { pickChatAttachments, validateAttachmentReferences } from './attachment-
 import { registerExploreKnowledgeIpc } from './explore-knowledge';
 import { registerExploreZhihuStatusIpc } from './explore-zhihu-status';
 import { registerExploreRequestIpc } from './explore-request';
-import { registerExploreAnalysisIpc } from './explore-analysis';
+import { isExploreRequestInFlight, registerExploreAnalysisIpc } from './explore-analysis';
 import { registerExploreContextIpc } from './explore-context';
+import { registerExploreSessionIpc } from './explore-session';
+import { activateProject, assertPathInActiveProject, createProject, getProjectSessionStatus, requireActiveProject } from './project-session';
 
 export function startGateway(mainWindow: BrowserWindow): void {
   // Gateway 提供 pushUI 能力 — Worker 通过它推消息到 UI
@@ -91,9 +93,35 @@ export function startGateway(mainWindow: BrowserWindow): void {
   registerExploreRequestIpc(ipcMain);
   registerExploreAnalysisIpc(ipcMain, orch);
   registerExploreContextIpc(ipcMain);
+  registerExploreSessionIpc(ipcMain);
+
+  const assertProjectSwitchSafe = async () => {
+    if (isExploreRequestInFlight()) throw new Error('Explore 正在检索来源，请等待完成后再切换工程');
+    const task = orch.getTaskStatus();
+    if (task.busy || task.queueLength > 0) throw new Error('Agent 或 Explore 仍有运行/排队任务，请完成或停止后再切换工程');
+    const serial = readSharedSerialMonitor();
+    if (serial.running || serial.opening) throw new Error('串口仍在打开，请关闭串口后再切换工程');
+    const runtime = await readHardboardRuntimeEvents(0) as { state?: { status?: string } };
+    if (runtime.state?.status === 'running') throw new Error('Build 或 Flash 正在运行，完成后才能切换工程');
+  };
+
+  ipcMain.handle('project:session:status', async () => getProjectSessionStatus());
+
+  ipcMain.handle('project:session:activate', async (_event, projectId: string) => {
+    await assertProjectSwitchSafe();
+    orch.resetAgentConversation();
+    return { ok: true, ...activateProject(projectId) };
+  });
+
+  ipcMain.handle('project:session:create', async (_event, name: string) => {
+    await assertProjectSwitchSafe();
+    orch.resetAgentConversation();
+    return { ok: true, ...createProject(name) };
+  });
 
   // 聊天 — 委托 Worker
   ipcMain.handle('chat:send', async (_event, request: string | AgentTaskInput, mode?: TaskSubmitMode, conversationId?: string, messageId?: string, timestamp?: number) => {
+    requireActiveProject();
     const input = normalizeAgentTaskInput(request);
     const store = listChatConversations();
     const targetConversationId = conversationId || store.activeConversationId;
@@ -115,37 +143,49 @@ export function startGateway(mainWindow: BrowserWindow): void {
   });
 
   ipcMain.handle('chat:attachments:pick', async (_event, conversationId: string) => {
+    requireActiveProject();
     return pickChatAttachments(mainWindow, conversationId);
   });
 
-  ipcMain.handle('chat:conversations:list', async () => listChatConversations());
+  ipcMain.handle('chat:conversations:list', async () => {
+    requireActiveProject();
+    return listChatConversations();
+  });
 
-  ipcMain.handle('chat:conversations:get', async (_event, id?: string) => getChatConversation(id));
+  ipcMain.handle('chat:conversations:get', async (_event, id?: string) => {
+    requireActiveProject();
+    return getChatConversation(id);
+  });
 
   ipcMain.handle('chat:conversations:create', async () => {
+    requireActiveProject();
     if (orch.getTaskStatus().busy) throw new Error('Agent 正在工作，完成或停止后才能新建对话');
     orch.resetAgentConversation();
     return createChatConversation();
   });
 
   ipcMain.handle('chat:conversations:activate', async (_event, id: string) => {
+    requireActiveProject();
     if (orch.getTaskStatus().busy) throw new Error('Agent 正在工作，完成或停止后才能切换历史对话');
     orch.resetAgentConversation();
     return activateChatConversation(id);
   });
 
   ipcMain.handle('chat:conversations:delete', async (_event, id: string) => {
+    requireActiveProject();
     if (orch.getTaskStatus().busy) throw new Error('Agent 正在工作，完成或停止后才能删除对话');
     orch.resetAgentConversation();
     return deleteChatConversation(id);
   });
 
   ipcMain.handle('chat:conversations:rename', async (_event, id: string, title: string) => {
+    requireActiveProject();
     if (orch.getTaskStatus().busy) throw new Error('Agent 正在工作，完成或停止后才能重命名对话');
     return renameChatConversation(id, title);
   });
 
   ipcMain.handle('chat:conversations:pin', async (_event, id: string, pinned: boolean) => {
+    requireActiveProject();
     if (orch.getTaskStatus().busy) throw new Error('Agent 正在工作，完成或停止后才能调整置顶');
     return setChatConversationPinned(id, pinned);
   });
@@ -214,26 +254,32 @@ export function startGateway(mainWindow: BrowserWindow): void {
   });
 
   ipcMain.handle('workbench:readFile', async (_event, targetPath: string) => {
+    assertPathInActiveProject(targetPath);
     return readWorkbenchFile(targetPath);
   });
 
   ipcMain.handle('workbench:listDirectory', async (_event, targetPath: string) => {
+    assertPathInActiveProject(targetPath);
     return listWorkbenchDirectory(targetPath);
   });
 
   ipcMain.handle('workbench:writeFile', async (_event, targetPath: string, text: string) => {
+    assertPathInActiveProject(targetPath);
     return writeWorkbenchFile(targetPath, text);
   });
 
   ipcMain.handle('workbench:createEntry', async (_event, parentPath: string, name: string, kind: 'file' | 'dir') => {
+    assertPathInActiveProject(parentPath);
     return createWorkbenchEntry(parentPath, name, kind);
   });
 
   ipcMain.handle('workbench:renameEntry', async (_event, targetPath: string, nextName: string) => {
+    assertPathInActiveProject(targetPath);
     return renameWorkbenchEntry(targetPath, nextName);
   });
 
   ipcMain.handle('workbench:deleteEntry', async (_event, targetPath: string) => {
+    assertPathInActiveProject(targetPath);
     return deleteWorkbenchEntry(targetPath);
   });
 
@@ -351,11 +397,13 @@ export function startGateway(mainWindow: BrowserWindow): void {
   });
 
   ipcMain.handle('hardboard:buildStart', async (_event, options?: { projectDir?: string; cmakeFile?: string; configFile?: string; sourceFile?: string }) => {
-    return startHardboardBuild(options);
+    const project = requireActiveProject();
+    return startHardboardBuild({ ...options, projectDir: project.projectDir });
   });
 
   ipcMain.handle('hardboard:flashStart', async (_event, options: { projectDir?: string; port: string; artifactFile?: string; configFile?: string }) => {
-    return startHardboardFlash(options);
+    const project = requireActiveProject();
+    return startHardboardFlash({ ...options, projectDir: project.projectDir });
   });
 
   ipcMain.handle('hardboard:readSource', async (_event, targetPath: string) => {
@@ -363,6 +411,7 @@ export function startGateway(mainWindow: BrowserWindow): void {
   });
 
   ipcMain.handle('hardboard:serialStart', async (_event, options: { port: string; baudRate: number; encoding: string }) => {
+    requireActiveProject();
     const result = await startSharedSerialMonitor(options, 'ui');
     return { ...result, ...readSharedSerialMonitor() };
   });

@@ -51,6 +51,7 @@ async function main() {
       },
     },
     async (value) => ({ request: value, sources: [source('zhihu', '社区', 'https://www.zhihu.com/question/1')] }),
+    () => ({ id: 'project-test', projectDir: 'hardboard/projects/test' }),
   );
   const request = { mode: 'idea', goal: '桌面设备', context: { items: [] } };
   const started = await registrations.get('explore:analysis:start')({}, request);

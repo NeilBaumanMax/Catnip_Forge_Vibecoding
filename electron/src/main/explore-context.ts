@@ -5,6 +5,7 @@ import type { ExploreContextCandidate, ExploreContextGatherRequest, ExploreConte
 import { getHardboardDir } from './paths';
 import { readHardboardRuntimeEvents } from './hardboard';
 import { readSharedSerialMonitor } from './serial-monitor-controller';
+import { requireActiveProject } from './project-session';
 
 const MAX_DEPTH = 5;
 const MAX_SOURCE_FILES = 6;
@@ -222,6 +223,12 @@ export async function gatherExploreContext(value: unknown, dependencies: GatherD
   };
 }
 
-export function registerExploreContextIpc(registrar: Pick<IpcMain, 'handle'>): void {
-  registrar.handle('explore:context:gather', async (_event, value: unknown) => gatherExploreContext(value));
+export function registerExploreContextIpc(
+  registrar: Pick<IpcMain, 'handle'>,
+  requireProject = requireActiveProject,
+): void {
+  registrar.handle('explore:context:gather', async () => {
+    const project = requireProject();
+    return gatherExploreContext({ projectDir: project.projectDir });
+  });
 }

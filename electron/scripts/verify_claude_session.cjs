@@ -1,8 +1,35 @@
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { app } = require('electron');
 
 async function main() {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'catnip-project-chat-'));
+  const projectsRoot = path.join(tempRoot, 'projects');
+  const sessionsRoot = path.join(tempRoot, 'sessions');
+  const legacySessionFile = path.join(tempRoot, 'legacy', 'session.json');
+  fs.mkdirSync(path.join(projectsRoot, 'alpha'), { recursive: true });
+  fs.mkdirSync(path.join(projectsRoot, 'beta'), { recursive: true });
+  fs.mkdirSync(path.dirname(legacySessionFile), { recursive: true });
+  const legacyConversationId = 'conversation-legacy-unassigned';
+  const legacyTimestamp = new Date(0).toISOString();
+  fs.writeFileSync(legacySessionFile, JSON.stringify({
+    version: 2,
+    activeConversationId: legacyConversationId,
+    conversations: [{
+      id: legacyConversationId,
+      title: 'Legacy unassigned history',
+      pinned: true,
+      createdAt: legacyTimestamp,
+      updatedAt: legacyTimestamp,
+      turnCount: 0,
+      turns: [],
+      messages: [{ id: 'legacy-message', text: 'legacy data remains readable', role: 'user', timestamp: 0 }],
+    }],
+  }), 'utf8');
+  process.env.CATNIP_PROJECTS_ROOT = projectsRoot;
+  process.env.CATNIP_PROJECT_SESSIONS_ROOT = sessionsRoot;
+  process.env.CATNIP_LEGACY_SESSION_FILE = legacySessionFile;
   await app.whenReady();
 
   const {
@@ -19,9 +46,14 @@ async function main() {
     setChatConversationPinned,
     activateChatConversation,
   } = require('../dist/main/worker/session-store.js');
+  const { activateProject, getProjectSessionStatus } = require('../dist/main/project-session.js');
 
+  const projects = getProjectSessionStatus().projects;
+  const alpha = projects.find((project) => project.name === 'alpha');
+  const beta = projects.find((project) => project.name === 'beta');
+  if (!alpha || !beta) throw new Error('isolated projects were not discovered');
+  activateProject(alpha.id);
   const sessionFile = getClaudeSessionFile();
-  const backup = fs.existsSync(sessionFile) ? fs.readFileSync(sessionFile, 'utf-8') : null;
   fs.mkdirSync(path.dirname(sessionFile), { recursive: true });
 
   try {
@@ -70,8 +102,27 @@ async function main() {
     }, another.id);
     activateChatConversation(first.id);
     const list = listChatConversations();
-    if (list.conversations.length !== 2 || list.activeConversationId !== first.id) {
+    const writableList = list.conversations.filter((conversation) => !conversation.readOnly);
+    const legacySummary = list.conversations.find((conversation) => conversation.id === legacyConversationId);
+    if (writableList.length !== 2 || list.activeConversationId !== first.id) {
       throw new Error('multi-conversation list or activation failed');
+    }
+    if (!legacySummary?.readOnly || legacySummary.pinned) {
+      throw new Error('legacy history was not exposed as an unassigned read-only conversation');
+    }
+    const legacyConversation = getChatConversation(legacyConversationId);
+    if (!legacyConversation.readOnly || legacyConversation.messages[0]?.id !== 'legacy-message') {
+      throw new Error('legacy unassigned conversation could not be read');
+    }
+    for (const mutateLegacy of [
+      () => activateChatConversation(legacyConversationId),
+      () => appendChatMessage(legacyConversationId, { id: 'forbidden', text: 'must not write', role: 'user', timestamp: Date.now() }),
+      () => renameChatConversation(legacyConversationId, 'must not rename'),
+      () => deleteChatConversation(legacyConversationId),
+    ]) {
+      let rejected = false;
+      try { mutateLegacy(); } catch { rejected = true; }
+      if (!rejected) throw new Error('legacy read-only history accepted a mutation');
     }
     if (buildClaudeSessionContext(first.id).text.includes('conversation-b-user')) {
       throw new Error('conversation contexts leaked into each other');
@@ -83,17 +134,33 @@ async function main() {
       throw new Error('conversation rename or pin failed');
     }
     const afterDelete = deleteChatConversation(another.id);
-    if (afterDelete.conversations.length !== 1 || afterDelete.activeConversationId !== first.id) {
+    if (afterDelete.conversations.filter((conversation) => !conversation.readOnly).length !== 1 || afterDelete.activeConversationId !== first.id) {
       throw new Error('conversation deletion failed');
     }
 
-    console.log(`session smoke ok: ${second.id} turns=${second.turnCount} conversations=${afterDelete.conversations.length}`);
-  } finally {
-    if (backup == null) {
-      fs.rmSync(sessionFile, { force: true });
-    } else {
-      fs.writeFileSync(sessionFile, backup, 'utf-8');
+    activateProject(beta.id);
+    const betaList = listChatConversations();
+    const betaConversation = getChatConversation(betaList.activeConversationId);
+    if (betaList.conversations.filter((conversation) => !conversation.readOnly).length !== 1 || betaConversation.messages.length !== 0) {
+      throw new Error('project chat histories leaked from alpha into beta');
     }
+    appendChatMessage(betaList.activeConversationId, {
+      id: 'beta-only',
+      text: 'beta only',
+      role: 'user',
+      timestamp: Date.now(),
+    });
+    activateProject(alpha.id);
+    if (!getChatConversation(first.id).messages.some((message) => message.id === 'message-user-1')) {
+      throw new Error('alpha history was not restored after project switch');
+    }
+    if (!fs.existsSync(legacySessionFile) || !fs.readFileSync(legacySessionFile, 'utf8').includes('legacy data remains readable')) {
+      throw new Error('legacy source history was modified or removed');
+    }
+
+    console.log(`session smoke ok: scoped alpha/beta, ${second.id} turns=${second.turnCount}`);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
     app.quit();
   }
 }

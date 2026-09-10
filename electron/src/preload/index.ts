@@ -1,10 +1,14 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreContextGatherRequest, ExploreExecutionConfirmRequest, ExploreRequest, HandoffContext, SaveKnowledgeCardInput } from '../common/explore';
+import type { ExploreWorkSessionRecord } from '../common/project-session';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getStartupStatus: () => ipcRenderer.invoke('startup:status'),
   saveStartupApiKey: (key: string, qwenKey?: string) => ipcRenderer.invoke('startup:save-apikey', key, qwenKey),
   askSoftwareAssistant: (messages: Array<{ role: 'user' | 'assistant'; content: string }>) => ipcRenderer.invoke('software-assistant:ask', messages),
+  getProjectSessionStatus: () => ipcRenderer.invoke('project:session:status'),
+  activateProjectSession: (projectId: string) => ipcRenderer.invoke('project:session:activate', projectId),
+  createProjectSession: (name: string) => ipcRenderer.invoke('project:session:create', name),
   sendMessage: (request: { text: string; skillRefs: Array<{ id: string; name: string; start: number; end: number }>; attachments?: Array<{ id: string; name: string; mimeType: string; size: number; kind: string; textAvailable: boolean; warning?: string }> }, mode?: 'auto' | 'guide' | 'queue', conversationId?: string, messageId?: string, timestamp?: number) => ipcRenderer.invoke('chat:send', request, mode, conversationId, messageId, timestamp),
   pickChatAttachments: (conversationId: string) => ipcRenderer.invoke('chat:attachments:pick', conversationId),
   onMessage: (cb: (msg: { id?: string; text: string; timestamp: number; kind?: 'conversation' | 'progress' | 'detail' | 'status'; toolName?: string; error?: boolean; taskId?: string | null; conversationId?: string }) => void) => {
@@ -53,6 +57,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   addExploreKnowledgeVerification: (input: AddVerificationRecordInput) => ipcRenderer.invoke('explore:knowledge:addVerification', input),
   findRelatedExploreKnowledge: (query: string, limit?: number) => ipcRenderer.invoke('explore:knowledge:findRelated', query, limit),
   selectExploreKnowledgeForContext: (selectedIds: string[]) => ipcRenderer.invoke('explore:knowledge:selectForContext', selectedIds),
+  listExploreWorkSessions: (mode?: 'idea' | 'diagnosis') => ipcRenderer.invoke('explore:sessions:list', mode),
+  createExploreWorkSession: (mode: 'idea' | 'diagnosis') => ipcRenderer.invoke('explore:sessions:create', mode),
+  getExploreWorkSession: (mode: 'idea' | 'diagnosis', id: string) => ipcRenderer.invoke('explore:sessions:get', mode, id),
+  saveExploreWorkSession: (session: ExploreWorkSessionRecord) => ipcRenderer.invoke('explore:sessions:save', session),
+  deleteExploreWorkSession: (mode: 'idea' | 'diagnosis', id: string) => ipcRenderer.invoke('explore:sessions:delete', mode, id),
   getExploreZhihuStatus: () => ipcRenderer.invoke('explore:zhihu:status'),
   installExploreZhihuConnection: () => ipcRenderer.invoke('explore:zhihu:install'),
   beginExploreZhihuConnection: () => ipcRenderer.invoke('explore:zhihu:connect'),
@@ -62,7 +71,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onExploreAnalysisResult: (cb: (result: ExploreAnalysisResult) => void) => {
     ipcRenderer.on('explore:analysis:result', (_event, result) => cb(result));
   },
-  onExploreAnalysisError: (cb: (result: { mode: 'analysis' | 'plan'; message: string }) => void) => {
+  onExploreAnalysisError: (cb: (result: { mode: 'analysis' | 'plan'; requestId?: string; message: string }) => void) => {
     ipcRenderer.on('explore:analysis:error', (_event, result) => cb(result));
   },
   startExplorePlan: (handoff: HandoffContext) => ipcRenderer.invoke('explore:handoff:plan', handoff),

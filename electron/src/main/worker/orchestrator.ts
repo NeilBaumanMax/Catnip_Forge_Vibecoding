@@ -10,6 +10,7 @@ import { isHtmlGameTask, validateCurrentPage } from './page-validator';
 import { appendClaudeSessionTurn, buildClaudeSessionContext, getClaudeSessionFile, listChatConversations } from './session-store';
 import { listManagedSkills } from '../skill-manager';
 import { buildAttachmentPromptContext, type AttachmentReference } from '../attachment-store';
+import { getActiveProject } from '../project-session';
 import {
   normalizeExploreExecutionConfirmRequest,
   normalizeHandoffContext,
@@ -61,10 +62,27 @@ interface QueuedTask {
 interface ConfirmableExplorePlan {
   handoff: HandoffContext;
   conversationId: string;
+  projectId?: string;
   createdAt: number;
   completedAt?: number;
   result?: ExplorePlanResult;
   usedAt?: number;
+}
+
+function bindActiveProject(text: string): { text: string; projectId?: string } {
+  const project = getActiveProject();
+  if (!project) return { text };
+  return {
+    projectId: project.id,
+    text: [
+      '【当前工作工程】',
+      '工程 ID：' + project.id,
+      '工程目录：' + project.projectDir,
+      '所有工程源码读写、Build、Flash、Serial 分析和验证都必须限定在该工程；不得沿用历史对话中的其他工程路径。',
+      '【当前工作工程结束】',
+      text,
+    ].join('\n'),
+  };
 }
 
 interface TaskContinuation {
@@ -202,11 +220,11 @@ export class Orchestrator {
 
   submitTask(task: string | AgentTaskInput, mode: TaskSubmitMode = 'auto', conversationId?: string): TaskSubmitResult {
     const input = normalizeAgentTaskInput(task);
-    const text = input.text;
+    const binding = bindActiveProject(input.text);
     const targetConversationId = conversationId || listChatConversations().activeConversationId;
     const request: QueuedTask = {
       id: randomUUID(),
-      text,
+      text: binding.text,
       skillRefs: input.skillRefs,
       attachments: input.attachments,
       conversationId: targetConversationId,
@@ -230,9 +248,10 @@ export class Orchestrator {
       context: { items: request.context.items.filter((item) => item.selected) },
     };
     const targetConversationId = conversationId || listChatConversations().activeConversationId;
+    const binding = bindActiveProject(this.buildExploreAnalysisPrompt(selectedRequest, normalizedRequestId, sources));
     const queuedTask: QueuedTask = {
       id: randomUUID(),
-      text: this.buildExploreAnalysisPrompt(selectedRequest, normalizedRequestId, sources),
+      text: binding.text,
       skillRefs: [],
       attachments: [],
       conversationId: targetConversationId,
@@ -252,15 +271,17 @@ export class Orchestrator {
     const normalizedRequestId = requestId.trim();
     if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/.test(normalizedRequestId)) throw new Error('Explore plan request id is invalid');
     const targetConversationId = conversationId || listChatConversations().activeConversationId;
+    const binding = bindActiveProject(this.buildExplorePlanPrompt(handoff, normalizedRequestId));
     this.cleanupConfirmableExplorePlans();
     this.confirmableExplorePlans.set(normalizedRequestId, {
       handoff,
       conversationId: targetConversationId,
+      projectId: binding.projectId,
       createdAt: Date.now(),
     });
     const queuedTask: QueuedTask = {
       id: randomUUID(),
-      text: this.buildExplorePlanPrompt(handoff, normalizedRequestId),
+      text: binding.text,
       skillRefs: [],
       attachments: [],
       conversationId: targetConversationId,
@@ -283,15 +304,18 @@ export class Orchestrator {
     if (!record) throw new Error('执行计划不存在或已过期，请重新生成计划');
     if (record.handoff.id !== confirmation.handoffId) throw new Error('执行确认与当前 Handoff 不匹配');
     if (!record.result || !record.completedAt) throw new Error('执行计划尚未完成，不能确认执行');
+    const activeProject = getActiveProject();
+    if (record.projectId && activeProject?.id !== record.projectId) throw new Error('执行计划属于其他工程，请切回原工程后重新生成计划');
     if (record.usedAt) throw new Error('该执行计划已经确认过，不能重复执行');
     if (Date.now() - record.completedAt > 30 * 60 * 1000) {
       this.confirmableExplorePlans.delete(confirmation.planRequestId);
       throw new Error('执行计划已过期，请重新生成计划');
     }
 
+    const binding = bindActiveProject(this.buildExploreExecutionPrompt(record.handoff, record.result));
     const queuedTask: QueuedTask = {
       id: randomUUID(),
-      text: this.buildExploreExecutionPrompt(record.handoff, record.result),
+      text: binding.text,
       skillRefs: [],
       attachments: [],
       conversationId: record.conversationId,
@@ -758,6 +782,7 @@ export class Orchestrator {
     if (restricted && code !== 0) {
       this.pushUI('explore:analysis:error', {
         mode: this.currentExecutionProfile === 'explore_plan' ? 'plan' : 'analysis',
+        requestId: this.currentExploreExpectation?.requestId,
         message: this.currentExecutionProfile === 'explore_plan' ? 'Catnip 暂时无法生成执行计划' : 'Catnip 暂时无法完成探索分析',
       });
     }
@@ -992,6 +1017,7 @@ export class Orchestrator {
     if (isRestrictedExploreProfile(this.currentExecutionProfile)) {
       this.pushUI('explore:analysis:error', {
         mode: this.currentExecutionProfile === 'explore_plan' ? 'plan' : 'analysis',
+        requestId: this.currentExploreExpectation?.requestId,
         message: this.currentExecutionProfile === 'explore_plan' ? 'Catnip 暂时无法生成执行计划' : 'Catnip 暂时无法完成探索分析',
       });
     }

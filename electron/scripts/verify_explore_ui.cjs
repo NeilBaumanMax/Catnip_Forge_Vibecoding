@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.join(__dirname, '..');
+const app = fs.readFileSync(path.join(root, 'src', 'renderer', 'App.tsx'), 'utf8');
 const browserPanel = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'BrowserPanel.tsx'), 'utf8');
 const explorePanel = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'ExplorePanel.tsx'), 'utf8');
 const exploreSourceList = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreSourceList.tsx'), 'utf8');
@@ -17,6 +18,10 @@ assert.equal((browserPanel.match(/data-tour-id="tab-/g) || []).length, 5, 'exact
 assert.match(browserPanel, /data-tour-id="tab-explore"[^\r\n]*>探索<\/button>/, 'visible Explore tab is missing');
 assert.doesNotMatch(browserPanel, /tab-zhihu/, 'Zhihu must not be a workspace name');
 assert.match(browserPanel, /mode === 'explore'[\s\S]*<ExplorePanel/, 'Explore panel must render from the workspace mode');
+assert.match(browserPanel, /exploreMounted[\s\S]*hidden=\{mode !== 'explore'\}/, 'Explore must stay mounted while another workspace is visible');
+assert.doesNotMatch(browserPanel, /runtimeState\?\.activeProjectDir/, 'old Runtime project must not become the active Explore project');
+assert.match(app, /选择工作工程/, 'cold-start project picker is missing');
+assert.match(app, /activateProjectSession\(selectedProjectId\)/, 'project activation must submit a Main-issued project id');
 
 assert.match(explorePanel, />找灵感</, 'idea entry is missing');
 assert.match(explorePanel, />解问题</, 'diagnosis entry is missing');
@@ -29,6 +34,9 @@ assert.match(explorePanel, /connection\?\.state !== 'needs_secret'[\s\S]{0,220}a
 assert.match(explorePanel, /安装连接组件并继续/, 'install consent button is missing');
 assert.match(explorePanel, /不会修改 PATH/, 'official user-directory install boundary is missing');
 assert.match(explorePanel, /prepareExploreRequest/, 'Explore input must cross the validated Main request boundary');
+assert.match(explorePanel, /listExploreWorkSessions/, 'project Explore history list is missing');
+assert.match(explorePanel, /saveExploreWorkSession/, 'Explore work autosave is missing');
+assert.match(explorePanel, /openWorkSession\(session\.mode, session\.id\)/, 'Explore history resume action is missing');
 assert.match(explorePanel, /saveExploreKnowledge/, 'source save must use the existing preload store');
 assert.match(explorePanel, /data-tour-id="explore-saved-knowledge"/, 'saved knowledge preview is missing');
 assert.match(explorePanel, /不会自动加入后续 Context/, 'manual context selection promise is missing');

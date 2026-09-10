@@ -81,7 +81,10 @@ async function main() {
     assert.deepEqual(partial.warnings, ['最近 Build / Flash 记录读取失败', '最近串口记录读取失败']);
 
     const handlers = new Map();
-    registerExploreContextIpc({ handle: (channel, handler) => handlers.set(channel, handler) });
+    registerExploreContextIpc(
+      { handle: (channel, handler) => handlers.set(channel, handler) },
+      () => ({ id: 'project-test', projectDir }),
+    );
     assert(handlers.has('explore:context:gather'));
     const preload = fs.readFileSync(path.join(__dirname, '..', 'src', 'preload', 'index.ts'), 'utf8');
     const rendererTypes = fs.readFileSync(path.join(__dirname, '..', 'src', 'renderer', 'types', 'index.ts'), 'utf8');

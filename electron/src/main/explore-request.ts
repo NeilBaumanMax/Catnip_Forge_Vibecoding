@@ -5,6 +5,7 @@ import {
   type ExploreZhihuConnectionStatus,
 } from '../common/explore';
 import { readExploreZhihuConnectionStatus } from './explore-zhihu-status';
+import { requireActiveProject } from './project-session';
 
 export function prepareExploreRequest(
   value: unknown,
@@ -34,8 +35,10 @@ export function prepareExploreRequest(
 export function registerExploreRequestIpc(
   registrar: Pick<IpcMain, 'handle'>,
   readConnection = readExploreZhihuConnectionStatus,
+  requireProject = requireActiveProject,
 ): void {
   registrar.handle('explore:request:prepare', async (_event, value: unknown) => {
+    requireProject();
     const connection = await readConnection();
     return prepareExploreRequest(value, connection);
   });

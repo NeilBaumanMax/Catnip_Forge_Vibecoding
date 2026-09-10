@@ -25,7 +25,10 @@ export interface UserDataPathResult {
  * resolve logs/session paths at import time.
  */
 export function configureCatnipUserDataPath(): UserDataPathResult {
-  const appData = app.getPath('appData');
+  const smokeAppData = process.env.VIBEIDE_SMOKE_WORKBENCH_OPEN === '1'
+    ? process.env.VIBEIDE_SMOKE_APP_DATA
+    : undefined;
+  const appData = smokeAppData ? path.resolve(smokeAppData) : app.getPath('appData');
   const userDataPath = path.join(appData, CATNIP_USER_DATA_VENDOR, CATNIP_USER_DATA_APP);
   const legacyUserDataPath = path.join(appData, LEGACY_USER_DATA_VENDOR, CATNIP_USER_DATA_APP);
   let migrated = false;

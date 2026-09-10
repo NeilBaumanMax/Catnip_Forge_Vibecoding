@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { getRuntimeDataDir } from '../paths';
+import { getProjectSessionsRoot, requireActiveProject } from '../project-session';
 import { logger } from './logger';
 
 export interface ClaudeSessionTurn {
@@ -51,6 +52,7 @@ export interface ChatConversationSummary {
   updatedAt: string;
   messageCount: number;
   turnCount: number;
+  readOnly?: boolean;
 }
 
 interface ConversationStore {
@@ -64,8 +66,10 @@ const MAX_ASSISTANT_CHARS = 6000;
 const MAX_CONVERSATIONS = 50;
 const MAX_MESSAGES = 500;
 const MAX_MESSAGE_CHARS = 20_000;
-const SESSION_DIR = getRuntimeDataDir('claude-session');
-const SESSION_FILE = path.join(SESSION_DIR, 'session.json');
+const LEGACY_SESSION_FILE = path.resolve(
+  process.env.CATNIP_LEGACY_SESSION_FILE
+    || path.join(getRuntimeDataDir('claude-session'), 'session.json'),
+);
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -91,8 +95,26 @@ function createConversation(title = '新对话'): ChatConversation {
   };
 }
 
-function ensureSessionDir(): void {
-  fs.mkdirSync(SESSION_DIR, { recursive: true });
+function currentSessionFile(): string {
+  const project = requireActiveProject();
+  return path.join(getProjectSessionsRoot(), project.id, 'agent', 'conversations.json');
+}
+
+function preserveLegacySession(): void {
+  if (!fs.existsSync(LEGACY_SESSION_FILE)) return;
+  const target = path.join(getProjectSessionsRoot(), 'unassigned', 'agent', 'conversations.json');
+  if (fs.existsSync(target)) return;
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.copyFileSync(LEGACY_SESSION_FILE, target, fs.constants.COPYFILE_EXCL);
+}
+
+function unassignedSessionFile(): string {
+  return path.join(getProjectSessionsRoot(), 'unassigned', 'agent', 'conversations.json');
+}
+
+function ensureSessionDir(file: string): void {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  preserveLegacySession();
 }
 
 function compactText(text: string, limit = MAX_ASSISTANT_CHARS): string {
@@ -171,7 +193,8 @@ function migrateLegacySession(parsed: ClaudeSessionState): ConversationStore {
 }
 
 function writeStore(store: ConversationStore): void {
-  ensureSessionDir();
+  const sessionFile = currentSessionFile();
+  ensureSessionDir(sessionFile);
   const conversations = store.conversations
     .map(normalizeConversation)
     .sort((left, right) => Number(right.pinned) - Number(left.pinned) || Date.parse(right.updatedAt) - Date.parse(left.updatedAt))
@@ -180,13 +203,14 @@ function writeStore(store: ConversationStore): void {
   const activeConversationId = conversations.some((conversation) => conversation.id === store.activeConversationId)
     ? store.activeConversationId
     : conversations[0].id;
-  fs.writeFileSync(SESSION_FILE, JSON.stringify({ version: 2, activeConversationId, conversations }, null, 2), 'utf-8');
+  fs.writeFileSync(sessionFile, JSON.stringify({ version: 2, activeConversationId, conversations }, null, 2), 'utf-8');
 }
 
 function readStore(): ConversationStore {
-  ensureSessionDir();
+  const sessionFile = currentSessionFile();
+  ensureSessionDir(sessionFile);
   try {
-    const parsed = JSON.parse(fs.readFileSync(SESSION_FILE, 'utf-8')) as ConversationStore | ClaudeSessionState;
+    const parsed = JSON.parse(fs.readFileSync(sessionFile, 'utf-8')) as ConversationStore | ClaudeSessionState;
     if ('version' in parsed && parsed.version === 2 && Array.isArray(parsed.conversations)) {
       const store: ConversationStore = {
         version: 2,
@@ -233,17 +257,30 @@ function summaryOf(conversation: ChatConversation): ChatConversationSummary {
 
 export function listChatConversations(): { activeConversationId: string; conversations: ChatConversationSummary[] } {
   const store = readStore();
+  const unassigned = readUnassignedStore();
   return {
     activeConversationId: store.activeConversationId,
-    conversations: store.conversations
-      .map(summaryOf)
-      .sort((left, right) => Number(right.pinned) - Number(left.pinned) || Date.parse(right.updatedAt) - Date.parse(left.updatedAt)),
+    conversations: [
+      ...store.conversations
+        .map(summaryOf)
+        .sort((left, right) => Number(right.pinned) - Number(left.pinned) || Date.parse(right.updatedAt) - Date.parse(left.updatedAt)),
+      ...(unassigned?.conversations || []).map((conversation) => ({ ...summaryOf(conversation), pinned: false, readOnly: true })),
+    ],
   };
 }
 
 export function getChatConversation(id?: string | null): ChatConversation {
   const store = readStore();
-  return structuredClone(findConversation(store, id));
+  try {
+    return structuredClone(findConversation(store, id));
+  } catch (error) {
+    if (!id) throw error;
+    const unassigned = readUnassignedStore();
+    if (!unassigned) throw error;
+    const conversation = structuredClone(findConversation(unassigned, id)) as ChatConversation & { readOnly?: boolean };
+    conversation.readOnly = true;
+    return conversation;
+  }
 }
 
 export function createChatConversation(): ChatConversation {
@@ -391,5 +428,20 @@ export function buildClaudeSessionContext(conversationId?: string | null): { ses
 }
 
 export function getClaudeSessionFile(): string {
-  return SESSION_FILE;
+  return currentSessionFile();
+}
+
+function readUnassignedStore(): ConversationStore | null {
+  const file = unassignedSessionFile();
+  if (!fs.existsSync(file)) return null;
+  try {
+    const parsed = JSON.parse(fs.readFileSync(file, 'utf8')) as ConversationStore | ClaudeSessionState;
+    if ('version' in parsed && parsed.version === 2 && Array.isArray(parsed.conversations)) {
+      return { version: 2, activeConversationId: parsed.activeConversationId, conversations: parsed.conversations.map(normalizeConversation) };
+    }
+    if ('id' in parsed && Array.isArray(parsed.turns)) return migrateLegacySession(parsed);
+  } catch {
+    // The preserved source remains untouched and unavailable rather than being overwritten.
+  }
+  return null;
 }

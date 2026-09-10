@@ -1,8 +1,18 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const { app } = require('electron');
+const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'catnip-task-queue-'));
 
 async function main() {
+  const projectsRoot = path.join(tempRoot, 'projects');
+  fs.mkdirSync(path.join(projectsRoot, 'queue-project'), { recursive: true });
+  process.env.CATNIP_PROJECTS_ROOT = projectsRoot;
+  process.env.CATNIP_PROJECT_SESSIONS_ROOT = path.join(tempRoot, 'sessions');
   await app.whenReady();
+  const { activateProject, getProjectSessionStatus } = require('../dist/main/project-session');
+  activateProject(getProjectSessionStatus().projects[0].id);
   const { Orchestrator } = require('../dist/main/worker/orchestrator');
   const events = [];
   const starts = [];
@@ -102,11 +112,13 @@ async function main() {
   assert.equal(orchestrator.getTaskStatus().busy, false);
 
   console.log('agent task queue smoke ok');
+  fs.rmSync(tempRoot, { recursive: true, force: true });
   app.quit();
 }
 
 main().catch((error) => {
   console.error(error);
+  fs.rmSync(tempRoot, { recursive: true, force: true });
   app.quit();
   process.exit(1);
 });

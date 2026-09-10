@@ -5,7 +5,7 @@ import CatnipOnboarding from './components/CatnipOnboarding';
 import MarkdownContent from './components/MarkdownContent';
 import catnipForgeIcon from './assets/catnip-forge.png';
 import catnipAssistantImage from './assets/catnip-assistant.png';
-import type { AgentTaskInput, AgentTaskStatus, BrowserTab, ChatConversation, ChatConversationSummary, ChatMessage, ChatMessageKind, HardboardDevice, RecordingSummary, SoftwareAssistantMessage, StartupStatus, TaskStep, TaskSubmitMode, WorkbenchOverview } from './types';
+import type { AgentTaskInput, AgentTaskStatus, BrowserTab, ChatConversation, ChatConversationSummary, ChatMessage, ChatMessageKind, HardboardDevice, ProjectSessionStatus, RecordingSummary, SoftwareAssistantMessage, StartupStatus, TaskStep, TaskSubmitMode, WorkbenchOverview } from './types';
 
 const LEFT_PANEL_WIDTH_KEY = 'vibeide.ui.leftPanelWidth';
 const APPEARANCE_THEME_KEY = 'vibeide.appearance.theme';
@@ -166,6 +166,12 @@ export default function App() {
   const [startupApiKeyError, setStartupApiKeyError] = useState('');
   const [startupApiKeySaving, setStartupApiKeySaving] = useState(false);
   const [startupApiKeyRestarting, setStartupApiKeyRestarting] = useState(false);
+  const [projectSession, setProjectSession] = useState<ProjectSessionStatus | null>(null);
+  const [projectPickerOpen, setProjectPickerOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [newProjectName, setNewProjectName] = useState('');
+  const [projectSessionError, setProjectSessionError] = useState('');
+  const [projectSessionSaving, setProjectSessionSaving] = useState(false);
   const [onboardingStartRequest, setOnboardingStartRequest] = useState(0);
   const workbenchSmokeTriggered = useRef(false);
   const activeConversationIdRef = useRef('');
@@ -187,6 +193,14 @@ export default function App() {
 
   useEffect(() => {
     void window.electronAPI?.getStartupStatus?.().then((status) => setStartupStatus(status));
+    void window.electronAPI?.getProjectSessionStatus?.().then((status) => {
+      setProjectSession(status);
+      setSelectedProjectId(status.suggestedProjectId || status.projects[0]?.id || '');
+      setProjectPickerOpen(!status.activeProject);
+    }).catch((error) => {
+      setProjectSessionError(error instanceof Error ? error.message : String(error));
+      setProjectPickerOpen(true);
+    });
   }, []);
 
   const handleStartupApiKeySave = useCallback(async (event: React.FormEvent) => {
@@ -521,16 +535,36 @@ export default function App() {
       });
 
       void refreshWorkbench();
-      void initializeChatHistory();
     }
   }, [initializeChatHistory, refreshChatConversationList, refreshWorkbench]);
 
+  useEffect(() => {
+    if (!projectSession?.activeProject) {
+      activeConversationIdRef.current = '';
+      setActiveConversationId('');
+      setChatConversations([]);
+      setMessages([]);
+      return;
+    }
+    void initializeChatHistory();
+    void refreshWorkbench();
+  }, [initializeChatHistory, projectSession?.activeProject?.id, refreshWorkbench]);
+
   const handleSend = useCallback((task: string | AgentTaskInput, mode: TaskSubmitMode = 'auto') => {
+    if (!projectSession?.activeProject) {
+      setProjectSessionError('请先选择当前工作工程，再让 Agent 执行项目任务');
+      setProjectPickerOpen(true);
+      return;
+    }
     const request = typeof task === 'string' ? { text: task, skillRefs: [], attachments: [] } : task;
     const text = request.text;
     const conversationId = activeConversationIdRef.current;
     if (!conversationId) {
       setChatHistoryError('历史对话尚未加载完成，请稍后再试');
+      return;
+    }
+    if (chatConversations.find((conversation) => conversation.id === conversationId)?.readOnly) {
+      setChatHistoryError('未归属历史为只读；请新建当前工程对话后再发送');
       return;
     }
     const msg: ChatMessage = {
@@ -568,7 +602,7 @@ export default function App() {
       }]);
       setChatHistoryError(error instanceof Error ? error.message : String(error));
     });
-  }, [refreshChatConversationList]);
+  }, [chatConversations, projectSession?.activeProject, refreshChatConversationList]);
 
   const handleCreateConversation = useCallback(async () => {
     try {
@@ -584,12 +618,15 @@ export default function App() {
   const handleSelectConversation = useCallback(async (id: string) => {
     if (id === activeConversationIdRef.current) return;
     try {
-      const conversation = await window.electronAPI?.activateChatConversation(id);
+      const readOnly = chatConversations.find((conversation) => conversation.id === id)?.readOnly;
+      const conversation = readOnly
+        ? await window.electronAPI?.getChatConversation(id)
+        : await window.electronAPI?.activateChatConversation(id);
       if (conversation) applyConversation(conversation);
     } catch (error) {
       setChatHistoryError(error instanceof Error ? error.message : String(error));
     }
-  }, [applyConversation]);
+  }, [applyConversation, chatConversations]);
 
   const handleDeleteConversation = useCallback(async (id: string) => {
     try {
@@ -624,6 +661,40 @@ export default function App() {
       setChatHistoryError(error instanceof Error ? error.message : String(error));
     }
   }, []);
+
+  const handleActivateProject = useCallback(async () => {
+    if (!selectedProjectId || projectSessionSaving) return;
+    setProjectSessionSaving(true);
+    setProjectSessionError('');
+    try {
+      const result = await window.electronAPI.activateProjectSession(selectedProjectId);
+      setProjectSession(result);
+      setProjectPickerOpen(false);
+      setNewProjectName('');
+    } catch (error) {
+      setProjectSessionError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setProjectSessionSaving(false);
+    }
+  }, [projectSessionSaving, selectedProjectId]);
+
+  const handleCreateProject = useCallback(async () => {
+    const name = newProjectName.trim();
+    if (!name || projectSessionSaving) return;
+    setProjectSessionSaving(true);
+    setProjectSessionError('');
+    try {
+      const result = await window.electronAPI.createProjectSession(name);
+      setProjectSession(result);
+      setSelectedProjectId(result.createdProject.id);
+      setProjectPickerOpen(false);
+      setNewProjectName('');
+    } catch (error) {
+      setProjectSessionError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setProjectSessionSaving(false);
+    }
+  }, [newProjectName, projectSessionSaving]);
 
   const handleStopTask = useCallback(() => {
     void window.electronAPI?.stopTask();
@@ -840,6 +911,8 @@ export default function App() {
         </div>
         <div className="right-panel">
           <BrowserPanel
+            activeProject={projectSession?.activeProject || null}
+            onRequestProjectChange={() => setProjectPickerOpen(true)}
             url={browserUrl}
             onNavigate={handleNavigate}
             tabs={tabs}
@@ -911,8 +984,38 @@ export default function App() {
           </form>
         </div>
       ) : null}
+      {startupStatus && !startupStatus.firstRun && projectPickerOpen ? (
+        <div className='project-picker-backdrop'>
+          <section className='project-picker-dialog' role='dialog' aria-modal='true' aria-labelledby='project-picker-title'>
+            <header>
+              <div><span>CURRENT PROJECT</span><h2 id='project-picker-title'>选择工作工程</h2></div>
+              {projectSession?.activeProject ? <button type='button' onClick={() => setProjectPickerOpen(false)} aria-label='关闭工程选择'>×</button> : null}
+            </header>
+            <p>Agent、编辑器、探索历史、Build、Flash 与 Serial 将共同使用这个工程。每次启动都需要你明确确认。</p>
+            <code title={projectSession?.projectsRoot}>{projectSession?.projectsRoot || '正在读取 hardboard/projects…'}</code>
+            <form onSubmit={(event) => { event.preventDefault(); void handleActivateProject(); }}>
+              <label><span>现有工程</span>
+                <select value={selectedProjectId} onChange={(event) => setSelectedProjectId(event.target.value)} disabled={projectSessionSaving}>
+                  <option value=''>请选择工程</option>
+                  {(projectSession?.projects || []).map((project) => (
+                    <option key={project.id} value={project.id}>{project.name}{project.id === projectSession?.suggestedProjectId ? ' · 上次使用' : ''}</option>
+                  ))}
+                </select>
+              </label>
+              <button type='submit' disabled={!selectedProjectId || projectSessionSaving}>{projectSessionSaving ? '正在切换…' : '进入这个工程'}</button>
+            </form>
+            <div className='project-picker-divider'><span>或者新建</span></div>
+            <form onSubmit={(event) => { event.preventDefault(); void handleCreateProject(); }}>
+              <label><span>新工程名称</span><input value={newProjectName} maxLength={64} disabled={projectSessionSaving} onChange={(event) => setNewProjectName(event.target.value)} placeholder='例如 desktop_pet' /></label>
+              <button type='submit' disabled={!newProjectName.trim() || projectSessionSaving}>{projectSessionSaving ? '正在创建…' : '创建并进入'}</button>
+            </form>
+            {projectSessionError ? <div className='project-picker-error' role='alert'>{projectSessionError}</div> : null}
+            <small>不会自动使用列表第一项或旧 Runtime 工程；创建工程不会自动 Build 或 Flash。</small>
+          </section>
+        </div>
+      ) : null}
       <CatnipOnboarding
-        enabled={Boolean(ONBOARDING_SMOKE_MODE || (startupStatus && !startupStatus.firstRun && !window.electronAPI?.isWorkbenchSmokeTest))}
+        enabled={Boolean(ONBOARDING_SMOKE_MODE || (startupStatus && !startupStatus.firstRun && projectSession?.activeProject && !window.electronAPI?.isWorkbenchSmokeTest))}
         startRequest={onboardingStartRequest}
         onStart={handleOnboardingStart}
         onEnsureAgentOpen={handleOnboardingEnsureAgentOpen}
