@@ -27,3 +27,5 @@
 - 找灵感使用紫色强调，解问题使用青色强调，均增加彩色边框、顶部光带、阴影与独立 hover 反馈。
 - `typecheck`、`build:main`、`build:renderer`、`verify:explore-knowledge`、`verify:explore-session`、`verify:explore-ui`、`verify:explore-layout-ui`、`verify:onboarding`、`verify:software-assistant-guide`、`verify:software-assistant-ui`、`verify:version` 均通过。
 - Electron 测试仍输出 Windows `os_crypt`/GPU 环境噪声；Explore layout 临时 profile 退出时仍有一次 `EPERM` 最佳努力清理提示，均未影响断言结果。
+- `npm.cmd --prefix electron run pack:win`：通过；生成 `electron/dist-package/win-unpacked/Catnip Forge.exe`，文件版本 `2.0.0.7201`。
+- `npm.cmd --prefix electron run verify:release`：通过；包体 4,465,483,163 字节，ESP-IDF v5.4.3、隔离 Python/pyserial 与 Claude Code 均在包内，DeepSeek/Qwen Secret 均未入包。
