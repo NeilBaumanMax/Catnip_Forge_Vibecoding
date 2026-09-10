@@ -106,26 +106,11 @@ async function main() {
     activateChatConversation(first.id);
     const list = listChatConversations();
     const writableList = list.conversations.filter((conversation) => !conversation.readOnly);
-    const legacySummary = list.conversations.find((conversation) => conversation.id === legacyConversationId);
     if (writableList.length !== 2 || list.activeConversationId !== first.id) {
       throw new Error('multi-conversation list or activation failed');
     }
-    if (!legacySummary?.readOnly || legacySummary.pinned) {
-      throw new Error('legacy history was not exposed as an unassigned read-only conversation');
-    }
-    const legacyConversation = getChatConversation(legacyConversationId);
-    if (!legacyConversation.readOnly || legacyConversation.messages[0]?.id !== 'legacy-message') {
-      throw new Error('legacy unassigned conversation could not be read');
-    }
-    for (const mutateLegacy of [
-      () => activateChatConversation(legacyConversationId),
-      () => appendChatMessage(legacyConversationId, { id: 'forbidden', text: 'must not write', role: 'user', timestamp: Date.now() }),
-      () => renameChatConversation(legacyConversationId, 'must not rename'),
-      () => deleteChatConversation(legacyConversationId),
-    ]) {
-      let rejected = false;
-      try { mutateLegacy(); } catch { rejected = true; }
-      if (!rejected) throw new Error('legacy read-only history accepted a mutation');
+    if (list.conversations.some((conversation) => conversation.id === legacyConversationId || conversation.readOnly)) {
+      throw new Error('legacy unassigned history must not be exposed in the Agent conversation list');
     }
     if (buildClaudeSessionContext(first.id).text.includes('conversation-b-user')) {
       throw new Error('conversation contexts leaked into each other');

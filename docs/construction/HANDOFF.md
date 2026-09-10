@@ -98,3 +98,9 @@ Phase 0：13 个检查目标通过、2 次 pytest 启动失败、3 组未验证�
 - 只能精确暂存；禁止 `reset --hard`、`clean -fd`、`push --force`、擅自 stash 或覆盖用户修改。撤回已提交工作使用经审查的 `git revert <commit>` 并重新测试。
 
 本次文档漂移修正完成后的提交与远端 hash，必须用 Git 动态查询；不能让提交正文虚称包含自身 hash。
+## 2026-09-11 · v2.0.0 UI 与历史清理
+
+- Explore 编辑回退、计划大圆形执行态、可编辑/可打开 Handoff 材料、四步导航与当前工程标识已修复。
+- Agent 列表不再暴露未归属只读历史；用户数据中的 legacy session/unassigned 记录已按用户要求清除。
+- 当前发布版本：`v2.0.0` / Build `7201` / npm `2.0.0-7201` / PE `2.0.0.7201`。
+- `pack:win`、`verify:release`、`verify:version` 通过；包入口为 `electron/dist-package/win-unpacked/Catnip Forge.exe`。

@@ -99,6 +99,8 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   const [displayStage, setDisplayStage] = useState<ExploreStage>('describe');
   const [conversation, setConversation] = useState<ExploreConversationMessage[]>([]);
   const [handoffArtifact, setHandoffArtifact] = useState<ExploreHandoffArtifact | null>(null);
+  const [editingArtifactFile, setEditingArtifactFile] = useState<'HANDOFF.md' | 'PLAN.md' | null>(null);
+  const [artifactDraft, setArtifactDraft] = useState('');
   const latestWorkSession = useRef<ExploreWorkSessionRecord | null>(null);
   const restoringKnowledgeSelection = useRef(false);
   const restoringContextSelection = useRef<string[] | null>(null);
@@ -529,6 +531,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   };
 
   const editRequest = () => {
+    setDisplayStage('describe');
     setEditingInput(true);
     setAnalysisPending(false);
     setAnalysisResult(null);
@@ -544,6 +547,8 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
     setPlanRequestId(null);
     setExecutionTaskId(null);
     setExecutionDisposition(null);
+    setHandoffArtifact(null);
+    setEditingArtifactFile(null);
     activeAnalysisRequestId.current = null;
     activePlanRequestId.current = null;
     setSelectedIdeaId('');
@@ -1085,7 +1090,11 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
         <strong>{planHandoff?.selectedIdea?.title || planHandoff?.diagnosis?.problem || requestText}</strong>
       </div>
       {planPending ? (
-        <div className="explore-loading-state" role="status"><span aria-hidden="true" /><div><strong>Catnip 正在组织执行步骤</strong><p>只会生成计划，不会修改工程或操作硬件。</p></div></div>
+        <div className="explore-plan-progress" role="status" aria-live="polite">
+          <div className="explore-progress-ring" aria-hidden="true"><span>AI</span></div>
+          <div className="explore-plan-progress-copy"><span className="explore-section-kicker">CATNIP EXECUTION</span><strong>Catnip 正在组织执行步骤</strong><p>正在读取当前工程交接上下文，只生成计划，不会修改工程或操作硬件。</p></div>
+          <ol className="explore-plan-progress-steps"><li className="is-active">整理目标</li><li>核对约束</li><li>生成计划</li></ol>
+        </div>
       ) : planResult ? (
         <>
           <p className="explore-plan-summary explore-reading-copy">{planResult.plan.summary}</p>
@@ -1126,8 +1135,14 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
         <div><span className="explore-section-kicker">PROJECT HANDOFF</span><h3 id="explore-artifact-title">工程内交接材料</h3></div>
         <code>{handoffArtifact.relativeDir}</code>
       </header>
-      <details open><summary>HANDOFF.md</summary><pre>{handoffArtifact.handoffMarkdown}</pre></details>
-      <details><summary>PLAN.md</summary><pre>{handoffArtifact.planMarkdown}</pre></details>
+      {(['HANDOFF.md', 'PLAN.md'] as const).map((file) => {
+        const text = file === 'HANDOFF.md' ? handoffArtifact.handoffMarkdown : handoffArtifact.planMarkdown;
+        const target = `${currentProject}\\${handoffArtifact.relativeDir}\\${file}`;
+        return <details key={file} open={file === 'HANDOFF.md'}><summary>{file}</summary>
+          {editingArtifactFile === file ? <textarea className="explore-artifact-editor" value={artifactDraft} onChange={(event) => setArtifactDraft(event.target.value)} aria-label={`${file} 编辑`} /> : <pre>{text}</pre>}
+          <div className="explore-artifact-actions"><button type="button" onClick={() => { setEditingArtifactFile(file); setArtifactDraft(text); }}>编辑</button><button type="button" onClick={() => void window.electronAPI?.openWorkbenchItem(target)}>在文件资源管理器中打开</button>{editingArtifactFile === file ? <button type="button" onClick={async () => { const result = await window.electronAPI?.writeWorkbenchFile(target, artifactDraft); if (result?.ok) { setHandoffArtifact((current) => current ? { ...current, ...(file === 'HANDOFF.md' ? { handoffMarkdown: artifactDraft } : { planMarkdown: artifactDraft }) } : current); setEditingArtifactFile(null); setNotice(`${file} 已保存`); } }}>保存</button> : null}</div>
+        </details>;
+      })}
       <div className="explore-confirm-zone">
         <div><strong>提交给工程 Agent</strong><p>确认后才会把这份磁盘材料交给左侧当前工程 Agent；该确认只能使用一次。</p></div>
         <button

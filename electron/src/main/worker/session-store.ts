@@ -282,14 +282,12 @@ function summaryOf(conversation: ChatConversation): ChatConversationSummary {
 
 export function listChatConversations(): { activeConversationId: string; conversations: ChatConversationSummary[] } {
   const store = readStore();
-  const unassigned = readUnassignedStore();
   return {
     activeConversationId: store.activeConversationId,
     conversations: [
       ...store.conversations
         .map(summaryOf)
         .sort((left, right) => Number(right.pinned) - Number(left.pinned) || Date.parse(right.updatedAt) - Date.parse(left.updatedAt)),
-      ...(unassigned?.conversations || []).map((conversation) => ({ ...summaryOf(conversation), pinned: false, readOnly: true })),
     ],
   };
 }
