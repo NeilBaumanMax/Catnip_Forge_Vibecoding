@@ -5,6 +5,7 @@
 ## 当前状态
 
 - 用户已明确授权 Phase 9：清空 Explore 对话/草稿与收藏、工程 Agent 对话和旧会话副本，删除四个指定 Skill，最后重新打 Windows 包。已建立并远端核对 `backup/pre-phase-9-20260910@f976be8e`；精确范围见 [Phase 9 施工文档](PHASE_9_USAGE_RESET_SKILL_REMOVAL_PACKAGE.md)。
+- Phase 9 已完成：指定记录和四个 Skill 已清除，剩余 9 个 Skill；Windows `win-unpacked` 已重新生成并通过 release/version/内容门禁。清理后的聊天与收藏不可从产品内恢复。
 - Phase 8 源码与自动化回归已完成：工程 Agent/Explore 状态改存工程内 `.catnip`；Explore 独立对话且不占左侧 Agent；四阶段可回看；第三步生成工程内交接材料，第四步从磁盘展示并确认后交工程 Agent；来源/收藏/生成计划按钮已统一。详见 [Phase 8 基线与结果](PHASE_8_EXPLORE_AGENT_HANDOFF_BASELINE.md)。新版 Windows 包与用户人工成品体验尚未验证。
 
 - UI 独立施工基线 `b7063512` 与实现提交 `48dd8d32` 已推送；合并前远端备份 `backup/pre-explore-ui-merge-20260910` 已核对为 `d0265836`。

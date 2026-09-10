@@ -365,6 +365,19 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 
 首次失败与修复：TypeScript 首次因对 `unknown` 展开失败，增加对象守卫后通过；Explore session 首次仍断言旧路径，改为验证真实工程 `.catnip`；布局脚本先后缺新 preload stub、模板换行转义和旧第三步确认断言，补齐新契约后通过。`smoke:workbench` 两次因固定 9230 端口被现有进程占用并伴随 Electron GPU 子进程退出，在产品断言前失败；未终止用户进程，保留为环境失败。上表列明的构建与专项最终均通过，Workbench smoke 仍为环境阻塞；未运行真实搜索、真实模型/Agent 改码、真机或重新打包。
 
+## 2026-09-10 Phase 9 清理与 Windows 打包
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| 精确使用记录/Skill 目标复核 | 通过 | 工程记录叶子目录、收藏、旧 session 与四个 Skill 部署副本均不存在；工程注册表和 manifest 保留 |
+| Runtime/Electron typecheck/build | 通过 | Runtime 构建、Electron Main/Renderer 构建通过；Renderer 保留既有大 chunk warning |
+| `verify:skills` | 通过 | 当前仅 9 个 Skill，四个指定 ID 不存在，旧部署不会复生 |
+| `pack:win` | 通过 | 生成 Windows `win-unpacked`，总计 4,464,671,335 字节 |
+| `verify:release` / `verify:version` | 通过 | `v1.5.0`、Build 7201、PE `1.0.0.7201`；无 DeepSeek/Qwen Key、四个 Skill 或 `.catnip` 使用状态 |
+| `git diff --check` | 通过 | 无 whitespace error；仅 LF→CRLF 工作树提示 |
+
+清理后的聊天、Explore 草稿/交接和收藏不建立备份，符合用户删除授权；四个 Git Skill 源可从 `backup/pre-phase-9-20260910` 恢复。未运行真实搜索、真实 Agent 改码、Build/Flash/Serial 或代码签名。
+
 ## 2026-09-10 Phase 7 文档漂移修正与交接
 
 | 检查 | 最终结果 | 说明 |

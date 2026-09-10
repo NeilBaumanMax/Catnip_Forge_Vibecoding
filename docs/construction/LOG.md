@@ -314,3 +314,11 @@
 - 删除四个 Skill 的 Git 源文件、开发部署、当前 userData 部署和旧包副本；移除 Worker 自动推荐映射，并把 replay Skill 中仅作示例的同名文本改为平台无关名称。Skill Manager 同步后仅部署剩余 9 个 Skill，四个旧部署不会复生。
 - 打包脚本新增 `.catnip` 排除，release 门禁新增四个 Skill 不存在和工程使用状态不入包断言，避免清理后的本机记录被复制进新包。
 - Runtime/Electron typecheck/build、Skill Manager、Project/Agent/Explore session、Knowledge 和 Explore UI 专项通过；Renderer 仍有既有大 chunk warning。打包结果在后续条目记录。
+
+## 2026-09-10 / Phase 9 清理与 Windows 打包完成
+
+- 精确删除完成：各工程 `.catnip/agent|explore|handoffs`、当前 userData `explore/knowledge.json`、工程 Agent/Explore 记录叶子目录和旧开发 session 已清除；项目注册表、`.catnip/manifest.json` 与工程源码保留。清理后的使用数据不可恢复。
+- `agent/skills` 四个指定 Skill 及开发部署、userData 部署和旧包副本已删除；`verify:skills` 最终报告 9 deployed。Worker 快捷映射与残留示例名称已移除/改为平台无关文本。
+- `pack:win` 成功完成 Runtime/Main/Renderer 构建、electron-builder 骨架生成和资源复制；`win-unpacked` 4,464,671,335 字节。新增过滤确保工程 `.catnip` 不进包。
+- `verify:release`、`verify:version`、`verify:skills` 通过；包内四个 Skill、`.catnip` 使用状态、DeepSeek/Qwen 真实 Key 均不存在。版本为 `1.0.0.7201`。
+- 本轮未重新启动应用，未运行真实搜索、真实工程 Agent 改码、Build/Flash/Serial 或代码签名；`LIVE_DIAGNOSIS_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING` 继续保留。

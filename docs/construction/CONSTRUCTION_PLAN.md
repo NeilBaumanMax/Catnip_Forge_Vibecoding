@@ -60,6 +60,7 @@
 - 9b：删除四个指定 Skill 的开发源、开发部署与 userData 部署副本，同时移除产品快捷映射和残留引用。
 - 9c：专项、Runtime/Electron 构建、安全检查、Windows 打包、release/version 与包内容核对。
 - 真实搜索、真实 Agent 改码和真机 Build/Flash/Serial 不属于本轮。
+- 9a–9c：`COMPLETE`。清理目标逐项不存在，剩余 Skill 9 个，Windows `win-unpacked` 已生成并通过 release/version/Skill 内容门禁。
 ## Phase 1 已定位的最小工程范围
 
 - 新增 `agent/skills/zhihu`，按用户 ZIP 原字节导入，不创建假 Skill。

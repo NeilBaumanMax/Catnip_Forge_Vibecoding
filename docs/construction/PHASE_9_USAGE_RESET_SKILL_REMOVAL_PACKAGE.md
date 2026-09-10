@@ -2,7 +2,7 @@
 
 日期：2026-09-10
 
-状态：用户已明确授权删除指定使用记录与四个 Skill，并要求完成 Windows 打包。本文件先定义精确删除边界、验证和恢复点，再执行破坏性操作。
+状态：`COMPLETE`。用户已明确授权删除指定使用记录与四个 Skill，并要求完成 Windows 打包。本文件先定义精确删除边界、验证和恢复点，再执行破坏性操作。
 
 施工前远端备份：`origin/backup/pre-phase-9-20260910` → `f976be8eaf8794f45da1e1ddd8612d16ab237010`，已通过 `git ls-remote` 核对。
 
@@ -24,3 +24,10 @@
 - 全仓库产品代码/Skill 中不再引用四个 ID；Skill Manager 专项、Runtime/Electron typecheck/build、相关 Explore/Project/Session 回归通过。
 - `pack:win` 成功；新 `win-unpacked`/安装包不含四个 Skill，`verify:release`、`verify:version` 和 app.asar/资源检查通过。
 - 不把清空后的用户数据或打包产物提交到 Git；只精确提交 Skill 源删除、引用修正与施工文档。
+
+## 最终结果（2026-09-10）
+
+- 聊天/Explore/收藏记录已按精确叶子目录删除；工程注册表、`.catnip/manifest.json`、工程源码、其他 Skill、API Key、浏览器资料、日志、录屏和 Runtime 事件保留。
+- 四个 Skill 的源码、开发部署、当前 userData 部署和旧包副本均已清除；Skill Manager 当前部署 9 个 Skill。
+- `pack:win` 成功生成 `electron/dist-package/win-unpacked/Catnip Forge.exe`，包体 4,464,671,335 字节；`verify:release`、`verify:version`、`verify:skills` 通过。包内四个 Skill、`.catnip` 和真实 Key 均不存在。
+- 清理后的用户数据不可从产品内恢复；四个 Git 源 Skill 可从 `backup/pre-phase-9-20260910` 恢复。真实硬件验证仍不属于本轮。
