@@ -28,7 +28,7 @@ expect(onboarding.includes("status: 'later'"), 'missing remind-later persistence
 expect(onboarding.includes("close('completed')"), 'missing completion persistence');
 expect(onboarding.includes('跳过此步'), 'missing unavailable-target escape');
 expect(app.includes('aria-label="打开新手教程"'), 'missing replay entry in Catnip assistant toolbar');
-expect(onboarding.includes('const VERSION = 5;'), 'onboarding state version was not reset for the repaired guide');
+expect(onboarding.includes('const VERSION = 6;'), 'onboarding state version was not bumped for the updated guide');
 expect(onboarding.includes("prepare: 'agent'"), 'missing automatic Agent panel restoration');
 expect(onboarding.includes("prepare: 'assistant'"), 'missing automatic assistant restoration');
 expect(onboarding.includes('window.requestAnimationFrame(track)'), 'spotlight does not continuously track moving targets');

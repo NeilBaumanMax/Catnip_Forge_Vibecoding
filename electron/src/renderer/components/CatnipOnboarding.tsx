@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import catnipAssistantImage from '../assets/catnip-assistant.png';
 
 const STORAGE_KEY = 'vibeide.onboarding.catnipJourney';
-const VERSION = 5;
+const VERSION = 6;
 const REMIND_DELAY_MS = 24 * 60 * 60 * 1000;
 const TARGET_GAP = 8;
 const CARD_WIDTH = 380;
@@ -411,7 +411,7 @@ export default function CatnipOnboarding({
       <section className="catnip-onboarding-invitation" role="dialog" aria-labelledby="catnip-invitation-title">
         <img src={catnipAssistantImage} alt="" aria-hidden="true" />
         <div>
-          <span>猫薄荷新手旅程</span>
+          <span>Neil·Bauman's 学院呱呱新手旅程</span>
           <h2 id="catnip-invitation-title">第一次使用 Catnip Forge？</h2>
           <p>我可以用约 5 分钟带你认识主要功能。全程离线，不会碰你的工程或硬件。</p>
           <div className="catnip-onboarding-invitation-actions">
