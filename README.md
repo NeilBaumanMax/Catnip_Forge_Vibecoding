@@ -17,7 +17,7 @@ Electron UI -> Gateway -> Worker -> Agent -> Runtime MCP -> Electron Chromium / 
 ## 当前状态
 
 - 当前 GitHub remote：`origin`
-- 当前开发主分支：`main`
+- 当前探索与工程会话施工分支：`idea_to_production`；是否合入 `main` 必须以 Git 动态查询和明确合并验收为准
 - 当前对外发布标签：`v1.5.0`；内部构建号仍为 `7201`，npm 包版本 `1.0.0-7201`，Windows PE 文件版本 `1.0.0.7201`
 - 当前 Windows 源码目录：`E:\Agent\vibeide\vibeide`
 - 上一版 Windows v0.1.0 unpacked 包：`E:\vibeide-0.1-win-unpacked`（历史验证对象）
@@ -27,7 +27,7 @@ Electron UI -> Gateway -> Worker -> Agent -> Runtime MCP -> Electron Chromium / 
 ## 能力边界
 
 - 应用启动时显示 Catnip Forge 品牌启动页；工作区、开发环境和 Renderer 的真实加载节点驱动阶段文字、百分比与进度条，工作台可显示后自动切换主窗口。
-- Electron 桌面窗口采用 Apple 风格冷色界面，提供聊天区、Skill/工程资源仓库、串口监视、任务管理、Monaco 代码编辑和“探索”入口；探索包含找灵感、解问题、可取消工程 Context、来源、知识收藏、只读计划与明确确认门禁，并按自身可用宽度切换 Compact/Normal/Wide Research Workspace。浏览器工作台前端入口当前隐藏，相关后端能力暂时保留。
+- Electron 桌面窗口采用 Apple 风格冷色界面，提供聊天区、Skill/工程资源仓库、串口监视、任务管理、Monaco 代码编辑和“探索”入口；探索包含找灵感、解问题、可取消工程 Context、来源、知识收藏、只读计划与明确确认门禁，并按自身可用宽度切换 Compact/Normal/Wide Research Workspace。冷启动必须显式选择或新建工程；Agent、编辑器、Build/Flash/Serial 和 Explore 历史按当前工程切换，未完成探索可恢复。浏览器工作台前端入口当前隐藏，相关后端能力暂时保留。
 - 右下角“猫薄荷”悬浮助手复用本地 DeepSeek API Key，专门回答 Catnip Forge 的界面与操作问题；每次提问都会读取随包、可编辑的 `resources/CATNIP_FORGE_USER_GUIDE.md`，聊天浮层内保留深色/浅色切换，不占用左侧硬件 Agent 的任务队列。
 - Worker 负责快捷任务、搜索预处理、任务上下文构造和 Agent 生命周期；同一时间只运行一个活动任务，执行中消息默认追加到当前任务，显式“排队”才建立独立后续任务。
 - Agent 负责推理和任务执行规划，但所有浏览器操作必须通过 MCP 工具完成。
@@ -54,7 +54,7 @@ cd /d E:\Agent\vibeide\vibeide
 scripts\start_electron_desktop.cmd
 ```
 
-发布给其他用户时，应压缩并分发完整的 `electron\dist-package\win-unpacked` 文件夹。接收方完整解压到普通可写目录后运行 `Catnip Forge.exe`；首次启动窗口会引导保存 DeepSeek API Key，保存成功后软件自动重启并直接启用 Agent。不能只发送 exe，也不要把包含真实 `resources\apikey.txt` 的目录重新分发。详细口径见 [Windows v1.5.0 便携版发布检查](docs/WINDOWS_V1_5_0_RELEASE_CHECKLIST.md)。
+发布给其他用户时，应压缩并分发完整的 `electron\dist-package\win-unpacked` 文件夹。接收方完整解压到普通可写目录后运行 `Catnip Forge.exe`；首次启动窗口先引导在本机保存 DeepSeek API Key，自动重启后要求用户显式选择现有工程或在随包 `resources\runtime\hardboard\projects` 下新建工程。不能只发送 exe，也不要把包含真实 `resources\apikey.txt` 的目录重新分发。详细口径见 [Windows v1.5.0 便携版发布检查](docs/WINDOWS_V1_5_0_RELEASE_CHECKLIST.md)。
 
 ### Linux / macOS
 
@@ -120,7 +120,7 @@ pytest tests/test_project.py
 - [GitHub 同步和接力](docs/GITHUB_SYNC.md)
 - [重构计划](docs/REFACTOR_PLAN.md)
 - [安全和账号规则](docs/SECURITY.md)
-- [接力开发文档](docs/HANDOFF.md)
+- [当前施工接力文档](docs/construction/HANDOFF.md)
 - [Hardboard 施工文档](docs/HARDBOARD_CONSTRUCTION.md)
 - [Electron Apple 风格界面施工文档](docs/ELECTRON_APPLE_UI_CONSTRUCTION.md)
 - [Qwen 视觉与聊天附件施工文档](docs/QWEN_VISION_ATTACHMENT_CONSTRUCTION.md)
@@ -150,6 +150,6 @@ pytest tests/test_project.py
 
 ## 下一步
 
-1. 先完成 [Phase 7 当前工程会话](docs/construction/PHASE_7_PROJECT_SESSION_BASELINE.md)：冷启动显式选/建工程，工程切换同步 Agent 历史、编辑器、Build/Flash/Serial，并按工程保存找灵感/解问题多次历史与未完成工作。
-2. 重打 Windows 包并人工复测工程选择、返回/切页/重启恢复、跨工程隔离及烧录目标，再执行真实“解问题”知乎＋全网双搜索验收。
+1. 人工复测最新 `electron/dist-package/win-unpacked`：冷启动工程选择/新建、返回或切页后 Explore 保留、重启恢复、工程 A/B 的 Agent 历史/编辑器/烧录目标隔离。
+2. 经用户明确授权后执行真实“解问题”知乎＋全网双搜索验收；不把既有找灵感结果或软件门禁当作 Diagnosis 证据。
 3. 在全新 Windows 用户环境验收 Access Secret 安全连接；有真实开发板时完成用户确认后的 Build/Flash/Serial 闭环，缺实机证据继续标记 `REAL_HARDWARE_VALIDATION_PENDING`。

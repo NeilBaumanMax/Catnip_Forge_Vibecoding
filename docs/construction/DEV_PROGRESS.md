@@ -4,11 +4,11 @@
 
 - 当前 Phase：Phase 7 软件闭环完成；下一步是用户成品复测，再继续真实 Diagnosis/实机验收。
 - 已完成：`EXPLORE_UI_REFACTOR@48dd8d32` 已经 `669059c2` 合入 `idea_to_production`。Phase 7 实现提交 `6d8187e4` 完成 Main 当前工程门禁、按工程 Agent 会话、编辑器/Build/Flash/Serial 切换和 Explore 多历史持久化；最新 `win-unpacked` 已通过 release/version、隔离冷启动、工程选择和打包版 Chat UI。
-- 当前任务：仅完成 D021–D026、根因记录与 `PHASE_7_PROJECT_SESSION_BASELINE.md`；工程切换还必须同步 Agent 历史/上下文、编辑器和 Build/Flash/Serial，Explore 按工程/模式保存多次历史目录。本轮不修改源码。
+- 当前任务：Phase 7 源码、专项、打包和自动化验收已完成；当前只做文档漂移修正与项目交接，产品源码不再变更。
 - 未完成：用户成品人工复测、全新机器真实安装→Secret 配置人工验收、真实知乎＋全网排障验收、确认后真实施工与实机验证。
 - Blocker：`REAL_HARDWARE_VALIDATION_PENDING`；Access Secret 与 DeepSeek 余额阻塞均已解除。
 - 测试：Runtime/Electron typecheck/build、Project/Explore/Agent session 专项、Explore 全专项、8 场景布局、Workbench、打包版首次启动/工程选择/Chat UI、release/version 与 diff check 通过。未执行真实安装、真实 Diagnosis 或硬件；包未配置代码签名。
-- Git：合并前备份 `backup/pre-explore-ui-merge-20260910` 指向 `d0265836` 并已远端核对；合并提交为 `669059c2`，最终文档提交与远端 hash 需动态查询。
+- Git：Phase 7 实现 `6d8187e4`、打包/验收收口 `c4adf879` 已推送；本次文档交接开始时 local/remote 均为 `c4adf87990840638c89072d6afd4d81ec67a16ae`，最终文档提交需动态查询。
 
 以下按日期记录施工当时的状态与失败证据；其中“未配置”“待接入”等表述不得覆盖上方当前状态。
 ## 2026-09-07 官方 CLI 安装实测

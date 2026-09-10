@@ -33,7 +33,7 @@
 ## 2026-09-10 当前执行状态
 
 - Explore UI Research Workspace 已由 `EXPLORE_UI_REFACTOR` 合入 `idea_to_production`；合并后 Runtime/Electron 构建、Explore 全专项、布局矩阵与 Workbench smoke 通过。
-- UI 合并后的 `idea_to_production@8f28ca3d` 已完整重建 Windows `win-unpacked`；release/version、隔离首启、打包版 UI 与 app.asar Explore/连接标记通过。包未配置代码签名，全新用户真实安装/连接仍待人工验收。
+- Phase 7 最新源码已完整重建 Windows `win-unpacked`；release/version、无 Key 隔离首启、显式工程选择与打包版 Chat UI 通过，包体 4,464,648,810 字节。包未配置代码签名，全新用户真实安装/连接仍待人工验收。
 - [Phase 7 当前工程会话与 Explore 工作保存](PHASE_7_PROJECT_SESSION_BASELINE.md) 已完成源码、专项、构建与 Windows 包自动化验收；冷启动工程门禁、工程隔离、Agent/Editor/Build/Flash/Serial 联动和 Explore 多历史已落地。
 - 下一步由用户复测最新成品；随后在全新 Windows 用户环境人工验收安装授权→Secret 安全窗口→连接确认，并经用户授权执行真实 Diagnosis；有设备后执行确认后的修改、Build、Flash、Serial 与知识验证回写。
 - `LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 继续保留。UI、mock、软件门禁和最新 Windows 包都不能替代真实网络或实机证据。

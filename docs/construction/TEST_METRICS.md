@@ -339,3 +339,17 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 首次打包产物因子进程被回收而不完整，`verify:release` 正确拒绝了包含 NUL 的指南和遗留 `resources/apikey.txt`；该失败产物已被完整重建覆盖，不能作为发布证据。首次打包版首启测试误带 Workbench smoke 环境变量，应用按设计写出结果并主动退出；移除该变量后真实首次启动验收通过。另有两次布局测试误连固定端口残留进程，清理精确 PID 后通过。以上失败均保留为过程证据。
 
 `NOT VERIFIED`：用户在真实成品上的返回/重启/切工程人工复测；真实知乎＋全网 Diagnosis；真实 Agent 改码；真实 Build/Flash/Serial；全新 Windows 用户安装与代码签名。
+
+## 2026-09-10 Phase 7 文档漂移修正与交接
+
+| 检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| Git 动态状态 | 通过 | 开工时分支为 `idea_to_production`，local/remote 均为 `c4adf87990840638c89072d6afd4d81ec67a16ae`，工作区干净 |
+| 当前态断言 | 通过 | README、INDEX、ARCHITECTURE、DEV_PROGRESS、HANDOFF、PROJECT_STATE_REPORT 均指向 Phase 7 已实现状态 |
+| 变更范围 | 通过 | 仅 README 与 Markdown 文档；无 TypeScript、CJS、配置或产品资源修改 |
+| 严格 UTF-8 与本地链接 | 通过 | 所有本轮变更文档无 replacement character，本地 Markdown 链接均存在 |
+| `git diff --check` | 通过 | 无 whitespace error；仅 Git 的 LF→CRLF 工作树提示 |
+
+首次文档验证额外检查了用户已经运行和配置过的本地 `win-unpacked`，因检测到 `resources/apikey.txt` 而停止。用户随后确认该文件是本人主动配置的本机 API Key，并要求本轮忽略打包、专注文档/开发交接；因此不读取、不删除、不提交该文件，也不把用户配置后的可变目录作为本轮发布包检查对象。该文件位于 Git ignored 的 `electron/dist-package/` 下。
+
+本轮未重复应用构建、真实搜索、Agent 调用或硬件动作；Phase 7 代码和打包验证沿用已记录的 `c4adf879` 证据。`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 不变。

@@ -275,3 +275,10 @@
 - 首次 `pack:win` 在 electron-builder 复制约 4.4 GB extraResources 时被外部回收，release 门禁拒绝不完整产物。打包脚本改为 electron-builder 生成应用骨架后，由顶层 Node 进程按原过滤契约分组复制资源；复制完成且确认无 DeepSeek/Qwen Key 后才 stamp。最终包为 4,464,648,810 字节、`1.0.0.7201`。
 - 打包版无 Key 首启、冷启动工程选择与激活、激活后的 Chat UI 全部通过。工程选择测试使用明确的假 Key，结束后已删除；最终 `verify:release` 再次确认两类 Key 均未入包。
 - `NOT VERIFIED` 保留：用户成品人工复测、真实知乎＋全网 Diagnosis、真实 Agent 执行、真实 Build/Flash/Serial、全新 Windows 安装与代码签名。
+
+## 2026-09-10 / Phase 7 文档漂移修正与项目交接
+
+- 开工动态核对 `idea_to_production`：本地与 `origin/idea_to_production` 均为 `c4adf87990840638c89072d6afd4d81ec67a16ae`，工作区干净。本轮只授权文档漂移修正和交接，不修改产品源码、不重新调用搜索/Agent/硬件。
+- 漂移根因是 Phase 7 实现与打包收口后，README 下一步、DEV_PROGRESS 当前任务、PROJECT_STATE_REPORT、ARCHITECTURE、文档索引、Assumption A4–A6 和 Explore UI 历史接力仍保留施工前口径。历史测试数字和当时失败记录原样保留，仅修当前入口或补充明确的后续状态。
+- 当前交接口径统一为：Phase 7 软件和 Windows 包自动化完成；下一步先由用户人工复测成品，再分别执行真实双搜索 Diagnosis、全新 Windows 连接和真机闭环。`LIVE_DIAGNOSIS_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING` 与未签名状态继续保留。
+- 第一次文档专项把已由用户实际运行并配置的本地 `win-unpacked/resources/apikey.txt` 也纳入“发布包无 Key”断言，因此按门禁停止。用户确认该文件由本人填写并明确要求忽略打包、专注开发；后续验证移除该越界断言，不读取、不删除、不提交本机 Key。源码与文档仍不包含凭据。

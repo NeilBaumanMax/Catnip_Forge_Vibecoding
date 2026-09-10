@@ -87,4 +87,4 @@
 
 - 随后从 `idea_to_production@8f28ca3d` 完整执行 `pack:win`，生成 `electron/dist-package/win-unpacked`；总计 4,464,604,893 字节，EXE `1.0.0.7201`。
 - `verify:release`、`verify:version`、隔离 APPDATA 首启、打包版 UI smoke 与 app.asar Explore/连接标记通过；包未配置代码签名。
-- 用户成品试用发现的 Explore 工作丢失和工程自动选择属于 UI 重构验收未覆盖的工程会话缺口，现已转入 [Phase 7 施工基线](PHASE_7_PROJECT_SESSION_BASELINE.md)。该记录不把 Phase 7 文档当成已修复证据。
+- 用户成品试用发现的 Explore 工作丢失和工程自动选择属于 UI 重构验收未覆盖的工程会话缺口；后续 Phase 7 已完成修复、专项和重新打包，见 [Phase 7 工程会话实施与验收](PHASE_7_PROJECT_SESSION_BASELINE.md)。本段保留缺口发现历史，但不再代表当前产品状态。

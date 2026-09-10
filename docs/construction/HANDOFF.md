@@ -1,6 +1,6 @@
 # 新 Agent 接力入口
 
-更新时间：2026-09-10。当前目标分支为 `idea_to_production`；`EXPLORE_UI_REFACTOR` 已通过合并验收并以 merge commit `669059c2` 合入本地目标分支。合并后的文档收尾提交与远端 hash 必须动态查询，不能把本文记录当作实时 Git 状态。开工仍须运行 `git branch --show-current`、`git status --short`、`git rev-parse HEAD`。
+更新时间：2026-09-10。当前目标分支为 `idea_to_production`。本次交接审计开始时 local/remote 均为 `c4adf87990840638c89072d6afd4d81ec67a16ae`；它是 Phase 7 源码与打包基线，不是本文档提交后的实时 Git 状态。接手仍须运行 `git branch --show-current`、`git status --short`、`git rev-parse HEAD` 并核对远端。
 
 ## 当前状态
 
@@ -32,10 +32,13 @@
 - Phase 2：完成。共享 Domain、运行时校验、Main JSON 知识 Store、五个知识 IPC、相关发现与显式选择已实现。
 - Phase 3：软件闭环完成。连接入口、固定知乎/全网搜索桥、受限分析、Idea/Diagnosis UI、结构化 Handoff 和无工具只计划档位已实现；DeepSeek 真实计划输出及知乎“找灵感”通过，一次性“确认并执行”门禁已开放。
 - Phase 4、Phase 5 和 Phase 6 软件范围已完成。Phase 6e 补齐首次使用连接向导：全新用户明确点击安装官方 CLI，已有 CLI 但缺 Secret 时进入探索自动弹一次原生遮蔽窗口。最新 Windows 候选已完整重打并通过 release/version、app.asar 标记和隔离冷启动；真实“找灵感”已通过，真实双搜索排障与实机证据仍 pending。
+- Phase 7 软件与打包自动化完成。Main Project Session、冷启动选/建工程、按工程 Agent 会话、编辑器/Build/Flash/Serial 联动、Explore Idea/Diagnosis 多历史和 interrupted 恢复已实现；等待用户人工复测最新成品。
 
 ## 当前实现边界
 
 `ExplorePanel.tsx` 通过 preload/Main 调用有界 Context 收集器。解问题可见并可取消当前工程、target、最多 6 个源码候选、最近 24 小时同工程 Build/Flash 事件与最多 40 条共享串口记录；串口会明确标注尚未证明属于所选工程。Main 的 Request 准备仍只保留 `selected=true` 项。
+
+Project Session 由 Main 签发 projectId 并绑定规范化 projectDir；冷启动不自动激活。Agent 数据位于 `userData/project-sessions/<projectId>/agent/`，Explore 数据位于 `userData/project-sessions/<projectId>/explore/<mode>/<sessionId>/session.json`。旧全局 Agent 历史只读保留在未归属区；返回 Explore 首页和切换右侧工作区不卸载/清空当前工作，重启后无法续接的 pending 请求转为 interrupted，不自动搜索或消耗额度。
 
 官方连接由固定个人中心 URL、独立宿主遮蔽输入和官方 CLI stdin 完成，Secret 不经过 Renderer/Chat。若 CLI 缺失或不兼容，探索页只在用户点击“安装连接组件并继续”后运行固定官方 setup；若 CLI 可用但缺 Secret，进入探索每次最多自动弹窗一次，取消后不循环。Access Secret 已配置并经官方最小调用验收；固定搜索桥的 `search zhihu` 已真实通过，`search global` 等待排障 Demo 验收。
 
@@ -45,8 +48,8 @@
 ## 下一步 1–3 项
 
 1. 由用户对最新 `electron/dist-package/win-unpacked` 人工复测：返回、切工作区、重启、切工程、Agent 历史、编辑器/烧录目标与新建工程。
-2. 在用户明确授权且不暴露 Secret 的条件下完成真实知乎＋全网 Diagnosis；有设备后再执行确认后的修改、Build、Flash、Serial 与 Knowledge 验证回写。
-3. 再经用户授权具体工程摘要外发，执行真实“解问题”双搜索 Demo；具备设备条件后完成 Build/Flash/Serial 实机闭环。
+2. 经用户授权具体工程摘要外发且不暴露 Secret，执行真实“解问题”知乎＋全网双搜索 Demo。
+3. 具备设备条件后，在用户确认 Plan 后完成真实修改、Build、Flash、Serial 与 Knowledge 验证回写。
 
 ## Decision 与 Assumption
 
@@ -56,14 +59,14 @@ D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探�
 - A2 TESTING：真实模型已返回合法 Idea；真实 Diagnosis 的知乎＋全网双来源仍待验收。
 - A3 CONFIRMED：原子 JSON Store 的保存、重启、损坏保护和选择语义已验证。
 - A4/A5 TESTING：有界源码、同工程/时间 Runtime 与共享串口读取已通过软件反例；真实硬件归属仍待实机。
-- A6 TESTING：UI 合并后的最新 Windows 候选已完整重打，packaged Skill、release/version、Explore/Phase 6e app.asar 标记、隔离冷启动和打包版 UI 通过；全新 Windows 用户的真实安装/连接仍待人工验收。
+- A6 TESTING：Phase 7 最新 Windows 候选已完整重打，packaged Skill、release/version、无 Key 冷启动、工程选择和打包版 Chat UI 通过；全新 Windows 用户的真实安装/连接仍待人工验收。
 - A7 CONFIRMED：安全连接入口不经过 Renderer/Chat；官方凭证验证、最小本人内容请求与真实知乎搜索均成功。
 - A8 UNVERIFIED：未选定并实测比赛硬件故障。
 - A9 CONFIRMED：第五页签、两个入口、Idea/Diagnosis 来源结果和计划展示均已实现并通过 Renderer build。
-- A10 REJECTED：组件本地状态足以承载 Explore 工作。成品实测和代码复核证明重新进入/切工作区会清空，Phase 7 改为 Main 持久化的按工程会话。
-- A11 REJECTED：空 projectDir 可安全回退到列表第一项或最近 Runtime 工程。用户实测证明会在未确认目录执行，Phase 7 改为冷启动显式工程门禁。
-- A12 REJECTED：全局 Agent Conversation Store 能安全服务多个工程。当前单一 activeConversationId 没有工程归属，Phase 7 必须迁移为按工程隔离并保留旧历史。
-- A13 REJECTED：每种 Explore 模式只保存一个最新状态即可。用户要求找灵感/解问题分别保存多次使用记录、未完成和中断工作，因此采用工程会话目录与历史索引。
+- A10 REJECTED：组件本地状态足以承载 Explore 工作。Phase 7 已改为 Main 持久化的按工程会话，并通过返回/切工作区保持回归。
+- A11 REJECTED：空 projectDir 可安全回退到列表第一项或最近 Runtime 工程。Phase 7 已实现冷启动显式工程门禁，打包 UI 验证 `activeProject === null`。
+- A12 REJECTED：全局 Agent Conversation Store 能安全服务多个工程。Phase 7 已按工程隔离会话，旧全局历史保留为未归属只读。
+- A13 REJECTED：每种 Explore 模式只保存一个最新状态即可。Phase 7 已采用工程 + 模式 + sessionId 的多历史目录，覆盖完成、草稿与中断记录。
 
 ## Blocker、Known Issues 与真实验证
 
@@ -86,6 +89,7 @@ Phase 0：13 个检查目标通过、2 次 pytest 启动失败、3 组未验证�
 - 审计开始时 local/remote：`bff953900d1af98aa9e69f50308ed137c4b0b373`；push 与 `ls-remote` 已核对，工作区当时干净。
 - 备份：`backup/pre-phase-0-20260907` → baseline；`backup/pre-phase-1-20260907` → `bba40d57`；`backup/pre-phase-2-20260907` → `b3b32a4b`；`backup/pre-phase-3-20260907` → `42d74e56`。local/remote 均已有核对记录。
 - UI 合并备份：`backup/pre-explore-ui-merge-20260910` → `d0265836`，已推送并经 `ls-remote` 核对；本地合并提交为 `669059c2`，最终远端状态以动态查询为准。
+- Phase 7 施工前备份：`backup/pre-phase-7-20260910` → `8f28ca3d`；实现提交 `6d8187e4`，打包/验收收口提交 `c4adf879`，均已推送。本文档提交后的最终 hash 仍须动态核对。
 - 只能精确暂存；禁止 `reset --hard`、`clean -fd`、`push --force`、擅自 stash 或覆盖用户修改。撤回已提交工作使用经审查的 `git revert <commit>` 并重新测试。
 
 本次文档漂移修正完成后的提交与远端 hash，必须用 Git 动态查询；不能让提交正文虚称包含自身 hash。

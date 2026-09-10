@@ -1,6 +1,15 @@
 # 项目当前真实状态报告
 
-检查日期：2026-09-07（Asia/Shanghai）。检查时尚未修改业务代码。本报告是快照，不替代后续动态检查。
+初始检查日期：2026-09-07（Asia/Shanghai）。下方原始报告保留当时快照，不替代后续动态检查。当前实现状态以本节、Product Truth、HANDOFF 和真实代码为准。
+
+## 2026-09-10 Phase 7 完成补充
+
+- 本次交接审计开始时，本地与 `origin/idea_to_production` 均为 `c4adf87990840638c89072d6afd4d81ec67a16ae`，工作区干净；最终文档提交必须再次动态核对，不能预写自身 hash。
+- Explore Research Workspace 已合入目标分支。Phase 7 实现提交 `6d8187e4` 建立 Main Project Session、冷启动显式选/建工程、按工程 Agent 会话、编辑器/Build/Flash/Serial 联动和 Explore Idea/Diagnosis 多历史持久化；打包/验收收口提交为 `c4adf879`。
+- 最新 Windows 成品位于 `electron/dist-package/win-unpacked`，版本 `1.0.0.7201`、总计 4,464,648,810 字节。无 Key 首启、工程选择、打包版 Chat UI、release/version 均通过；打包验收时 DeepSeek/Qwen Key 未入包，未配置代码签名。用户运行后自行配置的本机 Key 不属于 Git 或原始打包证据。
+- 仍未验证：用户对最新成品的返回/切页/重启/跨工程人工复测、真实知乎＋全网 Diagnosis、真实 Agent 修改、真实 Build/Flash/Serial、全新 Windows 用户安装连接。继续标记 `LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING`。
+
+## 2026-09-07 初始快照（历史）
 
 ## Git 现场
 
