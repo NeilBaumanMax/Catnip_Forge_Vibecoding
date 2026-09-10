@@ -1,13 +1,13 @@
 # 开发进度
 
-更新时间：2026-09-10。Explore UI 重构已合入 `idea_to_production`，探索 MVP 继续执行 Phase 6 的真实集成与实机验收。
+更新时间：2026-09-10。最新 Windows 包已生成；用户成品试用发现 Explore 工作丢失和工程自动选中问题，Phase 7 已完成文档基线但尚未开发。
 
-- 当前 Phase：Phase 6 最终验收；首次使用连接向导、Windows 候选与 Explore Research Workspace 软件验收已完成，真实排障与实机仍待最终验收。
-- 已完成：`EXPLORE_UI_REFACTOR@48dd8d32` 已经 `669059c2` 合入本地 `idea_to_production`。Explore 使用 Container Query 的 Compact/Normal/Wide 布局，正式显示工程证据与来源冲突；原连接、Context、Knowledge、Handoff 和确认门禁保持。
-- 当前任务：执行真实“解问题”双搜索 Demo；具备设备条件后完成真实施工闭环。
-- 未完成：全新机器真实安装→Secret 配置人工验收、真实知乎＋全网排障验收、确认后真实施工与实机验证。
+- 当前 Phase：Phase 7 待用户确认开工；先修复全局当前工程门禁和 Explore 工作保存，再继续 Phase 6 的真实 Diagnosis/实机验收。
+- 已完成：`EXPLORE_UI_REFACTOR@48dd8d32` 已经 `669059c2` 合入 `idea_to_production`。基于文档收尾提交 `8f28ca3d` 的最新 Windows `win-unpacked` 已完整重建并通过 release/version、隔离冷启动、打包版 UI 与 app.asar Explore/连接标记检查；原连接、Context、Knowledge、Handoff 和确认门禁保持。
+- 当前任务：仅完成 D021–D026、根因记录与 `PHASE_7_PROJECT_SESSION_BASELINE.md`；工程切换还必须同步 Agent 历史/上下文、编辑器和 Build/Flash/Serial，Explore 按工程/模式保存多次历史目录。本轮不修改源码。
+- 未完成：Phase 7 源码/测试/新包、全新机器真实安装→Secret 配置人工验收、真实知乎＋全网排障验收、确认后真实施工与实机验证。
 - Blocker：`REAL_HARDWARE_VALIDATION_PENDING`；Access Secret 与 DeepSeek 余额阻塞均已解除。
-- 测试：合并后 Runtime/Electron typecheck/build、Explore 10 项专项、8 场景布局 smoke、Workbench smoke 与 diff check 通过；最新历史候选的 `pack:win`、release/version、app.asar 标记和隔离冷启动仍有效。未执行真实安装、Diagnosis 或硬件。
+- 测试：合并后 Runtime/Electron typecheck/build、Explore 10 项专项、8 场景布局 smoke、Workbench smoke 与 diff check 通过；随后最新源码 `pack:win`、release/version、隔离冷启动、打包版 UI 和 app.asar 标记通过。未执行真实安装、Diagnosis 或硬件；包未配置代码签名。
 - Git：合并前备份 `backup/pre-explore-ui-merge-20260910` 指向 `d0265836` 并已远端核对；合并提交为 `669059c2`，最终文档提交与远端 hash 需动态查询。
 
 以下按日期记录施工当时的状态与失败证据；其中“未配置”“待接入”等表述不得覆盖上方当前状态。

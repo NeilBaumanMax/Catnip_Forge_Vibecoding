@@ -248,3 +248,20 @@
 - 文档补丁第一次因 Windows sandbox helper 无法锁定 `.codex/.sandbox-bin` 而在写入前失败；改走同一系统 `apply_patch.bat` 时又因 `%*` 展开丢失补丁末行而被拒绝。直接把单一补丁参数交给该包装器指向的 Codex apply-patch 引擎后成功；两次失败均无文件改动。
 - 第一次文档本地链接检查在处理根目录 `README.md` 时把空父路径传给 `Join-Path`，因此在链接断言前退出；改为根目录使用 `.` 后复跑，9 个当前文档中的 16 个本地链接全部存在，一致性断言与 `git diff --check` 通过。该失败属于验收脚本编排，不是文档断言失败。
 - 本闭环未调用真实 Diagnosis、Agent 执行、Windows 重新打包或硬件；`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留。最终文档提交、push 与远端 hash 在执行后动态核对，不在提交前虚写。
+
+## 2026-09-10 / Explore UI 合并后完整打包与成品反馈
+
+- 从 `idea_to_production@8f28ca3d` 完整执行 `pack:win` 并生成 `electron/dist-package/win-unpacked`；release/version、隔离 APPDATA 首启、实际 packaged UI smoke 和 app.asar Explore/连接标记通过。包总计 4,464,604,893 字节，EXE 188,969,472 字节、版本 `1.0.0.7201`，未配置代码签名。
+- 首次 packaged UI smoke 只发现 dev Renderer `localhost:5173`，不能作为包证据；停止 dev preview 后隔离启动真实 packaged app 并复测通过。app.asar 检查先修正从仓库根无法解析 `@electron/asar`、归档路径分隔符和根 class 假设，最终通过；一次 PowerShell 引号错误在命令执行前失败。以上为验收编排失败，不冒充产品失败。
+- 用户要求停止打包时完整命令已结束；随后清理 packaged app 残留进程并确认 5173/9230 无监听，没有继续构建。
+- 用户成品试用确认：找灵感结果返回后丢失；解问题有同类状态风险；未选择工程时软件会使用第一项或旧 Runtime 工程。代码复核定位为 ExplorePanel 本地状态/enter 清空/卸载，以及 BrowserPanel 自动首项和 Runtime fallback。
+
+## 2026-09-10 / Phase 7 当前工程会话文档基线
+
+- 用户要求本轮先写计划和施工文档、暂不开发，并追加确认：工程切换必须同步 Agent 对话历史、编辑器和烧录界面；找灵感与解问题需按工程分别保存多次已完成、未完成和中断记录目录。
+- 建立 D021–D026 与 `PHASE_7_PROJECT_SESSION_BASELINE.md`。方案以 Main Project Session 为唯一工程真相；冷启动显式选择/创建；编辑器、Agent、Explore、Build/Flash/Serial 和证据原子切换；活动/排队任务与未保存编辑受门禁保护。
+- 动态核对 `idea_to_production` 本地/上游均为 `8f28ca3d131ab315aed4f8205181737f9181568a`，创建并推送 `backup/pre-phase-7-20260910`，`ls-remote` 返回同一 hash。
+- 状态建议存于 `userData/project-sessions/<projectId>/`：Agent conversations、Explore idea/diagnosis 索引和 `<sessionId>/session.json` 分目录保存。旧全局 Agent 对话保留为未归属历史，不自动串入工程；状态目录不默认污染源码或安装资源。
+- 本轮没有修改 TypeScript/LESS/CJS，没有创建工程、发起搜索、调用 Agent、Build、Flash 或 Serial。应用测试记 `NOT RUN (DOCS ONLY)`；源码实现与新包仍待用户确认开工。
+- 第一次文档状态检查连续两次被损坏的 sandbox helper ACL 拒绝；用户明确“继续”后获准只读/文档操作。一次批量文档 patch 因 `LAYER_CONTRACT.md` 上下文不匹配而部分应用，随后逐文件核对并补齐；不计产品断言失败。
+- 第一次 UTF-8/链接验证把两个命令结果嵌套成数组，`Join-Path` 在真正逐文件断言前失败且尾部输出无效 PASS；修正为显式展平文件数组后，14 个文档的范围、严格 UTF-8 与本地链接检查真实通过。

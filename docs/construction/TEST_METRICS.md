@@ -306,3 +306,19 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 | `git diff --check` | 通过 | 合并后无 whitespace error |
 
 合并验收 5 组目标全部通过、0 最终失败。没有执行真实知乎＋全网 Diagnosis、真实 Agent 执行、Windows 重新打包或真实 Build/Flash/Serial；`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 不变。
+
+## 2026-09-10 Explore UI 合并后 Windows 包
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run pack:win` | 通过 | 从 `idea_to_production@8f28ca3d` 完整构建；包 4,464,604,893 字节，EXE 188,969,472 字节 |
+| `verify:release` / `verify:version` | 通过 | Node v22.14.0、Python/pyserial 3.5、ESP-IDF v5.4.3、Claude Code 2.1.167；版本 `1.0.0.7201`，真实 Key 未入包 |
+| 隔离 APPDATA `verify:first-run` | 通过 | 实际 packaged app 冷启动门禁；测试进程与临时目录已清理 |
+| `smoke:chat-ui:packaged` | 通过 | 连接实际 app.asar Renderer，不使用 dev server |
+| app.asar Explore/连接标记 | 通过 | Container Query、Diagnosis conflict、Idea plan、安装 IPC 与 Main in-flight 锁存在 |
+
+首次 packaged UI smoke 误连正在运行的开发版 Renderer，因此不能作为包证据；停止 dev server、隔离启动 packaged app 后复测通过。app.asar 检查先后修正模块解析目录、归档内反斜杠路径和根元素 class 假设后通过。未执行代码签名、真实新用户安装、真实搜索或硬件。
+
+## 2026-09-10 Phase 7 工程会话施工基线
+
+本轮只建立 D021–D026、目录结构、分层契约、施工顺序与验收矩阵，没有修改产品源码，因此未运行应用构建并明确记为 `NOT RUN (DOCS ONLY)`。实施阶段必须新增并通过：冷启动无工程拒绝；安全创建/路径逃逸；工程 A/B 的编辑器、Agent 对话、Explore 多历史、Build/Flash/Serial 与事件隔离；旧全局对话保留式迁移；返回/切页/reload/restart 恢复；迟到 requestId/task 归属；运行任务和未保存编辑的切换门禁；Store 损坏与 Secret 不落盘。

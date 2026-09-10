@@ -150,6 +150,6 @@ pytest tests/test_project.py
 
 ## 下一步
 
-1. 经用户明确授权具体工程摘要外发后，完成真实“解问题”知乎＋全网双搜索验收。
-2. 在全新 Windows 用户环境人工验收官方连接组件安装授权、Access Secret 安全窗口与连接确认；Secret 不进入 Renderer、Chat、日志或安装包。
-3. 有真实开发板时完成用户确认后的修改、Build、Flash、Serial 和运行验证；无实机证据继续标记 `REAL_HARDWARE_VALIDATION_PENDING`。
+1. 先完成 [Phase 7 当前工程会话](docs/construction/PHASE_7_PROJECT_SESSION_BASELINE.md)：冷启动显式选/建工程，工程切换同步 Agent 历史、编辑器、Build/Flash/Serial，并按工程保存找灵感/解问题多次历史与未完成工作。
+2. 重打 Windows 包并人工复测工程选择、返回/切页/重启恢复、跨工程隔离及烧录目标，再执行真实“解问题”知乎＋全网双搜索验收。
+3. 在全新 Windows 用户环境验收 Access Secret 安全连接；有真实开发板时完成用户确认后的 Build/Flash/Serial 闭环，缺实机证据继续标记 `REAL_HARDWARE_VALIDATION_PENDING`。

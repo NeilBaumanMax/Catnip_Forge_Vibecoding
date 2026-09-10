@@ -1,5 +1,7 @@
 # Agent 历史对话施工文档
 
+> 2026-09-10 当前口径：本文以下内容记录已实现的全局 v2 Conversation Store。用户已确认下一阶段必须改为按当前工程隔离的会话历史；旧 v2 对话保留为“未归属历史”，不得自动绑定工程。目标结构、迁移和切换门禁以 [Phase 7 工程会话施工基线](construction/PHASE_7_PROJECT_SESSION_BASELINE.md) 与 Product Truth 为准；在 Phase 7 通过前不得把该目标写成已实现。
+
 ## 目标
 
 用户可以把不同工程放在不同对话中，关闭并重新打开 Catnip Forge 后仍能查看原消息，并从选中的历史对话继续让 Agent 工作。
@@ -27,6 +29,8 @@ v2 数据包含：
 - 标题、置顶状态、创建/更新时间、任务 ID、消息类别、错误状态和工具名。
 
 旧版单会话 `session.json` 首次加载时自动迁移为一个历史会话，并把已有问答恢复为可见消息。API key、进程环境和完整构建日志不写入会话文件。
+
+Phase 7 后续迁移必须再次保留式升级：每个工程独立保存会话列表、active conversation、消息和上下文；当前 v2 无工程归属的内容迁入未归属历史，只读查看或由用户明确归属。工程切换同步切换 Chat UI 与底层 Agent 上下文，Main/Worker 必须校验 conversation 和 projectId 归属。
 
 ## 上下文连续性
 

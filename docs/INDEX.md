@@ -28,6 +28,7 @@
 22. [LEGACY_WEB_AUTOMATION_CONSTRUCTION](LEGACY_WEB_AUTOMATION_CONSTRUCTION.md)：旧网页录制/回放、爬虫、隐藏工作台与 Python `coddecat` scaffold 的冻结保留边界。
 23. [DEVELOPMENT_WORKFLOW_CONSTRUCTION](DEVELOPMENT_WORKFLOW_CONSTRUCTION.md)：施工文档先行、编码、测试修复、回归、验收、提交、推送和远端确认的强制闭环。
 24. [PACKAGED_RUNTIME_RELIABILITY_CONSTRUCTION](PACKAGED_RUNTIME_RELIABILITY_CONSTRUCTION.md)：成品 Python、Runtime EventBus 持续订阅和 Agent 输入框光标对齐的联合可靠性修复与验收基线。
+25. [PHASE_7_PROJECT_SESSION_BASELINE](construction/PHASE_7_PROJECT_SESSION_BASELINE.md)：冷启动显式工程门禁、Agent/编辑器/Build/Flash/Serial 原子切换，以及找灵感/解问题多历史目录的下一阶段施工基线。
 
 ## 专项与历史文档
 

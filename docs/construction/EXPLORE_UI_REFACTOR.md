@@ -6,7 +6,7 @@
 
 重构前备份：`origin/backup/pre-explore-ui-refactor-20260910` → `d0265836`
 
-合并状态：实现提交 `48dd8d32` 已通过 merge commit `669059c2` 合入本地 `idea_to_production`；合并前远端备份 `origin/backup/pre-explore-ui-merge-20260910` → `d0265836`。最终文档提交和远端 hash 以动态 Git 查询为准。
+合并状态：实现提交 `48dd8d32` 已通过 merge commit `669059c2` 合入并推送 `idea_to_production`；文档收尾为 `8f28ca3d`。合并前远端备份 `origin/backup/pre-explore-ui-merge-20260910` → `d0265836`。
 
 ## 目标与范围
 
@@ -74,7 +74,7 @@
 - PASS：新增 `verify:explore-layout-ui`；覆盖 8 个视口/分栏场景。1920×1080 的 Explore 实际宽度分别为 1412/1222/1013/880px（Chat 24/34/45/52%）及折叠 1854px；2560×1440 为 1365px；3840×2160 为 1801.6px；1200×900 + Chat 52% 为 534.4px。Wide flow 为 1644.4px、两栏，控制台错误 0。
 - 首次 layout smoke 失败：浏览器测试 stub 缺少 BrowserPanel mode 变化所需的 `setBrowserBounds`，Explore 未挂载；补齐无副作用 stub 和诊断后复测通过。产品代码未因此放宽或增加 fallback。
 - Renderer build 保留项目既有的 chunk >500kB warning；未更改构建配置掩盖。
-- NOT VERIFIED：真实知乎＋全网 Diagnosis、真实模型/Agent 执行、真实 Build/Flash/Serial、实体 27 寸显示器人工观感、重新打包 Windows 候选。
+- NOT VERIFIED：真实知乎＋全网 Diagnosis、真实模型/Agent 执行、真实 Build/Flash/Serial、实体 27 寸显示器人工观感。
 
 ## 合并验收
 
@@ -82,3 +82,9 @@
 - 重新执行 Explore Context、Request、Knowledge、Analysis Gate、Search/Handoff、UI、Entry、Zhihu Status、Zhihu Connection 与 Layout UI 专项，全部通过。
 - Layout UI 再次覆盖 1920×1080 的 Chat 24/34/45/52% 与折叠、2560×1440、3840×2160、Compact/Normal/Wide、light/dark、Diagnosis/Plan 和 console error 0。
 - `smoke:workbench` 与 `git diff --check` 通过。未执行真实网络 Diagnosis、真实 Agent 执行、Windows 重新打包或硬件动作，原 NOT VERIFIED 结论不变。
+
+## 合并后 Windows 包
+
+- 随后从 `idea_to_production@8f28ca3d` 完整执行 `pack:win`，生成 `electron/dist-package/win-unpacked`；总计 4,464,604,893 字节，EXE `1.0.0.7201`。
+- `verify:release`、`verify:version`、隔离 APPDATA 首启、打包版 UI smoke 与 app.asar Explore/连接标记通过；包未配置代码签名。
+- 用户成品试用发现的 Explore 工作丢失和工程自动选择属于 UI 重构验收未覆盖的工程会话缺口，现已转入 [Phase 7 施工基线](PHASE_7_PROJECT_SESSION_BASELINE.md)。该记录不把 Phase 7 文档当成已修复证据。

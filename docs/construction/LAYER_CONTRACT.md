@@ -4,10 +4,10 @@
 
 | 层 | 责任与复用入口 | 禁止 |
 | --- | --- | --- |
-| Renderer | 探索两个入口、目标/问题输入、Context 勾选、连接状态、Idea/Diagnosis/来源展示、收藏、阶段导航与确认操作；复用 BrowserPanel/ChatPanel 设计 | Secret 输入/传输、知乎 HTTP、任意 shell/文件、直接 Hardboard、独立 Agent |
+| Renderer | 启动工程选择/创建意图、探索两个入口与历史、Agent/编辑器/任务工程视图、Context 勾选、结果与确认操作；复用 BrowserPanel/ChatPanel 设计 | 自行拼接/信任工程绝对路径、Secret 输入/传输、知乎 HTTP、任意 shell/文件、直接 Hardboard、独立 Agent |
 | Preload / Gateway | 现有显式 IPC 白名单与 Main 注册；校验输入、ID、来源、选择、确认归属 | 暴露任意命令执行、路径读取或 Secret IPC |
-| Main | 用户数据、状态映射、受控 Context、必要编排、桥接；paths/workbench/serial controller | 重写官方 CLI auth、把计划提示当程序授权 |
-| Worker / Agent | 目标理解、动态检索策略、官方 Skill 调用、证据综合、结构化返回、现有 taskId/queue 的计划及执行 | 第二套队列/Agent、未确认写文件、来源伪造、自由文本猜测关键状态 |
+| Main | Project Session 单一真相、工程注册/创建、按工程 Agent/Explore 目录、原子切换门禁、用户数据、受控 Context 与桥接；paths/workbench/serial controller | 自动选择第一/旧工程、跨工程会话注入、重写官方 CLI auth、把计划提示当程序授权 |
+| Worker / Agent | 绑定 projectId/projectDir 的对话、任务、检索、证据综合、结构化返回、现有 taskId/queue 的计划及执行 | 第二套队列/Agent、任务静默改绑、跨工程续聊、未确认写文件、来源伪造、自由文本猜测关键状态 |
 | Skill Manager | 标准 Skill discovery、完整 support tree、部署、@引用；源官方字节保留 | 修改 vendor 协议；在发现目录存同名备份 |
 | Official zhihu | search zhihu/global；官方脚本 status/setup、CLI 生命周期与系统凭证 | 宿主自写等价 API；默认引入其他官方能力 |
 | Runtime MCP | 既有 ESP-IDF、Build、Flash、Serial、snapshot、EventBus/任务进程 | 知乎搜索、LLM 判断、将 build 当 runtime success |
@@ -22,6 +22,17 @@
 5. 真实工具结果按 task/project/time 关联；完成消息不能替代 Build/Flash/Serial 证据。
 6. 本地知识写入不覆盖未知损坏数据；只保存任务摘要和验证记录。
 7. CLI stdout/stderr、提示词、日志无 Secret；连接凭证走官方系统存储，不能经现有会记录全文的 chat:send 输入。
+8. 冷启动未明确确认工程时，active project 必须为空；Editor 写入、Explore 提交、Agent 工程任务、Build 与 Flash 在 Main/Worker 拒绝。
+9. 工程切换必须同步仓库/编辑器、Agent conversations/context、Explore histories、Build/Flash/Serial 目标和事件过滤；活动/排队任务或未保存编辑不能静默改绑。
+10. Agent 与 Explore 记录必须带 Main 签发的 projectId。找灵感/解问题按 mode/sessionId 分目录保存多次历史；旧全局 Agent 对话只能进入未归属历史，不能自动注入。
+
+## 2026-09-10 Phase 7 工程会话边界
+
+- `hardboard/projects` 根目录只能由 Main 的路径服务解析；Renderer 只提交工程 ID 或安全新工程名称，Main 校验 lexical path、realpath、符号链接、保留名和直接子目录边界。
+- project-sessions 位于 Main user-data，不写入安装资源或默认污染源码工程。目录索引、Agent 对话和 Explore session 文件版本化、限额、原子替换并保留损坏证据。
+- Project Session 激活是原子转换；消费者不能各自保存另一份权威 projectDir。Runtime 最近工程只能作为历史证据，不能成为启动选择 fallback。
+- Agent conversation、Worker task、Explore request/plan/handoff、Build/Flash/Serial task 都必须绑定 projectId/projectDir 快照；迟到结果只能回到原工程记录。
+- 本节是待施工契约。通过 Phase 7 专项和成品验收前，不得声称已实现。
 
 
 ## 2026-09-07 知识底座程序边界
