@@ -3,6 +3,8 @@ import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextI
 import type { ExploreConversationMessage, ExploreHandoffArtifact, ExploreWorkSessionRecord, ExploreWorkSessionSummary, ExploreWorkStatus } from '../../common/project-session';
 import ExploreSourceList from './explore/ExploreSourceList';
 import ExploreStageNav, { type ExploreStage } from './explore/ExploreStageNav';
+import exploreIdeaGuagua from '../assets/explore-idea-guagua.png';
+import exploreDiagnosisGuagua from '../assets/explore-diagnosis-guagua.png';
 
 type ExploreView = 'home' | 'idea' | 'diagnosis';
 
@@ -960,6 +962,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
         {notice ? <div className="explore-connection-notice" role="status">{notice}</div> : null}
         <div className="explore-entry-grid">
           <button className="explore-entry-card explore-entry-card--idea" type="button" onClick={() => enter('idea')} data-tour-id="explore-idea">
+            <span className="explore-entry-illustration" aria-hidden="true"><img src={exploreIdeaGuagua} alt="" /></span>
             <span className="explore-entry-symbol explore-entry-symbol--idea" aria-hidden="true">✦</span>
             <span className="explore-entry-index">从一个念头开始</span>
             <strong>找灵感</strong>
@@ -967,6 +970,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             <em>开始探索 <span aria-hidden="true">→</span></em>
           </button>
           <button className="explore-entry-card explore-entry-card--diagnosis" type="button" onClick={() => enter('diagnosis')} data-tour-id="explore-diagnosis">
+            <span className="explore-entry-illustration" aria-hidden="true"><img src={exploreDiagnosisGuagua} alt="" /></span>
             <span className="explore-entry-symbol explore-entry-symbol--diagnosis" aria-hidden="true">⌁</span>
             <span className="explore-entry-index">从一条线索开始</span>
             <strong>解问题</strong>

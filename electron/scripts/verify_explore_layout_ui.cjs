@@ -10,6 +10,7 @@ const cdpList = `http://127.0.0.1:${cdpPort}/json`;
 const tempProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'catnip-explore-layout-'));
 const outputDir = path.join(root, '.tmp');
 const screenshotPath = path.join(outputDir, 'explore-layout-ui.png');
+const entryScreenshotPath = path.join(outputDir, 'explore-entry-layout-ui.png');
 let vite;
 let chrome;
 let socket;
@@ -107,12 +108,27 @@ async function measure(width, height, leftPercent, collapsed = false) {
     if (!panel || !entries) return { missing: true, text: document.body.innerText.slice(0, 600), panelClass: panel?.className || '' };
     const panelWidth = panel.getBoundingClientRect().width;
     const entryColumns = getComputedStyle(entries).gridTemplateColumns.split(' ').filter(Boolean).length;
+    const entryArt = [...document.querySelectorAll('.explore-entry-card')].map((card) => {
+      const art = card.querySelector('.explore-entry-illustration');
+      const image = art?.querySelector('img');
+      const title = card.querySelector('strong');
+      const description = title?.nextElementSibling;
+      const cardRect = card.getBoundingClientRect();
+      const artRect = art?.getBoundingClientRect();
+      const copyRight = Math.max(title?.getBoundingClientRect().right || 0, description?.getBoundingClientRect().right || 0);
+      return {
+        loaded: Boolean(image?.complete && image.naturalWidth >= 1200 && image.naturalHeight >= 1200),
+        anchoredRight: Boolean(artRect && artRect.left >= cardRect.left + cardRect.width * 0.47 && artRect.right <= cardRect.right + cardRect.width * 0.08),
+        copyClear: Boolean(artRect && copyRight <= artRect.left + 2),
+      };
+    });
     return {
       viewport: [${width}, ${height}],
       leftPercent: ${leftPercent},
       collapsed: ${collapsed},
       panelWidth,
       entryColumns,
+      entryArt,
       expectedTier: panelWidth < 700 ? 'compact' : panelWidth < 1200 ? 'normal' : 'wide',
       panelUsesWorkspace: panelWidth / document.querySelector('.right-panel').getBoundingClientRect().width > 0.94,
     };
@@ -254,7 +270,15 @@ async function main() {
     if (scenario.entryColumns !== expectedEntries || !scenario.panelUsesWorkspace) {
       throw new Error(`home layout mismatch: ${JSON.stringify(scenario)}`);
     }
+    if (scenario.entryArt.length !== 2 || scenario.entryArt.some((item) => !item.loaded || !item.anchoredRight || !item.copyClear)) {
+      throw new Error(`entry illustration layout mismatch: ${JSON.stringify(scenario)}`);
+    }
   }
+
+  await measure(1920, 1080, 34, false);
+  fs.mkdirSync(outputDir, { recursive: true });
+  const entryScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+  fs.writeFileSync(entryScreenshotPath, Buffer.from(entryScreenshot.data, 'base64'));
 
   await setViewport(2560, 1440);
   const flowResult = await evaluate(`(async () => {
@@ -327,7 +351,7 @@ async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   const screenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log(JSON.stringify({ scenarios, flowResult, screenshotPath, consoleErrors }, null, 2));
+  console.log(JSON.stringify({ scenarios, flowResult, entryScreenshotPath, screenshotPath, consoleErrors }, null, 2));
 }
 
 main().catch((error) => {

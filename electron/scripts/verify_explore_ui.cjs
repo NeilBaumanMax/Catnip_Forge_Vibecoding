@@ -12,6 +12,8 @@ const globalStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles'
 const appleStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'apple.less'), 'utf8');
 const exploreStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'explore.less'), 'utf8');
 const rendererMain = fs.readFileSync(path.join(root, 'src', 'renderer', 'main.tsx'), 'utf8');
+const ideaEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-idea-guagua.png'));
+const diagnosisEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-diagnosis-guagua.png'));
 
 assert.match(browserPanel, /type PanelMode = [^;]*'explore'/, 'PanelMode must include explore');
 assert.equal((browserPanel.match(/data-tour-id="tab-/g) || []).length, 6, 'exactly six visible workspace tabs are required');
@@ -28,6 +30,10 @@ assert.match(app, /activateProjectSession\(selectedProjectId\)/, 'project activa
 assert.match(explorePanel, />找灵感</, 'idea entry is missing');
 assert.match(explorePanel, />解问题</, 'diagnosis entry is missing');
 assert.match(explorePanel, /本次分析 Context/, 'diagnosis context picker is missing');
+assert.match(explorePanel, /explore-idea-guagua\.png/, 'idea entry illustration is missing');
+assert.match(explorePanel, /explore-diagnosis-guagua\.png/, 'diagnosis entry illustration is missing');
+assert.equal(ideaEntryArt[25], 6, 'idea entry illustration must use real RGBA transparency');
+assert.equal(diagnosisEntryArt[25], 6, 'diagnosis entry illustration must use real RGBA transparency');
 assert.match(explorePanel, /取消勾选后，该项不会进入分析/, 'context exclusion promise is missing');
 assert.match(explorePanel, /需要先连接知乎开放平台/, 'safe connection wording is missing');
 assert.match(explorePanel, /getExploreZhihuStatus/, 'Explore must read connection status through preload');
@@ -98,5 +104,6 @@ assert.match(exploreStyles, /\.explore-source-actions button \{ min-height: 36px
 assert.match(exploreStyles, /\.explore-idea-action-bar/, 'Idea cards need a stable footer action area');
 assert.match(exploreStyles, /\.explore-entry-card--diagnosis[\s\S]{0,500}var\(--explore-cyan\)/, 'diagnosis entry needs a distinct cyan treatment');
 assert.match(exploreStyles, /\.explore-entry-card--idea em[\s\S]{0,100}var\(--explore-purple\)/, 'idea entry needs a distinct purple treatment');
+assert.match(exploreStyles, /\.explore-entry-illustration/, 'entry illustration layout is missing');
 
 console.log('explore UI contract passed: existing flows retained; evidence/conflicts/source detail/stages/container layouts/theme accessibility present');
