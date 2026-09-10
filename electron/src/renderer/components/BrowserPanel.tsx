@@ -28,7 +28,8 @@ interface Props {
   onOpenWorkbenchItem: (targetPath: string) => void;
 }
 
-type PanelMode = 'workbench' | 'repo' | 'monitor' | 'tasks' | 'editor' | 'explore';
+type PanelMode = 'workbench' | 'repo' | 'monitor' | 'tasks' | 'editor' | 'explore' | 'skillHub';
+const SKILL_HUB_URL = 'http://118.195.247.102/#page-top';
 
 function formatSerialEvent(event: SerialMonitorEvent, receiveMode: 'text' | 'hex'): string {
   if (event.direction === 'tx') {
@@ -405,7 +406,7 @@ export default function BrowserPanel({
 
   useEffect(() => {
     const pushBounds = () => {
-      if (mode !== 'workbench' || !browserStageRef.current) {
+      if ((mode !== 'workbench' && mode !== 'skillHub') || !browserStageRef.current) {
         void window.electronAPI?.setBrowserBounds({ x: 0, y: 0, width: 0, height: 0 });
         return;
       }
@@ -533,6 +534,12 @@ export default function BrowserPanel({
     if (!inputUrl.trim()) return;
     setMode('workbench');
     onNavigate(inputUrl.trim());
+  };
+
+  const openSkillHub = () => {
+    setMode('skillHub');
+    setInputUrl(SKILL_HUB_URL);
+    onNavigate(SKILL_HUB_URL);
   };
 
   const handleSelectTab = (tabId: string) => {
@@ -944,10 +951,11 @@ export default function BrowserPanel({
         <button className="active-project-switch" type="button" onClick={requestProjectChange} title={projectDir || '尚未选择工程'}>
           <span>当前工程</span><strong>{activeProject?.name || '请选择'}</strong>
         </button>
+        <button data-tour-id="tab-skill-hub" type="button" role="tab" aria-selected={mode === 'skillHub'} className={`nes-btn${mode === 'skillHub' ? ' is-primary' : ''}`} onClick={openSkillHub}>Neil 的 skill 小站</button>
         <span className="ui-build-label">{UI_BUILD_LABEL}</span>
       </div>
 
-      {mode === 'workbench' ? (
+      {mode === 'workbench' || mode === 'skillHub' ? (
         <div className="workbench-browser">
           <div className="browser-shell-header nes-container is-dark">
             <div className="browser-tabs">
