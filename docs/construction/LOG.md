@@ -282,3 +282,11 @@
 - 漂移根因是 Phase 7 实现与打包收口后，README 下一步、DEV_PROGRESS 当前任务、PROJECT_STATE_REPORT、ARCHITECTURE、文档索引、Assumption A4–A6 和 Explore UI 历史接力仍保留施工前口径。历史测试数字和当时失败记录原样保留，仅修当前入口或补充明确的后续状态。
 - 当前交接口径统一为：Phase 7 软件和 Windows 包自动化完成；下一步先由用户人工复测成品，再分别执行真实双搜索 Diagnosis、全新 Windows 连接和真机闭环。`LIVE_DIAGNOSIS_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING` 与未签名状态继续保留。
 - 第一次文档专项把已由用户实际运行并配置的本地 `win-unpacked/resources/apikey.txt` 也纳入“发布包无 Key”断言，因此按门禁停止。用户确认该文件由本人填写并明确要求忽略打包、专注开发；后续验证移除该越界断言，不读取、不删除、不提交本机 Key。源码与文档仍不包含凭据。
+
+## 2026-09-10 / Phase 8 工程内会话与 Explore Agent 交接基线
+
+- 用户成品试用进一步确认：工程开发 Agent 对话必须保存在对应工程目录；Explore 要有按每条灵感/问题保存的独立 AI 对话和草稿，不能占左侧 Agent；四阶段可随时回看，第三步写工程内计划/交接材料，第四步展示材料并确认后才交工程 Agent；来源、收藏和生成计划按钮需统一且醒目。
+- 代码审计确认 Phase 7 仍写 `userData/project-sessions`；Explore 受限任务默认取得左侧 active conversationId 且过程消息走 `chat:message`；stepper 为只读；没有工程内 artifact；来源按钮为 28px/10px。
+- 建立并远端核对 `backup/pre-phase-8-20260910@050ae64d`。新增 D027–D031 和 `PHASE_8_EXPLORE_AGENT_HANDOFF_BASELINE.md`，目标目录为 `<project>/.catnip/{agent,explore,handoffs}`，旧 userData 只做保留迁移。
+- 第一版文档补丁因主约束上下文与当前文件不完全一致而在写入前整体拒绝；按真实文本拆分后成功，没有产生半写入。
+- 本提交只改 Product Truth 与施工文档，不改 TypeScript/LESS/CJS，不运行真实搜索、模型或硬件。实现必须在该独立文档提交推送后开始。

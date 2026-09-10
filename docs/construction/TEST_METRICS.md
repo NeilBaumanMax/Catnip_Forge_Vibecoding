@@ -340,6 +340,16 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 
 `NOT VERIFIED`：用户在真实成品上的返回/重启/切工程人工复测；真实知乎＋全网 Diagnosis；真实 Agent 改码；真实 Build/Flash/Serial；全新 Windows 用户安装与代码签名。
 
+## 2026-09-10 Phase 8 施工基线
+
+| 检查 | 结果 | 说明 |
+| --- | --- | --- |
+| Git 动态状态与远端备份 | 通过 | `idea_to_production` local/origin 为 `050ae64d`；`backup/pre-phase-8-20260910` 已推送并由 `ls-remote` 核对同 hash |
+| 代码根因审计 | 通过 | 确认 Agent/Explore 仍写 userData、Explore 复用左侧 conversation/chat 通道、stepper 不可切换、无工程内 artifact、来源按钮仅 28px/10px |
+| 文档先行范围 | 通过 | Product Truth、D027–D031、主约束、分层、计划、Handoff、测试与独立 Phase 8 基线；无业务源码修改 |
+
+本基线不运行真实搜索、模型、Build、Flash、Serial 或打包。实现专项必须覆盖工程内目录/迁移、Explore 不污染 Agent、四阶段回看、artifact 生成与篡改拒绝、按钮至少 36px 和布局矩阵。
+
 ## 2026-09-10 Phase 7 文档漂移修正与交接
 
 | 检查 | 最终结果 | 说明 |

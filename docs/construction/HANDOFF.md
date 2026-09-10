@@ -4,6 +4,8 @@
 
 ## 当前状态
 
+- 用户于 2026-09-10 提出并确认 Phase 8：工程 Agent/Explore 状态改存工程内 `.catnip`；Explore 独立对话且不占左侧 Agent；四阶段可回看；第三步生成工程内交接材料，第四步展示并确认后交工程 Agent；修正来源/收藏/生成计划按钮。当前仅完成施工基线，业务实现待开始，详见 [Phase 8 基线](PHASE_8_EXPLORE_AGENT_HANDOFF_BASELINE.md)。
+
 - UI 独立施工基线 `b7063512` 与实现提交 `48dd8d32` 已推送；合并前远端备份 `backup/pre-explore-ui-merge-20260910` 已核对为 `d0265836`。
 - `EXPLORE_UI_REFACTOR` 已合入 `idea_to_production`。合并后 Electron/Runtime 构建、Explore 全专项、布局矩阵与 Workbench smoke 均通过；Main/Preload/IPC/Agent/Search/Runtime/Hardboard 未因 UI 重构改变。
 - Explore 首页、Idea、Diagnosis、Source、Knowledge 和 Plan 已按 Research Workspace 重排；保留全部原 IPC、连接、收藏、验证、相关知识显式选择、Handoff 与 Confirm 行为。
@@ -47,9 +49,9 @@ Project Session 由 Main 签发 projectId 并绑定规范化 projectDir；冷启
 知识数据位于 Electron `userData/explore/knowledge.json`；历史知识只发现，显式选择后才进入 Context。该本地 Store 与知乎官方 Knowledge Base 不同，MVP 不调用后者。
 ## 下一步 1–3 项
 
-1. 由用户对最新 `electron/dist-package/win-unpacked` 人工复测：返回、切工作区、重启、切工程、Agent 历史、编辑器/烧录目标与新建工程。
-2. 经用户授权具体工程摘要外发且不暴露 Secret，执行真实“解问题”知乎＋全网双搜索 Demo。
-3. 具备设备条件后，在用户确认 Plan 后完成真实修改、Build、Flash、Serial 与 Knowledge 验证回写。
+1. 实施 Phase 8 工程 `.catnip` 状态目录和旧 userData 保留迁移。
+2. 隔离 Explore conversation，完成四阶段回看、工程内 artifact 与确认提交门禁，并修正按钮布局。
+3. 通过专项/构建后由用户人工复测，再继续真实双搜索 Diagnosis 与硬件闭环。
 
 ## Decision 与 Assumption
 

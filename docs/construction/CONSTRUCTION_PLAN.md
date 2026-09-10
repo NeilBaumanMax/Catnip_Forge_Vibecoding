@@ -43,6 +43,15 @@
 - 7a–7f：`COMPLETE`。失败回归、Main Project Session、全模块 active project、Agent 会话隔离、Explore 多历史、路径/request/task/Secret 门禁均已实现并通过专项。
 - 7g 软件与打包自动化：`COMPLETE`。Windows 包、无 Key 首启、显式工程选择、打包版 Chat UI、release/version 已通过。
 - 7g 用户人工成品验收：`NOT VERIFIED`。需复测返回、切页、重启、切工程、Agent 历史、编辑器、烧录目标和新建工程；完成后再恢复真实 Diagnosis 验收。
+
+## Phase 8：工程内会话、独立 Explore Agent 与交接材料
+
+- 施工基线见 [Phase 8 文档](PHASE_8_EXPLORE_AGENT_HANDOFF_BASELINE.md)；施工前远端备份 `backup/pre-phase-8-20260910` 已核对为 `050ae64d`。
+- 8a：工程 `.catnip` 路径、Agent/Explore store 迁移和跨工程/符号链接/损坏保护。
+- 8b：Explore 独立 conversation 与 IPC，受限分析/计划过程不再进入左侧 `chat:message`。
+- 8c：四阶段可回看；第三阶段生成 `handoff.json`、`PLAN.md`、`HANDOFF.md`，第四阶段从磁盘展示并确认提交。
+- 8d：Source/Idea 操作区统一尺寸与层级，补齐 keyboard、reduced-motion、wide/normal/compact 和 light/dark 回归。
+- 8e：Review、专项、Runtime/Electron build、成品人工验收；真实 Diagnosis 与硬件仍单独验收。
 ## Phase 1 已定位的最小工程范围
 
 - 新增 `agent/skills/zhihu`，按用户 ZIP 原字节导入，不创建假 Skill。
