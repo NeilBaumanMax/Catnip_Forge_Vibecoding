@@ -423,6 +423,12 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             .then(() => window.electronAPI.createExploreHandoffArtifact({ sessionId: session.id, handoff: session.snapshot.planHandoff!, planResult: result }))
             .then((artifact) => {
               setHandoffArtifact(artifact);
+              const latest = latestWorkSession.current;
+              if (latest) {
+                const persisted: ExploreWorkSessionRecord = { ...latest, updatedAt: new Date().toISOString(), snapshot: { ...latest.snapshot, handoffArtifact: artifact } };
+                latestWorkSession.current = persisted;
+                void window.electronAPI.saveExploreWorkSession(persisted).then(() => refreshWorkSessions()).catch(() => undefined);
+              }
               appendExploreMessage('system', 'handoff', `交接材料已写入 ${artifact.relativeDir}`);
               setNotice(`交接材料已写入 ${artifact.relativeDir}。可进入“执行”步骤预览并确认提交。`);
             })
