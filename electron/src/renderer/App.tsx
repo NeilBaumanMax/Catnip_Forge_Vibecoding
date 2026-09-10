@@ -17,6 +17,7 @@ const MIN_ASSISTANT_SIZE = 96;
 const MAX_ASSISTANT_SIZE = 208;
 const ASSISTANT_SIZE_STEP = 16;
 const APPEARANCE_EDGE_GAP = 12;
+const AUTHOR_GITHUB_URL = 'https://github.com/NeilBaumanMax';
 const ONBOARDING_SMOKE_MODE = new URLSearchParams(window.location.search).has('onboardingSmoke');
 const IDLE_TASK_STATUS: AgentTaskStatus = { busy: false, paused: false, activeTaskId: null, activeTask: null, queueLength: 0, guidanceCount: 0 };
 const ASSISTANT_WELCOME: SoftwareAssistantMessage = {
@@ -1031,7 +1032,19 @@ export default function App() {
             <header className="software-assistant-header">
               <div className="software-assistant-identity">
                 <span className="software-assistant-avatar" aria-hidden="true"><img src={catnipAssistantImage} alt="" /></span>
-                <span><strong>Neil·Bauman's 学院呱呱</strong><small>Catnip Forge 吉祥物与使用助手</small></span>
+                <span className="software-assistant-identity-copy">
+                  <strong>Neil·Bauman's 学院呱呱</strong>
+                  <small>Catnip Forge 吉祥物与使用助手</small>
+                  <button
+                    type="button"
+                    className="software-assistant-author-link"
+                    onClick={() => void window.electronAPI.openExternalUrl(AUTHOR_GITHUB_URL)}
+                    title="在系统默认浏览器打开作者 GitHub"
+                    aria-label="在系统浏览器打开作者 Neil Bauman 的 GitHub"
+                  >
+                    作者 Neil Bauman · GitHub ↗
+                  </button>
+                </span>
               </div>
               <div className="software-assistant-actions" role="group" aria-label="助手与外观设置">
                 <button type="button" className={appearanceTheme === 'light' ? 'is-selected' : ''} onClick={() => setAppearanceTheme('light')} title="浅色模式" aria-label="切换到浅色模式">☀</button>

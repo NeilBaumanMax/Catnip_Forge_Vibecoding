@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import catnipAssistantImage from '../assets/catnip-assistant.png';
 
 const STORAGE_KEY = 'vibeide.onboarding.catnipJourney';
-const VERSION = 6;
+const VERSION = 7;
 const REMIND_DELAY_MS = 24 * 60 * 60 * 1000;
 const TARGET_GAP = 8;
 const CARD_WIDTH = 380;
@@ -55,7 +55,7 @@ const STEPS: TourStep[] = [
     id: 'repository-tab',
     eyebrow: '第二站 · 资源仓库',
     title: '请点击“仓库”',
-    content: '这里集中管理 Skills、硬件工程和参考代码。亲自点击高亮按钮，猫薄荷会继续带路。',
+    content: '这里集中管理 Skills、硬件工程和参考代码。亲自点击高亮按钮，学院呱呱会继续带路。',
     target: '[data-tour-id="tab-repo"]',
     actionLabel: '等待点击“仓库”',
     advanceOnTargetClick: true,
@@ -74,11 +74,45 @@ const STEPS: TourStep[] = [
     title: '硬件工程与参考代码各有用途',
     content: '“硬件工程”是可以实际编辑、编译和烧录的项目；“参考代码”是 ESP-IDF 示例与可复用片段。点击标题可展开，再点击文件可进入编辑器。',
     target: '[data-tour-id="panel-repo"]',
+    actionLabel: '继续认识探索',
+  },
+  {
+    id: 'explore-tab',
+    eyebrow: '第三站 · 独立探索 Agent',
+    title: '请点击“探索”',
+    content: '探索有独立于左侧开发 Agent 的对话与历史。你可以从“找灵感”或“解问题”开始，每次记录都按当前工程保存在 .catnip/explore/。',
+    target: '[data-tour-id="tab-explore"]',
+    actionLabel: '等待点击“探索”',
+    advanceOnTargetClick: true,
+  },
+  {
+    id: 'explore-flow',
+    eyebrow: '探索 · 四步确认流程',
+    title: '描述、查看结论、确认计划、执行',
+    content: '四个步骤可以随时切换回看。第三步由探索 AI 在工程中生成交接材料；第四步先预览，只有你确认提交后，左侧工程 Agent 才能执行。对话和草稿会一直保留在探索历史中。',
+    target: '[data-tour-id="panel-explore"]',
+    actionLabel: '认识 Neil 的 skill 小站',
+  },
+  {
+    id: 'skill-hub-tab',
+    eyebrow: '第四站 · Skill 发现',
+    title: '请点击“Neil 的 skill 小站”',
+    content: '这里打开 Neil 的 Skill Hub，用来浏览和下载安装 Skill。亲自点击高亮标签继续。',
+    target: '[data-tour-id="tab-skill-hub"]',
+    actionLabel: '等待点击 Skill 小站',
+    advanceOnTargetClick: true,
+  },
+  {
+    id: 'skill-hub-boundary',
+    eyebrow: 'Neil 的 skill 小站',
+    title: '线上发现，本地管理与同步',
+    content: '小站负责发现和下载；回到“仓库”中的 Skill Manager 查看本地文件、同步部署和选择 Context。网页内容不会自动加入工程上下文。',
+    target: '[data-tour-id="panel-skill-hub"]',
     actionLabel: '继续认识监视器',
   },
   {
     id: 'monitor-tab',
-    eyebrow: '第三站 · 串口监视器',
+    eyebrow: '第五站 · 串口监视器',
     title: '请点击“监视器”',
     content: '界面和 Agent 共享同一个串口会话。教程只带你查看布局，不会连接任何设备。',
     target: '[data-tour-id="tab-monitor"]',
@@ -95,7 +129,7 @@ const STEPS: TourStep[] = [
   },
   {
     id: 'tasks-tab',
-    eyebrow: '第四站 · 硬件任务',
+    eyebrow: '第六站 · 硬件任务',
     title: '请点击“任务管理器”',
     content: '这里统一查看 ESP-IDF 编译、烧录、进度和诊断日志。教程不会执行任何硬件操作。',
     target: '[data-tour-id="tab-tasks"]',
@@ -128,7 +162,7 @@ const STEPS: TourStep[] = [
   },
   {
     id: 'editor-tab',
-    eyebrow: '第五站 · 工程编辑器',
+    eyebrow: '第七站 · 工程编辑器',
     title: '请点击“编辑器”',
     content: '编辑器只允许访问受控工作目录，支持文件树、多标签、语法高亮、保存和字号调整。',
     target: '[data-tour-id="tab-editor"]',
@@ -201,23 +235,23 @@ const STEPS: TourStep[] = [
     title: '点“＋ Skills”加入专业能力',
     content: '选择器会把 @Skill 插入当前光标位置，可在一条任务中加入多个 Skill。也可以直接输入“@”搜索，退格一次可完整删除引用。',
     target: '[data-tour-id="skill-button"]',
-    actionLabel: '最后认识猫薄荷',
+    actionLabel: '最后认识学院呱呱',
     prepare: 'agent',
   },
   {
     id: 'assistant-trigger',
-    eyebrow: '软件助手 · 猫薄荷',
+    eyebrow: '软件助手 · 学院呱呱',
     title: '请点击右下角的学院呱呱',
-    content: '除了开发 Agent，我也是软件使用聊天机器人。点击高亮的小猫打开我的设置和问答面板。',
+    content: '除了开发 Agent，我也是软件使用聊天机器人。点击高亮的学院呱呱打开我的设置和问答面板。',
     target: '[data-tour-id="assistant-trigger"]',
-    actionLabel: '等待点击猫薄荷',
+    actionLabel: '等待点击学院呱呱',
     advanceOnTargetClick: true,
   },
   {
     id: 'assistant',
     eyebrow: '软件助手 · 随时来问我',
     title: '不会使用软件，就问学院呱呱',
-    content: '我可以回答界面、编译、烧录、串口和 Skills 的使用问题。顶部可切换亮暗模式、重播新手教程、调节小猫显示大小；小猫本身还可以拖动。',
+    content: '我可以回答界面、探索、Skill 小站、编译、烧录、串口和 Skills 的使用问题。顶部可查看作者 GitHub、切换亮暗模式、重播新手教程和调节形象大小；学院呱呱本身还可以拖动。',
     target: '.software-assistant-popover',
     actionLabel: '完成新手旅程',
     prepare: 'assistant',
@@ -226,7 +260,7 @@ const STEPS: TourStep[] = [
     id: 'complete',
     eyebrow: '新手旅程完成 · Enjoy',
     title: 'One Prompt, Working Hardware',
-    content: '从一句 Prompt，到真正运行的硬件。现在把你的目标告诉 Agent，开始创造吧；遇到不会的地方，猫薄荷一直在右下角等你。',
+    content: '从一句 Prompt，到真正运行的硬件。现在把你的目标告诉 Agent，开始创造吧；遇到不会的地方，学院呱呱一直在右下角等你。',
     actionLabel: '开始创造',
   },
 ];

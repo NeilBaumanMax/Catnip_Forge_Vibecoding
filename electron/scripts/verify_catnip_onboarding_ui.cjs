@@ -122,10 +122,18 @@ async function main() {
 
   const result = await evaluate(`(async () => {
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    let clickCount = 0;
     const click = (selector) => {
+      clickCount += 1;
       const element = document.querySelector(selector);
-      if (!(element instanceof HTMLElement)) throw new Error('missing ' + selector);
+      if (!(element instanceof HTMLElement)) throw new Error('missing ' + selector + ' at click #' + clickCount + ', onboarding step "' + title() + '"');
       element.click();
+    };
+    const advanceTargetWithoutAppAction = (selector) => {
+      clickCount += 1;
+      const element = document.querySelector(selector);
+      if (!(element instanceof HTMLElement)) throw new Error('missing ' + selector + ' at click #' + clickCount);
+      element.dispatchEvent(new MouseEvent('click', { bubbles: false }));
     };
     const title = () => document.querySelector('.catnip-onboarding-card h2')?.textContent || '';
     const targetReady = () => {
@@ -162,6 +170,21 @@ async function main() {
     repositoryTargetReady = repositoryTargetReady || targetReady();
     click('.catnip-onboarding-card footer .is-primary');
     await wait(80);
+    const explorePrompt = title();
+    // The Chromium-only harness has no Electron preload for Explore IPC. Exercise
+    // the guide's native target listener without mounting the IPC-backed panel.
+    advanceTargetWithoutAppAction('[data-tour-id="tab-explore"]');
+    await wait(180);
+    const exploreFlow = title();
+    click('.catnip-onboarding-card footer .is-primary');
+    await wait(80);
+    const skillHubPrompt = title();
+    click('[data-tour-id="tab-skill-hub"]');
+    await wait(180);
+    const skillHubBoundary = title();
+    click('.catnip-onboarding-card footer .is-primary');
+    await wait(80);
+    const monitorPrompt = title();
     click('[data-tour-id="tab-monitor"]');
     await wait(150);
     const monitor = title();
@@ -262,6 +285,11 @@ async function main() {
       repositorySkills,
       repositoryResources,
       repositoryTargetReady,
+      explorePrompt,
+      exploreFlow,
+      skillHubPrompt,
+      skillHubBoundary,
+      monitorPrompt,
       monitor,
       tasksBuild,
       tasksFlash,
@@ -296,6 +324,11 @@ async function main() {
     result.repositoryPrompt.includes('点击“仓库”'),
     result.repositorySkills.includes('专业能力'),
     result.repositoryResources.includes('硬件工程与参考代码'),
+    result.explorePrompt.includes('点击“探索”'),
+    result.exploreFlow.includes('描述、查看结论、确认计划、执行'),
+    result.skillHubPrompt.includes('Neil 的 skill 小站'),
+    result.skillHubBoundary.includes('线上发现'),
+    result.monitorPrompt.includes('点击“监视器”'),
     result.monitor.includes('收发与配置'),
     result.tasksBuild.includes('刷新工程'),
     result.tasksFlash.includes('选择串口'),
@@ -310,8 +343,8 @@ async function main() {
     result.composer.includes('完整目标'),
     result.attachments.includes('附件'),
     result.skills.includes('Skills'),
-    result.assistantPrompt.includes('猫薄荷'),
-    result.assistant.includes('问猫薄荷'),
+    result.assistantPrompt.includes('学院呱呱'),
+    result.assistant.includes('问学院呱呱'),
     result.assistantRestored,
     result.complete.includes('One Prompt'),
     result.stored?.status === 'completed',

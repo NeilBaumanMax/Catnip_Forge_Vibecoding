@@ -88,6 +88,21 @@ async function main() {
     const artifactDir = path.join(alpha.projectDir, artifact.relativeDir);
     for (const name of ['handoff.json', 'PLAN.md', 'HANDOFF.md']) if (!fs.existsSync(path.join(artifactDir, name))) throw new Error(`missing handoff artifact ${name}`);
     if (getExploreHandoffArtifact(idea.id).digest !== artifact.digest) throw new Error('handoff artifact could not be reloaded');
+    interrupted.status = 'awaiting_confirmation';
+    interrupted.snapshot.handoffArtifact = artifact;
+    interrupted.snapshot.displayStage = 'execute';
+    interrupted.snapshot.conversation.push(
+      { id: 'explore-message-plan', role: 'assistant', kind: 'plan', text: '执行计划已生成：先验证再实现', createdAt: new Date().toISOString(), requestId: planResult.requestId },
+      { id: 'explore-message-handoff', role: 'system', kind: 'handoff', text: `交接材料已写入 ${artifact.relativeDir}`, createdAt: new Date().toISOString() },
+    );
+    saveExploreWorkSession(interrupted);
+    const restoredHandoffSession = getExploreWorkSession('idea', idea.id);
+    if (restoredHandoffSession.status !== 'awaiting_confirmation'
+      || restoredHandoffSession.snapshot.displayStage !== 'execute'
+      || restoredHandoffSession.snapshot.handoffArtifact?.digest !== artifact.digest
+      || restoredHandoffSession.snapshot.conversation.at(-1)?.id !== 'explore-message-handoff') {
+      throw new Error('completed Explore dialogue and handoff state did not survive disk reload');
+    }
     fs.appendFileSync(path.join(artifactDir, 'PLAN.md'), '\ntampered');
     let tamperRejected = false;
     try { getExploreHandoffArtifact(idea.id); } catch { tamperRejected = true; }
@@ -105,7 +120,7 @@ async function main() {
     if (restored.snapshot.input !== '做一个桌面陪伴设备' || listExploreWorkSessions().length !== 1) {
       throw new Error('alpha explore session did not restore after project switch');
     }
-    console.log('explore session passed: project-local directories, independent conversation, multiple histories, selected Context and project isolation');
+    console.log('explore session passed: project-local directories, complete dialogue + handoff recovery, multiple histories, selected Context and project isolation');
   } finally {
     fs.rmSync(tempRoot, { recursive: true, force: true });
     app.quit();

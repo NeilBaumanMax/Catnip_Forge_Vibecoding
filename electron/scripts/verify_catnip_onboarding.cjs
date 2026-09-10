@@ -28,7 +28,12 @@ expect(onboarding.includes("status: 'later'"), 'missing remind-later persistence
 expect(onboarding.includes("close('completed')"), 'missing completion persistence');
 expect(onboarding.includes('跳过此步'), 'missing unavailable-target escape');
 expect(app.includes('aria-label="打开新手教程"'), 'missing replay entry in Catnip assistant toolbar');
-expect(onboarding.includes('const VERSION = 6;'), 'onboarding state version was not bumped for the updated guide');
+expect(onboarding.includes('const VERSION = 7;'), 'onboarding state version was not bumped for the updated guide');
+expect(onboarding.includes("id: 'explore-tab'") && onboarding.includes("id: 'explore-flow'"), 'missing Explore onboarding steps');
+expect(onboarding.includes("id: 'skill-hub-tab'") && onboarding.includes("id: 'skill-hub-boundary'"), 'missing Neil Skill Hub onboarding steps');
+expect(onboarding.includes('描述、查看结论、确认计划、执行'), 'missing Explore four-step gate explanation');
+expect(onboarding.includes('.catnip/explore/') && onboarding.includes('对话和草稿会一直保留'), 'missing project-local Explore history explanation');
+expect(onboarding.includes('网页内容不会自动加入工程上下文'), 'missing Skill Hub and local Context boundary');
 expect(onboarding.includes("prepare: 'agent'"), 'missing automatic Agent panel restoration');
 expect(onboarding.includes("prepare: 'assistant'"), 'missing automatic assistant restoration');
 expect(onboarding.includes('window.requestAnimationFrame(track)'), 'spotlight does not continuously track moving targets');

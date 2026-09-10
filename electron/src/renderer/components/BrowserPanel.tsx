@@ -956,7 +956,7 @@ export default function BrowserPanel({
       </div>
 
       {mode === 'workbench' || mode === 'skillHub' ? (
-        <div className="workbench-browser">
+        <div className="workbench-browser" data-tour-id="panel-skill-hub">
           <div className="browser-shell-header nes-container is-dark">
             <div className="browser-tabs">
               {visibleTabs.length ? visibleTabs.map((tab) => (
@@ -1040,7 +1040,7 @@ export default function BrowserPanel({
         </div>
       ) : null}
 
-      {exploreMounted ? <div className="explore-panel-host" hidden={mode !== 'explore'}>
+      {exploreMounted ? <div className="explore-panel-host" data-tour-id="panel-explore" hidden={mode !== 'explore'}>
         <ExplorePanel
           projectId={activeProject?.id || ''}
           currentProject={projectDir}

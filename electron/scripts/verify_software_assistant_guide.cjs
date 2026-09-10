@@ -12,6 +12,17 @@ app.once('quit', () => {
 
 async function main() {
   await app.whenReady();
+  const productGuide = fs.readFileSync(path.join(__dirname, '..', 'CATNIP_FORGE_USER_GUIDE.md'), 'utf8');
+  const appSource = fs.readFileSync(path.join(__dirname, '..', 'src', 'renderer', 'App.tsx'), 'utf8');
+  const gatewaySource = fs.readFileSync(path.join(__dirname, '..', 'src', 'main', 'gateway.ts'), 'utf8');
+  const preloadSource = fs.readFileSync(path.join(__dirname, '..', 'src', 'preload', 'index.ts'), 'utf8');
+  assert(productGuide.includes("Neil·Bauman's 学院呱呱"), 'guide does not identify the current mascot assistant');
+  assert(productGuide.includes('当前发布版为 v2.0.0'), 'guide has stale release version');
+  assert(productGuide.includes('.catnip/explore/<模式>/<会话 ID>/session.json') && productGuide.includes('重启软件后仍可'), 'guide does not explain durable Explore dialogue history');
+  assert(productGuide.includes('Neil 的 skill 小站') && productGuide.includes('网页内容不会自动加入 Agent Context'), 'guide does not explain the Skill Hub boundary');
+  assert(appSource.includes('software-assistant-author-link') && appSource.includes('https://github.com/NeilBaumanMax'), 'assistant author link is missing');
+  assert(preloadSource.includes("ipcRenderer.invoke('app:open-external', url)"), 'author link IPC is not exposed through preload');
+  assert(gatewaySource.includes("url !== AUTHOR_GITHUB_URL") && gatewaySource.includes('shell.openExternal(AUTHOR_GITHUB_URL)'), 'author link is not protected by a Main-process allowlist');
   const { buildSoftwareAssistantSystemPrompt } = require('../dist/main/software-assistant');
   const tempRoot = fs.mkdtempSync(path.join(app.getPath('temp'), 'catnip-guide-'));
   const guidePath = path.join(tempRoot, 'CATNIP_FORGE_USER_GUIDE.md');

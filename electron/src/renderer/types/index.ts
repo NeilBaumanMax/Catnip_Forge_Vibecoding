@@ -313,6 +313,7 @@ export interface WindowAPI {
   resumeTask: () => Promise<{ ok: boolean }>;
   stopTask: () => Promise<{ ok: boolean }>;
   navigateBrowser: (url: string) => Promise<{ ok: boolean }>;
+  openExternalUrl: (url: string) => Promise<{ ok: boolean }>;
   getBrowserState: () => Promise<BrowserState>;
   setBrowserBounds: (bounds: { x: number; y: number; width: number; height: number }) => Promise<{ ok: boolean }>;
   listBrowserTabs: () => Promise<{ tabs: BrowserTab[] }>;

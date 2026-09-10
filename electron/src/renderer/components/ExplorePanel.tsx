@@ -725,10 +725,41 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       setExecutionDisposition(started.disposition);
       setWorkStatus('execution_queued');
       setDisplayStage('execute');
-      appendExploreMessage('system', 'execution', '用户已确认交接材料，任务已提交给工程 Agent。', { taskId: started.taskId });
-      setNotice(started.disposition === 'queued'
+      const executionNotice = started.disposition === 'queued'
         ? '已确认执行，任务已进入现有 Agent 队列。'
-        : '已确认执行，现有 Agent 已开始处理。');
+        : '已确认执行，现有 Agent 已开始处理。';
+      const executionMessage: ExploreConversationMessage = {
+        id: crypto.randomUUID(),
+        role: 'system',
+        kind: 'execution',
+        text: '用户已确认交接材料，任务已提交给工程 Agent。',
+        createdAt: new Date().toISOString(),
+        taskId: started.taskId,
+      };
+      const persistedConversation = [...conversation, executionMessage].slice(-200);
+      setConversation(persistedConversation);
+      setNotice(executionNotice);
+      const latest = latestWorkSession.current;
+      if (latest) {
+        const persisted: ExploreWorkSessionRecord = {
+          ...latest,
+          status: 'execution_queued',
+          updatedAt: new Date().toISOString(),
+          snapshot: {
+            ...latest.snapshot,
+            executionStarted: true,
+            executionTaskId: started.taskId,
+            executionDisposition: started.disposition,
+            displayStage: 'execute',
+            conversation: persistedConversation,
+            notice: executionNotice,
+          },
+        };
+        latestWorkSession.current = persisted;
+        setActiveWorkSession(persisted);
+        await window.electronAPI.saveExploreWorkSession(persisted);
+        await refreshWorkSessions();
+      }
     } catch (error) {
       setNotice(error instanceof Error ? error.message : '无法确认执行当前计划');
     } finally {

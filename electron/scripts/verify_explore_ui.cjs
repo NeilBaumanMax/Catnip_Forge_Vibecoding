@@ -70,6 +70,8 @@ assert.match(explorePanel, /本次探索对话/, 'Explore needs a separate conve
 assert.match(explorePanel, /onExploreConversationMessage/, 'Explore conversation must use its own event channel');
 assert.match(explorePanel, /createExploreHandoffArtifact/, 'plan completion must create project handoff artifacts');
 assert.match(explorePanel, /getExploreHandoffArtifact/, 'execution view must reload project handoff artifacts');
+assert.match(explorePanel, /snapshot:\s*\{[\s\S]{0,500}handoffArtifact: artifact[\s\S]{0,300}saveExploreWorkSession\(persisted\)/, 'handoff metadata must be explicitly persisted with the Explore dialogue');
+assert.match(explorePanel, /status: 'execution_queued'[\s\S]{0,700}conversation: persistedConversation[\s\S]{0,400}await window\.electronAPI\.saveExploreWorkSession\(persisted\)/, 'execution confirmation must be persisted before leaving Explore');
 assert.match(explorePanel, /确认提交给工程 Agent/, 'explicit engineering Agent submission action is missing');
 assert.match(exploreSourceList, /打开知乎原文/, 'Zhihu source action must be explicit');
 assert.match(exploreSourceList, /收藏到知识库/, 'knowledge save action must be prominent and explicit');

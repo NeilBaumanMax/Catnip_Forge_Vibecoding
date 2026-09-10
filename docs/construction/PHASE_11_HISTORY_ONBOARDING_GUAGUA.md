@@ -25,3 +25,23 @@
 2. 更新导览步骤及端到端 UI 流程。
 3. 更新知识手册、助手名称与安全外链。
 4. Review、专项测试、构建、打包，并记录首次失败和最终结果。
+
+## 施工结果
+
+- Explore 确认执行后的对话、状态、任务 ID 与提示已改为在返回前显式保存；磁盘重读测试覆盖“完整对话 + 交接材料元数据 + 阶段状态”。
+- 新手旅程升级到版本 7，新增探索独立历史、四步门禁、Neil 的 skill 小站及本地管理边界，共 24 个稳定目标。
+- 学院呱呱使用手册已统一名称和 v2.0.0 信息，并补充探索历史、Skill 小站与作者 GitHub 知识。
+- 作者链接通过 `app:open-external` IPC 打开，Main 进程只允许固定 GitHub 地址。
+
+## 验证记录
+
+- `npm.cmd --prefix electron run typecheck`：通过。
+- `npm.cmd --prefix electron run build:main`：通过。
+- `npm.cmd --prefix electron run build:renderer`：通过；仅保留既有大 chunk 提示。
+- `npm.cmd --prefix electron run verify:explore-session`：通过；Electron 输出 Windows `os_crypt`/GPU 环境噪声，不影响断言。
+- `npm.cmd --prefix electron run verify:explore-ui`：通过。
+- `npm.cmd --prefix electron run verify:explore-layout-ui`：通过；8 组尺寸及完整流程通过，临时 profile 在进程退出时出现一次 `EPERM` 清理提示。
+- `npm.cmd --prefix electron run verify:onboarding`：首次因动态属性未被静态目标检查识别而失败；改为稳定字面目标后通过。
+- `npm.cmd --prefix electron run verify:onboarding-ui`：首次因纯 Chromium 壳缺少 Explore IPC，真实挂载 Explore 后中止；测试改为只触发导览原生目标监听（产品真实点击未改变）后，24 步完整通过。
+- `npm.cmd --prefix electron run verify:software-assistant-guide`、`verify:software-assistant-ui`、`verify:version`：通过；UI 断言确认作者入口可见，版本为 v2.0.0 / 7201。
+- 真实硬件未参与本轮验证：`REAL_HARDWARE_VALIDATION_PENDING`。

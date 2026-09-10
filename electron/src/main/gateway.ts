@@ -36,6 +36,8 @@ import { registerExploreContextIpc } from './explore-context';
 import { registerExploreSessionIpc } from './explore-session';
 import { activateProject, assertPathInActiveProject, createProject, getProjectSessionStatus, requireActiveProject } from './project-session';
 
+const AUTHOR_GITHUB_URL = 'https://github.com/NeilBaumanMax';
+
 export function startGateway(mainWindow: BrowserWindow): void {
   // Gateway 提供 pushUI 能力 — Worker 通过它推消息到 UI
   const pushUI = (channel: string, data: unknown) => {
@@ -256,6 +258,12 @@ export function startGateway(mainWindow: BrowserWindow): void {
   ipcMain.handle('workbench:readFile', async (_event, targetPath: string) => {
     assertPathInActiveProject(targetPath);
     return readWorkbenchFile(targetPath);
+  });
+
+  ipcMain.handle('app:open-external', async (_event, url: unknown) => {
+    if (url !== AUTHOR_GITHUB_URL) throw new Error('不允许打开此外部地址');
+    await shell.openExternal(AUTHOR_GITHUB_URL);
+    return { ok: true };
   });
 
   ipcMain.handle('workbench:listDirectory', async (_event, targetPath: string) => {

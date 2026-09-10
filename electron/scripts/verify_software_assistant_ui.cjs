@@ -80,6 +80,8 @@ async function main() {
           textarea: Boolean(popover?.querySelector('textarea')),
           actionButtons: popover?.querySelectorAll('.software-assistant-actions button').length || 0,
           onboardingButton: Boolean(popover?.querySelector('[aria-label="打开新手教程"]')),
+          authorLink: popover?.querySelector('.software-assistant-author-link')?.textContent,
+          authorLinkLabel: popover?.querySelector('.software-assistant-author-link')?.getAttribute('aria-label'),
           sizeAdjusted,
         };
       })()`,
@@ -91,7 +93,8 @@ async function main() {
     const inViewport = rect && rect.left >= 0 && rect.top >= 0
       && rect.right <= result.viewport.width && rect.bottom <= result.viewport.height;
     if (!result?.triggerImageLoaded || !result?.fullBodyTrigger || !result?.popoverVisible || !result?.textarea || result?.actionButtons !== 6 || !result?.onboardingButton || !result?.sizeAdjusted
-      || result?.title !== "Neil·Bauman's 学院呱呱" || !result?.welcome?.includes('Catnip Forge') || !inViewport) {
+      || result?.title !== "Neil·Bauman's 学院呱呱" || !result?.welcome?.includes('Catnip Forge')
+      || !result?.authorLink?.includes('Neil Bauman') || !result?.authorLinkLabel?.includes('系统浏览器') || !inViewport) {
       throw new Error(`software assistant UI verification failed: ${JSON.stringify(result)}`);
     }
 

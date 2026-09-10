@@ -35,6 +35,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   resumeTask: () => ipcRenderer.invoke('task:resume'),
   stopTask: () => ipcRenderer.invoke('task:stop'),
   navigateBrowser: (url: string) => ipcRenderer.invoke('browser:navigate', url),
+  openExternalUrl: (url: string) => ipcRenderer.invoke('app:open-external', url),
   getBrowserState: () => ipcRenderer.invoke('browser:getState'),
   setBrowserBounds: (bounds: { x: number; y: number; width: number; height: number }) => ipcRenderer.invoke('browser:setBounds', bounds),
   listBrowserTabs: () => ipcRenderer.invoke('browser:listTabs'),
