@@ -14,8 +14,10 @@ const exploreStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles
 const rendererMain = fs.readFileSync(path.join(root, 'src', 'renderer', 'main.tsx'), 'utf8');
 
 assert.match(browserPanel, /type PanelMode = [^;]*'explore'/, 'PanelMode must include explore');
-assert.equal((browserPanel.match(/data-tour-id="tab-/g) || []).length, 5, 'exactly five visible workspace tabs are required');
+assert.equal((browserPanel.match(/data-tour-id="tab-/g) || []).length, 6, 'exactly six visible workspace tabs are required');
 assert.match(browserPanel, /data-tour-id="tab-explore"[^\r\n]*>探索<\/button>/, 'visible Explore tab is missing');
+assert.match(browserPanel, /data-tour-id="tab-skill-hub"/, 'Neil Skill Hub tab is missing');
+assert.match(browserPanel, /http:\/\/118\.195\.247\.102\/#page-top/, 'Skill Hub URL is missing');
 assert.doesNotMatch(browserPanel, /tab-zhihu/, 'Zhihu must not be a workspace name');
 assert.match(browserPanel, /mode === 'explore'[\s\S]*<ExplorePanel/, 'Explore panel must render from the workspace mode');
 assert.match(browserPanel, /exploreMounted[\s\S]*hidden=\{mode !== 'explore'\}/, 'Explore must stay mounted while another workspace is visible');
