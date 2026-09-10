@@ -53,8 +53,8 @@ async function main() {
         const triggerRect = trigger?.getBoundingClientRect();
         const triggerStyle = trigger ? getComputedStyle(trigger) : null;
         const imageStyle = triggerImage ? getComputedStyle(triggerImage) : null;
-        const growButton = popover?.querySelector('[aria-label="放大猫薄荷"]');
-        const shrinkButton = popover?.querySelector('[aria-label="缩小猫薄荷"]');
+        const growButton = popover?.querySelector('[aria-label="放大学院呱呱"]');
+        const shrinkButton = popover?.querySelector('[aria-label="缩小学院呱呱"]');
         const storedSizeBefore = localStorage.getItem('vibeide.assistant.size');
         const resizeButton = !growButton?.disabled ? growButton : shrinkButton;
         const resizeDirection = resizeButton === growButton ? 1 : -1;
@@ -91,7 +91,7 @@ async function main() {
     const inViewport = rect && rect.left >= 0 && rect.top >= 0
       && rect.right <= result.viewport.width && rect.bottom <= result.viewport.height;
     if (!result?.triggerImageLoaded || !result?.fullBodyTrigger || !result?.popoverVisible || !result?.textarea || result?.actionButtons !== 6 || !result?.onboardingButton || !result?.sizeAdjusted
-      || result?.title !== '猫薄荷' || !result?.welcome?.includes('Catnip Forge') || !inViewport) {
+      || result?.title !== "Neil·Bauman's 学院呱呱" || !result?.welcome?.includes('Catnip Forge') || !inViewport) {
       throw new Error(`software assistant UI verification failed: ${JSON.stringify(result)}`);
     }
 

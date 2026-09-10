@@ -39,7 +39,7 @@ const STEPS: TourStep[] = [
   {
     id: 'welcome',
     eyebrow: '欢迎来到 Catnip Forge',
-    title: '跟着猫薄荷认识工作区',
+    title: '跟着 Neil·Bauman\'s 学院呱呱认识工作区',
     content: '这是一段约 5 分钟的离线导览。不会修改工程、调用模型、编译、烧录或打开串口，你可以随时退出。',
     actionLabel: '开始认识',
   },
@@ -207,7 +207,7 @@ const STEPS: TourStep[] = [
   {
     id: 'assistant-trigger',
     eyebrow: '软件助手 · 猫薄荷',
-    title: '请点击右下角的猫薄荷',
+    title: '请点击右下角的学院呱呱',
     content: '除了开发 Agent，我也是软件使用聊天机器人。点击高亮的小猫打开我的设置和问答面板。',
     target: '[data-tour-id="assistant-trigger"]',
     actionLabel: '等待点击猫薄荷',
@@ -216,7 +216,7 @@ const STEPS: TourStep[] = [
   {
     id: 'assistant',
     eyebrow: '软件助手 · 随时来问我',
-    title: '不会使用软件，就问猫薄荷',
+    title: '不会使用软件，就问学院呱呱',
     content: '我可以回答界面、编译、烧录、串口和 Skills 的使用问题。顶部可切换亮暗模式、重播新手教程、调节小猫显示大小；小猫本身还可以拖动。',
     target: '.software-assistant-popover',
     actionLabel: '完成新手旅程',
