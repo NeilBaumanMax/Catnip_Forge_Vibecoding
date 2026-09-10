@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { getRuntimeDataDir } from '../paths';
-import { getProjectSessionsRoot, requireActiveProject } from '../project-session';
+import { getActiveProjectStatePath, getProjectSessionsRoot, requireActiveProject } from '../project-session';
 import { logger } from './logger';
 
 export interface ClaudeSessionTurn {
@@ -97,7 +97,13 @@ function createConversation(title = '新对话'): ChatConversation {
 
 function currentSessionFile(): string {
   const project = requireActiveProject();
-  return path.join(getProjectSessionsRoot(), project.id, 'agent', 'conversations.json');
+  const target = getActiveProjectStatePath('agent', 'conversations.json');
+  const legacy = path.join(getProjectSessionsRoot(), project.id, 'agent', 'conversations.json');
+  if (!fs.existsSync(target) && fs.existsSync(legacy)) {
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(legacy, target, fs.constants.COPYFILE_EXCL);
+  }
+  return target;
 }
 
 function preserveLegacySession(): void {
@@ -203,7 +209,26 @@ function writeStore(store: ConversationStore): void {
   const activeConversationId = conversations.some((conversation) => conversation.id === store.activeConversationId)
     ? store.activeConversationId
     : conversations[0].id;
-  fs.writeFileSync(sessionFile, JSON.stringify({ version: 2, activeConversationId, conversations }, null, 2), 'utf-8');
+  const temporary = `${sessionFile}.${process.pid}.${randomUUID()}.tmp`;
+  const backup = `${sessionFile}.previous`;
+  fs.writeFileSync(temporary, JSON.stringify({ version: 2, activeConversationId, conversations }, null, 2), { encoding: 'utf8', flag: 'wx' });
+  try {
+    if (!fs.existsSync(sessionFile)) {
+      fs.renameSync(temporary, sessionFile);
+      return;
+    }
+    fs.rmSync(backup, { force: true });
+    fs.renameSync(sessionFile, backup);
+    try {
+      fs.renameSync(temporary, sessionFile);
+      fs.rmSync(backup, { force: true });
+    } catch (error) {
+      if (!fs.existsSync(sessionFile) && fs.existsSync(backup)) fs.renameSync(backup, sessionFile);
+      throw error;
+    }
+  } finally {
+    fs.rmSync(temporary, { force: true });
+  }
 }
 
 function readStore(): ConversationStore {

@@ -172,6 +172,8 @@ export interface ExplorePlanStartResult {
 export interface ExploreExecutionConfirmRequest {
   planRequestId: string;
   handoffId: string;
+  sessionId: string;
+  artifactDigest: string;
   confirmed: true;
 }
 
@@ -567,11 +569,13 @@ export function normalizeHandoffContext(value: unknown): HandoffContext {
 
 export function normalizeExploreExecutionConfirmRequest(value: unknown): ExploreExecutionConfirmRequest {
   const input = objectValue(value, 'explore execution confirmation');
-  requireExactKeys(input, ['planRequestId', 'handoffId', 'confirmed'], 'explore execution confirmation');
+  requireExactKeys(input, ['planRequestId', 'handoffId', 'sessionId', 'artifactDigest', 'confirmed'], 'explore execution confirmation');
   if (input.confirmed !== true) throw new Error('explore execution requires explicit confirmation');
   return {
     planRequestId: requiredText(input.planRequestId, 'execution.planRequestId', 120),
     handoffId: requiredText(input.handoffId, 'execution.handoffId', 120),
+    sessionId: requiredText(input.sessionId, 'execution.sessionId', 120),
+    artifactDigest: requiredText(input.artifactDigest, 'execution.artifactDigest', 64),
     confirmed: true,
   };
 }

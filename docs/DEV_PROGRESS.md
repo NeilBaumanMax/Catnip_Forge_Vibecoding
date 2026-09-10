@@ -12,6 +12,8 @@
 
 ## 当前已落地
 
+- [x] 2026-09-10 Phase 8：工程 Agent 对话与 Explore 多历史已物理迁入各工程 `.catnip`；Explore 使用独立对话时间线和可回看的四阶段，第三步生成分层交接材料、第四步磁盘重读并显式确认后提交当前工程 Agent；来源/收藏/计划按钮层级和尺寸已统一。自动化专项与构建通过，新版 Windows 包及真实搜索/Agent/硬件仍待验。
+
 - [x] 2026-09-08 探索 Phase 3a 完成离线只分析门禁：复用现有单队列和 persistent Agent，新增显式 `explore_analysis` 档位；受限进程采用 bare/plan/严格空 MCP/仅 Skill 白名单，默认 Chat 行为保持。版本化 Idea/Diagnosis envelope 绑定 requestId/mode，强制知乎及 Web 来源契约；Worker 拒绝任意文件读取/写入、Bash、Runtime、Build、Flash、Serial，并阻止原始文本、非法或迟到结果进入 UI。真实 DeepSeek、知乎搜索、结果页和 Handoff 仍未验收。
 - [x] 2026-08-08 完整重建 v1.5.0 Windows `win-unpacked`：41,920 个文件、`4,464,201,281` 字节；版本/发布门禁、无 Key 首启、测试 Key 自动重启闭环均通过。成品 Python 与 `IDF_PYTHON_ENV_PATH` 均固定在 `resources/runtime/python`，pyserial 3.5、ESP-IDF v5.4.3 通过且未逃逸到系统或用户虚拟环境
 - [x] 2026-08-08 对外发布标签更新为 `v1.5.0`；内部 Build `7201`、npm `1.0.0-7201` 和 PE `1.0.0.7201` 保持不变，历史 v1.0.0 成品验收记录继续作为既有构建事实保留

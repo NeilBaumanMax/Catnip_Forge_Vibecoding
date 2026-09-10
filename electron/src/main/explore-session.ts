@@ -1,14 +1,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type { IpcMain } from 'electron';
 import type {
+  ExploreHandoffArtifact,
   ExploreWorkSessionRecord,
   ExploreWorkSessionSnapshot,
   ExploreWorkSessionSummary,
   ExploreWorkStatus,
 } from '../common/project-session';
-import { getProjectSessionsRoot, requireActiveProject } from './project-session';
+import { normalizeExploreAnalysisResult, normalizeHandoffContext, type HandoffContext } from '../common/explore';
+import { getActiveProjectStatePath, getProjectSessionsRoot, requireActiveProject } from './project-session';
 
 type ExploreSessionMode = 'idea' | 'diagnosis';
 
@@ -30,7 +32,13 @@ function assertSessionId(value: unknown): string {
 
 function modeRoot(mode: ExploreSessionMode): string {
   const project = requireActiveProject();
-  return path.join(getProjectSessionsRoot(), project.id, 'explore', mode);
+  const target = getActiveProjectStatePath('explore', mode);
+  const legacy = path.join(getProjectSessionsRoot(), project.id, 'explore', mode);
+  if (!fs.existsSync(target) && fs.existsSync(legacy)) {
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.cpSync(legacy, target, { recursive: true, errorOnExist: true, force: false });
+  }
+  return target;
 }
 
 function sessionFile(mode: ExploreSessionMode, id: string): string {
@@ -81,6 +89,9 @@ function defaultSnapshot(): ExploreWorkSessionSnapshot {
     executionTaskId: null,
     executionDisposition: null,
     notice: '',
+    displayStage: 'describe',
+    conversation: [],
+    handoffArtifact: null,
   };
 }
 
@@ -128,6 +139,144 @@ function normalizeSnapshot(value: unknown): ExploreWorkSessionSnapshot {
     executionTaskId: textOrNull(input.executionTaskId),
     executionDisposition: input.executionDisposition === 'started' || input.executionDisposition === 'queued' ? input.executionDisposition : null,
     notice: typeof input.notice === 'string' ? input.notice.slice(0, 2_000) : '',
+    displayStage: input.displayStage === 'analyze' || input.displayStage === 'plan' || input.displayStage === 'execute' ? input.displayStage : 'describe',
+    conversation: Array.isArray(input.conversation) ? input.conversation.slice(-200).flatMap((raw) => {
+      if (!raw || typeof raw !== 'object') return [];
+      const message = raw as ExploreWorkSessionSnapshot['conversation'][number];
+      const roles = new Set(['user', 'assistant', 'system']);
+      const kinds = new Set(['request', 'status', 'result', 'plan', 'handoff', 'execution', 'error']);
+      if (!roles.has(message.role) || !kinds.has(message.kind) || typeof message.text !== 'string') return [];
+      return [{
+        id: typeof message.id === 'string' && message.id ? message.id.slice(0, 160) : randomUUID(),
+        role: message.role,
+        kind: message.kind,
+        text: message.text.slice(0, 8_000),
+        createdAt: typeof message.createdAt === 'string' && Number.isFinite(Date.parse(message.createdAt)) ? message.createdAt : new Date().toISOString(),
+        requestId: textOrNull(message.requestId) || undefined,
+        taskId: textOrNull(message.taskId) || undefined,
+      }];
+    }) : [],
+    handoffArtifact: normalizeArtifactMetadata(input.handoffArtifact),
+  };
+}
+
+function normalizeArtifactMetadata(value: unknown): ExploreHandoffArtifact | null {
+  if (!value || typeof value !== 'object') return null;
+  const input = value as Partial<ExploreHandoffArtifact>;
+  if (input.version !== 1 || typeof input.projectId !== 'string' || typeof input.sessionId !== 'string'
+    || (input.mode !== 'idea' && input.mode !== 'diagnosis') || typeof input.handoffId !== 'string'
+    || typeof input.planRequestId !== 'string' || !/^[a-f0-9]{64}$/.test(String(input.digest || ''))) return null;
+  return {
+    version: 1,
+    projectId: input.projectId,
+    sessionId: input.sessionId,
+    mode: input.mode,
+    handoffId: input.handoffId,
+    planRequestId: input.planRequestId,
+    digest: input.digest as string,
+    relativeDir: typeof input.relativeDir === 'string' ? input.relativeDir.slice(0, 300) : '',
+    planMarkdown: typeof input.planMarkdown === 'string' ? input.planMarkdown.slice(0, 80_000) : '',
+    handoffMarkdown: typeof input.handoffMarkdown === 'string' ? input.handoffMarkdown.slice(0, 80_000) : '',
+    createdAt: typeof input.createdAt === 'string' ? input.createdAt : new Date().toISOString(),
+  };
+}
+
+function writeText(file: string, value: string): void {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const temporary = file + '.' + process.pid + '.' + randomUUID() + '.tmp';
+  fs.writeFileSync(temporary, value, { encoding: 'utf8', flag: 'wx' });
+  try {
+    if (fs.existsSync(file)) {
+      const backup = file + '.previous';
+      fs.rmSync(backup, { force: true });
+      fs.renameSync(file, backup);
+      try {
+        fs.renameSync(temporary, file);
+        fs.rmSync(backup, { force: true });
+      } catch (error) {
+        if (!fs.existsSync(file) && fs.existsSync(backup)) fs.renameSync(backup, file);
+        throw error;
+      }
+    } else fs.renameSync(temporary, file);
+  } finally { fs.rmSync(temporary, { force: true }); }
+}
+
+function artifactDigest(handoff: HandoffContext, planResult: Extract<ReturnType<typeof normalizeExploreAnalysisResult>, { mode: 'plan' }>): string {
+  return createHash('sha256').update(JSON.stringify({ handoff, planResult })).digest('hex');
+}
+
+function renderPlan(planResult: Extract<ReturnType<typeof normalizeExploreAnalysisResult>, { mode: 'plan' }>): string {
+  const lines = ['# 执行计划', '', planResult.plan.summary, '', '## 步骤', ''];
+  planResult.plan.steps.forEach((step, index) => lines.push(`${index + 1}. **${step.title}**`, `   ${step.detail}`));
+  if (planResult.plan.risks.length) lines.push('', '## 风险与注意事项', '', ...planResult.plan.risks.map((risk) => `- ${risk}`));
+  return lines.join('\n') + '\n';
+}
+
+function renderHandoff(handoff: HandoffContext, digest: string): string {
+  const lines = [
+    '# Explore → 工程 Agent 交接', '',
+    `- Handoff ID: \`${handoff.id}\``,
+    `- 类型: ${handoff.kind === 'idea' ? '灵感项目' : '问题调查'}`,
+    `- 材料摘要: \`${digest}\``, '',
+    '## 原始目标', '', handoff.originalGoal, '',
+    '## 建议第一步', '', handoff.suggestedFirstStep, '',
+    '## 已选择 Context', '',
+    ...handoff.environment.map((item) => `- **${item.label}**：${item.summary}`), '',
+    '## 来源', '',
+    ...handoff.sources.map((source) => `- [${source.title}](${source.url})${source.author ? ` — ${source.author}` : ''}`),
+  ];
+  return lines.join('\n') + '\n';
+}
+
+export function createExploreHandoffArtifact(value: unknown): ExploreHandoffArtifact {
+  if (!value || typeof value !== 'object') throw new Error('交接材料请求无效');
+  const input = value as { sessionId?: unknown; handoff?: unknown; planResult?: unknown };
+  const sessionId = assertSessionId(input.sessionId);
+  const handoff = normalizeHandoffContext(input.handoff);
+  const rawPlan = input.planResult as { requestId?: unknown };
+  if (!rawPlan || typeof rawPlan.requestId !== 'string') throw new Error('执行计划请求 ID 无效');
+  const planResult = normalizeExploreAnalysisResult(input.planResult, { requestId: rawPlan.requestId, mode: 'plan' });
+  if (planResult.mode !== 'plan') throw new Error('交接材料需要执行计划');
+  const project = requireActiveProject();
+  const session = readRecord(handoff.kind === 'idea' ? 'idea' : 'diagnosis', sessionId);
+  if (session.snapshot.planRequestId !== planResult.requestId || session.snapshot.planHandoff?.id !== handoff.id) throw new Error('交接材料与当前探索会话不匹配');
+  const digest = artifactDigest(handoff, planResult);
+  const directory = getActiveProjectStatePath('handoffs', sessionId);
+  const artifact: ExploreHandoffArtifact = {
+    version: 1, projectId: project.id, sessionId, mode: session.mode, handoffId: handoff.id,
+    planRequestId: planResult.requestId, digest, relativeDir: `.catnip/handoffs/${sessionId}`,
+    planMarkdown: renderPlan(planResult), handoffMarkdown: renderHandoff(handoff, digest), createdAt: new Date().toISOString(),
+  };
+  fs.mkdirSync(directory, { recursive: true });
+  writeJson(path.join(directory, 'handoff.json'), { version: 1, projectId: project.id, sessionId, mode: session.mode, handoff, planResult, digest, createdAt: artifact.createdAt });
+  writeText(path.join(directory, 'PLAN.md'), artifact.planMarkdown);
+  writeText(path.join(directory, 'HANDOFF.md'), artifact.handoffMarkdown);
+  return artifact;
+}
+
+export function getExploreHandoffArtifact(sessionIdValue: unknown): ExploreHandoffArtifact {
+  const sessionId = assertSessionId(sessionIdValue);
+  const directory = getActiveProjectStatePath('handoffs', sessionId);
+  const payload = JSON.parse(fs.readFileSync(path.join(directory, 'handoff.json'), 'utf8')) as { handoff: unknown; planResult: unknown; digest: unknown; createdAt?: unknown };
+  const handoff = normalizeHandoffContext(payload.handoff);
+  const rawPlan = payload.planResult as { requestId?: unknown };
+  if (!rawPlan || typeof rawPlan.requestId !== 'string') throw new Error('工程内交接材料损坏');
+  const planResult = normalizeExploreAnalysisResult(payload.planResult, { requestId: rawPlan.requestId, mode: 'plan' });
+  if (planResult.mode !== 'plan' || payload.digest !== artifactDigest(handoff, planResult)) throw new Error('工程内交接材料已变化，请重新生成计划');
+  const project = requireActiveProject();
+  const session = readRecord(handoff.kind === 'idea' ? 'idea' : 'diagnosis', sessionId);
+  if (session.projectId !== project.id || session.snapshot.planRequestId !== planResult.requestId || session.snapshot.planHandoff?.id !== handoff.id) throw new Error('工程内交接材料与当前探索会话不匹配');
+  const planMarkdown = fs.readFileSync(path.join(directory, 'PLAN.md'), 'utf8');
+  const handoffMarkdown = fs.readFileSync(path.join(directory, 'HANDOFF.md'), 'utf8');
+  if (planMarkdown !== renderPlan(planResult) || handoffMarkdown !== renderHandoff(handoff, payload.digest as string)) {
+    throw new Error('工程内交接材料已变化，请重新生成计划');
+  }
+  return {
+    version: 1, projectId: project.id, sessionId, mode: session.mode, handoffId: handoff.id,
+    planRequestId: planResult.requestId, digest: payload.digest as string, relativeDir: `.catnip/handoffs/${sessionId}`,
+    planMarkdown,
+    handoffMarkdown,
+    createdAt: typeof payload.createdAt === 'string' && Number.isFinite(Date.parse(payload.createdAt)) ? payload.createdAt : new Date().toISOString(),
   };
 }
 
@@ -239,4 +388,6 @@ export function registerExploreSessionIpc(registrar: Pick<IpcMain, 'handle'>): v
   registrar.handle('explore:sessions:get', async (_event, mode: unknown, id: unknown) => getExploreWorkSession(mode, id));
   registrar.handle('explore:sessions:save', async (_event, value: unknown) => saveExploreWorkSession(value));
   registrar.handle('explore:sessions:delete', async (_event, mode: unknown, id: unknown) => deleteExploreWorkSession(mode, id));
+  registrar.handle('explore:handoff:artifact:create', async (_event, value: unknown) => createExploreHandoffArtifact(value));
+  registrar.handle('explore:handoff:artifact:get', async (_event, sessionId: unknown) => getExploreHandoffArtifact(sessionId));
 }

@@ -63,6 +63,14 @@ assert.match(exploreSourceList, /source\.author/);
 assert.match(exploreSourceList, /source\.excerpt/);
 assert.match(exploreSourceList, /source\.url/);
 assert.match(exploreStageNav, /'describe'[\s\S]*'analyze'[\s\S]*'plan'[\s\S]*'execute'/, 'four-stage navigation is missing');
+assert.match(exploreStageNav, /onClick=\{\(\) => onSelect\(stage\.id\)\}/, 'reached stages must be directly selectable');
+assert.match(explorePanel, /本次探索对话/, 'Explore needs a separate conversation view');
+assert.match(explorePanel, /onExploreConversationMessage/, 'Explore conversation must use its own event channel');
+assert.match(explorePanel, /createExploreHandoffArtifact/, 'plan completion must create project handoff artifacts');
+assert.match(explorePanel, /getExploreHandoffArtifact/, 'execution view must reload project handoff artifacts');
+assert.match(explorePanel, /确认提交给工程 Agent/, 'explicit engineering Agent submission action is missing');
+assert.match(exploreSourceList, /打开知乎原文/, 'Zhihu source action must be explicit');
+assert.match(exploreSourceList, /收藏到知识库/, 'knowledge save action must be prominent and explicit');
 
 assert.match(globalStyles, /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\) minmax\(160px, 0\.9fr\)/);
 assert.match(appleStyles, /grid-template-columns: repeat\(5, minmax\(88px, 120px\)\) minmax\(120px, 1fr\)/);
@@ -77,5 +85,7 @@ assert.match(exploreStyles, /:root\[data-theme="dark"\] \.explore-panel/, 'dark 
 assert.match(exploreStyles, /prefers-reduced-motion/);
 assert.match(exploreStyles, /prefers-reduced-transparency/);
 assert.match(exploreStyles, /prefers-contrast/);
+assert.match(exploreStyles, /\.explore-source-actions button \{ min-height: 36px/, 'source buttons need a stable 36px hit target');
+assert.match(exploreStyles, /\.explore-idea-action-bar/, 'Idea cards need a stable footer action area');
 
 console.log('explore UI contract passed: existing flows retained; evidence/conflicts/source detail/stages/container layouts/theme accessibility present');

@@ -59,6 +59,23 @@ interface QueuedTask {
   exploreExpectation?: ExploreAnalysisExpectation;
 }
 
+export function routeAgentUiEvent(
+  profile: AgentExecutionProfile,
+  channel: string,
+  payload: unknown,
+  expectation?: ExploreAnalysisExpectation | null,
+): { channel: string; payload: unknown } {
+  if (channel !== 'chat:message' || !isRestrictedExploreProfile(profile)) return { channel, payload };
+  return {
+    channel: 'explore:conversation:message',
+    payload: {
+      ...(payload && typeof payload === 'object' ? payload : {}),
+      requestId: expectation?.requestId,
+      mode: profile === 'explore_plan' ? 'plan' : 'analysis',
+    },
+  };
+}
+
 interface ConfirmableExplorePlan {
   handoff: HandoffContext;
   conversationId: string;
@@ -205,7 +222,10 @@ export class Orchestrator {
 
   constructor(mainWindow: BrowserWindow, pushUI: PushUIFn) {
     this.mainWindow = mainWindow;
-    this.pushUI = pushUI;
+    this.pushUI = (channel, payload) => {
+      const routed = routeAgentUiEvent(this.currentExecutionProfile, channel, payload, this.currentExploreExpectation);
+      pushUI(routed.channel, routed.payload);
+    };
     this.state = new TaskStateMachine();
     this.buffer = new ChatBuffer();
 
@@ -247,7 +267,7 @@ export class Orchestrator {
       ...request,
       context: { items: request.context.items.filter((item) => item.selected) },
     };
-    const targetConversationId = conversationId || listChatConversations().activeConversationId;
+    const targetConversationId = conversationId || `explore:${normalizedRequestId}`;
     const binding = bindActiveProject(this.buildExploreAnalysisPrompt(selectedRequest, normalizedRequestId, sources));
     const queuedTask: QueuedTask = {
       id: randomUUID(),
@@ -270,7 +290,7 @@ export class Orchestrator {
     const handoff = normalizeHandoffContext(value);
     const normalizedRequestId = requestId.trim();
     if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/.test(normalizedRequestId)) throw new Error('Explore plan request id is invalid');
-    const targetConversationId = conversationId || listChatConversations().activeConversationId;
+    const targetConversationId = conversationId || `explore:${normalizedRequestId}`;
     const binding = bindActiveProject(this.buildExplorePlanPrompt(handoff, normalizedRequestId));
     this.cleanupConfirmableExplorePlans();
     this.confirmableExplorePlans.set(normalizedRequestId, {
@@ -297,6 +317,10 @@ export class Orchestrator {
     }
   }
 
+  private activeEngineeringConversationId(): string {
+    return listChatConversations().activeConversationId;
+  }
+
   confirmExploreExecution(value: unknown): TaskSubmitResult {
     const confirmation = normalizeExploreExecutionConfirmRequest(value);
     this.cleanupConfirmableExplorePlans();
@@ -318,7 +342,7 @@ export class Orchestrator {
       text: binding.text,
       skillRefs: [],
       attachments: [],
-      conversationId: record.conversationId,
+      conversationId: this.activeEngineeringConversationId(),
       executionProfile: 'default',
     };
     const result = this.submitQueuedTask(queuedTask, this.getTaskStatus().busy ? 'queue' : 'auto');

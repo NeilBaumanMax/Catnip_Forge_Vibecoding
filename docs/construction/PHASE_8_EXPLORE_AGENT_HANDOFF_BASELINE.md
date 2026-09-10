@@ -2,7 +2,7 @@
 
 日期：2026-09-10
 
-状态：用户已确认产品行为；本提交只建立施工范围、目录契约、风险和验收，不修改业务源码。
+状态：`IMPLEMENTED / AUTOMATED VERIFICATION COMPLETE`。本文件先于业务源码以提交 `ae4fb2eb` 建立施工范围；随后实现与自动回归完成。真实搜索、真实工程 Agent 改码、真实 Build/Flash/Serial 与新版 Windows 包仍未执行。
 
 施工前备份：`origin/backup/pre-phase-8-20260910` → `050ae64d8415406068518136d6d9be0873921ac7`，已通过 `git ls-remote` 核对。目标分支 `origin/idea_to_production` 同为该提交。
 
@@ -84,4 +84,13 @@
 
 ## 本轮边界与未验证
 
-本基线提交不运行真实搜索、模型、Build、Flash、Serial 或打包。实现完成前继续保留 `LIVE_DIAGNOSIS_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING`；Phase 8 成品人工体验标记为 `NOT VERIFIED`。
+本轮未运行真实搜索、真实模型、Build、Flash、Serial 或打包，继续保留 `LIVE_DIAGNOSIS_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING`；Phase 8 成品人工体验标记为 `NOT VERIFIED`。
+
+## 实现结果（2026-09-10）
+
+- Main 已签发并校验工程内 `.catnip` 根目录、manifest、路径段与符号链接边界；Agent conversation 和 Explore session 均改存工程目录，旧 userData 仅在新目标不存在时复制且保留源文件。Agent conversation 采用同目录临时文件替换。
+- Explore 分析/计划消息改走独立事件通道并保存在当前 Idea/Diagnosis session；左侧工程 Agent conversation 不再接收这些消息。
+- 四阶段导航可回看所有已到达阶段。计划完成后 Main 写入 `handoff.json`、`PLAN.md`、`HANDOFF.md`；进入执行阶段会从磁盘重读并校验摘要、session/request/handoff/project 绑定，显式确认后才提交到当前工程 Agent，沿用原队列与一次性门禁。
+- 来源操作统一为明确的“打开知乎原文/打开 Web 原文”和“收藏到知识库”，命中高度为 36px；Idea 主操作进入固定底部操作区，不再随卡片内容拉伸。
+- Runtime/Electron 类型检查和构建、Project/Agent/Explore/Hardboard/Serial 专项及 8 场景 Explore DOM 布局回归通过；布局回归确认四阶段切换、工程材料预览、确认按钮可用、来源按钮均为 36px，light/dark 控制台错误为 0。
+- `smoke:workbench` 两次启动均因本机固定 9230 调试端口已被占用而在断言前退出，并伴随 Electron GPU 子进程不可用；作为环境失败保留，未通过杀死用户正在运行的进程规避。该失败不替代已通过的专项布局与构建证据。

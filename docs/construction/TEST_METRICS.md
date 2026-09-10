@@ -350,6 +350,21 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 
 本基线不运行真实搜索、模型、Build、Flash、Serial 或打包。实现专项必须覆盖工程内目录/迁移、Explore 不污染 Agent、四阶段回看、artifact 生成与篡改拒绝、按钮至少 36px 和布局矩阵。
 
+## 2026-09-10 Phase 8 实现与自动回归
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| Runtime `typecheck` / `build` | 通过 | Runtime 未因工程内状态与交接改造回归 |
+| Electron `typecheck` / `build:main` / `build:renderer` | 通过 | Renderer 1265 modules；保留既有大 chunk warning |
+| `verify:project-session` / `verify:session` | 通过 | `.catnip` manifest/路径门禁、A/B 工程对话隔离、切回恢复、旧源保留与原子写入 |
+| `verify:task-queue` / Explore 8 项专项 | 通过 | 独立 Explore 消息、请求/Context/Knowledge、受限分析、交接确认与一次性执行门禁 |
+| `verify:explore-session` | 通过 | 工程内多历史、独立 conversation、三份 artifact、摘要重读与篡改拒绝 |
+| `verify:hardboard` / `verify:serial-monitor` | 通过 | 既有硬件 Context 和共享串口 mock 未回归；不算真机 |
+| `verify:explore-layout-ui` | 通过 | 8 个视口/分栏场景；四阶段、artifact 预览、36px 来源按钮、light/dark、console error 0 |
+| `git diff --check` | 通过 | 无 whitespace error；仅 LF→CRLF 工作树提示 |
+
+首次失败与修复：TypeScript 首次因对 `unknown` 展开失败，增加对象守卫后通过；Explore session 首次仍断言旧路径，改为验证真实工程 `.catnip`；布局脚本先后缺新 preload stub、模板换行转义和旧第三步确认断言，补齐新契约后通过。`smoke:workbench` 两次因固定 9230 端口被现有进程占用并伴随 Electron GPU 子进程退出，在产品断言前失败；未终止用户进程，保留为环境失败。上表列明的构建与专项最终均通过，Workbench smoke 仍为环境阻塞；未运行真实搜索、真实模型/Agent 改码、真机或重新打包。
+
 ## 2026-09-10 Phase 7 文档漂移修正与交接
 
 | 检查 | 最终结果 | 说明 |

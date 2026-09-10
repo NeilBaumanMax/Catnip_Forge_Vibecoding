@@ -1,5 +1,5 @@
 import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreAnalysisStartResult, ExploreContextGatherRequest, ExploreContextGatherResult, ExploreExecutionConfirmRequest, ExploreExecutionStartResult, ExplorePlanStartResult, ExploreRequest, ExploreRequestPreparation, ExploreZhihuConnectionLaunchResult, ExploreZhihuConnectionStatus, ExploreZhihuSetupResult, HandoffContext, KnowledgeCard, SaveKnowledgeCardInput } from '../../common/explore';
-import type { ExploreWorkSessionRecord, ExploreWorkSessionSummary, ProjectSessionStatus, ProjectSummary } from '../../common/project-session';
+import type { ExploreHandoffArtifact, ExploreWorkSessionRecord, ExploreWorkSessionSummary, ProjectSessionStatus, ProjectSummary } from '../../common/project-session';
 
 export type { ExploreWorkSessionRecord, ExploreWorkSessionSummary, ProjectSessionStatus, ProjectSummary } from '../../common/project-session';
 
@@ -349,7 +349,10 @@ export interface WindowAPI {
   startExploreAnalysis: (request: ExploreRequest) => Promise<ExploreAnalysisStartResult>;
   onExploreAnalysisResult: (cb: (result: ExploreAnalysisResult) => void) => void;
   onExploreAnalysisError: (cb: (result: { mode: 'analysis' | 'plan'; requestId?: string; message: string }) => void) => void;
+  onExploreConversationMessage: (cb: (message: { text: string; timestamp: number; kind?: string; error?: boolean; taskId?: string; requestId?: string; mode: 'analysis' | 'plan' }) => void) => void;
   startExplorePlan: (handoff: HandoffContext) => Promise<ExplorePlanStartResult>;
+  createExploreHandoffArtifact: (value: { sessionId: string; handoff: HandoffContext; planResult: ExploreAnalysisResult }) => Promise<ExploreHandoffArtifact>;
+  getExploreHandoffArtifact: (sessionId: string) => Promise<ExploreHandoffArtifact>;
   confirmExploreExecution: (request: ExploreExecutionConfirmRequest) => Promise<ExploreExecutionStartResult>;
   isWorkbenchSmokeTest?: boolean;
   finishWorkbenchSmokeTest?: (result: unknown) => Promise<{ ok: boolean }>;

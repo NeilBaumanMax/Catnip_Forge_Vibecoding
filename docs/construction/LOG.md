@@ -290,3 +290,13 @@
 - 建立并远端核对 `backup/pre-phase-8-20260910@050ae64d`。新增 D027–D031 和 `PHASE_8_EXPLORE_AGENT_HANDOFF_BASELINE.md`，目标目录为 `<project>/.catnip/{agent,explore,handoffs}`，旧 userData 只做保留迁移。
 - 第一版文档补丁因主约束上下文与当前文件不完全一致而在写入前整体拒绝；按真实文本拆分后成功，没有产生半写入。
 - 本提交只改 Product Truth 与施工文档，不改 TypeScript/LESS/CJS，不运行真实搜索、模型或硬件。实现必须在该独立文档提交推送后开始。
+
+## 2026-09-10 / Phase 8 工程内会话、独立 Explore Agent 与交接实现
+
+- 文档先行提交 `ae4fb2eb` 已推送并核对远端后才修改业务源码。Main 新增工程 `.catnip` manifest 与安全路径服务；Agent conversations、Explore Idea/Diagnosis session、对话/草稿和 handoff artifact 统一落在工程子目录，旧 userData 仅复制且保留。
+- 受限 Explore 分析/计划的 `chat:message` 改路由到独立 `explore:conversation:message`；默认使用合成 Explore conversationId。确认执行时才取左侧当前工程 Agent conversationId，复用原任务队列。
+- 第三阶段在 Main 原子写 `handoff.json`、`PLAN.md`、`HANDOFF.md`；第四阶段从磁盘读取并验证摘要和 project/session/request/handoff 绑定。Main/Worker 同时保留显式确认、30 分钟过期和一次性门禁，篡改材料会被拒绝。
+- 四阶段已到达步骤可点击回看且不会重跑搜索/模型；独立 Explore 时间线随 session 保存。Source 打开/收藏操作提升为明确文字和 36px 命中区，Idea 主按钮使用固定底部操作区；Apple Design 指南用于动作层级、即时状态与 reduced-motion。
+- 首次 TypeScript 回归在 `routeAgentUiEvent` 展开 `unknown` 时失败；补对象守卫后通过。Explore session 首次因旧路径断言失败；修为工程 `.catnip` 后通过。布局回归先后暴露缺 preload stub、模板字符串换行转义、旧第三阶段确认断言，逐项修正测试夹具后 8 场景通过，没有降低产品断言。
+- Runtime/Electron typecheck/build、Project/Agent session、task queue、Explore UI/entry/request/context/knowledge/analysis gate/search handoff/session、Hardboard、Serial mock 以及 Explore layout UI 最终通过。`smoke:workbench` 两次因本机固定 9230 端口被占用，并伴随 Electron GPU 子进程退出，在断言前失败；不终止用户进程规避，记录为环境失败。
+- 未调用真实知乎/全网搜索、真实模型、真实工程 Agent 改码、Build/Flash/Serial 或重新打包。`LIVE_DIAGNOSIS_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING` 和新版成品人工验收继续保留。

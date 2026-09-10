@@ -47,11 +47,11 @@
 ## Phase 8：工程内会话、独立 Explore Agent 与交接材料
 
 - 施工基线见 [Phase 8 文档](PHASE_8_EXPLORE_AGENT_HANDOFF_BASELINE.md)；施工前远端备份 `backup/pre-phase-8-20260910` 已核对为 `050ae64d`。
-- 8a：工程 `.catnip` 路径、Agent/Explore store 迁移和跨工程/符号链接/损坏保护。
-- 8b：Explore 独立 conversation 与 IPC，受限分析/计划过程不再进入左侧 `chat:message`。
-- 8c：四阶段可回看；第三阶段生成 `handoff.json`、`PLAN.md`、`HANDOFF.md`，第四阶段从磁盘展示并确认提交。
-- 8d：Source/Idea 操作区统一尺寸与层级，补齐 keyboard、reduced-motion、wide/normal/compact 和 light/dark 回归。
-- 8e：Review、专项、Runtime/Electron build、成品人工验收；真实 Diagnosis 与硬件仍单独验收。
+- 8a：`COMPLETE`。工程 `.catnip` 路径、manifest、Agent/Explore store 保留迁移和跨工程/符号链接/损坏保护已实现。
+- 8b：`COMPLETE`。Explore 独立 conversation 与 IPC 已实现，受限分析/计划过程不再进入左侧 `chat:message`。
+- 8c：`COMPLETE`。四阶段可回看；第三阶段生成三份材料，第四阶段从磁盘展示并经摘要/绑定/一次性门禁确认提交。
+- 8d：`COMPLETE`。Source/Idea 操作层级、36px 命中区、keyboard、reduced-motion、wide/normal/compact 和 light/dark 回归已完成。
+- 8e 自动 Review/专项/Runtime/Electron build：`COMPLETE`；成品人工验收、真实 Diagnosis、真实 Agent 改码与硬件：`NOT VERIFIED`。本轮未重新打包 Windows 成品。
 ## Phase 1 已定位的最小工程范围
 
 - 新增 `agent/skills/zhihu`，按用户 ZIP 原字节导入，不创建假 Skill。

@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-- 用户于 2026-09-10 提出并确认 Phase 8：工程 Agent/Explore 状态改存工程内 `.catnip`；Explore 独立对话且不占左侧 Agent；四阶段可回看；第三步生成工程内交接材料，第四步展示并确认后交工程 Agent；修正来源/收藏/生成计划按钮。当前仅完成施工基线，业务实现待开始，详见 [Phase 8 基线](PHASE_8_EXPLORE_AGENT_HANDOFF_BASELINE.md)。
+- Phase 8 源码与自动化回归已完成：工程 Agent/Explore 状态改存工程内 `.catnip`；Explore 独立对话且不占左侧 Agent；四阶段可回看；第三步生成工程内交接材料，第四步从磁盘展示并确认后交工程 Agent；来源/收藏/生成计划按钮已统一。详见 [Phase 8 基线与结果](PHASE_8_EXPLORE_AGENT_HANDOFF_BASELINE.md)。新版 Windows 包与用户人工成品体验尚未验证。
 
 - UI 独立施工基线 `b7063512` 与实现提交 `48dd8d32` 已推送；合并前远端备份 `backup/pre-explore-ui-merge-20260910` 已核对为 `d0265836`。
 - `EXPLORE_UI_REFACTOR` 已合入 `idea_to_production`。合并后 Electron/Runtime 构建、Explore 全专项、布局矩阵与 Workbench smoke 均通过；Main/Preload/IPC/Agent/Search/Runtime/Hardboard 未因 UI 重构改变。
@@ -40,18 +40,18 @@
 
 `ExplorePanel.tsx` 通过 preload/Main 调用有界 Context 收集器。解问题可见并可取消当前工程、target、最多 6 个源码候选、最近 24 小时同工程 Build/Flash 事件与最多 40 条共享串口记录；串口会明确标注尚未证明属于所选工程。Main 的 Request 准备仍只保留 `selected=true` 项。
 
-Project Session 由 Main 签发 projectId 并绑定规范化 projectDir；冷启动不自动激活。Agent 数据位于 `userData/project-sessions/<projectId>/agent/`，Explore 数据位于 `userData/project-sessions/<projectId>/explore/<mode>/<sessionId>/session.json`。旧全局 Agent 历史只读保留在未归属区；返回 Explore 首页和切换右侧工作区不卸载/清空当前工作，重启后无法续接的 pending 请求转为 interrupted，不自动搜索或消耗额度。
+Project Session 由 Main 签发 projectId 并绑定规范化 projectDir；冷启动不自动激活。Agent 数据位于 `<project>/.catnip/agent/conversations.json`，Explore 数据位于 `<project>/.catnip/explore/<mode>/<sessionId>/session.json`，交接材料位于 `<project>/.catnip/handoffs/<sessionId>/`。旧 userData 工程记录在目标不存在时复制并保留源文件；旧全局 Agent 历史只读保留在未归属区。返回 Explore 首页、四阶段回看和切换右侧工作区不清空当前工作，重启后无法续接的 pending 请求转为 interrupted，不自动搜索或消耗额度。
 
 官方连接由固定个人中心 URL、独立宿主遮蔽输入和官方 CLI stdin 完成，Secret 不经过 Renderer/Chat。若 CLI 缺失或不兼容，探索页只在用户点击“安装连接组件并继续”后运行固定官方 setup；若 CLI 可用但缺 Secret，进入探索每次最多自动弹窗一次，取消后不循环。Access Secret 已配置并经官方最小调用验收；固定搜索桥的 `search zhihu` 已真实通过，`search global` 等待排障 Demo 验收。
 
-现有 Worker 继续使用单队列和 persistent Agent。`explore_analysis` 与 `explore_plan` 分别执行只分析和无工具只计划；合法结构化结果已接入 Idea/Diagnosis、来源和计划 UI。DeepSeek 真实计划输出已通过；计划完成后可由用户点击“确认并执行”，Main 以一次性、绑定计划与交接 ID、30 分钟过期的门禁提交到原有任务队列，确认前不开放文件、Build、Flash 或 Serial。
+现有 Worker 继续使用单队列和 persistent Agent。`explore_analysis` 与 `explore_plan` 分别执行只分析和无工具只计划，并通过独立 Explore conversation 事件返回，不写左侧工程 Agent 历史。合法计划完成后由 Main 在工程目录写入三份交接材料；第四步从磁盘重读、校验摘要与 project/session/request/handoff 绑定，用户点击“确认提交给工程 Agent”后才以一次性、30 分钟过期门禁提交到当前工程 Agent 对话。确认前不开放文件、Build、Flash 或 Serial。
 
 知识数据位于 Electron `userData/explore/knowledge.json`；历史知识只发现，显式选择后才进入 Context。该本地 Store 与知乎官方 Knowledge Base 不同，MVP 不调用后者。
 ## 下一步 1–3 项
 
-1. 实施 Phase 8 工程 `.catnip` 状态目录和旧 userData 保留迁移。
-2. 隔离 Explore conversation，完成四阶段回看、工程内 artifact 与确认提交门禁，并修正按钮布局。
-3. 通过专项/构建后由用户人工复测，再继续真实双搜索 Diagnosis 与硬件闭环。
+1. 由用户在开发版或下一版成品人工复测：切工程时左侧 Agent 历史切换、Explore 多会话/草稿恢复、四阶段回看与第四步确认提交。
+2. 如需交付安装包，基于 Phase 8 提交重新执行 `pack:win`、release/version、无 Key 首启与 packaged UI 门禁。
+3. 经用户另行授权后继续真实双搜索 Diagnosis；有设备后执行真实工程 Agent 改码与 Build/Flash/Serial 闭环。
 
 ## Decision 与 Assumption
 
@@ -67,8 +67,9 @@ D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探�
 - A9 CONFIRMED：第五页签、两个入口、Idea/Diagnosis 来源结果和计划展示均已实现并通过 Renderer build。
 - A10 REJECTED：组件本地状态足以承载 Explore 工作。Phase 7 已改为 Main 持久化的按工程会话，并通过返回/切工作区保持回归。
 - A11 REJECTED：空 projectDir 可安全回退到列表第一项或最近 Runtime 工程。Phase 7 已实现冷启动显式工程门禁，打包 UI 验证 `activeProject === null`。
-- A12 REJECTED：全局 Agent Conversation Store 能安全服务多个工程。Phase 7 已按工程隔离会话，旧全局历史保留为未归属只读。
-- A13 REJECTED：每种 Explore 模式只保存一个最新状态即可。Phase 7 已采用工程 + 模式 + sessionId 的多历史目录，覆盖完成、草稿与中断记录。
+- A12 REJECTED：全局 Agent Conversation Store 能安全服务多个工程。Phase 8 已将工程 Agent 对话物理存入各工程 `.catnip/agent`，旧全局历史保留为未归属只读。
+- A13 REJECTED：每种 Explore 模式只保存一个最新状态即可。Phase 8 已采用工程内 mode + sessionId 的多历史目录，并持久化各自草稿、阶段和独立对话。
+- A14 CONFIRMED：工程内 JSON/Markdown artifact 可作为 Explore → 工程 Agent 的可审阅边界；自动化已覆盖磁盘重读、摘要/绑定不符、篡改和重复确认拒绝。
 
 ## Blocker、Known Issues 与真实验证
 

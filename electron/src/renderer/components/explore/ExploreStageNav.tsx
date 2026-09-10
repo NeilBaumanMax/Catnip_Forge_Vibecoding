@@ -4,6 +4,8 @@ export type ExploreStage = 'describe' | 'analyze' | 'plan' | 'execute';
 
 interface Props {
   current: ExploreStage;
+  furthest: ExploreStage;
+  onSelect: (stage: ExploreStage) => void;
 }
 
 const STAGES: Array<{ id: ExploreStage; label: string; index: string }> = [
@@ -13,17 +15,21 @@ const STAGES: Array<{ id: ExploreStage; label: string; index: string }> = [
   { id: 'execute', label: '执行', index: '4' },
 ];
 
-export default function ExploreStageNav({ current }: Props) {
+export default function ExploreStageNav({ current, furthest, onSelect }: Props) {
   const currentIndex = STAGES.findIndex((stage) => stage.id === current);
+  const furthestIndex = STAGES.findIndex((stage) => stage.id === furthest);
   return (
     <nav className="explore-stage-nav" aria-label="探索阶段">
       <ol>
         {STAGES.map((stage, index) => {
-          const state = index < currentIndex ? 'complete' : index === currentIndex ? 'current' : 'future';
+          const available = index <= furthestIndex;
+          const state = index < currentIndex ? 'complete' : index === currentIndex ? 'current' : available ? 'available' : 'future';
           return (
-            <li key={stage.id} className={`is-${state}`} aria-current={state === 'current' ? 'step' : undefined}>
-              <span>{state === 'complete' ? '✓' : stage.index}</span>
-              <strong>{stage.label}</strong>
+            <li key={stage.id} className={`is-${state}`}>
+              <button type="button" disabled={!available} onClick={() => onSelect(stage.id)} aria-current={state === 'current' ? 'step' : undefined}>
+                <span>{index < furthestIndex ? '✓' : stage.index}</span>
+                <strong>{stage.label}</strong>
+              </button>
             </li>
           );
         })}

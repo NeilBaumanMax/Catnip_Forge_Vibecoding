@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextItem, ExploreRequest, HandoffContext, IdeaResult, KnowledgeCard, SourceEvidence, ExploreZhihuConnectionStatus } from '../../common/explore';
-import type { ExploreWorkSessionRecord, ExploreWorkSessionSummary, ExploreWorkStatus } from '../../common/project-session';
+import type { ExploreConversationMessage, ExploreHandoffArtifact, ExploreWorkSessionRecord, ExploreWorkSessionSummary, ExploreWorkStatus } from '../../common/project-session';
 import ExploreSourceList from './explore/ExploreSourceList';
 import ExploreStageNav, { type ExploreStage } from './explore/ExploreStageNav';
 
@@ -96,6 +96,9 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   const [workSessions, setWorkSessions] = useState<ExploreWorkSessionSummary[]>([]);
   const [activeWorkSession, setActiveWorkSession] = useState<ExploreWorkSessionRecord | null>(null);
   const [workStatus, setWorkStatus] = useState<ExploreWorkStatus>('draft');
+  const [displayStage, setDisplayStage] = useState<ExploreStage>('describe');
+  const [conversation, setConversation] = useState<ExploreConversationMessage[]>([]);
+  const [handoffArtifact, setHandoffArtifact] = useState<ExploreHandoffArtifact | null>(null);
   const latestWorkSession = useRef<ExploreWorkSessionRecord | null>(null);
   const restoringKnowledgeSelection = useRef(false);
   const restoringContextSelection = useRef<string[] | null>(null);
@@ -103,6 +106,19 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   const activePlanRequestId = useRef<string | null>(null);
   const connectionWatchId = useRef(0);
   const autoConnectionPrompted = useRef(false);
+
+  const appendExploreMessage = (
+    role: ExploreConversationMessage['role'],
+    kind: ExploreConversationMessage['kind'],
+    text: string,
+    meta: { requestId?: string; taskId?: string } = {},
+  ) => {
+    const message: ExploreConversationMessage = {
+      id: crypto.randomUUID(), role, kind, text: text.slice(0, 8_000), createdAt: new Date().toISOString(), ...meta,
+    };
+    setConversation((current) => [...current, message].slice(-200));
+    return message;
+  };
 
   const applyWorkSession = (session: ExploreWorkSessionRecord) => {
     const wasInterrupted = session.status === 'analyzing' || session.status === 'planning';
@@ -136,6 +152,9 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
     activeAnalysisRequestId.current = snapshot.analysisRequestId;
     activePlanRequestId.current = snapshot.planRequestId;
     setNotice(snapshot.notice);
+    setDisplayStage(snapshot.displayStage);
+    setConversation(snapshot.conversation);
+    setHandoffArtifact(snapshot.handoffArtifact);
     setAnalysisPending(false);
     setPlanPending(false);
     setExecutionPending(false);
@@ -228,6 +247,9 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
         executionTaskId,
         executionDisposition,
         notice,
+        displayStage,
+        conversation,
+        handoffArtifact,
       },
     };
     latestWorkSession.current = record;
@@ -235,7 +257,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       void window.electronAPI.saveExploreWorkSession(record).catch(() => undefined);
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [activeWorkSession?.id, analysisRequest, analysisRequestId, analysisResult, analysisTaskId, editingInput, executionDisposition, executionStarted, executionTaskId, gatheredContext, goal, notice, planHandoff, planRequestId, planResult, planTaskId, problem, selectedContextIds, selectedIdeaId, selectedKnowledgeIds, view, workStatus]);
+  }, [activeWorkSession?.id, analysisRequest, analysisRequestId, analysisResult, analysisTaskId, conversation, displayStage, editingInput, executionDisposition, executionStarted, executionTaskId, gatheredContext, goal, handoffArtifact, notice, planHandoff, planRequestId, planResult, planTaskId, problem, selectedContextIds, selectedIdeaId, selectedKnowledgeIds, view, workStatus]);
 
   useEffect(() => () => {
     if (latestWorkSession.current) void window.electronAPI.saveExploreWorkSession(latestWorkSession.current).catch(() => undefined);
@@ -381,12 +403,41 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
         setPlanResult(result);
         setPlanPending(false);
         setWorkStatus('awaiting_confirmation');
-        setNotice('执行计划已生成。请核对步骤和风险，确认后才会进入 Agent 队列。');
+        setDisplayStage('plan');
+        appendExploreMessage('assistant', 'plan', `执行计划已生成：${result.plan.summary}`, { requestId: result.requestId });
+        setNotice('执行计划已生成，正在写入当前工程的交接目录。');
+        const session = latestWorkSession.current;
+        if (session?.snapshot.planHandoff) {
+          const updatedConversation = [...session.snapshot.conversation, {
+            id: crypto.randomUUID(), role: 'assistant' as const, kind: 'plan' as const,
+            text: `执行计划已生成：${result.plan.summary}`, createdAt: new Date().toISOString(), requestId: result.requestId,
+          }].slice(-200);
+          const updated: ExploreWorkSessionRecord = {
+            ...session, status: 'awaiting_confirmation',
+            snapshot: { ...session.snapshot, planResult: result, displayStage: 'plan', conversation: updatedConversation },
+          };
+          latestWorkSession.current = updated;
+          void window.electronAPI.saveExploreWorkSession(updated)
+            .then(() => window.electronAPI.createExploreHandoffArtifact({ sessionId: session.id, handoff: session.snapshot.planHandoff!, planResult: result }))
+            .then((artifact) => {
+              setHandoffArtifact(artifact);
+              appendExploreMessage('system', 'handoff', `交接材料已写入 ${artifact.relativeDir}`);
+              setNotice(`交接材料已写入 ${artifact.relativeDir}。可进入“执行”步骤预览并确认提交。`);
+            })
+            .catch((error) => {
+              setWorkStatus('error');
+              setNotice(error instanceof Error ? error.message : '无法写入工程交接材料');
+            });
+        }
       } else {
         if (result.requestId !== activeAnalysisRequestId.current) return;
         setAnalysisResult(result);
         setAnalysisPending(false);
         setWorkStatus('result_ready');
+        setDisplayStage('analyze');
+        appendExploreMessage('assistant', 'result', result.mode === 'idea'
+          ? `已形成 ${result.ideas.length} 个可实现方向。`
+          : `已形成 ${result.diagnosis.hypotheses.length} 个优先验证假设。`, { requestId: result.requestId });
         setNotice('分析完成，以下结论均保留原始来源。');
       }
     });
@@ -396,7 +447,14 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       setAnalysisPending(false);
       setPlanPending(false);
       setWorkStatus('error');
+      appendExploreMessage('system', 'error', error.message, { requestId: error.requestId });
       setNotice(error.message);
+    });
+    window.electronAPI.onExploreConversationMessage((message) => {
+      const expected = message.mode === 'plan' ? activePlanRequestId.current : activeAnalysisRequestId.current;
+      if (message.requestId && message.requestId !== expected) return;
+      if (!message.text || message.kind === 'detail') return;
+      appendExploreMessage('assistant', message.error ? 'error' : 'status', message.text, { requestId: message.requestId, taskId: message.taskId });
     });
   }, []);
 
@@ -548,6 +606,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       }
       setAnalysisPending(true);
       setWorkStatus('analyzing');
+      setDisplayStage('analyze');
       setAnalysisResult(null);
       setPlanResult(null);
       setPlanHandoff(null);
@@ -556,6 +615,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       setExecutionStarted(false);
       setExecutionTaskId(null);
       setExecutionDisposition(null);
+      setHandoffArtifact(null);
       setAnalysisTaskId(null);
       setAnalysisRequestId(null);
       activeAnalysisRequestId.current = null;
@@ -565,6 +625,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       setAnalysisTaskId(started.taskId);
       setAnalysisRequestId(started.requestId);
       activeAnalysisRequestId.current = started.requestId;
+      appendExploreMessage('user', 'request', prepared.request.goal, { requestId: started.requestId, taskId: started.taskId });
       setNotice(`已取得 ${started.sourceCount} 条来源，Catnip 正在形成判断。`);
     } catch (error) {
       setAnalysisPending(false);
@@ -598,15 +659,37 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
     setExecutionDisposition(null);
     setPlanPending(true);
     setWorkStatus('planning');
+    setDisplayStage('plan');
     setPlanResult(null);
     setPlanTaskId(null);
     setPlanRequestId(null);
+    setHandoffArtifact(null);
     activePlanRequestId.current = null;
     try {
       const started = await window.electronAPI.startExplorePlan(handoff);
       setPlanTaskId(started.taskId);
       setPlanRequestId(started.requestId);
       activePlanRequestId.current = started.requestId;
+      const requestMessage = appendExploreMessage('user', 'plan', selectedIdea?.title ? `为“${selectedIdea.title}”生成工程计划` : '为当前调查结论生成工程计划', { requestId: started.requestId, taskId: started.taskId });
+      const session = latestWorkSession.current;
+      if (session) {
+        const updated: ExploreWorkSessionRecord = {
+          ...session,
+          status: 'planning',
+          snapshot: {
+            ...session.snapshot,
+            planHandoff: handoff,
+            planResult: null,
+            planTaskId: started.taskId,
+            planRequestId: started.requestId,
+            handoffArtifact: null,
+            displayStage: 'plan',
+            conversation: [...session.snapshot.conversation, requestMessage].slice(-200),
+          },
+        };
+        latestWorkSession.current = updated;
+        await window.electronAPI.saveExploreWorkSession(updated);
+      }
       setNotice('已交给 Catnip，正在生成只读执行计划。');
     } catch (error) {
       setPlanPending(false);
@@ -616,18 +699,22 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   };
 
   const confirmExecution = async () => {
-    if (!planResult || !planHandoff || executionPending || executionStarted) return;
+    if (!planResult || !planHandoff || !handoffArtifact || !activeWorkSession || executionPending || executionStarted) return;
     setExecutionPending(true);
     try {
       const started = await window.electronAPI.confirmExploreExecution({
         planRequestId: planResult.requestId,
         handoffId: planHandoff.id,
+        sessionId: activeWorkSession?.id || '',
+        artifactDigest: handoffArtifact?.digest || '',
         confirmed: true,
       });
       setExecutionStarted(true);
       setExecutionTaskId(started.taskId);
       setExecutionDisposition(started.disposition);
       setWorkStatus('execution_queued');
+      setDisplayStage('execute');
+      appendExploreMessage('system', 'execution', '用户已确认交接材料，任务已提交给工程 Agent。', { taskId: started.taskId });
       setNotice(started.disposition === 'queued'
         ? '已确认执行，任务已进入现有 Agent 队列。'
         : '已确认执行，现有 Agent 已开始处理。');
@@ -700,13 +787,24 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   };
 
   const savedSourceUrls = useMemo(() => new Set(knowledgeCards.map((card) => card.source.url)), [knowledgeCards]);
-  const currentStage = useMemo<ExploreStage>(() => {
+  const furthestStage = useMemo<ExploreStage>(() => {
     if (editingInput) return 'describe';
-    if (executionStarted) return 'execute';
+    if (executionStarted || handoffArtifact) return 'execute';
     if (planPending || planResult) return 'plan';
     if (analysisPending || analysisResult) return 'analyze';
     return 'describe';
-  }, [analysisPending, analysisResult, editingInput, executionStarted, planPending, planResult]);
+  }, [analysisPending, analysisResult, editingInput, executionStarted, handoffArtifact, planPending, planResult]);
+
+  const selectStage = async (stage: ExploreStage) => {
+    const order: ExploreStage[] = ['describe', 'analyze', 'plan', 'execute'];
+    const maximum = handoffArtifact ? 3 : order.indexOf(furthestStage);
+    if (order.indexOf(stage) > maximum) return;
+    if (stage === 'execute' && activeWorkSession) {
+      try { setHandoffArtifact(await window.electronAPI.getExploreHandoffArtifact(activeWorkSession.id)); }
+      catch (error) { setNotice(error instanceof Error ? error.message : '无法读取工程内交接材料'); return; }
+    }
+    setDisplayStage(stage);
+  };
 
   const openSource = (url: string) => {
     void window.electronAPI.navigateBrowser(url);
@@ -892,7 +990,6 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   const requestText = isIdea ? goal : problem;
   const selectedContextCount = contextOptions.filter((item) => selectedContextIds.includes(item.id)).length;
   const selectedKnowledgeCount = selectedKnowledgeIds.length;
-  const planFocused = planPending || Boolean(planResult);
 
   const ideaResults = analysisResult?.mode === 'idea' ? (
     <section className="explore-analysis-result explore-idea-results" aria-labelledby="explore-results-title">
@@ -917,9 +1014,11 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
               <div><dt>条件匹配</dt><dd className="explore-reading-copy">{idea.compatibility}</dd></div>
             </dl>
             {sourceList(idea.sources, '依据来源')}
-            <button type="button" className="explore-generate-plan" onClick={() => void beginPlan(idea)} disabled={planPending}>
-              {planPending && selectedIdeaId === idea.id ? '正在生成计划…' : '用这个方向生成计划'}
-            </button>
+            <footer className="explore-idea-action-bar">
+              <button type="button" className="explore-generate-plan" onClick={() => void beginPlan(idea)} disabled={planPending}>
+                {planPending && selectedIdeaId === idea.id ? '正在生成计划…' : '用这个方向生成计划'}
+              </button>
+            </footer>
           </article>
         ))}
       </div>
@@ -1005,32 +1104,68 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             </section>
           ) : null}
           <div className="explore-confirm-zone">
-            <div><strong>准备交给 Catnip</strong><p>确认后才会进入现有 Agent 队列；后续修改、Build、Flash 与 Serial 仍以真实执行证据为准。</p></div>
+            <div><strong>工程交接材料</strong><p>{handoffArtifact ? `已写入 ${handoffArtifact.relativeDir}` : '计划完成后会在当前工程中生成分层交接材料。'}</p></div>
             <button
               type="button"
               className="explore-confirm-action"
-              data-tour-id="explore-confirm-execution"
-              disabled={!planHandoff || executionPending || executionStarted}
-              onClick={() => void confirmExecution()}
+              disabled={!handoffArtifact}
+              onClick={() => void selectStage('execute')}
             >
-              {executionPending ? '正在提交…' : executionStarted ? '已进入执行队列' : '确认并执行'}
+              查看交接材料
             </button>
-            <small>{executionStarted ? '已交给现有 Agent 队列。' : '确认前不会修改文件、Build、Flash 或操作串口。'}</small>
+            <small>这里只生成和保存材料，不会修改业务源码或操作硬件。</small>
           </div>
         </>
       ) : null}
     </section>
   ) : null;
 
+  const artifactView = displayStage === 'execute' && handoffArtifact ? (
+    <section className="explore-artifact-view" aria-labelledby="explore-artifact-title">
+      <header>
+        <div><span className="explore-section-kicker">PROJECT HANDOFF</span><h3 id="explore-artifact-title">工程内交接材料</h3></div>
+        <code>{handoffArtifact.relativeDir}</code>
+      </header>
+      <details open><summary>HANDOFF.md</summary><pre>{handoffArtifact.handoffMarkdown}</pre></details>
+      <details><summary>PLAN.md</summary><pre>{handoffArtifact.planMarkdown}</pre></details>
+      <div className="explore-confirm-zone">
+        <div><strong>提交给工程 Agent</strong><p>确认后才会把这份磁盘材料交给左侧当前工程 Agent；该确认只能使用一次。</p></div>
+        <button
+          type="button"
+          className="explore-confirm-action"
+          data-tour-id="explore-confirm-execution"
+          disabled={executionPending || executionStarted}
+          onClick={() => void confirmExecution()}
+        >
+          {executionPending ? '正在提交…' : executionStarted ? '已提交给工程 Agent' : '确认提交给工程 Agent'}
+        </button>
+        <small>{executionStarted ? '工程 Agent 已接收任务。' : '确认前不会修改文件、Build、Flash 或操作串口。'}</small>
+      </div>
+    </section>
+  ) : null;
+
+  const conversationView = activeWorkSession ? (
+    <section className="explore-conversation" aria-labelledby="explore-conversation-title">
+      <header><div><span className="explore-section-kicker">EXPLORE AGENT</span><h3 id="explore-conversation-title">本次探索对话</h3></div><span>{conversation.length} 条</span></header>
+      {conversation.length ? <ol>{conversation.map((message) => (
+        <li key={message.id} className={`is-${message.role} is-${message.kind}`}>
+          <span>{message.role === 'user' ? '你' : message.role === 'assistant' ? '探索 AI' : '系统'}</span>
+          <p>{message.text}</p>
+          <time>{new Date(message.createdAt).toLocaleTimeString()}</time>
+        </li>
+      ))}</ol> : <p className="explore-history-empty">描述并开始分析后，这里会单独记录本次探索过程，不会写入左侧工程 Agent 对话。</p>}
+    </section>
+  ) : null;
+
   return (
-    <section className={`explore-panel explore-panel--flow${planFocused ? ' is-plan-focused' : ''}`} data-tour-id={isIdea ? 'panel-explore-idea' : 'panel-explore-diagnosis'}>
+    <section className={`explore-panel explore-panel--flow is-stage-${displayStage}`} data-tour-id={isIdea ? 'panel-explore-idea' : 'panel-explore-diagnosis'}>
       <header className="explore-flow-header">
         <button type="button" className="explore-back-button" onClick={() => { setView('home'); void refreshWorkSessions(); }} aria-label="返回探索首页">←</button>
         <div>
           <span className="explore-eyebrow">{isIdea ? 'IDEA' : 'INVESTIGATION'}</span>
           <h2>{isIdea ? '找灵感' : '解问题'}</h2>
         </div>
-        <ExploreStageNav current={currentStage} />
+        <ExploreStageNav current={displayStage} furthest={furthestStage} onSelect={(stage) => void selectStage(stage)} />
         <span className={'explore-session-status is-' + workStatus}>{workStatusLabel(workStatus)}</span>
       </header>
 
@@ -1038,7 +1173,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       {notice ? <div className="explore-connection-notice" role="status">{notice}</div> : null}
       <form className="explore-form" onSubmit={(event) => void prepareRequest(event)}>
         <section className="explore-input-pane" aria-label={isIdea ? '想法与当前条件' : '问题与分析资料'}>
-          {editingInput || !analysisRequest ? (
+          {displayStage === 'describe' && (editingInput || !analysisRequest) ? (
             <>
               <label className="explore-field">
                 <span>{isIdea ? '你想做什么？' : '现在遇到了什么问题？'}</span>
@@ -1129,30 +1264,21 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
         </section>
 
         <section className="explore-output-pane" aria-live="polite" aria-label="探索输出">
-          {analysisPending ? (
+          {displayStage === 'analyze' && analysisPending ? (
             <div className="explore-loading-state" role="status"><span aria-hidden="true" /><div><strong>Catnip 正在形成判断</strong><p>正在整理真实来源与当前条件，不会修改工程。</p></div></div>
           ) : null}
-          {!analysisPending && !analysisResult && !planPending && !planResult ? (
+          {displayStage === 'describe' && !analysisPending && !analysisResult ? (
             <div className="explore-output-empty">
               <span aria-hidden="true">{isIdea ? '✦' : '⌁'}</span>
               <div><strong>{isIdea ? '探索结果将在这里展开' : '调查报告将在这里展开'}</strong><p>{isIdea ? '输入目标后，候选方向、匹配度与来源会并列呈现。' : '工程证据、社区经验、外部资料与来源冲突会在这里交叉呈现。'}</p></div>
             </div>
           ) : null}
-          {planView}
-          {planFocused && analysisResult ? (
-            <details className="explore-prior-result">
-              <summary>查看分析结论与来源</summary>
-              {ideaResults}
-              {diagnosisResults}
-            </details>
-          ) : (
-            <>
-              {ideaResults}
-              {diagnosisResults}
-            </>
-          )}
+          {displayStage === 'plan' ? planView : null}
+          {displayStage === 'execute' ? artifactView : null}
+          {displayStage === 'analyze' ? <>{ideaResults}{diagnosisResults}</> : null}
         </section>
       </form>
+      {conversationView}
     </section>
   );
 }

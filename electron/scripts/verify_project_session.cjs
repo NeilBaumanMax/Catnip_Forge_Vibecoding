@@ -45,6 +45,17 @@ async function main() {
     try { service.assertPathInActiveProject(path.join(projectsRoot, 'alpha', 'main', 'main.c')); } catch { escaped = true; }
     if (!escaped) throw new Error('cross-project path was accepted');
     service.assertPathInActiveProject(path.join(projectsRoot, 'beta', 'main', 'main.c'));
+    const statePath = service.getActiveProjectStatePath('agent', 'conversations.json');
+    const stateRoot = path.join(created.createdProject.projectDir, '.catnip');
+    if (statePath !== path.join(stateRoot, 'agent', 'conversations.json')) throw new Error('project state path is not rooted in .catnip');
+    const manifest = JSON.parse(fs.readFileSync(path.join(stateRoot, 'manifest.json'), 'utf8'));
+    if (manifest.version !== 1 || manifest.projectId !== created.createdProject.id || manifest.projectDir !== created.createdProject.projectDir) {
+      throw new Error('project state manifest binding is invalid');
+    }
+    if (fs.readFileSync(path.join(stateRoot, '.gitignore'), 'utf8') !== '*\n!.gitignore\n') throw new Error('project state ignore policy is invalid');
+    let invalidStatePath = false;
+    try { service.getActiveProjectStatePath('..', 'escape.json'); } catch { invalidStatePath = true; }
+    if (!invalidStatePath) throw new Error('project state traversal was accepted');
     const secondActivation = service.activateProject(created.createdProject.id);
     if (secondActivation.activeProject.id !== created.createdProject.id) throw new Error('registry atomic replacement failed on repeat activation');
     const outside = path.join(root, 'outside');
@@ -58,7 +69,7 @@ async function main() {
     } catch (error) {
       if (error?.code !== 'EPERM') throw error;
     }
-    console.log('project session passed: cold gate, suggestion, create scaffold, path and cross-project rejection');
+    console.log('project session passed: cold gate, suggestion, create scaffold, .catnip manifest, path and cross-project rejection');
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
     app.quit();
