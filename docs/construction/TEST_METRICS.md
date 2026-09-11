@@ -474,3 +474,16 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 | 同宽视觉 QA | 通过 | `phase15-v4-shell-comparison.png`；2048px 顶栏源图与实现聚焦比较，P0/P1/P2 清零 |
 
 首次布局复测暴露旧 Pass 3 十二列规则仍在文件末尾覆盖三容器网格，导致中部框被压到 117px、右侧内容错位；将三列 lock 移至最终层后修复。旧门禁随后以内部按钮顶部比较三个独立框，产生 9px 伪失败；更新为框表面顶边和间距检查。首次助手 CDP 检查因真实 Electron 尚未启动而找不到 9230，启动后复测通过。一次 Renderer 构建命令因输入错误返回 npm unknown command，使用文档规定命令立即通过，不属于源码失败。真实桌面启动时已有 Renderer 占用 5173，新 Main 仍成功连接现有开发服务并开放 9230；未终止用户已有进程。
+
+## 2026-09-11 Phase 15 第五轮顶栏材质纠偏
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | 通过 | 三容器类名与材质回归脚本类型未回归 |
+| `npm.cmd --prefix electron run build:renderer` | 通过 | 2820 modules；仅既有大 chunk warning |
+| `npm.cmd --prefix electron run verify:explore-ui` | 通过 | Explore 双入口与四阶段产品契约未回归 |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | 通过 | 外层透明且无 border/filter/backdrop-filter；3 个蓝色半透明子表面；响应式、四阶段流程与 console error 0 |
+| 同宽视觉 QA | 通过 | `phase15-v6-shell-comparison.png`；旧全宽暗条已消失，框间星空壁纸可见 |
+| `git diff --check` | 通过 | 无 whitespace error，仅工作树 LF → CRLF 提示 |
+
+首次新增材质门禁因 RGBA alpha 已是 0–1 小数却被再次除以 100，误报三个蓝色表面为 0；修正检测逻辑后复测为 3。该失败属于测试实现错误，计算样式证据为三个 `rgba(9, 39, 98, 0.76)` 表面。

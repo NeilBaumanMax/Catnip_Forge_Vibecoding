@@ -938,3 +938,10 @@
 - “任务管理器”轨道独立扩到 132px，专项门禁确认文字矩形完整位于按钮内部。
 - 三列首次被旧十二列 cascade lock 覆盖，更新最终锁后恢复；测试从比较内部按钮顶边改为比较三个外框顶边，避免把有意的内部垂直留白当成错位。
 - Electron typecheck、Main/Renderer build、Explore/Onboarding、真实软件助手 CDP、8 组响应式与四阶段流程通过；聚焦对照为 `electron/.tmp/phase15-v4-shell-comparison.png`。
+
+## 2026-09-11 — Phase 15 第五轮顶栏材质纠偏
+
+- 移除三个顶栏分段继承的 NES 黑灰容器材质，改为原有深蓝半透明玻璃表面。
+- 将全宽 `.workspace-global-nav` 收敛为纯几何定位层，显式清除背景、边框、阴影、滤镜、背景模糊和伪元素；三段间隙恢复显示星空壁纸。
+- `verify:explore-layout-ui` 新增计算样式门禁；第一次因测试错误重复换算 RGBA alpha 误报，修正后通过，三个分段均为 `rgba(9, 39, 98, 0.76)`。
+- 最终 2048px 聚焦对照为 `electron/.tmp/phase15-v6-shell-comparison.png`；未执行真实搜索、新 Windows 包或硬件动作。

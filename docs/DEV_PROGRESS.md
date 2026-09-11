@@ -240,3 +240,9 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] 用户提供的方形呱呱替换品牌与 Electron PNG/ICO 图标，ICO 256 × 256 解码通过。
 - [x] 助手 GitHub 按钮删除“作者”称谓；“任务管理器”取消截断并加入几何门禁。
 - [x] TypeScript、Main/Renderer build、Explore UI/layout、Onboarding、真实 Electron 软件助手 CDP 与 2048px 聚焦视觉 QA 通过。
+
+### Phase 15 第五轮
+
+- [x] 删除三段容器的 NES 黑灰表面，恢复蓝色半透明玻璃材质。
+- [x] 清除外层全宽长条的背景、边框、阴影、滤镜与伪元素，框间星空壁纸恢复可见。
+- [x] 增加计算样式回归门禁并完成 `phase15-v6-shell-comparison.png` 聚焦视觉 QA。

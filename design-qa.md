@@ -53,6 +53,20 @@ P0/P1/P2 已清零；保留差异均来自真实性、系统窗口边界或既�
 
 final result: passed
 
+## Fidelity pass 5 — 2026-09-11
+
+- Source: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-MFkVAd.png`, showing the unwanted continuous dark strip behind the three shell segments.
+- Implementation: `electron/.tmp/workspace-shell-target-2048x1152.png` at a 2048 × 1152 CSS viewport.
+- Focused same-width comparison: `electron/.tmp/phase15-v6-shell-comparison.png`; source and implementation are each cropped to 2048 × 79 and stacked without scaling.
+- [P1 fixed] The full-width positioning layer still inherited `backdrop-filter`, visually recreating the retired long bar even with a transparent background. The outer layer now has no background, border, shadow, filter, backdrop filter, or pseudo-element decoration.
+- [P2 fixed] The three child containers inherited NES `is-dark` surfaces, producing black-gray boxes. Those classes were removed; the three segments now use the established navy-blue translucent glass surface.
+- Automated evidence: the outer layer computes to transparent with no border/filter/backdrop-filter; exactly three child surfaces compute to `rgba(9, 39, 98, 0.76)`. Geometry, responsive scenarios, four-stage Explore flow and console-error checks remain green.
+- Visual evidence: unfiltered cosmic wallpaper is visible before, between and after the three boxes; no continuous material spans the row.
+
+No actionable P0/P1/P2 findings remain for this correction.
+
+final result: passed
+
 ## Fidelity pass 4 — 2026-09-11
 
 **Source truth**

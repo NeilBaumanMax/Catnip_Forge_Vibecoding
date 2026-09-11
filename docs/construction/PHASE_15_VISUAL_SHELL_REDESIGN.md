@@ -213,3 +213,12 @@
 - “任务管理器”必须完整显示；门禁检查文本边界位于按钮内部，不能依靠省略号掩盖布局不足。
 
 最终 1536 × 1024 几何为：品牌框 x=14–234、中部框 x=319–1087、右侧框 x=1172–1522；“任务管理器”完整，三框分离且窗口控制位于视口内。2048px 实现截图为 `electron/.tmp/workspace-shell-target-2048x1152.png`，聚焦对照为 `electron/.tmp/phase15-v4-shell-comparison.png`。
+
+## 17. 第五轮顶栏材质纠偏
+
+用户以 `codex-clipboard-M4GJ1A.png` 和 `codex-clipboard-MFkVAd.png` 指出三段容器虽然已建立，但旧的外层长条材质仍覆盖整行，三段之间无法直接看到星空壁纸；同时 NES `is-dark` 表面产生了不符合目标的黑灰色框。
+
+- 三个子容器移除 `nes-container is-dark`，统一使用原有深蓝半透明玻璃、蓝色细边框与轻量阴影。
+- `.workspace-global-nav` 只负责全宽定位和三列几何；背景、边框、阴影、滤镜、背景模糊及伪元素全部关闭。
+- 自动门禁同时验证外层计算样式为透明、无边框、无 `filter/backdrop-filter`，并验证恰有三个蓝色半透明子表面。
+- 2048px 聚焦对照更新为 `electron/.tmp/phase15-v6-shell-comparison.png`：上行为用户指出问题的截图，下行为修复后实现；三段之间与段外均可直接看到未被长条遮暗的星空壁纸。

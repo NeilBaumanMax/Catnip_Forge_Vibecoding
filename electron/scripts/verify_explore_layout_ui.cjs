@@ -286,6 +286,15 @@ async function main() {
     const projectRect = document.querySelector('.active-project-switch').getBoundingClientRect();
     const settingsRect = document.querySelector('.workspace-settings').getBoundingClientRect();
     const controlsRect = document.querySelector('.workspace-window-controls').getBoundingClientRect();
+    const shell = document.querySelector('.workspace-global-nav');
+    const shellBoxes = [...document.querySelectorAll('.workspace-shell-box')];
+    const shellStyle = getComputedStyle(shell);
+    const isBlueGlass = (element) => {
+      const channels = getComputedStyle(element).backgroundColor.match(/[0-9.]+/g)?.map(Number) || [];
+      if (channels.length === 4 && channels[3] > 1) channels[3] /= 100;
+      return channels.length === 4 && channels[2] > channels[0] && channels[2] > channels[1]
+        && channels[3] > 0.35 && channels[3] < 0.86;
+    };
     const surfaceTopDelta = Math.max(
       Math.abs(brandRect.top - tabSurfaceRect.top),
       Math.abs(tabSurfaceRect.top - actionSurfaceRect.top),
@@ -301,6 +310,15 @@ async function main() {
       topRowAligned: surfaceTopDelta <= 1,
       surfacesSeparated: brandRect.right < tabSurfaceRect.left && tabSurfaceRect.right < actionSurfaceRect.left,
       taskLabelVisible: taskLabelRect.left >= taskTabRect.left && taskLabelRect.right <= taskTabRect.right,
+      outerFrameRemoved: shellStyle.backgroundColor === 'rgba(0, 0, 0, 0)'
+        && shellStyle.borderTopWidth === '0px'
+        && shellStyle.backdropFilter === 'none'
+        && shellStyle.filter === 'none',
+      blueGlassSurfaceCount: shellBoxes.filter((box) => isBlueGlass(box) && !box.classList.contains('is-dark')).length,
+      shellMaterials: shellBoxes.map((box) => ({
+        className: box.className,
+        backgroundColor: getComputedStyle(box).backgroundColor,
+      })),
       brandBeforeTabs: brandRect.right <= firstTabRect.left + 1,
       projectAfterTabs: skillTabRect.right <= projectRect.left + 1,
       settingsAfterProject: projectRect.right <= settingsRect.left + 1,
@@ -320,6 +338,9 @@ async function main() {
       submitVisible: submitRect.width > 0 && submitRect.right <= panelRect.right + 1 && submitRect.bottom <= panelRect.bottom + 1,
     };
   })()`);
+  if (!chatShell.outerFrameRemoved || chatShell.blueGlassSurfaceCount !== 3) {
+    throw new Error(`top shell material mismatch: ${JSON.stringify(chatShell)}`);
+  }
   if (chatShell.missing || chatShell.quickActionCount !== 4 || chatShell.suggestionCount !== 4 || chatShell.historyRailActionCount !== 4 || !chatShell.promptInjected.includes('当前工程') || chatShell.brand !== 'Catnip Forge' || !chatShell.settingsVisible || chatShell.windowControlCount !== 3 || !chatShell.topRowAligned || !chatShell.surfacesSeparated || !chatShell.taskLabelVisible || !chatShell.brandBeforeTabs || !chatShell.projectAfterTabs || !chatShell.settingsAfterProject || !chatShell.controlsAfterSettings || !chatShell.controlsInsideViewport || !chatShell.navSpansViewport || !chatShell.composerVisible || !chatShell.submitVisible) {
     throw new Error(`chat shell interaction mismatch: ${JSON.stringify(chatShell)}`);
   }

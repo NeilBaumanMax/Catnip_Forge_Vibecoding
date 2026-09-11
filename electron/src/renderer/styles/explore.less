@@ -1093,10 +1093,11 @@
   height: 50px;
   box-sizing: border-box;
   pointer-events: auto;
-  background: rgba(6, 27, 75, 0.94) !important;
-  border: 1px solid rgba(103, 157, 243, 0.3) !important;
+  background: rgba(9, 39, 98, 0.76) !important;
+  border: 1px solid rgba(103, 165, 255, 0.34) !important;
   border-radius: 12px !important;
-  box-shadow: 0 5px 18px rgba(0, 8, 40, 0.24), inset 0 1px rgba(171, 207, 255, 0.1) !important;
+  box-shadow: 0 4px 14px rgba(0, 8, 40, 0.18), inset 0 1px rgba(184, 218, 255, 0.12) !important;
+  backdrop-filter: blur(15px) saturate(138%);
   -webkit-app-region: drag;
 }
 
@@ -1918,6 +1919,26 @@
     width: 36px;
     min-width: 36px;
   }
+}
+
+/* The global positioning layer is geometry only. Any material here recreates
+   the retired full-width bar and hides the cosmic wallpaper between segments. */
+:root[data-theme="dark"] .workspace-global-nav,
+.workspace-global-nav {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+}
+
+.workspace-global-nav::before,
+.workspace-global-nav::after {
+  display: none !important;
+  content: none !important;
 }
 
 @media (max-width: 1000px) {

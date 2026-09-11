@@ -947,11 +947,11 @@ export default function BrowserPanel({
   return (
     <div className={`browser-panel browser-panel--${mode} nes-container is-rounded`}>
       {createPortal((<div className="workbench-mode-tabs workspace-global-nav" aria-label="Catnip Forge 工作区顶栏">
-        <div className="workspace-brand workspace-shell-box nes-container is-dark" aria-label="Catnip Forge，让想法变成现实">
+        <div className="workspace-brand workspace-shell-box" aria-label="Catnip Forge，让想法变成现实">
           <img src={catnipForgeIcon} alt="" aria-hidden="true" />
           <span><strong>Catnip Forge</strong><small>让想法 · 变成现实</small></span>
         </div>
-        <div className="workspace-nav-tabs workspace-shell-box nes-container is-dark" role="tablist" aria-label="工作区视图">
+        <div className="workspace-nav-tabs workspace-shell-box" role="tablist" aria-label="工作区视图">
           <button data-tour-id="tab-repo" type="button" role="tab" aria-selected={mode === 'repo'} className={`nes-btn${mode === 'repo' ? ' is-primary' : ''}`} onClick={() => setMode('repo')}><Boxes aria-hidden="true" /><span>仓库</span></button>
           <button data-tour-id="tab-monitor" type="button" role="tab" aria-selected={mode === 'monitor'} className={`nes-btn${mode === 'monitor' ? ' is-primary' : ''}`} onClick={() => setMode('monitor')}><MonitorUp aria-hidden="true" /><span>监视器</span></button>
           <button data-tour-id="tab-tasks" type="button" role="tab" aria-selected={mode === 'tasks'} className={`nes-btn${mode === 'tasks' ? ' is-primary' : ''}`} onClick={() => setMode('tasks')}><Workflow aria-hidden="true" /><span>任务管理器</span></button>
@@ -959,7 +959,7 @@ export default function BrowserPanel({
           <button data-tour-id="tab-explore" type="button" role="tab" aria-selected={mode === 'explore'} className={`nes-btn${mode === 'explore' ? ' is-primary' : ''}`} onClick={openExploreHome}><Compass aria-hidden="true" /><span>探索</span></button>
           <button data-tour-id="tab-skill-hub" type="button" role="tab" aria-selected={mode === 'skillHub'} className={`nes-btn${mode === 'skillHub' ? ' is-primary' : ''}`} onClick={openSkillHub}><GraduationCap aria-hidden="true" /><span>Neil 的 skill 小站</span></button>
         </div>
-        <div className="workspace-shell-actions workspace-shell-box nes-container is-dark">
+        <div className="workspace-shell-actions workspace-shell-box">
           <button className="active-project-switch" type="button" onClick={requestProjectChange} title={projectDir || '尚未选择工程'}>
             <span>当前工程</span><strong>{activeProject?.name || '请选择'}</strong>
           </button>
