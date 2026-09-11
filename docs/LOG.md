@@ -1,5 +1,12 @@
 # 施工日志
 
+## 2026-09-11 — Phase 15 pass 17
+
+- 修复 Explore 入口创建空草稿后直接返回仍残留“新灵感探索/新问题调查”的问题。
+- 增加最近探索记录行内重命名；修复自动标题覆盖自定义名称的状态根因。
+- `verify:explore-layout-ui` 新增空草稿 `3 → 2` 生命周期断言及重命名保存、重新打开、再次返回持久化断言。
+- Electron typecheck、Explore UI contract、布局交互 smoke 和 Renderer production build 通过。
+
 ## 2026-09-11 — Phase 15 pass 16
 
 - 修复找灵感分析尚未完成时切换到解问题仍被旧结果带回找灵感的问题：请求与原始 Explore session 绑定，后台消息、错误和最终结果串行写回对应会话。

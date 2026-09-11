@@ -47,6 +47,11 @@ assert.match(explorePanel, /不会修改 PATH/, 'official user-directory install
 assert.match(explorePanel, /prepareExploreRequest/, 'Explore input must cross the validated Main request boundary');
 assert.match(explorePanel, /listExploreWorkSessions/, 'project Explore history list is missing');
 assert.match(explorePanel, /saveExploreWorkSession/, 'Explore work autosave is missing');
+assert.match(explorePanel, /isPristineExploreDraft/, 'untouched Explore drafts need an explicit cleanup rule');
+assert.match(explorePanel, /returnToExploreHome[\s\S]{0,900}deleteExploreWorkSession/, 'returning from an untouched draft must remove it instead of leaving empty history');
+assert.match(explorePanel, /const renameWorkSession/, 'Explore history needs a persistent rename handler');
+assert.match(explorePanel, /className="explore-session-rename"/, 'Explore history needs an inline rename control');
+assert.match(explorePanel, /title:\s*sessionTitle\.trim\(\)/, 'autosave must preserve a user-renamed session title');
 assert.match(explorePanel, /openWorkSession\(session\.mode, session\.id\)/, 'Explore history resume action is missing');
 assert.match(explorePanel, /saveExploreKnowledge/, 'source save must use the existing preload store');
 assert.match(explorePanel, /origin:\s*activeWorkSession[\s\S]{0,500}conversation:\s*conversation\.map/, 'saved knowledge must retain its origin Explore conversation');

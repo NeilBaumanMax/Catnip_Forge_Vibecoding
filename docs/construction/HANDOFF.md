@@ -1,5 +1,11 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-11 — Latest correction: empty drafts and history rename
+
+- `returnToExploreHome` discards only a pristine default draft. Any input, custom title, result, conversation, plan, handoff, or execution state keeps the session.
+- Recent Explore history has inline rename/save/cancel controls. `sessionTitle` is independent from request input, so autosave and reopen preserve custom names.
+- The layout smoke verifies immediate-return cleanup and custom-title persistence across reopen; existing analysis, plan, workspace-switch, and concurrent-mode scenarios continue to pass.
+
 ## 2026-09-11 — Latest correction: concurrent Explore sessions and source links
 
 - Idea and Diagnosis analyses are now isolated by originating session/request. Switching modes during analysis is supported; late status/result/error events persist to the background session and do not replace the active screen.

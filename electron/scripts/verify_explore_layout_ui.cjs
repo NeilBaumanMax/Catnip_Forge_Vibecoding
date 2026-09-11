@@ -212,6 +212,7 @@ async function main() {
       createExploreWorkSession: async (mode) => { const item = makeSession(mode); sessions.unshift(item); return structuredClone(item); },
       getExploreWorkSession: async (mode, id) => structuredClone(sessions.find((item) => item.mode === mode && item.id === id)),
       saveExploreWorkSession: async (record) => { const saved = { ...structuredClone(record), updatedAt: new Date().toISOString() }; const index = sessions.findIndex((item) => item.id === record.id); if (index >= 0) sessions[index] = saved; return structuredClone(saved); },
+      deleteExploreWorkSession: async (mode, id) => { const index = sessions.findIndex((item) => item.mode === mode && item.id === id); if (index >= 0) sessions.splice(index, 1); return sessions.map(({ snapshot, version, ...item }) => item); },
       listExploreKnowledge: async () => [knowledge],
       findRelatedExploreKnowledge: async () => [knowledge],
       selectExploreKnowledgeForContext: async () => [knowledge],
@@ -643,8 +644,48 @@ async function main() {
   }
   const ideaWorkspaceScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(ideaWorkspaceScreenshotPath, Buffer.from(ideaWorkspaceScreenshot.data, 'base64'));
+  const sessionCountBeforeBlankReturn = await evaluate(`window.__exploreSessions.length`);
   await evaluate(`document.querySelector('.explore-back-button')?.click()`);
   await wait(120);
+  const draftLifecycle = await evaluate(`(async () => {
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const sessionCountAfterBlankReturn = window.__exploreSessions.length;
+    const rename = document.querySelector('.explore-session-rename-action');
+    rename?.click();
+    await wait(30);
+    const input = document.querySelector('.explore-session-rename input');
+    const renameForm = document.querySelector('.explore-session-rename');
+    const renameRow = renameForm?.closest('li');
+    const formRect = renameForm?.getBoundingClientRect();
+    const rowRect = renameRow?.getBoundingClientRect();
+    const renameLayoutValid = Boolean(formRect && rowRect && input
+      && formRect.left >= rowRect.left && formRect.right <= rowRect.right
+      && input.getBoundingClientRect().width >= 120
+      && renameForm.querySelectorAll('button').length === 2);
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    setter.call(input, '我的桌面设备灵感');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.closest('form').requestSubmit();
+    await wait(100);
+    const renamed = window.__exploreSessions.find((item) => item.title === '我的桌面设备灵感');
+    document.querySelector('[data-explore-session-id="' + renamed?.id + '"]')?.click();
+    await wait(100);
+    document.querySelector('.explore-back-button')?.click();
+    await wait(100);
+    return {
+      sessionCountBeforeBlankReturn: ${sessionCountBeforeBlankReturn},
+      sessionCountAfterBlankReturn,
+      renamedTitle: renamed?.title || '',
+      titleAfterReopen: window.__exploreSessions.find((item) => item.id === renamed?.id)?.title || '',
+      renameLayoutValid,
+      renameEditorClosed: !document.querySelector('.explore-session-rename'),
+    };
+  })()`);
+  if (draftLifecycle.sessionCountAfterBlankReturn !== draftLifecycle.sessionCountBeforeBlankReturn - 1
+      || draftLifecycle.renamedTitle !== '我的桌面设备灵感' || draftLifecycle.titleAfterReopen !== '我的桌面设备灵感'
+      || !draftLifecycle.renameLayoutValid || !draftLifecycle.renameEditorClosed) {
+    throw new Error(`Explore draft lifecycle/rename mismatch: ${JSON.stringify(draftLifecycle)}`);
+  }
 
   await setViewport(1448, 1086);
   await evaluate(`document.querySelector('[data-tour-id="explore-diagnosis"]')?.click()`);
@@ -834,7 +875,7 @@ async function main() {
   await setViewport(1565, 1304);
   const screenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log(JSON.stringify({ chatShell, targetNav, skillHubTopline, dashboardScroll, tallTarget, ideaWorkspace, diagnosisWorkspace, scenarios, flowResult, concurrentModeSwitch, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, skillHubScreenshotPath, exploreHomeScreenshotPath, tallTargetScreenshotPath, ideaWorkspaceScreenshotPath, diagnosisWorkspaceScreenshotPath, screenshotPath, consoleErrors }, null, 2));
+  console.log(JSON.stringify({ chatShell, targetNav, skillHubTopline, dashboardScroll, tallTarget, ideaWorkspace, draftLifecycle, diagnosisWorkspace, scenarios, flowResult, concurrentModeSwitch, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, skillHubScreenshotPath, exploreHomeScreenshotPath, tallTargetScreenshotPath, ideaWorkspaceScreenshotPath, diagnosisWorkspaceScreenshotPath, screenshotPath, consoleErrors }, null, 2));
 }
 
 main().catch((error) => {

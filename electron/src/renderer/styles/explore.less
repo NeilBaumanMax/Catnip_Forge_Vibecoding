@@ -274,8 +274,19 @@
 }
 .explore-session-open:hover { color: var(--explore-primary); background: color-mix(in srgb, var(--explore-primary-soft) 48%, transparent); }
 .explore-session-open > span:nth-child(2) { min-width: 0; display: grid; gap: 3px; }
-.explore-session-delete { padding: 6px 8px; color: var(--explore-danger); background: transparent; border: 0; border-radius: 8px; cursor: pointer; font-size: 10px; }
+.explore-session-actions { display: flex; align-items: center; gap: 2px; }
+.explore-session-actions button { min-height: 30px; border: 0; border-radius: 8px; cursor: pointer; font: inherit; font-size: 10px; }
+.explore-session-rename-action { display: inline-flex; align-items: center; gap: 4px; padding: 6px 8px; color: var(--explore-primary); background: transparent; }
+.explore-session-rename-action svg { width: 12px; height: 12px; }
+.explore-session-rename-action:hover { background: color-mix(in srgb, var(--explore-primary) 10%, transparent); }
+.explore-session-delete { padding: 6px 8px; color: var(--explore-danger); background: transparent; }
 .explore-session-delete:hover { background: color-mix(in srgb, var(--explore-danger) 10%, transparent); }
+.explore-session-rename { grid-column: 1 / -1; min-width: 0; display: grid; grid-template-columns: auto minmax(120px, 1fr) auto auto; align-items: center; gap: 8px; padding: 8px 4px; }
+.explore-session-rename label { color: var(--ui-text-secondary); font-size: 10px; font-weight: 720; }
+.explore-session-rename input { min-width: 0; height: 34px; padding: 0 10px; color: var(--ui-text); background: var(--ui-control-bg); border: 1px solid var(--ui-separator-strong); border-radius: 8px; font: inherit; }
+.explore-session-rename button { min-height: 32px; padding: 5px 10px; color: var(--explore-primary); background: var(--explore-primary-soft); border: 1px solid transparent; border-radius: 8px; cursor: pointer; font: inherit; font-size: 10px; font-weight: 720; }
+.explore-session-rename button:last-child { color: var(--ui-text-secondary); background: transparent; border-color: var(--ui-separator); }
+.explore-session-rename button:disabled { cursor: wait; opacity: 0.6; }
 .explore-session-list strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .explore-session-list small,
 .explore-history-empty { color: var(--ui-text-tertiary); font-size: 10px; }

@@ -1,3 +1,12 @@
+# Fidelity pass 17 — Explore draft lifecycle and rename (2026-09-11)
+
+- [P1 fixed] Entering “找灵感” or “解问题” and immediately returning no longer leaves an empty history record. Only a pristine default draft is discarded; typed content, analysis, custom titles, plans, and handoff state remain protected.
+- [P1 fixed] Every recent Explore record now has an inline “重命名” action with save/cancel controls and an 80-character limit.
+- [P1 fixed] Session autosave now preserves an explicit user title instead of recalculating it from the request input.
+- Automated UI evidence records a `3 → 2` session count after returning from the untouched draft and verifies `我的桌面设备灵感` survives save, reopen, and return.
+
+final result: passed
+
 # Fidelity pass 16 — concurrent Explore results and source actions (2026-09-11)
 
 - Source truth: user capture `codex-clipboard-xhcLfS.png` (1565 × 1304).

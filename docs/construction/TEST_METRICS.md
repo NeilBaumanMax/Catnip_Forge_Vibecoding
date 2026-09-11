@@ -1,5 +1,14 @@
 # 测试度量与证据
 
+## 2026-09-11 — Explore draft lifecycle/rename gate
+
+| Command | Result | Evidence |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | PASS | New title and return lifecycle state is type-safe. |
+| `npm.cmd --prefix electron run verify:explore-ui` | PASS | Static contract requires pristine-draft cleanup, rename UI, and title-preserving autosave. |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | PASS | Untouched entry/back reduces mock sessions from 3 to 2; renamed title survives save, reopen, and return; previous flow and concurrent-mode gates pass; console errors 0. |
+| `npm.cmd --prefix electron run build:renderer` | PASS | Production Renderer build succeeds; existing large-chunk warning remains visible. |
+
 ## 2026-09-11 — Explore concurrent mode/source gate
 
 | Command | Result | Evidence |

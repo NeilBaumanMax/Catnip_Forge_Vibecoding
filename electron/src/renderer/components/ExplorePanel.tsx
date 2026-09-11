@@ -70,6 +70,24 @@ function workStatusLabel(status: ExploreWorkStatus): string {
   return '发生错误';
 }
 
+function defaultExploreTitle(mode: 'idea' | 'diagnosis'): string {
+  return mode === 'idea' ? '新灵感探索' : '新问题调查';
+}
+
+function isPristineExploreDraft(session: ExploreWorkSessionRecord): boolean {
+  const snapshot = session.snapshot;
+  return session.status === 'draft'
+    && session.title === defaultExploreTitle(session.mode)
+    && !snapshot.input.trim()
+    && !snapshot.analysisRequest
+    && !snapshot.analysisResult
+    && !snapshot.planResult
+    && !snapshot.planHandoff
+    && !snapshot.handoffArtifact
+    && !snapshot.executionStarted
+    && snapshot.conversation.length === 0;
+}
+
 export default function ExplorePanel({ projectId, currentProject, hardwareSummary, runtimeSummary, diagnosisSeed }: Props) {
   const [view, setView] = useState<ExploreView>('home');
   const [goal, setGoal] = useState('');
@@ -112,6 +130,10 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   const [verificationSaving, setVerificationSaving] = useState(false);
   const [workSessions, setWorkSessions] = useState<ExploreWorkSessionSummary[]>([]);
   const [activeWorkSession, setActiveWorkSession] = useState<ExploreWorkSessionRecord | null>(null);
+  const [sessionTitle, setSessionTitle] = useState('');
+  const [renamingSessionId, setRenamingSessionId] = useState('');
+  const [renameDraft, setRenameDraft] = useState('');
+  const [renameSaving, setRenameSaving] = useState(false);
   const [workStatus, setWorkStatus] = useState<ExploreWorkStatus>('draft');
   const [displayStage, setDisplayStage] = useState<ExploreStage>('describe');
   const [conversation, setConversation] = useState<ExploreConversationMessage[]>([]);
@@ -153,6 +175,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
     activeWorkSessionId.current = restoredSession.id;
     latestWorkSession.current = restoredSession;
     setActiveWorkSession(restoredSession);
+    setSessionTitle(restoredSession.title);
     setWorkStatus(restoredSession.status);
     setView(session.mode);
     if (session.mode === 'idea') setGoal(snapshot.input);
@@ -228,6 +251,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       setWorkSessions(sessions);
       if (activeWorkSession?.id === session.id) {
         setActiveWorkSession(null);
+        setSessionTitle('');
         activeWorkSessionId.current = null;
         latestWorkSession.current = null;
       }
@@ -239,6 +263,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   useEffect(() => {
     setView('home');
     setActiveWorkSession(null);
+    setSessionTitle('');
     activeWorkSessionId.current = null;
     latestWorkSession.current = null;
     activeAnalysisRequestId.current = null;
@@ -276,7 +301,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
     const input = sessionMode === 'idea' ? goal : problem;
     const record: ExploreWorkSessionRecord = {
       ...activeWorkSession,
-      title: input.trim().replace(/\s+/g, ' ').slice(0, 80) || (sessionMode === 'idea' ? '新灵感探索' : '新问题调查'),
+      title: sessionTitle.trim().slice(0, 80) || (sessionMode === 'idea' ? '新灵感探索' : '新问题调查'),
       status: workStatus,
       snapshot: {
         input,
@@ -310,7 +335,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       void window.electronAPI.saveExploreWorkSession(record).catch(() => undefined);
     }, 250);
     return () => window.clearTimeout(timer);
-  }, [activeWorkSession?.id, analysisRequest, analysisRequestId, analysisResult, analysisTaskId, conversation, displayStage, editingInput, executionDisposition, executionStarted, executionTaskId, gatheredContext, goal, handoffArtifact, notice, planHandoff, planRequestId, planResult, planTaskId, problem, selectedContextIds, selectedIdeaId, selectedKnowledgeIds, view, workStatus]);
+  }, [activeWorkSession?.id, analysisRequest, analysisRequestId, analysisResult, analysisTaskId, conversation, displayStage, editingInput, executionDisposition, executionStarted, executionTaskId, gatheredContext, goal, handoffArtifact, notice, planHandoff, planRequestId, planResult, planTaskId, problem, selectedContextIds, selectedIdeaId, selectedKnowledgeIds, sessionTitle, view, workStatus]);
 
   useEffect(() => () => {
     if (latestWorkSession.current) void window.electronAPI.saveExploreWorkSession(latestWorkSession.current).catch(() => undefined);
@@ -750,9 +775,14 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
           : '[知乎 Skill] 正在调用官方搜索能力：检索社区经验，并与工程 Context 和外部资料交叉核对。',
       );
       const sessionBeforeSearch = latestWorkSession.current?.id === originSession.id ? latestWorkSession.current : originSession;
+      const suggestedTitle = prepared.request.goal.replace(/\s+/g, ' ').slice(0, 80);
+      const shouldAdoptSuggestedTitle = sessionBeforeSearch.title === defaultExploreTitle(sessionBeforeSearch.mode)
+        || sessionBeforeSearch.title === '未命名探索';
+      const nextTitle = shouldAdoptSuggestedTitle ? suggestedTitle : sessionBeforeSearch.title;
+      setSessionTitle(nextTitle);
       const persistedPendingSession: ExploreWorkSessionRecord = {
         ...sessionBeforeSearch,
-        title: prepared.request.goal.replace(/\s+/g, ' ').slice(0, 80),
+        title: nextTitle,
         status: 'analyzing',
         snapshot: {
           ...sessionBeforeSearch.snapshot,
@@ -1053,6 +1083,68 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
     }
   };
 
+  const renameWorkSession = async (event: React.FormEvent, session: ExploreWorkSessionSummary) => {
+    event.preventDefault();
+    const title = renameDraft.trim().replace(/\s+/g, ' ').slice(0, 80);
+    if (!title) {
+      setNotice('探索记录名称不能为空。');
+      return;
+    }
+    setRenameSaving(true);
+    try {
+      const record = await window.electronAPI.getExploreWorkSession(session.mode, session.id);
+      const saved = await window.electronAPI.saveExploreWorkSession({ ...record, title });
+      if (activeWorkSessionId.current === saved.id) {
+        setActiveWorkSession(saved);
+        setSessionTitle(saved.title);
+        latestWorkSession.current = saved;
+      }
+      setRenamingSessionId('');
+      setRenameDraft('');
+      await refreshWorkSessions();
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : '无法重命名探索记录');
+    } finally {
+      setRenameSaving(false);
+    }
+  };
+
+  const returnToExploreHome = async () => {
+    if (planPending) {
+      setNotice('当前执行计划仍在生成，请等待完成后再返回。');
+      return;
+    }
+    const session = latestWorkSession.current;
+    setView('home');
+    if (!session) {
+      setActiveWorkSession(null);
+      setSessionTitle('');
+      activeWorkSessionId.current = null;
+      latestWorkSession.current = null;
+      await refreshWorkSessions();
+      return;
+    }
+    try {
+      if (isPristineExploreDraft(session)) {
+        setActiveWorkSession(null);
+        setSessionTitle('');
+        activeWorkSessionId.current = null;
+        latestWorkSession.current = null;
+        activeAnalysisRequestId.current = null;
+        activePlanRequestId.current = null;
+        setAnalysisPending(false);
+        const sessions = await window.electronAPI.deleteExploreWorkSession(session.mode, session.id);
+        setWorkSessions(sessions);
+      } else {
+        await window.electronAPI.saveExploreWorkSession(session);
+        await refreshWorkSessions();
+      }
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : '无法保存探索记录');
+      await refreshWorkSessions().catch(() => undefined);
+    }
+  };
+
   const sourceList = (sources: SourceEvidence[], label: string) => (
     <ExploreSourceList
       sources={sources}
@@ -1161,12 +1253,32 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             <ul className="explore-session-list">
               {workSessions.slice(0, 12).map((session) => (
                 <li key={session.id}>
-                  <button className="explore-session-open" type="button" data-explore-session-id={session.id} onClick={() => void openWorkSession(session.mode, session.id)}>
-                    <span className={'explore-session-kind is-' + session.mode}>{session.mode === 'idea' ? <Sparkles aria-hidden="true" /> : <SearchCheck aria-hidden="true" />}{session.mode === 'idea' ? '灵感' : '问题'}</span>
-                    <span><strong>{session.title}</strong><small>{new Date(session.updatedAt).toLocaleString()} · {workStatusLabel(session.status)}</small></span>
-                    <span aria-hidden="true">→</span>
-                  </button>
-                  <button className="explore-session-delete" type="button" onClick={() => void deleteWorkSession(session)} aria-label={'删除探索记录：' + session.title}>删除</button>
+                  {renamingSessionId === session.id ? (
+                    <form className="explore-session-rename" onSubmit={(event) => void renameWorkSession(event, session)}>
+                      <label htmlFor={'explore-session-name-' + session.id}>记录名称</label>
+                      <input
+                        id={'explore-session-name-' + session.id}
+                        value={renameDraft}
+                        onChange={(event) => setRenameDraft(event.target.value)}
+                        maxLength={80}
+                        autoFocus
+                      />
+                      <button type="submit" disabled={renameSaving}>保存</button>
+                      <button type="button" disabled={renameSaving} onClick={() => { setRenamingSessionId(''); setRenameDraft(''); }}>取消</button>
+                    </form>
+                  ) : (
+                    <>
+                      <button className="explore-session-open" type="button" data-explore-session-id={session.id} onClick={() => void openWorkSession(session.mode, session.id)}>
+                        <span className={'explore-session-kind is-' + session.mode}>{session.mode === 'idea' ? <Sparkles aria-hidden="true" /> : <SearchCheck aria-hidden="true" />}{session.mode === 'idea' ? '灵感' : '问题'}</span>
+                        <span><strong>{session.title}</strong><small>{new Date(session.updatedAt).toLocaleString()} · {workStatusLabel(session.status)}</small></span>
+                        <span aria-hidden="true">→</span>
+                      </button>
+                      <div className="explore-session-actions">
+                        <button className="explore-session-rename-action" type="button" onClick={() => { setRenamingSessionId(session.id); setRenameDraft(session.title); }} aria-label={'重命名探索记录：' + session.title}><PenLine aria-hidden="true" />重命名</button>
+                        <button className="explore-session-delete" type="button" onClick={() => void deleteWorkSession(session)} aria-label={'删除探索记录：' + session.title}>删除</button>
+                      </div>
+                    </>
+                  )}
                 </li>
               ))}
             </ul>
@@ -1453,7 +1565,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   return (
     <section className={`explore-panel explore-panel--flow ${isIdea ? 'explore-panel--idea-flow' : 'explore-panel--diagnosis-flow'} is-stage-${displayStage}`} data-tour-id={isIdea ? 'panel-explore-idea' : 'panel-explore-diagnosis'}>
       <header className="explore-flow-header">
-        <button type="button" className="explore-back-button" onClick={() => { setView('home'); void refreshWorkSessions(); }} aria-label="返回探索首页">←</button>
+        <button type="button" className="explore-back-button" onClick={() => void returnToExploreHome()} aria-label="返回探索首页">←</button>
         <div>
           <span className="explore-eyebrow">{isIdea ? 'IDEA' : 'INVESTIGATION'}</span>
           <h2>{isIdea ? <>找灵感 <Sparkles aria-hidden="true" /></> : <>解问题 <small>专用</small></>}</h2>
