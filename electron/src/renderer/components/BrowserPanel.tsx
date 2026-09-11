@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Boxes, Code2, Compass, GraduationCap, Minus, MonitorUp, Settings, Square, Workflow, X } from 'lucide-react';
+import { Boxes, Code2, Compass, FolderOpen, GraduationCap, Minus, MonitorUp, Rocket, Settings, Settings2, Square, Workflow, Wrench, X, Zap } from 'lucide-react';
 import WorkspacePanel from './WorkspacePanel';
 import CodeEditor from './CodeEditor';
 import ExplorePanel, { type ExploreDiagnosisSeed } from './ExplorePanel';
 import type { BrowserTab, HardboardDevice, HardboardRuntimeState, ProjectSummary, RecordingSummary, RuntimeEvent, SerialMonitorEvent, SerialMonitorSnapshot, WorkbenchItem, WorkbenchOverview } from '../types';
 import catnipForgeIcon from '../assets/catnip-app-icon.png';
+import taskManagerEmptyGuagua from '../assets/task-manager-empty-guagua-v2.png';
 
 interface Props {
   activeProject: ProjectSummary | null;
@@ -42,7 +43,7 @@ function formatSerialEvent(event: SerialMonitorEvent, receiveMode: 'text' | 'hex
   if (event.direction === 'system') return event.text;
   return receiveMode === 'hex' ? `${event.hex || ''}${event.hex ? ' ' : ''}` : event.text;
 }
-type RuntimeCard = 'live' | 'full' | 'events';
+type RuntimeCard = 'live' | 'task' | 'events';
 const UI_BUILD_LABEL = 'Catnip Forge · v2.0.0';
 const EDITOR_FONT_SIZE_KEY = 'vibeide.editor.fontSize';
 const EDITOR_FONT_SIZE_MIN = 10;
@@ -258,7 +259,7 @@ export default function BrowserPanel({
   onRefreshWorkbench,
   onOpenWorkbenchItem,
 }: Props) {
-  const [mode, setMode] = useState<PanelMode>(() => window.electronAPI?.isWorkbenchSmokeTest ? 'repo' : 'monitor');
+  const [mode, setMode] = useState<PanelMode>(() => window.electronAPI?.isWorkbenchSmokeTest ? 'repo' : 'explore');
   const [inputUrl, setInputUrl] = useState('');
   const [recordingName, setRecordingName] = useState('');
   const [selectedReplay, setSelectedReplay] = useState('');
@@ -286,7 +287,7 @@ export default function BrowserPanel({
   const [runtimeCard, setRuntimeCard] = useState<RuntimeCard | null>(null);
   const [taskLogFocus, setTaskLogFocus] = useState<TaskLogFocus | null>(null);
   const [liveLogClearedSeq, setLiveLogClearedSeq] = useState(0);
-  const [fullLogClearedSeq, setFullLogClearedSeq] = useState(0);
+  const [taskLogClearedSeq, setTaskLogClearedSeq] = useState(0);
   const [eventCardsClearedSeq, setEventCardsClearedSeq] = useState(0);
   const [taskHistoryClearedSeq, setTaskHistoryClearedSeq] = useState(0);
   const [editorTabs, setEditorTabs] = useState<EditorTab[]>([]);
@@ -298,7 +299,7 @@ export default function BrowserPanel({
   const [explorerContextMenu, setExplorerContextMenu] = useState<ExplorerContextMenu | null>(null);
   const [explorerDialog, setExplorerDialog] = useState<ExplorerDialog | null>(null);
   const [exploreDiagnosisSeed, setExploreDiagnosisSeed] = useState<ExploreDiagnosisSeed | null>(null);
-  const [exploreMounted, setExploreMounted] = useState(false);
+  const [exploreMounted, setExploreMounted] = useState(() => !window.electronAPI?.isWorkbenchSmokeTest);
   const [editorFontSize, setEditorFontSize] = useState(() => {
     const stored = Number(window.localStorage.getItem(EDITOR_FONT_SIZE_KEY));
     return Number.isFinite(stored) && stored >= EDITOR_FONT_SIZE_MIN && stored <= EDITOR_FONT_SIZE_MAX ? stored : 13;
@@ -339,9 +340,9 @@ export default function BrowserPanel({
     () => visibleRuntimeEvents.filter((event) => event.seq > liveLogClearedSeq),
     [liveLogClearedSeq, visibleRuntimeEvents]
   );
-  const fullLogEvents = useMemo(
-    () => visibleRuntimeEvents.filter((event) => event.seq > fullLogClearedSeq || event.taskId === taskLogFocus?.taskId),
-    [fullLogClearedSeq, taskLogFocus, visibleRuntimeEvents]
+  const taskLogEvents = useMemo(
+    () => visibleRuntimeEvents.filter((event) => event.seq > taskLogClearedSeq || event.taskId === taskLogFocus?.taskId),
+    [taskLogClearedSeq, taskLogFocus, visibleRuntimeEvents]
   );
   const eventCardEvents = useMemo(
     () => visibleRuntimeEvents.filter((event) => event.seq > eventCardsClearedSeq),
@@ -349,8 +350,8 @@ export default function BrowserPanel({
   );
   const runtimeLogLines = useMemo(() => liveLogEvents.map(eventText), [liveLogEvents]);
   const focusedLogEventIndex = useMemo(
-    () => taskLogFocus ? fullLogEvents.findIndex((event) => event.taskId === taskLogFocus.taskId) : -1,
-    [fullLogEvents, taskLogFocus]
+    () => taskLogFocus ? taskLogEvents.findIndex((event) => event.taskId === taskLogFocus.taskId) : -1,
+    [taskLogEvents, taskLogFocus]
   );
   const taskHistory = useMemo(
     () => taskHistoryFromEvents(availableRuntimeEvents.filter((event) => event.seq > taskHistoryClearedSeq)),
@@ -850,7 +851,7 @@ export default function BrowserPanel({
 
   const showTaskLog = (task: TaskHistoryItem) => {
     setTaskLogFocus({ taskId: task.taskId, kind: task.kind, status: task.status });
-    setRuntimeCard('full');
+    setRuntimeCard('task');
   };
 
   const openExploreHome = () => {
@@ -899,7 +900,7 @@ export default function BrowserPanel({
     setClearingRuntimeHistory(true);
     setRuntimeClearFeedback('');
     setLiveLogClearedSeq(optimisticSeq);
-    setFullLogClearedSeq(optimisticSeq);
+    setTaskLogClearedSeq(optimisticSeq);
     setEventCardsClearedSeq(optimisticSeq);
     setTaskHistoryClearedSeq(optimisticSeq);
     setTaskLogFocus(null);
@@ -917,7 +918,7 @@ export default function BrowserPanel({
       setRuntimePollGeneration(runtimePollGenerationRef.current);
       setRuntimeState(result.state);
       setLiveLogClearedSeq(0);
-      setFullLogClearedSeq(0);
+      setTaskLogClearedSeq(0);
       setEventCardsClearedSeq(0);
       setTaskHistoryClearedSeq(0);
       setTaskLogFocus(null);
@@ -1204,7 +1205,7 @@ export default function BrowserPanel({
             </div>
             <div className="compile-control-grid">
               <div className="compile-control-row compile-control-row--build nes-container is-rounded" data-tour-id="task-build-controls">
-                <strong>Build</strong>
+                <strong className="compile-operation-title"><Wrench aria-hidden="true" /><span>Build<small>编译工程生成固件</small></span></strong>
                 <button className="nes-btn compile-refresh-button" type="button" onClick={onRefreshWorkbench}>刷新工程</button>
                 <button className="nes-btn project-select" type="button" onClick={requestProjectChange}>
                   {activeProject ? activeProject.name : '选择工作工程'}
@@ -1216,7 +1217,7 @@ export default function BrowserPanel({
                 <div className="runtime-progress compile-row-progress"><span style={{ width: `${runtimeState?.phase === 'build' ? Math.max(0, Math.min(100, progressValue)) : 0}%` }} /></div>
               </div>
               <div className="compile-control-row compile-control-row--flash nes-container is-rounded" data-tour-id="task-flash-controls">
-                <strong>Flash</strong>
+                <strong className="compile-operation-title"><Zap aria-hidden="true" /><span>Flash<small>烧录固件到设备</small></span></strong>
                 <button className="nes-btn" type="button" onClick={onRefreshHardboardDevices}>刷新设备</button>
                 <select className="nes-select" value={selectedPort} onChange={(e) => { setSelectedDevicePort(e.target.value); setSerialPort(e.target.value); }}>
                   <option value="">串口</option>
@@ -1233,16 +1234,15 @@ export default function BrowserPanel({
           <div className="task-manager-diagnostics">
             <div className="diagnostic-toolbar nes-container is-rounded">
               <button className={`nes-btn${runtimeCard === 'live' ? ' is-primary' : ''}`} type="button" onClick={() => toggleRuntimeCard('live')}>实时日志</button>
-              <button className={`nes-btn${runtimeCard === 'full' ? ' is-primary' : ''}`} type="button" onClick={() => toggleRuntimeCard('full')}>完整日志</button>
               <button className={`nes-btn${runtimeCard === 'events' ? ' is-primary' : ''}`} type="button" onClick={() => toggleRuntimeCard('events')}>事件卡片</button>
-              <span>诊断信息按需查看</span>
+              <span>任务日志请在下方对应记录中点击“查看”</span>
             </div>
             {runtimeCard ? (
               <section className="diagnostic-card nes-container is-rounded">
                 <header>
                   <strong>
-                    {runtimeCard === 'live' ? 'Runtime 实时日志' : runtimeCard === 'full' ? '完整 EventBus 日志' : 'Runtime 事件卡片'}
-                    {runtimeCard === 'full' && taskLogFocus ? ` · 已定位 ${taskLogFocus.kind === 'hardboard.build' ? 'Build' : 'Flash'} · ${taskStatusLabel(taskLogFocus.status)}` : ''}
+                    {runtimeCard === 'live' ? 'Runtime 实时日志' : runtimeCard === 'task' ? '任务日志' : 'Runtime 事件卡片'}
+                    {runtimeCard === 'task' && taskLogFocus ? ` · 已定位 ${taskLogFocus.kind === 'hardboard.build' ? 'Build' : 'Flash'} · ${taskStatusLabel(taskLogFocus.status)}` : ''}
                   </strong>
                   <div className="diagnostic-card-actions">
                     <button className="nes-btn clear-history-button" type="button" disabled={clearingRuntimeHistory} onClick={() => void clearRuntimeCard()}>{clearingRuntimeHistory ? '清除中...' : '清除日志'}</button>
@@ -1252,9 +1252,9 @@ export default function BrowserPanel({
                 {runtimeCard === 'live' ? (
                   <pre className="runtime-live-log">{runtimeLogLines.slice(-40).join('\n') || '等待 runtime eventbus 消息...'}</pre>
                 ) : null}
-                {runtimeCard === 'full' ? (
+                {runtimeCard === 'task' ? (
                   <div className="task-manager-log">
-                    {fullLogEvents.length ? fullLogEvents.map((event, index) => {
+                    {taskLogEvents.length ? taskLogEvents.map((event, index) => {
                       const focused = taskLogFocus?.taskId === event.taskId;
                       return (
                         <div
@@ -1315,7 +1315,16 @@ export default function BrowserPanel({
                     </div>
                   </div>
                 )) : (
-                  <div className="task-history-empty">暂无编译或烧录记录。选择工程后执行 Build / Flash，结果会显示在这里。</div>
+                  <div className="task-history-empty">
+                    <img src={taskManagerEmptyGuagua} alt="学院呱呱等待新的编译或烧录任务" />
+                    <strong>暂无编译或烧录记录</strong>
+                    <p>选择工程并执行 Build / Flash，结果会显示在这里。</p>
+                    <div className="task-empty-steps" aria-label="开始硬件任务的三个步骤">
+                      <span><FolderOpen aria-hidden="true" /><b>1 选择工程</b><small>刷新工程并选择目标项目</small></span>
+                      <span><Settings2 aria-hidden="true" /><b>2 配置与编译</b><small>根据需要调整配置并开始编译</small></span>
+                      <span><Rocket aria-hidden="true" /><b>3 选择串口并烧录</b><small>连接设备并执行烧录</small></span>
+                    </div>
+                  </div>
                 )}
               </div>
             </section>

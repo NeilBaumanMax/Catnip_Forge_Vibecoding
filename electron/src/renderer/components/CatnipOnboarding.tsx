@@ -156,7 +156,7 @@ const STEPS: TourStep[] = [
     id: 'tasks-results',
     eyebrow: '任务管理器 · 结果',
     title: '执行情况都显示在下方',
-    content: '实时日志、完整日志和事件卡片用于诊断过程；“最近任务与结果”保存状态、工程、串口、耗时、退出码，并可点“查看”定位日志。',
+    content: '实时日志和事件卡片用于诊断过程；“最近任务与结果”保存状态、工程、串口、耗时、退出码，点击“查看”会直接打开对应任务日志。',
     target: '[data-tour-id="task-results"]',
     actionLabel: '接着认识编辑器',
   },

@@ -1,5 +1,14 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-11 — Latest workspace correction: Task Manager / Monitor
+
+- Normal desktop startup now opens Explore; the workbench smoke-test fixture still starts in Repository for its isolated assertions.
+- Task Manager follows the blue-purple Build/Flash reference with distinct cyan and violet operation bands, a gradient result surface, and a transparent generated 学院呱呱 empty-state asset.
+- The duplicate standalone `完整日志` entry is removed. `实时日志` remains for the rolling event stream, while each history row's `查看` action opens that task's scoped log.
+- Monitor fields, panels, buttons, and status surfaces use the same deep blue-violet tokens.
+- Evidence: Electron typecheck, Explore UI contract, Renderer build, live CDP interaction checks, and `electron/.tmp/phase15-pass19-task-manager-comparison.png` pass. The desktop app is left open on Explore.
+
+
 ## 2026-09-11 — Latest repository workspace correction
 
 - Repository uses the selected deep-blue Skill Repository layout with working Skill filters, search, sort, and existing Skill Manager actions.

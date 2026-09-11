@@ -632,3 +632,15 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 布局专项首次失败因旧规则的浅色 `!important` 覆盖新深色画布，提升最终规则优先级后修复。第二次失败因“确认计划”的副说明包含“可执行”，旧测试按文本误点第三阶段；改为按第四个阶段按钮定位后通过。两次均完成根因修复，未绕过产品门禁。
 
 本轮未执行真实知乎请求、Windows 打包、Build/Flash/Serial 或实机动作；`REAL_HARDWARE_VALIDATION_PENDING` 保留。
+# 测试度量与证据
+
+## 2026-09-11 — Task Manager / Monitor visual gate
+
+| Command | Result | Evidence |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | PASS | Task log state, new empty-state asset, and startup defaults compile. |
+| `npm.cmd --prefix electron run verify:explore-ui` | PASS | Normal startup must select Explore; duplicate full-log entry is forbidden; task-scoped log state remains. |
+| `npm.cmd --prefix electron run build:renderer` | PASS | Production Renderer build succeeds; existing large-chunk warning remains visible. |
+| Live desktop CDP at 1389 × 1132 | PASS | Explore is initially selected; `完整日志` count is 0; real-time log and event-card toggles open; script returns to Explore. |
+
+Visual evidence: `electron/.tmp/phase15-pass19-task-manager-comparison.png`, reference and implementation at 1389 × 1132 without scaling. This is UI verification only; no Build/Flash/Serial or hardware action was performed, so `REAL_HARDWARE_VALIDATION_PENDING` remains unchanged.

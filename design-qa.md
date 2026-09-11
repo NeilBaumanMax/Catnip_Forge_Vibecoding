@@ -334,3 +334,17 @@ final result: passed
 No actionable P0/P1/P2 findings remain for this change.
 
 final result: passed
+# Fidelity pass 19 — Task Manager and Monitor theme (2026-09-11)
+
+- Source: user capture `codex-clipboard-3Y0GsR.png` (1389 × 1132).
+- Same-size evidence: `electron/.tmp/phase15-pass19-task-manager-comparison.png`; reference above and implementation below, each 1389 × 1132 without scaling.
+- [P1 fixed] Task Manager now separates Build and Flash with cyan-blue and violet operation bands, stronger action hierarchy, a gradient title/result shell, and a purpose-built transparent 学院呱呱 empty-state illustration.
+- [P1 fixed] The standalone `完整日志` tab was removed because it duplicated the EventBus-backed `实时日志`; task-specific history remains reachable from each result row's `查看` action.
+- [P1 fixed] Monitor controls, fields, receive/send surfaces, and primary actions now use the same deep blue-violet product palette.
+- [P1 fixed] Normal startup selects and mounts Explore; the workbench smoke-test path retains its repository fixture entry.
+- Runtime verification confirms default Explore, zero `完整日志` buttons, working real-time/event-card toggles, and return to Explore.
+- Accepted P3: the existing global navigation and draggable assistant remain product-wide shell elements, so they are retained around the reference-inspired Task Manager composition.
+
+No actionable P0/P1/P2 findings remain for this correction.
+
+final result: passed

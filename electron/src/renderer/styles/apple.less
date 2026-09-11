@@ -3690,3 +3690,333 @@ select.nes-select {
     border-color: var(--ui-text-secondary) !important;
   }
 }
+
+/* Phase 15 pass 19: Monitor and Task Manager share the product's blue-violet shell. */
+.browser-panel--monitor,
+.browser-panel--tasks {
+  --context-rgb: 74 124 255;
+  --context-strong-rgb: 105 86 255;
+  color: #edf5ff !important;
+  background-color: rgba(4, 20, 61, 0.9) !important;
+}
+
+.browser-panel--monitor .serial-monitor.serial-assistant {
+  color: #edf5ff !important;
+  background: rgba(5, 24, 68, 0.9) !important;
+}
+
+.browser-panel--monitor .serial-assistant .serial-box,
+.browser-panel--monitor .serial-assistant .serial-config-group {
+  color: #edf5ff !important;
+  background: rgba(10, 43, 99, 0.88) !important;
+  border-color: rgba(101, 164, 255, 0.42) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.06), 0 8px 24px rgba(0, 10, 45, 0.18);
+}
+
+.browser-panel--monitor .serial-assistant .serial-box legend,
+.browser-panel--monitor .serial-assistant .serial-config-group legend,
+.browser-panel--monitor .serial-assistant .serial-config-group label,
+.browser-panel--monitor .serial-assistant .serial-operation {
+  color: #c7d9f7 !important;
+}
+
+.browser-panel--monitor .serial-assistant .serial-output,
+.browser-panel--monitor .serial-assistant textarea,
+.browser-panel--monitor .serial-assistant select {
+  color: #edf6ff !important;
+  background: rgba(3, 18, 55, 0.92) !important;
+  border-color: rgba(104, 159, 239, 0.38) !important;
+}
+
+.browser-panel--monitor .serial-assistant .serial-output::placeholder,
+.browser-panel--monitor .serial-assistant textarea::placeholder { color: #7898c9 !important; }
+
+.browser-panel--monitor .serial-assistant .serial-box button,
+.browser-panel--monitor .serial-assistant .serial-config-group button {
+  color: #e9f3ff !important;
+  background: rgba(40, 79, 151, 0.62) !important;
+  border-color: rgba(116, 171, 249, 0.42) !important;
+}
+
+.browser-panel--monitor .serial-assistant .serial-box button:hover:not(:disabled),
+.browser-panel--monitor .serial-assistant .serial-config-group button:hover:not(:disabled) {
+  background: rgba(57, 105, 190, 0.76) !important;
+  border-color: rgba(137, 194, 255, 0.68) !important;
+}
+
+.browser-panel--monitor .serial-assistant .serial-primary-button {
+  color: #fff !important;
+  background: #347ff4 !important;
+  border-color: #65a8ff !important;
+  box-shadow: 0 6px 18px rgba(29, 104, 231, 0.26) !important;
+}
+
+.browser-panel--monitor .serial-status {
+  color: #b9cdee !important;
+  background: rgba(22, 55, 112, 0.72) !important;
+  border: 1px solid rgba(92, 143, 220, 0.24);
+}
+
+.browser-panel--tasks .task-manager-panel {
+  gap: 10px;
+  padding: 4px;
+  color: #edf5ff;
+  background:
+    radial-gradient(circle at 78% 8%, rgba(112, 77, 255, 0.22), transparent 32%),
+    radial-gradient(circle at 18% 76%, rgba(28, 149, 255, 0.14), transparent 34%),
+    rgba(5, 24, 68, 0.92);
+}
+
+.browser-panel--tasks .diagnostic-toolbar {
+  grid-template-columns: repeat(2, 112px) minmax(0, 1fr);
+}
+
+.browser-panel--tasks .compile-workbench-title,
+.browser-panel--tasks .compile-control-row,
+.browser-panel--tasks .diagnostic-toolbar,
+.browser-panel--tasks .task-history-panel,
+.browser-panel--tasks .diagnostic-card {
+  color: #edf5ff !important;
+  background: rgba(10, 43, 99, 0.9) !important;
+  border-color: rgba(100, 161, 250, 0.4) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.06), 0 8px 24px rgba(0, 10, 45, 0.16) !important;
+}
+
+.browser-panel--tasks .compile-workbench-title,
+.browser-panel--tasks .task-history-header,
+.browser-panel--tasks .diagnostic-card header {
+  color: #fff !important;
+  background: linear-gradient(100deg, rgba(19, 69, 149, 0.98), rgba(48, 50, 137, 0.95)) !important;
+  border-color: rgba(110, 170, 255, 0.4) !important;
+}
+
+.browser-panel--tasks .compile-workbench-title span,
+.browser-panel--tasks .diagnostic-toolbar span,
+.browser-panel--tasks .task-history-header span { color: #a9c1e8 !important; }
+
+.browser-panel--tasks .compile-control-row > strong {
+  color: #c8d9ff;
+  background: rgba(77, 92, 214, 0.3);
+}
+
+.browser-panel--tasks .compile-control-row .nes-btn,
+.browser-panel--tasks .diagnostic-toolbar .nes-btn,
+.browser-panel--tasks .task-history-panel .nes-btn,
+.browser-panel--tasks .diagnostic-card .nes-btn {
+  color: #eaf3ff !important;
+  background: rgba(39, 79, 151, 0.68) !important;
+  border-color: rgba(115, 170, 246, 0.38) !important;
+}
+
+.browser-panel--tasks .diagnostic-toolbar .nes-btn.is-primary {
+  color: #fff !important;
+  background: #3f72ed !important;
+  border-color: #72a9ff !important;
+  box-shadow: 0 5px 17px rgba(54, 85, 231, 0.28) !important;
+}
+
+.browser-panel--tasks .compile-control-row .nes-select,
+.browser-panel--tasks .compile-control-row select {
+  color: #edf5ff !important;
+  background-color: rgba(3, 18, 55, 0.9) !important;
+  border-color: rgba(104, 159, 239, 0.38) !important;
+}
+
+.browser-panel--tasks .runtime-progress {
+  background: rgba(3, 17, 52, 0.9);
+  border-color: rgba(98, 153, 235, 0.32);
+}
+
+.browser-panel--tasks .runtime-progress span { background: #6d63ff; }
+
+.browser-panel--tasks .task-history-table-head {
+  color: #bcd2f3;
+  background: rgba(4, 27, 72, 0.96);
+  border-color: rgba(88, 148, 237, 0.32);
+}
+
+.browser-panel--tasks .task-history-row {
+  color: #eaf3ff;
+  background: rgba(17, 57, 119, 0.62);
+  border-color: rgba(93, 149, 230, 0.24);
+}
+
+.browser-panel--tasks .task-history-row:hover { background: rgba(30, 79, 153, 0.7); }
+.browser-panel--tasks .task-history-row > span,
+.browser-panel--tasks .task-history-row > strong,
+.browser-panel--tasks .task-history-row > code { color: #e3efff; }
+.browser-panel--tasks .task-history-row--completed { background: rgba(25, 111, 112, 0.26); box-shadow: inset 3px 0 0 #45d2bd; }
+.browser-panel--tasks .task-history-row--failed { background: rgba(146, 44, 77, 0.22); box-shadow: inset 3px 0 0 #ff738c; }
+.browser-panel--tasks .task-history-row--running { background: rgba(36, 96, 190, 0.34); box-shadow: inset 3px 0 0 #67aaff; }
+.browser-panel--tasks .task-history-row--pending { background: rgba(91, 71, 184, 0.26); box-shadow: inset 3px 0 0 #a388ff; }
+
+.browser-panel--tasks .runtime-live-log,
+.browser-panel--tasks .task-manager-log,
+.browser-panel--tasks .task-manager-events,
+.browser-panel--tasks .diagnostic-empty {
+  color: #cfe1ff;
+  background: rgba(3, 17, 52, 0.94) !important;
+  border-color: rgba(91, 145, 225, 0.3) !important;
+}
+
+.browser-panel--tasks .task-event-card {
+  color: #dceaff;
+  background: rgba(17, 57, 119, 0.72);
+  border-color: rgba(96, 153, 236, 0.3);
+}
+
+.browser-panel--tasks .task-event-card--progress { background: rgba(31, 105, 135, 0.44); }
+.browser-panel--tasks .task-event-card--error { background: rgba(132, 39, 74, 0.42); }
+
+.browser-panel--tasks .compile-control-grid { gap: 12px; }
+.browser-panel--tasks .compile-control-row--build,
+.browser-panel--tasks .compile-control-row--flash {
+  grid-template-columns: 150px 118px minmax(230px, 1.1fr) 110px minmax(160px, 0.8fr) minmax(190px, 0.95fr);
+  min-height: 92px;
+  padding: 12px 16px !important;
+  border-radius: 16px !important;
+}
+
+.browser-panel--tasks .compile-control-row--build {
+  background: linear-gradient(100deg, rgba(12, 75, 161, 0.84), rgba(20, 76, 159, 0.72)) !important;
+  border-color: rgba(54, 165, 255, 0.6) !important;
+}
+
+.browser-panel--tasks .compile-control-row--flash {
+  background: linear-gradient(100deg, rgba(55, 48, 143, 0.82), rgba(84, 47, 169, 0.68)) !important;
+  border-color: rgba(131, 105, 255, 0.62) !important;
+}
+
+.browser-panel--tasks .compile-operation-title {
+  height: 64px;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 8px 12px !important;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  border-right: 1px solid rgba(166, 202, 255, 0.28);
+}
+
+.browser-panel--tasks .compile-operation-title > svg {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  padding: 7px;
+  color: #9ce7ff;
+  background: rgba(29, 140, 236, 0.28);
+  border-radius: 10px;
+}
+
+.browser-panel--tasks .compile-control-row--flash .compile-operation-title > svg {
+  color: #ffdf76;
+  background: rgba(135, 75, 255, 0.34);
+}
+
+.browser-panel--tasks .compile-operation-title > span { display: grid; gap: 3px; font-size: 15px; }
+.browser-panel--tasks .compile-operation-title small { color: #a9c8ef; font-size: 9px; font-weight: 500; }
+.browser-panel--tasks .compile-control-row > button,
+.browser-panel--tasks .compile-control-row > select { height: 42px; border-radius: 9px !important; }
+.browser-panel--tasks .compile-control-row--build > .is-warning {
+  color: #fff !important;
+  background: #2c85ff !important;
+  border-color: #65b4ff !important;
+}
+.browser-panel--tasks .compile-control-row--flash > .is-error {
+  color: #fff !important;
+  background: #7156f5 !important;
+  border-color: #a28cff !important;
+}
+
+.browser-panel--tasks .diagnostic-toolbar {
+  min-height: 62px;
+  padding: 9px 12px !important;
+  background: rgba(4, 27, 71, 0.94) !important;
+}
+
+.browser-panel--tasks .diagnostic-toolbar .nes-btn {
+  height: 42px;
+  min-width: 112px;
+  border-radius: 10px !important;
+}
+
+.browser-panel--tasks .task-history-panel {
+  border-radius: 16px !important;
+  background:
+    radial-gradient(circle at 50% 34%, rgba(62, 105, 210, 0.28), transparent 28%),
+    radial-gradient(circle at 72% 72%, rgba(112, 67, 221, 0.12), transparent 28%),
+    rgba(8, 38, 88, 0.94) !important;
+}
+.browser-panel--tasks .task-history-header { min-height: 50px; padding: 10px 14px; }
+.browser-panel--tasks .task-history-table:has(.task-history-empty) {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.browser-panel--tasks .task-history-empty {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 24px 14px;
+  color: #eaf3ff;
+}
+
+.browser-panel--tasks .task-history-empty > img {
+  width: min(310px, 36%);
+  max-height: 225px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 24px rgba(31, 83, 222, 0.24));
+}
+
+.browser-panel--tasks .task-history-empty > strong { color: #fff; font-size: 16px; }
+.browser-panel--tasks .task-history-empty > p { margin: 0; color: #91add7; font-size: 11px; }
+.browser-panel--tasks .task-empty-steps {
+  width: min(760px, 82%);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 7px;
+}
+
+.browser-panel--tasks .task-empty-steps > span {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 9px;
+  align-items: center;
+  padding: 10px 12px;
+  color: #dceaff;
+  background: rgba(29, 68, 132, 0.62);
+  border: 1px solid rgba(102, 156, 234, 0.28);
+  border-radius: 12px;
+}
+
+.browser-panel--tasks .task-empty-steps > span:last-child {
+  background: rgba(71, 55, 151, 0.54);
+  border-color: rgba(137, 111, 244, 0.34);
+}
+
+.browser-panel--tasks .task-empty-steps svg {
+  grid-row: 1 / 3;
+  width: 30px;
+  height: 30px;
+  padding: 7px;
+  color: #73d9ff;
+  background: rgba(40, 133, 222, 0.24);
+  border-radius: 9px;
+}
+.browser-panel--tasks .task-empty-steps > span:last-child svg { color: #d2a1ff; background: rgba(118, 74, 224, 0.28); }
+.browser-panel--tasks .task-empty-steps b { overflow: hidden; color: #edf5ff; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.browser-panel--tasks .task-empty-steps small { overflow: hidden; color: #86a5d1; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 1180px) {
+  .browser-panel--tasks .compile-control-row--build,
+  .browser-panel--tasks .compile-control-row--flash { grid-template-columns: 130px 108px minmax(180px, 1fr) 94px minmax(140px, 0.8fr); }
+  .browser-panel--tasks .compile-row-progress { grid-column: 2 / -1; width: 100%; }
+  .browser-panel--tasks .task-empty-steps { width: 94%; }
+}

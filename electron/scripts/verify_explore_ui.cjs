@@ -19,6 +19,8 @@ const ideaEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets'
 const diagnosisEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-diagnosis-guagua.png'));
 
 assert.match(browserPanel, /type PanelMode = [^;]*'explore'/, 'PanelMode must include explore');
+assert.match(browserPanel, /useState<PanelMode>\(\(\) => window\.electronAPI\?\.isWorkbenchSmokeTest \? 'repo' : 'explore'\)/, 'normal startup must default to Explore');
+assert.match(browserPanel, /useState\(\(\) => !window\.electronAPI\?\.isWorkbenchSmokeTest\)/, 'default Explore must be mounted on startup');
 assert.equal((browserPanel.match(/data-tour-id="tab-/g) || []).length, 6, 'exactly six visible workspace tabs are required');
 assert.match(browserPanel, /data-tour-id="tab-explore"[^\r\n]*><Compass[^\r\n]*<span>探索<\/span><\/button>/, 'visible Explore tab and icon are missing');
 assert.match(browserPanel, /data-tour-id="tab-skill-hub"/, 'Neil Skill Hub tab is missing');
@@ -26,6 +28,8 @@ assert.match(browserPanel, /http:\/\/118\.195\.247\.102\/#page-top/, 'Skill Hub 
 assert.doesNotMatch(browserPanel, /tab-zhihu/, 'Zhihu must not be a workspace name');
 assert.match(browserPanel, /mode === 'explore'[\s\S]*<ExplorePanel/, 'Explore panel must render from the workspace mode');
 assert.match(browserPanel, /exploreMounted[\s\S]*hidden=\{mode !== 'explore'\}/, 'Explore must stay mounted while another workspace is visible');
+assert.doesNotMatch(browserPanel, />完整日志<|完整 EventBus 日志/, 'duplicated full-log entry must not remain visible');
+assert.match(browserPanel, /runtimeCard === 'task' \? '任务日志'/, 'task history must retain a dedicated task-log detail view');
 assert.doesNotMatch(browserPanel, /runtimeState\?\.activeProjectDir/, 'old Runtime project must not become the active Explore project');
 assert.match(app, /选择工作工程/, 'cold-start project picker is missing');
 assert.match(app, /activateProjectSession\(selectedProjectId\)/, 'project activation must submit a Main-issued project id');
