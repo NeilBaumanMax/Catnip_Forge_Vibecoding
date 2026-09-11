@@ -391,3 +391,21 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 首次文档验证额外检查了用户已经运行和配置过的本地 `win-unpacked`，因检测到 `resources/apikey.txt` 而停止。用户随后确认该文件是本人主动配置的本机 API Key，并要求本轮忽略打包、专注文档/开发交接；因此不读取、不删除、不提交该文件，也不把用户配置后的可变目录作为本轮发布包检查对象。该文件位于 Git ignored 的 `electron/dist-package/` 下。
 
 本轮未重复应用构建、真实搜索、Agent 调用或硬件动作；Phase 7 代码和打包验证沿用已记录的 `c4adf879` 证据。`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 不变。
+
+## 2026-09-11 星光工坊 UI v2 Aurora
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| Runtime `typecheck` / `build` | 通过 | Runtime、Hardboard 与 EventBus 无业务改动 |
+| Electron `typecheck` / `build:main` / `build:renderer` | 通过 | Renderer 1267 modules；保留既有大 chunk warning |
+| 新增 `typecheck:renderer` | 通过 | 首次发现 CodeEditor 隐式 `any` 与 Explore nullable request；以具体类型/安全回退修复后通过 |
+| Explore UI/entry/layout | 通过 | 首次几何断言发现横幅 eyebrow 裁切；修复后 8 视口/分栏、三主题、动作图、本页/全流程与 console error 0 |
+| Chat presentation / onboarding / onboarding UI | 通过 | 首次 onboarding UI 仍断言旧品牌；更新为真实学院呱呱 DOM 后通过 |
+| Project/Explore session、Knowledge、Context、Request | 通过 | 工程隔离、恢复、显式选择、Secret 排除与请求清洗未回归 |
+| Explore analysis gate / search handoff / task queue | 通过 | 只分析、无工具只计划、一次性确认与队列保持 |
+| Skills / Hardboard / Serial monitor | 通过 | 软件与 mock 契约回归；不算真机 |
+| `smoke:workbench` | 通过 | 隔离 userData 的真实 Electron 打开真实工程文件 |
+| `verify:software-assistant-ui` / `verify:project-session-ui` | ENVIRONMENT_BLOCKED | 直接运行时没有正在运行的指定 CDP 成品目标；未伪记为通过 |
+| `git diff --check` | 通过 | 无 whitespace error；仅 LF→CRLF 工作树提示 |
+
+本轮未重新打 Windows 包、未执行真实搜索/DeepSeek 请求、真实 Agent 改码或 Build/Flash/Serial。Windows 100%/125%/150% 人工缩放与最终用户视觉接受待验；`REAL_HARDWARE_VALIDATION_PENDING` 保留。完整证据见 [Aurora 交付报告](PHASE_UI_V2_AURORA_DELIVERY.md)。
