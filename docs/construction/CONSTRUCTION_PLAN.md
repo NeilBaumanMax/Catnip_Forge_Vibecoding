@@ -61,6 +61,15 @@
 - 9c：专项、Runtime/Electron 构建、安全检查、Windows 打包、release/version 与包内容核对。
 - 真实搜索、真实 Agent 改码和真机 Build/Flash/Serial 不属于本轮。
 - 9a–9c：`COMPLETE`。清理目标逐项不存在，剩余 Skill 9 个，Windows `win-unpacked` 已生成并通过 release/version/Skill 内容门禁。
+
+## 2026-09-11 Phase 10–14 当前状态
+
+- Phase 10：`COMPLETE`。修复未归属历史展示、Explore 编辑黑屏、计划等待态、材料编辑/打开、四步层级和当前工程标识；版本升级到 v2.0.0。
+- Phase 11：`COMPLETE`。确认后 Explore 历史显式落盘；新手旅程覆盖探索/Skill 小站；学院呱呱名称、知识和 GitHub 白名单入口完成。
+- Phase 12：`COMPLETE`。助手聊天框、头像和 GitHub 按钮修复；收藏保存来源对话快照并可删除；入口配色增强。
+- Phase 13：`COMPLETE`。两入口学院呱呱插画和响应式门禁完成；v2.0.0 Windows 包通过 release/version，包体 4,468,679,868 字节。
+- Phase 14：`COMPLETE`。已修正当前文档漂移并重写接力入口；未改源码、未重打包、未触碰用户未跟踪目录。
+- 后续顺序：用户人工复测 v2.0.0 → 经授权完成真实双搜索 Diagnosis → 有实机和端口授权后执行修改/Build/Flash/Serial。`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留。
 ## Phase 1 已定位的最小工程范围
 
 - 新增 `agent/skills/zhihu`，按用户 ZIP 原字节导入，不创建假 Skill。

@@ -24,7 +24,7 @@ Main 另有 Workbench 受控文件、Skill Manager、会话 JSON、用户目录�
 
 本地知识卡在 Main user-data store；相关候选先交 UI 选择，再形成 Context。相关源码从确定工程和 CMake 候选有限读取；Build/Serial 从既有记录取有限窗口并绑定任务/项目/时间，不复制日志系统。
 
-截至 2026-09-09，探索软件链路已进入 Phase 6 最终验收：第五页签、找灵感/解问题、安全连接、固定知乎/全网搜索桥、共享 Domain、Main JSON 知识 Store、有界 Context、受限分析、结构化 Idea/Diagnosis、Handoff、无工具计划和一次性确认执行门禁均已实现。真实“找灵感”已取得 8 条知乎来源并由 DeepSeek 返回 3 个合法 Idea；真实双搜索排障和实机 Build/Flash/Serial 仍待验收。已验证的 Windows 候选包含官方 Skill，最新安全连接与受限输出修复仍需重新打包。
+截至 2026-09-11，当前 Renderer 有六个可见工作区：仓库、监视器、任务管理器、编辑器、探索和 Neil 的 skill 小站。探索链路的安全连接、固定知乎/全网搜索桥、共享 Domain、Main JSON 知识 Store、有界 Context、受限分析、结构化 Idea/Diagnosis、工程内 Handoff、无工具计划和一次性确认执行门禁均已实现。真实“找灵感”已取得 8 条知乎来源并由 DeepSeek 返回 3 个合法 Idea；真实双搜索排障和实机 Build/Flash/Serial 仍待验收。最新 v2.0.0 Windows 包已重建并通过 release/version。
 
 ## 先验证再定型
 
@@ -44,3 +44,7 @@ Explore 共享契约位于 `electron/src/common/explore.ts`，由 Main、preload
 连接动作由 Renderer 发出零参数请求，Main 打开固定知乎个人中心并启动独立遮蔽输入窗口；Secret 仅经宿主进程 stdin 交给官方 CLI 并写入系统凭证库。搜索由 Main 的固定桥调用官方 `search zhihu` / `search global`，校验来源后再交给 Worker 的 `explore_analysis`；Renderer 只收到连接状态、结构化结论和来源，不收到 Secret。
 
 Worker 仍复用原单队列。`explore_analysis` 只允许官方 Skill 检索和结构化结果提交，`explore_plan` 不开放工具；用户确认后，Main 只接受与已完成计划和 Handoff 绑定、30 分钟内有效且只能消费一次的执行许可，再提交回原有默认执行队列。知识卡必须由用户主动收藏，历史卡必须经用户选择才进入 Context。
+
+Project Session 由 Main 签发并绑定规范化 projectDir。工程 Agent 会话物理写入 `<project>/.catnip/agent/`；Explore 每条 Idea/Diagnosis 会话写入 `<project>/.catnip/explore/<mode>/<sessionId>/`；第三步材料写入 `<project>/.catnip/handoffs/<sessionId>/`。Explore conversation 使用独立 IPC/event channel，不进入左侧工程 Agent。用户已授权清除旧未归属数据后，当前 Chat 列表不再生成未归属只读入口。
+
+“Neil 的 skill 小站”复用 BrowserPanel 与 Main 已有 browser bounds/navigation，固定打开 `http://118.195.247.102/#page-top`，页面不暴露录制控件。当前代码尚无站点到本地 Skill Manager 的专用安装 IPC；后续安装桥必须复用既有 Skill Manager 并加入来源、用户确认、路径和覆盖门禁，不能让网页获得任意文件写权限。学院呱呱是独立软件问答通道，动态读取随包手册；作者 GitHub 仅通过 Main 固定 URL 白名单打开。

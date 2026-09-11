@@ -2,6 +2,14 @@
 
 初始检查日期：2026-09-07（Asia/Shanghai）。下方原始报告保留当时快照，不替代后续动态检查。当前实现状态以本节、Product Truth、HANDOFF 和真实代码为准。
 
+## 2026-09-11 Phase 14 动态补充
+
+- 文档审计开工时分支为 `catnip-GUAGUA`，local 与 `origin/catnip-GUAGUA` 均为 `881121f8`；恢复点 `backup/pre-phase-14-doc-handoff-20260911` 已推送到同一提交。最终文档提交 hash 仍须动态核对。
+- 当前公开版本 `v2.0.0` / Build `7201` / npm `2.0.0-7201` / PE `2.0.0.7201`。六个可见工作区包括 Neil 的 skill 小站；学院呱呱、新手引导、Explore 独立历史、收藏来源对话快照和两入口插画均已落地。
+- 最新包位于 `electron/dist-package/win-unpacked`；Phase 13 发布核验总计 4,468,679,868 字节，EXE 188,969,472 字节，DeepSeek/Qwen Key 未入包。
+- 本轮发现但保护的未跟踪用户现场为 `docs/Catnip_Forge_UI_Handoff/` 与 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/`；未暂存、未删除、未改写。
+- 仍未验证真实双搜索 Diagnosis、真实工程 Agent 改码和 Build/Flash/Serial、全新 Windows 用户连接及代码签名。
+
 2026-09-10 Phase 8 增量：工程 Agent 对话与 Explore session 已改存各工程 `.catnip` 分层目录；Explore 有独立 conversation、可回看的四阶段和工程内 handoff artifact，只有第四步明确确认后才进入当前工程 Agent。相关构建、专项和布局矩阵通过；新版 Windows 包、真实双搜索、真实 Agent 改码及硬件仍未验证。
 
 ## 2026-09-10 Phase 7 完成补充

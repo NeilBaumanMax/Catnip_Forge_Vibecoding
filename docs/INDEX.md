@@ -5,7 +5,7 @@
 ## 必读顺序
 
 1. [README](../README.md)：GitHub 首页、快速启动、项目边界。
-2. [当前施工 HANDOFF](construction/HANDOFF.md)：`idea_to_production` 当前接力状态、已完成 Phase 和下一步；旧 [HANDOFF](HANDOFF.md) 仅保留历史证据。
+2. [当前施工 HANDOFF](construction/HANDOFF.md)：`catnip-GUAGUA` 当前接力状态、已完成 Phase 和下一步；旧 [HANDOFF](HANDOFF.md) 仅保留历史证据。
 3. [ARCHITECTURE](ARCHITECTURE.md)：Electron、Worker、Agent、Runtime 的模块边界。
 4. [DEVELOPMENT](DEVELOPMENT.md)：开发、验证、提交和推送流程。
 5. [GITHUB_SYNC](GITHUB_SYNC.md)：Windows 实机、Linux 本机和 GitHub 的同步方案。
@@ -20,7 +20,7 @@
 14. [AGENT_CHAT_PRESENTATION_CONSTRUCTION](AGENT_CHAT_PRESENTATION_CONSTRUCTION.md)：Agent 主回复、执行过程折叠、专业视图与安全 Markdown 渲染的施工规则。
 15. [AGENT_CONVERSATION_HISTORY_CONSTRUCTION](AGENT_CONVERSATION_HISTORY_CONSTRUCTION.md)：多历史会话、重启恢复、切换删除、旧 session 迁移和 Agent 上下文续接规则。
 16. [AGENT_SKILL_RUNTIME_CONSTRUCTION](AGENT_SKILL_RUNTIME_CONSTRUCTION.md)：目录型 Skill、脚本/参考文件整树部署、聊天正文多 `@Skill` 引用和实际调用校验规则。
-17. [WINDOWS_V1_5_0_RELEASE_CHECKLIST](WINDOWS_V1_5_0_RELEASE_CHECKLIST.md)：当前 v1.5.0 便携包重建、隔离 Python、API Key 首启和发布验收报告。
+17. [PHASE_13_EXPLORE_ENTRY_ILLUSTRATIONS](construction/PHASE_13_EXPLORE_ENTRY_ILLUSTRATIONS.md)：当前 v2.0.0 / Build 7201 Windows 包及探索入口插画验收证据；[WINDOWS_V1_5_0_RELEASE_CHECKLIST](WINDOWS_V1_5_0_RELEASE_CHECKLIST.md) 为历史发布报告。
 18. [WINDOWS_V1_0_0_RELEASE_CHECKLIST](WINDOWS_V1_0_0_RELEASE_CHECKLIST.md)：历史 v1.0.0 便携包版本映射与分发验收记录。
 19. [SPLASH_SCREEN_CONSTRUCTION](SPLASH_SCREEN_CONSTRUCTION.md)：品牌启动页的视觉、真实加载阶段、双窗口切换、打包路径和验收基线。
 20. [SOFTWARE_ASSISTANT_GUIDE_CONSTRUCTION](SOFTWARE_ASSISTANT_GUIDE_CONSTRUCTION.md)：猫薄荷可维护 Markdown 知识手册、动态提示词、安全降级和发布验收基线。

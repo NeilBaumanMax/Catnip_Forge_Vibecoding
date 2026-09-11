@@ -391,3 +391,27 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 首次文档验证额外检查了用户已经运行和配置过的本地 `win-unpacked`，因检测到 `resources/apikey.txt` 而停止。用户随后确认该文件是本人主动配置的本机 API Key，并要求本轮忽略打包、专注文档/开发交接；因此不读取、不删除、不提交该文件，也不把用户配置后的可变目录作为本轮发布包检查对象。该文件位于 Git ignored 的 `electron/dist-package/` 下。
 
 本轮未重复应用构建、真实搜索、Agent 调用或硬件动作；Phase 7 代码和打包验证沿用已记录的 `c4adf879` 证据。`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 不变。
+
+## 2026-09-11 Phase 10–13 v2.0.0 增量
+
+| 检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| Runtime/Electron typecheck、Main/Renderer build | 通过 | Phase 13 最终代码；Renderer 仅保留既有大 chunk warning |
+| Explore UI / session / knowledge / layout | 通过 | 独立历史、确认后持久化、收藏来源对话快照/删除、可编辑 Handoff 和两入口插画 |
+| Onboarding / software assistant 专项 | 通过 | 新手旅程 v7、Skill 小站、学院呱呱知识、输入区与 GitHub 白名单入口 |
+| `verify:explore-layout-ui` | 通过 | 8 组场景，Explore 宽度 534–1802px；入口图加载、右侧锚定、文字不遮挡、console error 0 |
+| `pack:win` / `verify:release` / `verify:version` | 通过 | v2.0.0 / Build 7201 / PE 2.0.0.7201；4,468,679,868 字节；无 DeepSeek/Qwen Key |
+
+本组未执行真实 Diagnosis、真实 Agent 改码或硬件；继续保留 `LIVE_DIAGNOSIS_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING`。
+
+## 2026-09-11 Phase 14 文档漂移与交接
+
+| 检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| Git / 远端恢复点 | 通过 | 开工时 local/remote `catnip-GUAGUA` 为 `881121f8`；Phase 14 备份 tag 已推送并核对 |
+| 严格 UTF-8 / replacement character | 通过 | 17 份本轮文档均以 fatal UTF-8 解码，未发现 U+FFFD |
+| 本地 Markdown 链接 | 通过 | 17 份文档中的本地目标均存在 |
+| 当前真相断言 | 通过 | `config/version.json` 为 v2.0.0 / 7201，BrowserPanel 为 6 个可见 tab，HANDOFF 含分支、版本、两项 pending 和 Skill Hub 缺口 |
+| `git diff --check` | 通过 | 无 whitespace error；仅 LF → CRLF 提示 |
+
+首次联合 Node 检查因 PowerShell 引号解析失败，Node 未运行；改写匹配表达式后通过。仅修改 Markdown，未重复构建或打包。

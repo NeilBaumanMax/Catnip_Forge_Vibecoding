@@ -322,3 +322,11 @@
 - `pack:win` 成功完成 Runtime/Main/Renderer 构建、electron-builder 骨架生成和资源复制；`win-unpacked` 4,464,671,335 字节。新增过滤确保工程 `.catnip` 不进包。
 - `verify:release`、`verify:version`、`verify:skills` 通过；包内四个 Skill、`.catnip` 使用状态、DeepSeek/Qwen 真实 Key 均不存在。版本为 `1.0.0.7201`。
 - 本轮未重新启动应用，未运行真实搜索、真实工程 Agent 改码、Build/Flash/Serial 或代码签名；`LIVE_DIAGNOSIS_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING` 继续保留。
+
+## 2026-09-11 / Phase 14 文档漂移修正与接力
+
+- 动态核对 `catnip-GUAGUA` local/remote 均为 `881121f8`，并将 `backup/pre-phase-14-doc-handoff-20260911` 推送到同一提交。
+- 修正当前分支、v2.0.0 版本、六工作区、工程内 Agent/Explore/Handoff、学院呱呱、新手引导、收藏来源对话和 Phase 10–13 发布证据；重写 `docs/construction/HANDOFF.md`。
+- 代码审计发现 Skill Hub 只有固定站点 BrowserPanel 入口，没有专用站点 → 本地 Skill Manager 安装 IPC；当前文档明确列为待完成，不再把网页浏览/下载推断为本地一键安装完成。
+- 17 份变更文档通过严格 UTF-8、本地链接、版本/tab/HANDOFF 当前态与 `git diff --check`。首次 Node 联合检查因 PowerShell 引号解析未执行，修正命令后通过。
+- 本轮只修改 Markdown；保护未跟踪 `docs/Catnip_Forge_UI_Handoff/` 与工程 `.catnip/`，未构建、打包、调用模型/搜索或操作硬件。

@@ -6,12 +6,13 @@
 
 ## 当前版本
 
-对外发布标签 `v1.5.0`；内部构建号 `7201`，npm 包版本 `1.0.0-7201`，Windows PE 四段版本映射为 `1.0.0.7201`
+当前公开版本 `v2.0.0`；内部构建号 `7201`，npm 包版本 `2.0.0-7201`，Windows PE 四段版本映射为 `2.0.0.7201`。当前施工与接力状态以 [construction/HANDOFF](construction/HANDOFF.md) 为准；下方旧版本条目均为带日期历史证据。
 
 ---
 
 ## 当前已落地
 
+- [x] 2026-09-11 Phase 10–13：完成 v2.0.0 UI、工程内 Explore 历史与可编辑交接、更新后的新手引导、Neil 的 skill 小站、Neil·Bauman's 学院呱呱及作者入口、收藏来源对话快照/删除，以及找灵感/解问题场景插画；最新 Windows 包已通过版本与发布门禁。
 - [x] 2026-09-10 Phase 8：工程 Agent 对话与 Explore 多历史已物理迁入各工程 `.catnip`；Explore 使用独立对话时间线和可回看的四阶段，第三步生成分层交接材料、第四步磁盘重读并显式确认后提交当前工程 Agent；来源/收藏/计划按钮层级和尺寸已统一。自动化专项与构建通过，新版 Windows 包及真实搜索/Agent/硬件仍待验。
 - [x] 2026-09-10 Phase 9：按用户授权清除 Explore/Agent 使用记录与收藏，移除 1688-source-finding、bilibili-search-workflow、douyin-product-rank、taobao-listing，重新生成 Windows `win-unpacked` 并通过 release/version/Skill 内容门禁；真实搜索、Agent 改码与硬件仍待验。
 

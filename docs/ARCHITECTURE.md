@@ -60,18 +60,18 @@ Runtime MCP Server
 - `electron/src/main/first-run.ts`：校验并保存必填 DeepSeek 与选填 Qwen API Key；首启阻塞条件只取决于 DeepSeek。保存成功后主进程调度一次 `app.relaunch()`，先走统一退出清理再自动重启。
 - `electron/src/main/agent.ts`：Claude Agent 进程、动态 MCP 配置和生命周期管理。
 - `electron/src/main/software-assistant.ts`：独立的软件使用问答通道；复用本地 DeepSeek Key，通过 OpenAI Chat Completions 接口调用 `deepseek-v4-flash`。每次请求重新读取 `CATNIP_FORGE_USER_GUIDE.md` 并与固定安全规则组合为系统提示词，限制上下文长度和回答边界，不进入硬件 Agent 队列。
-- `electron/CATNIP_FORGE_USER_GUIDE.md`：猫薄荷的可维护产品知识母版；发布后位于 `resources` 根目录、app.asar 外，修改后下一次提问立即生效。
+- `electron/CATNIP_FORGE_USER_GUIDE.md`：Neil·Bauman's 学院呱呱的可维护产品知识母版；发布后位于 `resources` 根目录、app.asar 外，修改后下一次提问立即生效。
 - `electron/src/main/tray.ts`：Windows 系统托盘和窗口显隐。
-- `electron/src/main/worker/session-store.ts`：按工程隔离的多会话索引、完整 UI 消息、精简 Agent 轮次和重启恢复；旧全局对话保留为“未归属 · 只读”，成品数据位于用户目录，不写入安装资源。
-- `electron/src/renderer/App.tsx`：主 UI 状态和冷启动工程选择/创建门禁；持有 Main active project 的 Renderer 镜像，并管理左右面板、主题、猫薄荷助手和 Agent 消息状态。
+- `electron/src/main/worker/session-store.ts`：按工程隔离的多会话索引、完整 UI 消息、精简 Agent 轮次和重启恢复；工程数据写入对应 `.catnip/agent`。用户已授权清除旧全局/未归属记录，当前 UI 不再展示未归属入口。
+- `electron/src/renderer/App.tsx`：主 UI 状态和冷启动工程选择/创建门禁；持有 Main active project 的 Renderer 镜像，并管理左右面板、主题、学院呱呱助手和 Agent 消息状态。
 - `electron/src/renderer/components/ChatPanel.tsx`：左侧历史会话栏与右侧 Agent 对话；支持新建、切换、收起，以及“⋯”菜单中的重命名、置顶和带确认删除，同时负责主要回复、执行过程和专业视图。
 - `electron/src/renderer/components/TaskProgress.tsx`：当前任务的紧凑运行仪表盘，挂在活动“执行过程”下方且只在 Agent 工作期间呈现，不再作为左栏独立面板。
 - `electron/src/renderer/components/MarkdownContent.tsx`：把 Agent Markdown 安全渲染为 React 节点，不执行原始 HTML，并限制外部链接协议。
-- `electron/src/renderer/components/BrowserPanel.tsx`：仓库、监视器、任务管理器、编辑器和探索五个工作区；所有工程视图消费 App 提供的 active project，切换时清理旧工程 tab/Runtime/Serial 可见状态并按工程过滤事件。工作台前端入口隐藏，但组件内部浏览器工作台实现保留。
+- `electron/src/renderer/components/BrowserPanel.tsx`：仓库、监视器、任务管理器、编辑器、探索和 Neil 的 skill 小站六个可见工作区；所有工程视图消费 App 提供的 active project，切换时清理旧工程 tab/Runtime/Serial 可见状态并按工程过滤事件。Skill 小站固定打开指定站点且隐藏录制控件；尚无已验证的站点到本地一键安装桥。
 - `electron/src/renderer/components/ExplorePanel.tsx`：探索首页、Idea/Diagnosis、多历史恢复、可取消 Context、Knowledge、来源、Plan/Handoff 与明确确认；返回首页或切换工作区不清空当前工作，进程重启无法续接的请求恢复为 interrupted 且不自动重试。使用独立 `explore.less` 和 inline-size Container Query 形成 Compact/Normal/Wide Research Workspace，不接触 Secret 或直接调用知乎。
 - `electron/src/renderer/components/WorkspacePanel.tsx`：显示硬件工程、参考代码和 Skills 三类资源，不显示 Agent 生成卡片；Skills 卡片可新增、编辑、回收站删除、同步并查看源仓库可写/部署状态。
 - `electron/src/renderer/components/ChatPanel.tsx`：输入 `@` 或点击 Skills 按钮可在当前光标位置插入多个 `@skill-id`；发送时保留正文位置并传输结构化引用，历史消息原位渲染内联 Skill 标签。
-- `electron/src/renderer/styles/apple.less`：1.0.0-7201 最终视觉覆盖，使用 `data-theme="dark|light"` 定义显式主题令牌，并提供冷色材质、排版层级、圆角、可拖动助手浮层、反馈动效和 reduced-motion/reduced-transparency 适配。
+- `electron/src/renderer/styles/apple.less`：v2.0.0 / Build 7201 当前视觉覆盖，使用 `data-theme="dark|light"` 定义显式主题令牌，并提供冷色材质、排版层级、圆角、可拖动助手浮层、反馈动效和 reduced-motion/reduced-transparency 适配。
 - `electron/src/renderer/components/CodeEditor.tsx`：基于 Monaco Editor 的代码区，按扩展名选择 C/C++、CMake、Markdown、JSON、TypeScript 等语言，使用内置 C/C++ 深色主题并接收用户字号设置。
 - `electron/src/renderer/monaco.ts`：本地 Monaco editor/json/css/html/typescript Worker 注册，保证开发版和打包版不依赖在线 CDN。
 
@@ -123,7 +123,7 @@ Runtime MCP Server
 
 - Gateway 按 Main 签发的 projectId 持久化用户消息和每条流式 Agent 消息，并把 `conversationId` 返回 Renderer。
 - Agent 工作期间禁止切换会话；切换后终止旧常驻 Agent，下一任务只注入所选会话最近上下文。
-- 工程 A/B 各自拥有会话列表、当前会话和持续上下文；旧全局 Store 一次性保留到未归属只读历史，不自动注入任何工程。
+- 工程 A/B 各自拥有会话列表、当前会话和持续上下文；旧全局数据不得自动注入任何工程，用户已明确清除后不得重新生成未归属入口。
 
 详细规则见 `AGENT_CONVERSATION_HISTORY_CONSTRUCTION.md`。
 

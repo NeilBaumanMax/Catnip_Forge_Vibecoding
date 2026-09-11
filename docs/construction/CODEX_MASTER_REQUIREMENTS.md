@@ -18,7 +18,7 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 
 - 每次冷启动必须明确选择/创建工程；不存在隐式第一项目或旧 Runtime fallback。
 - active project 是编辑器、Agent 会话、Explore、Build/Flash/Serial 和项目证据的唯一上下文，切换必须原子且经过运行任务/未保存编辑门禁。
-- Agent 对话按工程隔离；旧全局对话保留为未归属历史，不自动注入新工程。
+- Agent 对话按工程隔离；迁移期旧全局对话不得自动注入新工程。用户已授权删除后，当前 UI 不得重新展示或重建未归属历史。
 - 找灵感与解问题按 `projectId + mode + sessionId` 保存多次历史目录，包含完成、未完成和中断状态；Secret 与未选择资料不得落盘。
 - 详细施工与验收以 [Phase 7 施工基线](PHASE_7_PROJECT_SESSION_BASELINE.md) 为准；实现与自动化证据已回写，用户成品人工复测仍单列为 `NOT VERIFIED`。
 
@@ -40,10 +40,10 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 | A3 | 原子 JSON user-data 足以存知识卡 | 已按现有 Main user-data 路径实现并完成当前 MVP 容量/损坏场景验证 | 跨重启丢失、损坏或混入安装目录 | 原子替换、重启、语法/结构损坏保留、项目关联测试 | CONFIRMED | `explore-knowledge.ts`；`verify:explore-knowledge` 通过，坏文件不覆盖 | Local Store/Main |
 | A4 | 可从当前工程和 main/CMakeLists 收集最小相关源码 | 有界读取、路径反例与用户取消已验证；真实 Diagnosis 的相关性仍待实测 | 过量读取或漏掉关键证据 | 真实排障复核候选相关性，继续保留单工程白名单/截断测试 | TESTING | Main active project + workbench/project-files；最多 6 个候选、单文件 8 KiB、总计 32 KiB；未选项由 prepare 剔除 | Main/Context |
 | A5 | EventBus 和共享串口能稳定提供最新 Context | 同工程/时间筛选与工程切换清理已通过软件反例；共享串口的真实设备归属仍待验证 | 误用其他工程或旧运行数据 | 真机执行 taskId/projectDir/timestamp 与断线/清空场景 | TESTING | Project Session 绑定 Build/Flash，Runtime 事件按 active project 过滤；SerialMonitorSession read/wait 已通过 mock | Runtime/Main |
-| A6 | 官方CLI在Windows开发和打包版可运行 | Phase 7 最新 Windows 包、packaged Skill、release/version、无 Key 首启与工程选择通过；全新用户真实安装/连接尚未人工验收 | 全新用户安装或 Secret 弹窗仍可能受机器环境影响 | 在不影响当前凭据的全新 Windows 用户环境实测安装授权→Secret 弹窗→status | TESTING | 候选 4,464,648,810 字节且不含 DeepSeek/Qwen Key；开发环境 status 与真实搜索通过；连接专项和打包 UI 通过 | Official Skill/Packaging |
+| A6 | 官方CLI在Windows开发和打包版可运行 | v2.0.0 最新 Windows 包、packaged Skill、release/version 与无 Key 门禁通过；全新用户真实安装/连接尚未人工验收 | 全新用户安装或 Secret 弹窗仍可能受机器环境影响 | 在不影响当前凭据的全新 Windows 用户环境实测安装授权→Secret 弹窗→status | TESTING | Phase 13 候选 4,468,679,868 字节且不含 DeepSeek/Qwen Key；开发环境 status 与真实搜索通过 | Official Skill/Packaging |
 | A7 | 用户已配置可用Access Secret，且产品存在不经过 Renderer/Chat 的安全配置路径 | 已以官方验证、最小本人内容请求和真实知乎搜索完成端到端验收 | 路径回归可能泄露高权限 API 凭证 | 持续保留 Renderer/IPC/日志/包无 Secret 的门禁 | CONFIRMED | 独立遮蔽宿主窗口经 stdin 调官方 CLI；`auth status --verify`、最小内容请求及真实知乎搜索成功 | CLI/Main |
 | A8 | 有可复现运行异常的真实板/工程可做 Demo | 发现三个工程，未连接或选择故障 | 排障不能称完整闭环 | 用户确认项目/端口后实测 Build/Flash/Serial | UNVERIFIED | hello_world_esp32s3、touch_hello、wifi_connect_fmai；无板证据 | Hardboard/Demo |
-| A9 | 延续现有 UI 能容纳探索 | 两入口、连接面板、结果卡、来源、计划、收藏和验证反馈已完成桌面验收 | 若真实 Diagnosis 信息密度超出布局，需最小调整 | 在真实排障 Demo 复核结果密度与交互 | CONFIRMED | BrowserPanel 五页签；ExplorePanel 完整软件流程；真实 Idea 卡与来源可见；UI 专项及 Renderer build 通过 | Renderer |
+| A9 | 延续现有 UI 能容纳探索 | 两入口、连接面板、结果卡、来源、计划、收藏和验证反馈已完成桌面验收 | 若真实 Diagnosis 信息密度超出布局，需最小调整 | 在真实排障 Demo 复核结果密度与交互 | CONFIRMED | BrowserPanel 六个可见工作区；两张入口插画覆盖 534–1802px；完整流程、UI 专项及 Renderer build 通过 | Renderer |
 
 ## 风险与 Review 结论
 
