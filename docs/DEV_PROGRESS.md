@@ -208,3 +208,14 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 3. 在 Windows 上继续用真实 Agent 对话压测任务、会话和 Claude Code CLI 的模型侧续聊效果。
 4. 验证编辑器新建、重命名、回收站删除、标签路径同步和打包版离线语法高亮。
 5. 根据启动和包体实测决定是否拆分 Monaco 语言资源。
+
+## 2026-09-11 — Phase 15 Catnip Forge 视觉升级
+
+- [x] 先建立 Phase 15 施工基线和远程备份分支。
+- [x] 完成星空应用壳、Agent 学院呱呱欢迎区和亮色 Explore 首页。
+- [x] 根据补充参考，用独立矢量图标和蓝紫发光底座升级六工作区与 Explore 双入口。
+- [x] 保留真实工程摘要、历史/知识与四阶段确认门禁。
+- [x] 完成 1536 × 1024 同视口并排评审，P0/P1/P2 清零，`design-qa.md` 为 `passed`。
+- [x] Electron/Runtime typecheck/build 与 Explore/Onboarding 专项通过。
+- [ ] 固定 CDP 9230 被用户旧成品占用，Chat/Project Session 外部 smoke 未重试；当前 Renderer 定向门禁已通过。
+- [ ] `REAL_HARDWARE_VALIDATION_PENDING`：未运行真实 Build/Flash/Serial 和实机验收。

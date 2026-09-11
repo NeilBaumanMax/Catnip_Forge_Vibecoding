@@ -905,3 +905,12 @@
 - Gateway 变薄
 - Agent 流式输出接入
 - Runtime MCP 可稳定被 Claude Code 调用
+
+## 2026-09-11 — Phase 15 星空品牌壳与 Explore 首页
+
+- 新增 `catnip-cosmic-shell.png` 和 `explore-academy-hero.png`，用于真实 Electron 应用壳与 Explore Hero。
+- 更新 Chat 空态与四个可操作快捷问题；更新 Explore 首页布局并增加真实当前工程摘要。
+- 用 `lucide-react` 将用户补充的蓝紫图标语言落到六工作区与 Explore 双入口，保留原有语义、焦点和点击行为。
+- 增强 `verify:explore-layout-ui`：生成 1536 × 1024 截图，验证 Chat 快捷输入与八组 Explore 布局/流程。
+- Runtime/Electron typecheck/build、Explore/Onboarding 专项与同视口视觉 QA 通过。`smoke:chat-ui` 因用户旧成品占用固定 CDP 9230 超时，未终止用户进程；当前 Renderer 定向门禁代替覆盖本轮变更。
+- 未执行真实搜索、新 Windows 包或硬件动作；`REAL_HARDWARE_VALIDATION_PENDING`。

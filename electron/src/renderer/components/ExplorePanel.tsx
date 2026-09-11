@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Lightbulb, SearchCheck } from 'lucide-react';
 import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextItem, ExploreRequest, HandoffContext, IdeaResult, KnowledgeCard, SourceEvidence, ExploreZhihuConnectionStatus } from '../../common/explore';
 import type { ExploreConversationMessage, ExploreHandoffArtifact, ExploreWorkSessionRecord, ExploreWorkSessionSummary, ExploreWorkStatus } from '../../common/project-session';
 import ExploreSourceList from './explore/ExploreSourceList';
@@ -963,7 +964,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
         <div className="explore-entry-grid">
           <button className="explore-entry-card explore-entry-card--idea" type="button" onClick={() => enter('idea')} data-tour-id="explore-idea">
             <span className="explore-entry-illustration" aria-hidden="true"><img src={exploreIdeaGuagua} alt="" /></span>
-            <span className="explore-entry-symbol explore-entry-symbol--idea" aria-hidden="true">✦</span>
+            <span className="explore-entry-symbol explore-entry-symbol--idea" aria-hidden="true"><Lightbulb /></span>
             <span className="explore-entry-index">从一个念头开始</span>
             <strong>找灵感</strong>
             <span>描述你想做的东西，Catnip 会结合当前工程和硬件条件，给出真正能落地的方向。</span>
@@ -971,13 +972,14 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
           </button>
           <button className="explore-entry-card explore-entry-card--diagnosis" type="button" onClick={() => enter('diagnosis')} data-tour-id="explore-diagnosis">
             <span className="explore-entry-illustration" aria-hidden="true"><img src={exploreDiagnosisGuagua} alt="" /></span>
-            <span className="explore-entry-symbol explore-entry-symbol--diagnosis" aria-hidden="true">⌁</span>
+            <span className="explore-entry-symbol explore-entry-symbol--diagnosis" aria-hidden="true"><SearchCheck /></span>
             <span className="explore-entry-index">从一条线索开始</span>
             <strong>解问题</strong>
             <span>选择必要的工程和运行证据，再用社区经验与权威资料交叉判断。</span>
             <em>分析当前问题 <span aria-hidden="true">→</span></em>
           </button>
         </div>
+        <div className="explore-home-dashboard-grid">
         <section className="explore-session-history" aria-labelledby="explore-history-title">
           <header className="explore-section-header">
             <div><span className="explore-section-kicker">PROJECT HISTORY</span><h3 id="explore-history-title">当前工程的探索记录</h3></div>
@@ -1073,6 +1075,19 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             </div>
           ) : null}
         </section>
+        <section className="explore-project-preview" aria-labelledby="explore-project-title">
+          <header className="explore-section-header">
+            <div><span className="explore-section-kicker">CURRENT PROJECT</span><h3 id="explore-project-title">当前工程</h3></div>
+            <span>探索与 Agent 共用同一工程上下文</span>
+          </header>
+          <div className="explore-project-summary">
+            <div><span>工程</span><strong>{currentProject.split(/[\\/]/).filter(Boolean).at(-1) || '尚未选择'}</strong></div>
+            <div><span>硬件</span><strong>{hardwareSummary}</strong></div>
+            <div><span>运行</span><strong>{runtimeSummary}</strong></div>
+            <code title={currentProject}>{currentProject || '请先选择一个工程'}</code>
+          </div>
+        </section>
+        </div>
       </section>
     );
   }

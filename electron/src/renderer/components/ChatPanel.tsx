@@ -3,6 +3,7 @@ import type { AgentTaskInput, AgentTaskStatus, AttachmentReference, ChatConversa
 import MarkdownContent from './MarkdownContent';
 import TaskProgress from './TaskProgress';
 import catnipForgeIcon from '../assets/catnip-forge.png';
+import catnipAssistantImage from '../assets/catnip-assistant.png';
 
 interface Props {
   messages: ChatMessage[];
@@ -30,6 +31,12 @@ const HISTORY_COLLAPSED_KEY = 'vibeide.chat.historyCollapsed';
 const COMPOSER_HEIGHT_KEY = 'vibeide.chat.composerHeight';
 const COMPOSER_MIN_HEIGHT = 64;
 const COMPOSER_MAX_HEIGHT = 320;
+const CHAT_STARTERS = [
+  '帮我分析当前工程里最值得先解决的问题',
+  '解释一下这个工程的核心结构',
+  '帮我找一个能落地的新功能方向',
+  '为当前工程制定下一步开发计划',
+] as const;
 const SKILL_MARKER_COLORS = [
   { fill: 'rgba(255, 214, 64, 0.58)', strong: 'rgba(255, 196, 0, 0.78)' },
   { fill: 'rgba(93, 224, 171, 0.48)', strong: 'rgba(38, 190, 132, 0.72)' },
@@ -495,7 +502,7 @@ export default function ChatPanel({
         <div className="chat-history-header">
           <div className="chat-history-brand" title="Catnip Forge · Catnip 硬件智能开发平台">
             <img src={catnipForgeIcon} alt="" aria-hidden="true" />
-            <strong>历史对话</strong>
+            <span><strong>Catnip Forge</strong><small>让想法 · 变成现实</small></span>
           </div>
           <button type="button" disabled={taskStatus.busy} onClick={onCreateConversation} title={taskStatus.busy ? 'Agent 工作结束后可新建对话' : '新建对话'} aria-label="新建对话">＋</button>
         </div>
@@ -608,8 +615,26 @@ export default function ChatPanel({
       <div className="chat-messages">
         {messages.length === 0 ? (
           <div className="chat-empty-state">
-            <strong>开始一段新对话</strong>
-            <span>这段对话会自动保存在历史记录中，重新打开软件后仍可继续。</span>
+            <img src={catnipAssistantImage} alt="" aria-hidden="true" />
+            <span className="chat-empty-kicker">CATNIP AGENT</span>
+            <strong>你好！我是学院呱呱</strong>
+            <p>有什么想法或工程问题，一起实现吧。</p>
+            <div className="chat-empty-actions" aria-label="快捷开始">
+              {CHAT_STARTERS.map((starter) => (
+                <button
+                  key={starter}
+                  type="button"
+                  disabled={readOnlyConversation}
+                  onClick={() => {
+                    setInput(starter);
+                    requestAnimationFrame(() => textareaRef.current?.focus());
+                  }}
+                >
+                  {starter}
+                </button>
+              ))}
+            </div>
+            <small>对话会保存在当前工程中，重新打开软件后仍可继续。</small>
           </div>
         ) : null}
         {messages.map((message) => {

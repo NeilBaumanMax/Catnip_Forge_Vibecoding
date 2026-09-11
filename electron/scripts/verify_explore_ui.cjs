@@ -17,7 +17,7 @@ const diagnosisEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'as
 
 assert.match(browserPanel, /type PanelMode = [^;]*'explore'/, 'PanelMode must include explore');
 assert.equal((browserPanel.match(/data-tour-id="tab-/g) || []).length, 6, 'exactly six visible workspace tabs are required');
-assert.match(browserPanel, /data-tour-id="tab-explore"[^\r\n]*>探索<\/button>/, 'visible Explore tab is missing');
+assert.match(browserPanel, /data-tour-id="tab-explore"[^\r\n]*><Compass[^\r\n]*<span>探索<\/span><\/button>/, 'visible Explore tab and icon are missing');
 assert.match(browserPanel, /data-tour-id="tab-skill-hub"/, 'Neil Skill Hub tab is missing');
 assert.match(browserPanel, /http:\/\/118\.195\.247\.102\/#page-top/, 'Skill Hub URL is missing');
 assert.doesNotMatch(browserPanel, /tab-zhihu/, 'Zhihu must not be a workspace name');

@@ -415,3 +415,21 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 | `git diff --check` | 通过 | 无 whitespace error；仅 LF → CRLF 提示 |
 
 首次联合 Node 检查因 PowerShell 引号解析失败，Node 未运行；改写匹配表达式后通过。仅修改 Markdown，未重复构建或打包。
+
+## 2026-09-11 Phase 15 视觉壳与 Explore 首页
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| Electron / Runtime typecheck | 通过 | 当前 Phase 15 源码 |
+| Runtime build / Electron Main / Renderer build | 通过 | 图标接入后 Renderer 2819 modules；仅既有大 chunk warning |
+| Explore UI / layout / entry | 通过 | 8 场景、1536 × 1024 截图、双入口与四阶段门禁 |
+| Chat shell 定向门禁 | 通过 | 4 个快捷项可写入 composer，发送按钮可见 |
+| Onboarding UI | 通过 | 24 步旅程与工作区聚焦未回归 |
+| `smoke:chat-ui` | 环境阻塞 | 用户打开的旧成品占用 CDP 9230，首次在 `skill-options-ready` 超时；未终止用户进程 |
+| `smoke:composer-geometry` / `verify:project-session-ui` | 未重试 | 同样依赖被占用的固定 CDP 9230；由当前 Renderer 定向门禁覆盖本轮变更 |
+| 同视口视觉 QA | 通过 | 并排修复 Hero 占高与下方布局后 `design-qa.md` 为 `passed` |
+| `git diff --check` | 通过 | 无 whitespace error，仅 LF → CRLF 提示 |
+
+首次视觉评审发现 Hero 占高和当前工程落到首屏以下，修复后重新生成同视口对照图。Headless Chromium 仍有 Windows 临时 profile `EPERM` 清理提示，退出码为 0。未运行真实搜索、新包或硬件验收；`REAL_HARDWARE_VALIDATION_PENDING`不变。
+
+图标接入后 `verify:explore-ui` 首次因旧 DOM 正则不接受按钮中新增的图标和 `<span>` 而失败；产品语义与交互未失效。更新为同时验证 `Compass` 与“探索”文案后复测通过。

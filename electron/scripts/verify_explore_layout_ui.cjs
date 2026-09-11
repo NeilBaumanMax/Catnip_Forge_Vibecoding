@@ -11,6 +11,7 @@ const tempProfile = fs.mkdtempSync(path.join(os.tmpdir(), 'catnip-explore-layout
 const outputDir = path.join(root, '.tmp');
 const screenshotPath = path.join(outputDir, 'explore-layout-ui.png');
 const entryScreenshotPath = path.join(outputDir, 'explore-entry-layout-ui.png');
+const targetScreenshotPath = path.join(outputDir, 'explore-entry-target-1536x1024.png');
 let vite;
 let chrome;
 let socket;
@@ -258,6 +259,29 @@ async function main() {
   })()`);
   if (!setup?.mounted) throw new Error(`Explore panel did not mount: ${JSON.stringify({ setup, consoleErrors })}`);
 
+  const chatShell = await evaluate(`(async () => {
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    const quickActions = [...document.querySelectorAll('.chat-empty-actions button')];
+    const composer = document.querySelector('.chat-composer-editor textarea');
+    const submit = document.querySelector('.chat-input-actions button[type="submit"]');
+    if (!quickActions.length || !composer || !submit) return { missing: true };
+    quickActions[0].click();
+    await wait(80);
+    const panelRect = document.querySelector('.chat-panel').getBoundingClientRect();
+    const composerRect = composer.getBoundingClientRect();
+    const submitRect = submit.getBoundingClientRect();
+    return {
+      quickActionCount: quickActions.length,
+      promptInjected: composer.value,
+      brand: document.querySelector('.chat-history-brand strong')?.textContent || '',
+      composerVisible: composerRect.width > 0 && composerRect.bottom <= panelRect.bottom + 1,
+      submitVisible: submitRect.width > 0 && submitRect.right <= panelRect.right + 1 && submitRect.bottom <= panelRect.bottom + 1,
+    };
+  })()`);
+  if (chatShell.missing || chatShell.quickActionCount !== 4 || !chatShell.promptInjected.includes('当前工程') || chatShell.brand !== 'Catnip Forge' || !chatShell.composerVisible || !chatShell.submitVisible) {
+    throw new Error(`chat shell interaction mismatch: ${JSON.stringify(chatShell)}`);
+  }
+
   const scenarios = [];
   for (const leftPercent of [24, 34, 45, 52]) scenarios.push(await measure(1920, 1080, leftPercent, false));
   scenarios.push(await measure(1920, 1080, 34, true));
@@ -279,6 +303,16 @@ async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   const entryScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(entryScreenshotPath, Buffer.from(entryScreenshot.data, 'base64'));
+
+  await setViewport(1536, 1024);
+  await evaluate(`(() => {
+    document.documentElement.dataset.theme = 'dark';
+    document.documentElement.style.colorScheme = 'dark';
+    document.querySelector('.app-body')?.style.setProperty('--left-panel-width', '37%');
+  })()`);
+  await wait(180);
+  const targetScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+  fs.writeFileSync(targetScreenshotPath, Buffer.from(targetScreenshot.data, 'base64'));
 
   await setViewport(2560, 1440);
   const flowResult = await evaluate(`(async () => {
@@ -351,7 +385,7 @@ async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   const screenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log(JSON.stringify({ scenarios, flowResult, entryScreenshotPath, screenshotPath, consoleErrors }, null, 2));
+  console.log(JSON.stringify({ chatShell, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, screenshotPath, consoleErrors }, null, 2));
 }
 
 main().catch((error) => {

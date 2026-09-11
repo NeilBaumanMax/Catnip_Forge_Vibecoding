@@ -133,3 +133,25 @@
 
 - 首次 `git diff --cached --check` 失败：文档头部为 Markdown 强制换行保留了行尾双空格；根因是文档格式而非业务代码。
 - 修复：改为独立空行分隔元数据，移除行尾空格；修复后重新执行 `git diff --check`。
+
+## 10. 实施结果
+
+- 新增星空应用壳位图和 Explore 学院 Hero 位图，不含烘焙文字、Logo 或伪造控件。
+- 完成深蓝玻璃应用壳、蓝紫工作区导航、Agent 欢迎区与四个真实输入快捷项。
+- Explore 首页完成亮色 Hero、紫/青双入口、跨列历史以及知识库/当前工程摘要；全部继续连接现有数据和四阶段流程。
+- 目标图中的虚构历史、文件清单和重复左侧导航未复制；真实数据为空时保留诚实空态。
+- 同视口并排评审证据与完整结论见仓库根目录 `design-qa.md`。
+- 用户补充的角色/品牌与功能图标表纳入视觉真相；顶部六工作区和 Explore 双入口使用 `lucide-react` 独立矢量图标与蓝紫发光底座，不从大图硬裁 sprite。
+
+## 11. 验证记录
+
+- `npm.cmd --prefix electron run typecheck`：通过。
+- `npm.cmd --prefix runtime run typecheck` / `build`：通过。
+- `npm.cmd --prefix electron run build:main` / `build:renderer`：通过；接入图标库后 Renderer 2819 modules，仅保留既有大 chunk warning。
+- `verify:explore-ui` / `verify:explore-layout-ui` / `verify:onboarding-ui` / `verify:explore-entry`：通过。布局门禁包含 1536 × 1024 目标截图、8 组响应式场景、四个 Agent 快捷项与完整 Explore 四阶段，控制台错误为 0。
+- 图标接入后 `verify:explore-ui` 首次失败：旧正则要求 Explore 按钮中文直接作为文本节点，新的图标 + `<span>` 是正确 DOM 变化。将契约改为同时验证 `Compass` 和“探索”后复测通过。
+- `smoke:chat-ui` 首次失败：固定 CDP 9230 端口已被用户打开的旧 `win-unpacked` 成品占用，脚本连到后台成品窗口并在 `skill-options-ready` 阶段超时。未终止用户成品进程；改由当前 Renderer 的 `verify:explore-layout-ui` 验证 Chat 快捷输入、品牌、composer 和发送按钮。`smoke:composer-geometry` 与 `verify:project-session-ui` 同样依赖该固定端口，本轮不再冒充重试。
+- 视觉 QA 首轮发现 Hero 占高和下方摘要折行两个 P1/P2，修复并重新截图后清零。两次比较图合成命令分别因 .NET `Save` 重载选择和 PowerShell 类型语法失败，更正后生成完整与聚焦对照图。
+- Headless Chromium 退出时仍有 Windows 临时 profile `EPERM` 最佳努力清理提示，脚本退出码为 0，不是产品失败。
+- `git diff --check`：通过，仅有 LF → CRLF 工作树提示。
+- 未运行真实搜索、模型 Agent 改码、新 Windows 包、Build/Flash/Serial 或实机验收；`REAL_HARDWARE_VALIDATION_PENDING`不变。
