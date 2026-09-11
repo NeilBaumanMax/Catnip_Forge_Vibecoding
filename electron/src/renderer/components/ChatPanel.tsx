@@ -3,7 +3,6 @@ import type { AgentTaskInput, AgentTaskStatus, AttachmentReference, ChatConversa
 import MarkdownContent from './MarkdownContent';
 import TaskProgress from './TaskProgress';
 import catnipForgeIcon from '../assets/catnip-forge.png';
-import catnipAssistantImage from '../assets/catnip-assistant.png';
 
 interface Props {
   messages: ChatMessage[];
@@ -609,9 +608,8 @@ export default function ChatPanel({
       <div className="chat-messages">
         {messages.length === 0 ? (
           <div className="chat-empty-state">
-            <img src={catnipAssistantImage} alt="" aria-hidden="true" />
-            <strong>你好！我是学院呱呱</strong>
-            <span>今天想一起实现什么？这段对话会自动保存在当前工程中。</span>
+            <strong>开始一段新对话</strong>
+            <span>这段对话会自动保存在历史记录中，重新打开软件后仍可继续。</span>
           </div>
         ) : null}
         {messages.map((message) => {

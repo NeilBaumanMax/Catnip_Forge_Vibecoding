@@ -3,8 +3,6 @@ import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextI
 import type { ExploreConversationMessage, ExploreHandoffArtifact, ExploreWorkSessionRecord, ExploreWorkSessionSummary, ExploreWorkStatus } from '../../common/project-session';
 import ExploreSourceList from './explore/ExploreSourceList';
 import ExploreStageNav, { type ExploreStage } from './explore/ExploreStageNav';
-import exploreIdeaGuagua from '../assets/explore-idea-guagua.png';
-import exploreDiagnosisGuagua from '../assets/explore-diagnosis-guagua.png';
 
 type ExploreView = 'home' | 'idea' | 'diagnosis';
 
@@ -103,7 +101,6 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   const [handoffArtifact, setHandoffArtifact] = useState<ExploreHandoffArtifact | null>(null);
   const [editingArtifactFile, setEditingArtifactFile] = useState<'HANDOFF.md' | 'PLAN.md' | null>(null);
   const [artifactDraft, setArtifactDraft] = useState('');
-  const panelRef = useRef<HTMLElement>(null);
   const latestWorkSession = useRef<ExploreWorkSessionRecord | null>(null);
   const restoringKnowledgeSelection = useRef(false);
   const restoringContextSelection = useRef<string[] | null>(null);
@@ -111,10 +108,6 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   const activePlanRequestId = useRef<string | null>(null);
   const connectionWatchId = useRef(0);
   const autoConnectionPrompted = useRef(false);
-
-  useEffect(() => {
-    panelRef.current?.scrollTo({ top: 0, behavior: 'auto' });
-  }, [view]);
 
   const appendExploreMessage = (
     role: ExploreConversationMessage['role'],
@@ -888,7 +881,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
 
   if (view === 'home') {
     return (
-      <section ref={panelRef} className="explore-panel" data-tour-id="panel-explore" aria-labelledby="explore-title">
+      <section className="explore-panel" data-tour-id="panel-explore" aria-labelledby="explore-title">
         <header className="explore-home-header">
           <div className="explore-hero">
             <span className="explore-eyebrow">RESEARCH WORKSPACE</span>
@@ -907,7 +900,6 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
         {notice ? <div className="explore-connection-notice" role="status">{notice}</div> : null}
         <div className="explore-entry-grid">
           <button className="explore-entry-card explore-entry-card--idea" type="button" onClick={() => enter('idea')} data-tour-id="explore-idea">
-            <img className="explore-entry-illustration" src={exploreIdeaGuagua} alt="" aria-hidden="true" />
             <span className="explore-entry-symbol explore-entry-symbol--idea" aria-hidden="true">✦</span>
             <span className="explore-entry-index">从一个念头开始</span>
             <strong>找灵感</strong>
@@ -915,7 +907,6 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             <em>开始探索 <span aria-hidden="true">→</span></em>
           </button>
           <button className="explore-entry-card explore-entry-card--diagnosis" type="button" onClick={() => enter('diagnosis')} data-tour-id="explore-diagnosis">
-            <img className="explore-entry-illustration" src={exploreDiagnosisGuagua} alt="" aria-hidden="true" />
             <span className="explore-entry-symbol explore-entry-symbol--diagnosis" aria-hidden="true">⌁</span>
             <span className="explore-entry-index">从一条线索开始</span>
             <strong>解问题</strong>
@@ -1188,7 +1179,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   ) : null;
 
   return (
-    <section ref={panelRef} className={`explore-panel explore-panel--flow is-stage-${displayStage}`} data-tour-id={isIdea ? 'panel-explore-idea' : 'panel-explore-diagnosis'}>
+    <section className={`explore-panel explore-panel--flow is-stage-${displayStage}`} data-tour-id={isIdea ? 'panel-explore-idea' : 'panel-explore-diagnosis'}>
       <header className="explore-flow-header">
         <button type="button" className="explore-back-button" onClick={() => { setView('home'); void refreshWorkSessions(); }} aria-label="返回探索首页">←</button>
         <div>
@@ -1283,7 +1274,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             </>
           ) : (
             <section className="explore-request-summary">
-              <div><span className="explore-section-kicker">{isIdea ? '目标' : '问题'}</span><h3>{analysisRequest?.goal || ''}</h3></div>
+              <div><span className="explore-section-kicker">{isIdea ? '目标' : '问题'}</span><h3>{analysisRequest.goal}</h3></div>
               <dl>
                 <div><dt>当前工程</dt><dd>{currentProject || '未选择'}</dd></div>
                 {isIdea ? <div><dt>硬件</dt><dd>{hardwareSummary}</dd></div> : <div><dt>分析资料</dt><dd>{selectedContextCount} 项 Context · {selectedKnowledgeCount} 条历史知识</dd></div>}

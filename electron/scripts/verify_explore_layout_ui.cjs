@@ -288,22 +288,15 @@ async function main() {
     const executeStage = document.querySelector('.explore-stage-nav [aria-current="step"]')?.textContent || '';
     const artifactVisible = Boolean(document.querySelector('.explore-artifact-view pre'));
     const themes = {};
-    for (const theme of ['light', 'dark', 'aurora']) {
+    for (const theme of ['light', 'dark']) {
       document.documentElement.dataset.theme = theme;
-      document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+      document.documentElement.style.colorScheme = theme;
       await wait(30);
       const style = getComputedStyle(document.querySelector('.explore-panel'));
       themes[theme] = { primary: style.getPropertyValue('--explore-primary').trim(), color: style.color, background: style.backgroundColor };
     }
-    document.documentElement.dataset.theme = 'aurora';
-    document.documentElement.style.colorScheme = 'dark';
     document.querySelector('.explore-back-button').click();
     await wait(50);
-    const illustrations = [...document.querySelectorAll('.explore-entry-illustration')].map((image) => ({
-      complete: image.complete,
-      naturalWidth: image.naturalWidth,
-      alt: image.getAttribute('alt'),
-    }));
     document.querySelector('[data-tour-id="explore-diagnosis"]').click();
     await wait(100);
     const returnPreserved = Boolean(document.querySelector('.explore-artifact-view'));
@@ -320,7 +313,6 @@ async function main() {
       returnPreserved,
       workspaceSwitchPreserved,
       themes,
-      illustrations,
     };
   })()`);
   if (flowResult.panelWidth < 1200 || flowResult.formColumns !== 2) throw new Error(`wide flow did not use two columns: ${JSON.stringify(flowResult)}`);
@@ -330,34 +322,12 @@ async function main() {
   if (!flowResult.sourceButtonHeights.length || flowResult.sourceButtonHeights.some((height) => height < 36)) throw new Error(`source actions are not prominent enough: ${JSON.stringify(flowResult.sourceButtonHeights)}`);
   if (!flowResult.returnPreserved || !flowResult.workspaceSwitchPreserved) throw new Error(`Explore work was lost during navigation: ${JSON.stringify(flowResult)}`);
   if (!flowResult.themes.light.primary || flowResult.themes.light.primary === flowResult.themes.dark.primary) throw new Error(`theme tokens did not change: ${JSON.stringify(flowResult.themes)}`);
-  if (!flowResult.themes.aurora.primary || flowResult.themes.aurora.primary === flowResult.themes.dark.primary) throw new Error(`aurora theme tokens are missing: ${JSON.stringify(flowResult.themes)}`);
-  if (flowResult.illustrations.length !== 2 || flowResult.illustrations.some((item) => !item.complete || item.naturalWidth < 512 || item.alt !== '')) throw new Error(`entry illustrations did not load as decorative local assets: ${JSON.stringify(flowResult.illustrations)}`);
   if (consoleErrors.length) throw new Error(`renderer errors: ${JSON.stringify(consoleErrors)}`);
 
-  await evaluate(`document.querySelector('.explore-back-button')?.click()`);
-  await wait(120);
-  await setViewport(1536, 1024);
-  const homeGeometry = await evaluate(`(() => {
-    const panel = document.querySelector('.explore-panel');
-    const hero = document.querySelector('.explore-home-header');
-    const eyebrow = document.querySelector('.explore-eyebrow');
-    const panelRect = panel?.getBoundingClientRect();
-    const heroRect = hero?.getBoundingClientRect();
-    const eyebrowRect = eyebrow?.getBoundingClientRect();
-    return {
-      scrollTop: panel?.scrollTop,
-      panelTop: panelRect?.top,
-      heroTop: heroRect?.top,
-      heroBottom: heroRect?.bottom,
-      eyebrowTop: eyebrowRect?.top,
-      eyebrowBottom: eyebrowRect?.bottom,
-    };
-  })()`);
-  if (homeGeometry.scrollTop !== 0 || homeGeometry.eyebrowTop < homeGeometry.heroTop + 8) throw new Error(`Explore hero is clipped: ${JSON.stringify(homeGeometry)}`);
   fs.mkdirSync(outputDir, { recursive: true });
   const screenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log(JSON.stringify({ scenarios, flowResult, homeGeometry, screenshotPath, consoleErrors }, null, 2));
+  console.log(JSON.stringify({ scenarios, flowResult, screenshotPath, consoleErrors }, null, 2));
 }
 
 main().catch((error) => {

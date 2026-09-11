@@ -12,7 +12,6 @@ const globalStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles'
 const appleStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'apple.less'), 'utf8');
 const exploreStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'explore.less'), 'utf8');
 const rendererMain = fs.readFileSync(path.join(root, 'src', 'renderer', 'main.tsx'), 'utf8');
-const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 
 assert.match(browserPanel, /type PanelMode = [^;]*'explore'/, 'PanelMode must include explore');
 assert.equal((browserPanel.match(/data-tour-id="tab-/g) || []).length, 5, 'exactly five visible workspace tabs are required');
@@ -26,9 +25,6 @@ assert.match(app, /activateProjectSession\(selectedProjectId\)/, 'project activa
 
 assert.match(explorePanel, />找灵感</, 'idea entry is missing');
 assert.match(explorePanel, />解问题</, 'diagnosis entry is missing');
-assert.match(explorePanel, /exploreIdeaGuagua/, 'idea entry illustration is missing');
-assert.match(explorePanel, /exploreDiagnosisGuagua/, 'diagnosis entry illustration is missing');
-assert.match(explorePanel, /className="explore-entry-illustration"[^>]*alt=""/, 'entry art must stay decorative and leave the accessible title in DOM');
 assert.match(explorePanel, /本次分析 Context/, 'diagnosis context picker is missing');
 assert.match(explorePanel, /取消勾选后，该项不会进入分析/, 'context exclusion promise is missing');
 assert.match(explorePanel, /需要先连接知乎开放平台/, 'safe connection wording is missing');
@@ -86,13 +82,10 @@ assert.match(exploreStyles, /@container explore \(min-width:\s*1200px\)/);
 assert.match(exploreStyles, /grid-template-columns:\s*minmax\(320px, 420px\) minmax\(0, 1fr\)/, 'wide workspace columns are missing');
 assert.doesNotMatch(exploreStyles, /(?:width|max-width):\s*min\((?:760|820|960)px/, 'legacy narrow Explore width cap returned');
 assert.match(exploreStyles, /:root\[data-theme="dark"\] \.explore-panel/, 'dark Explore tokens are missing');
-assert.match(exploreStyles, /:root\[data-theme="aurora"\] \.explore-panel/, 'Starlight Workshop Explore tokens are missing');
-assert.match(exploreStyles, /\.explore-entry-illustration/, 'entry illustration geometry is missing');
 assert.match(exploreStyles, /prefers-reduced-motion/);
 assert.match(exploreStyles, /prefers-reduced-transparency/);
 assert.match(exploreStyles, /prefers-contrast/);
 assert.match(exploreStyles, /\.explore-source-actions button \{ min-height: 36px/, 'source buttons need a stable 36px hit target');
 assert.match(exploreStyles, /\.explore-idea-action-bar/, 'Idea cards need a stable footer action area');
-assert.equal(packageJson.scripts['typecheck:renderer'], 'node node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.renderer.json', 'real Renderer typecheck script is missing');
 
 console.log('explore UI contract passed: existing flows retained; evidence/conflicts/source detail/stages/container layouts/theme accessibility present');

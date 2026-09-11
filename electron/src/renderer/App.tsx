@@ -22,9 +22,9 @@ const IDLE_TASK_STATUS: AgentTaskStatus = { busy: false, paused: false, activeTa
 const ASSISTANT_WELCOME: SoftwareAssistantMessage = {
   id: 'welcome',
   role: 'assistant',
-  content: '你好，我是 **学院呱呱**。遇到 Catnip Forge 的界面、编译、烧录、串口或 Skills 使用问题，都可以直接问我。',
+  content: '你好，我是 **猫薄荷**。遇到 Catnip Forge 的界面、编译、烧录、串口或 Skills 使用问题，都可以直接问我。',
 };
-type AppearanceTheme = 'aurora' | 'dark' | 'light';
+type AppearanceTheme = 'dark' | 'light';
 type FloatingPosition = { x: number; y: number };
 
 function cleanAgentText(value: string): string {
@@ -48,8 +48,10 @@ function inferChatMessageKind(text: string, provided?: ChatMessageKind, error = 
 function readInitialAppearanceTheme(): AppearanceTheme {
   try {
     const stored = window.localStorage.getItem(APPEARANCE_THEME_KEY);
-    if (stored === 'aurora' || stored === 'dark' || stored === 'light') return stored;
-    return 'aurora';
+    if (stored === 'dark' || stored === 'light') return stored;
+    const initial = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    window.localStorage.setItem(APPEARANCE_THEME_KEY, initial);
+    return initial;
   } catch {
     return 'dark';
   }
@@ -57,7 +59,7 @@ function readInitialAppearanceTheme(): AppearanceTheme {
 
 function applyAppearanceTheme(theme: AppearanceTheme): void {
   document.documentElement.dataset.theme = theme;
-  document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.style.colorScheme = theme;
 }
 
 const INITIAL_APPEARANCE_THEME = readInitialAppearanceTheme();
@@ -1025,14 +1027,13 @@ export default function App() {
         style={{ left: appearancePosition.x, top: appearancePosition.y, width: assistantSize, height: assistantSize }}
       >
         {appearanceMenuOpen ? (
-          <section className="appearance-popover software-assistant-popover" role="dialog" aria-label="学院呱呱软件助手">
+          <section className="appearance-popover software-assistant-popover" role="dialog" aria-label="猫薄荷软件助手">
             <header className="software-assistant-header">
               <div className="software-assistant-identity">
                 <span className="software-assistant-avatar" aria-hidden="true"><img src={catnipAssistantImage} alt="" /></span>
-                <span><strong>学院呱呱</strong><small>Catnip Forge 使用助手</small></span>
+                <span><strong>猫薄荷</strong><small>Catnip Forge 使用助手</small></span>
               </div>
               <div className="software-assistant-actions" role="group" aria-label="助手与外观设置">
-                <button type="button" className={appearanceTheme === 'aurora' ? 'is-selected' : ''} onClick={() => setAppearanceTheme('aurora')} title="星光工坊" aria-label="切换到星光工坊主题">✦</button>
                 <button type="button" className={appearanceTheme === 'light' ? 'is-selected' : ''} onClick={() => setAppearanceTheme('light')} title="浅色模式" aria-label="切换到浅色模式">☀</button>
                 <button type="button" className={appearanceTheme === 'dark' ? 'is-selected' : ''} onClick={() => setAppearanceTheme('dark')} title="深色模式" aria-label="切换到深色模式">☾</button>
                 <button
@@ -1046,8 +1047,8 @@ export default function App() {
                 >
                   ?
                 </button>
-                <button type="button" disabled={assistantSize <= MIN_ASSISTANT_SIZE} onClick={() => resizeSoftwareAssistant(-ASSISTANT_SIZE_STEP)} title="缩小学院呱呱" aria-label="缩小学院呱呱">−</button>
-                <button type="button" disabled={assistantSize >= MAX_ASSISTANT_SIZE} onClick={() => resizeSoftwareAssistant(ASSISTANT_SIZE_STEP)} title="放大学院呱呱" aria-label="放大学院呱呱">＋</button>
+                <button type="button" disabled={assistantSize <= MIN_ASSISTANT_SIZE} onClick={() => resizeSoftwareAssistant(-ASSISTANT_SIZE_STEP)} title="缩小猫薄荷" aria-label="缩小猫薄荷">−</button>
+                <button type="button" disabled={assistantSize >= MAX_ASSISTANT_SIZE} onClick={() => resizeSoftwareAssistant(ASSISTANT_SIZE_STEP)} title="放大猫薄荷" aria-label="放大猫薄荷">＋</button>
                 <button type="button" onClick={() => setAppearanceMenuOpen(false)} title="关闭助手" aria-label="关闭助手">×</button>
               </div>
             </header>
@@ -1058,7 +1059,7 @@ export default function App() {
                 </div>
               ))}
               {softwareAssistantPending ? (
-                <div className="software-assistant-typing" role="status" aria-label="学院呱呱正在回答"><i /><i /><i /></div>
+                <div className="software-assistant-typing" role="status" aria-label="猫薄荷正在回答"><i /><i /><i /></div>
               ) : null}
             </div>
             <form className="software-assistant-composer" onSubmit={handleSoftwareAssistantSubmit}>
@@ -1068,7 +1069,7 @@ export default function App() {
                 maxLength={2000}
                 disabled={softwareAssistantPending}
                 placeholder="问我怎么使用 Catnip Forge…"
-                aria-label="向学院呱呱提问"
+                aria-label="向猫薄荷提问"
                 onChange={(event) => setSoftwareAssistantInput(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' && !event.shiftKey) {
@@ -1086,8 +1087,8 @@ export default function App() {
           className={`appearance-settings-trigger${appearanceMenuOpen ? ' is-open' : ''}`}
           data-tour-id="assistant-trigger"
           type="button"
-          title="学院呱呱软件助手（可拖动）"
-          aria-label="打开学院呱呱软件助手"
+          title="猫薄荷软件助手（可拖动）"
+          aria-label="打开猫薄荷软件助手"
           aria-haspopup="dialog"
           aria-expanded={appearanceMenuOpen}
           onPointerDown={handleAppearancePointerDown}

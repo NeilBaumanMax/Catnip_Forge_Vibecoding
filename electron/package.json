@@ -16,7 +16,6 @@
     "stamp:win": "node scripts/stamp_win_exe_version.cjs",
     "dist:win": "npm run build:runtime && npm run build:main && npm run build:renderer && node node_modules/electron-builder/cli.js --win --x64",
     "typecheck": "node node_modules/typescript/lib/tsc.js --noEmit",
-    "typecheck:renderer": "node node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.renderer.json",
     "verify:version": "node scripts/verify_version.cjs",
     "smoke:workbench": "node scripts/run_workbench_smoke.cjs",
     "smoke:chat-ui": "node scripts/verify_chat_ui.cjs",
