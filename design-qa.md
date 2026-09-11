@@ -52,3 +52,53 @@
 P0/P1/P2 已清零；保留差异均来自真实性、系统窗口边界或既有用户偏好。
 
 final result: passed
+
+## Fidelity pass 4 — 2026-09-11
+
+**Source truth**
+
+- Assistant copy: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-NqedPo.png`.
+- Existing 2048px shell and requested split direction: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-F09384.png`.
+- Supplied brand/software icon: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-dzsEqZ.png` (1258 × 1258 PNG).
+- Truncated task label: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-I1Cmro.png`.
+
+**Implementation evidence**
+
+- Full implementation: `electron/.tmp/workspace-shell-target-2048x1152.png`, CSS viewport 2048 × 1152, device scale 1.
+- Focused equal-width comparison: `electron/.tmp/phase15-v4-shell-comparison.png`; source and implementation are each cropped to 2048 × 67 and stacked without density scaling.
+- Assistant state: `electron/.tmp/software-assistant-ui.png`, real Electron CDP at 2560 × 1392; visible link is `Neil Bauman · GitHub`.
+
+**Comparison history and findings**
+
+- [P1 fixed] The first implementation retained the final twelve-column cascade lock, squeezing the nested center surface to 117px and displacing the right controls. The final three-column lock now yields separate 220px / 50vw / 350px surfaces.
+- [P2 fixed] The legacy alignment assertion compared internal controls rather than the three new surfaces. The revised gate verifies the surfaces share a top edge and have visible gaps.
+- [P2 fixed] The task label previously ellipsized. Its dedicated 132px track now contains the full `任务管理器` text, verified by label/button rectangles.
+
+**Required fidelity surfaces**
+
+- Typography/copy: labels keep the established system font, weights and compact hierarchy; `任务管理器` is complete and “作者” is absent from the assistant link and accessibility label.
+- Spacing/layout: three 50px surfaces are separated by visible starfield gaps; the 2048px center surface is 1024px wide and the right controls stay inside the viewport.
+- Colors/tokens: all three surfaces reuse the existing navy glass fill, blue border, selected blue tab and focus tokens.
+- Image quality: the supplied raster is reused directly in Renderer; 512px PNG and valid 256px ICO derivatives preserve the subject and transparency. No CSS/SVG substitute was introduced.
+- Icons/interactions: existing icon-library tab icons remain aligned; all six tabs, project selector, settings, minimize, maximize/restore and close remain functional. Software-assistant UI smoke confirms the GitHub control remains clickable.
+- Responsiveness/accessibility: 1200–3840 layout matrix passes; semantic tablist/group roles, labels and keyboard-capable buttons remain present; console errors are 0.
+
+No actionable P0/P1/P2 findings remain. The full-screen reference content differs by live project/session state only and was not fabricated.
+
+final result: passed
+
+## Fidelity pass 3 — 2026-09-11
+
+- Source: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-IPnre5.png` (1573 × 1276 Explore target), `codex-clipboard-2vUR8N.png` (compact top shell with window controls), and `codex-clipboard-FQvcbz.png` (compact navigation crop).
+- Implementation: `electron/.tmp/explore-entry-target-1573x1276.png`.
+- Combined same-viewport review: `electron/.tmp/phase15-v3-final-comparison.png` (source left, implementation right).
+- P1 fixed: the final legacy nine-column cascade lock overrode the new shell and pushed the three window controls beyond the viewport. A final explicit 12-column lock now reserves dedicated project, settings, and 132px window-control tracks.
+- P1 fixed: the six tabs previously expanded across almost the full row. At 1536px they now span x=320–1054 (734px, about 48% of viewport width) and retain distinct active/border states.
+- P1 fixed: Explore entry cards increased from 292px to 438px; the 1573 × 1276 dashboard is 558px high, eliminating the previous unused lower canvas while preserving full mascot artwork.
+- P2 fixed: session, knowledge, and current-project rows now have independent fills, borders, radii, and hover states. Empty test data remains an honest empty state.
+- Functional checks: three window controls are present after Settings and stay inside the viewport; core navigation, Chat prompt injection, Explore entries, four-stage handoff gate, Onboarding, and responsive layouts pass with zero console errors.
+- Accepted P3: the floating assistant retains the user's persisted draggable position and can overlap a small part of the history area. Reference-only fictional rows are not copied into the product.
+
+P0/P1/P2 are cleared for this pass.
+
+final result: passed

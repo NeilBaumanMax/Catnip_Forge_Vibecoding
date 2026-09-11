@@ -251,7 +251,7 @@ const STEPS: TourStep[] = [
     id: 'assistant',
     eyebrow: '软件助手 · 随时来问我',
     title: '不会使用软件，就问学院呱呱',
-    content: '我可以回答界面、探索、Skill 小站、编译、烧录、串口和 Skills 的使用问题。顶部可查看作者 GitHub、切换亮暗模式、重播新手教程和调节形象大小；学院呱呱本身还可以拖动。',
+    content: '我可以回答界面、探索、Skill 小站、编译、烧录、串口和 Skills 的使用问题。顶部可查看 Neil Bauman 的 GitHub、切换亮暗模式、重播新手教程和调节形象大小；学院呱呱本身还可以拖动。',
     target: '.software-assistant-popover',
     actionLabel: '完成新手旅程',
     prepare: 'assistant',

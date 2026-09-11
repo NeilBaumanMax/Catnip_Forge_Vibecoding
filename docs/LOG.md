@@ -921,3 +921,20 @@
 - 顶部工作区栏通过 portal 成为全局独立首行，设置继续打开既有设置面板；几何门禁覆盖品牌、六标签、工程和设置的顺序、同排与视口边界。
 - 修复入口插画误中正文宽度规则、文图重叠及 1536 宽度设置换行；8 组布局、流程契约与控制台检查通过。
 - 同视口比较写入 `electron/.tmp/phase15-v2-comparison.png`；未执行真实搜索、新包或硬件动作。
+
+## 2026-09-11 — Phase 15 第三轮无边框窗口与纵向填充
+
+- Explore 双入口由 292px 提升至 438px，摘要网格最小高度提升至 490px；历史、知识与工程数据行使用独立浅色边框卡片，改善 16:9/高窗口的空白与边界感。
+- Electron 主窗口启用 `frame: false`、移除原生菜单；顶栏右侧加入真实最小化、最大化/还原与关闭按钮，Preload 仅暴露三个对应动作。
+- 六标签固定在中部紧凑轨道。首版受文件末尾旧九列 cascade lock 覆盖，导致窗口控制落在视口外；追加最终 12 列 lock 后，1536 下标签组约占 48%，控制区完整位于右上角。
+- Electron 类型/Main/Renderer 构建、Explore UI/entry/layout、Onboarding、8 组响应式与四阶段流程均通过；最终同视口证据为 `electron/.tmp/phase15-v3-final-comparison.png`，console error 0。
+- 未执行真实搜索、新 Windows 包、Build/Flash/Serial 或实机验证；`REAL_HARDWARE_VALIDATION_PENDING`。
+
+## 2026-09-11 — Phase 15 第四轮三段式顶栏与应用图标
+
+- 顶栏 DOM 拆为三个真实容器：左侧 Catnip Forge 品牌，中部六工作区，右侧工程/设置/窗口操作；2048px 下中部框宽 1024px，三部分不再共享长边框。
+- 用户给出的 `codex-clipboard-dzsEqZ.png` 原图进入 Renderer；同时生成 512px `icon.png`、256px PNG 帧 `icon.ico` 并更新 `icon-master.png`，供窗口、托盘和后续安装包共用。
+- 助手 GitHub 链接由“作者 Neil Bauman”改为 `Neil Bauman · GitHub`，标题和 aria-label 同步去掉“作者”；Onboarding 对应说明同步更新。
+- “任务管理器”轨道独立扩到 132px，专项门禁确认文字矩形完整位于按钮内部。
+- 三列首次被旧十二列 cascade lock 覆盖，更新最终锁后恢复；测试从比较内部按钮顶边改为比较三个外框顶边，避免把有意的内部垂直留白当成错位。
+- Electron typecheck、Main/Renderer build、Explore/Onboarding、真实软件助手 CDP、8 组响应式与四阶段流程通过；聚焦对照为 `electron/.tmp/phase15-v4-shell-comparison.png`。

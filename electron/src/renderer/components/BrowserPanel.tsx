@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Boxes, Code2, Compass, GraduationCap, MonitorUp, Settings, Workflow } from 'lucide-react';
+import { Boxes, Code2, Compass, GraduationCap, Minus, MonitorUp, Settings, Square, Workflow, X } from 'lucide-react';
 import WorkspacePanel from './WorkspacePanel';
 import CodeEditor from './CodeEditor';
 import ExplorePanel, { type ExploreDiagnosisSeed } from './ExplorePanel';
 import type { BrowserTab, HardboardDevice, HardboardRuntimeState, ProjectSummary, RecordingSummary, RuntimeEvent, SerialMonitorEvent, SerialMonitorSnapshot, WorkbenchItem, WorkbenchOverview } from '../types';
-import catnipForgeIcon from '../assets/catnip-forge.png';
+import catnipForgeIcon from '../assets/catnip-app-icon.png';
 
 interface Props {
   activeProject: ProjectSummary | null;
@@ -946,21 +946,30 @@ export default function BrowserPanel({
 
   return (
     <div className={`browser-panel browser-panel--${mode} nes-container is-rounded`}>
-      {createPortal((<div className="workbench-mode-tabs workspace-global-nav nes-container is-dark" role="tablist" aria-label="工作区视图">
-        <div className="workspace-brand" aria-label="Catnip Forge，让想法变成现实">
+      {createPortal((<div className="workbench-mode-tabs workspace-global-nav" aria-label="Catnip Forge 工作区顶栏">
+        <div className="workspace-brand workspace-shell-box nes-container is-dark" aria-label="Catnip Forge，让想法变成现实">
           <img src={catnipForgeIcon} alt="" aria-hidden="true" />
           <span><strong>Catnip Forge</strong><small>让想法 · 变成现实</small></span>
         </div>
-        <button data-tour-id="tab-repo" type="button" role="tab" aria-selected={mode === 'repo'} className={`nes-btn${mode === 'repo' ? ' is-primary' : ''}`} onClick={() => setMode('repo')}><Boxes aria-hidden="true" /><span>仓库</span></button>
-        <button data-tour-id="tab-monitor" type="button" role="tab" aria-selected={mode === 'monitor'} className={`nes-btn${mode === 'monitor' ? ' is-primary' : ''}`} onClick={() => setMode('monitor')}><MonitorUp aria-hidden="true" /><span>监视器</span></button>
-        <button data-tour-id="tab-tasks" type="button" role="tab" aria-selected={mode === 'tasks'} className={`nes-btn${mode === 'tasks' ? ' is-primary' : ''}`} onClick={() => setMode('tasks')}><Workflow aria-hidden="true" /><span>任务管理器</span></button>
-        <button data-tour-id="tab-editor" type="button" role="tab" aria-selected={mode === 'editor'} className={`nes-btn${mode === 'editor' ? ' is-primary' : ''}`} onClick={() => setMode('editor')}><Code2 aria-hidden="true" /><span>编辑器</span></button>
-        <button data-tour-id="tab-explore" type="button" role="tab" aria-selected={mode === 'explore'} className={`nes-btn${mode === 'explore' ? ' is-primary' : ''}`} onClick={openExploreHome}><Compass aria-hidden="true" /><span>探索</span></button>
-        <button data-tour-id="tab-skill-hub" type="button" role="tab" aria-selected={mode === 'skillHub'} className={`nes-btn${mode === 'skillHub' ? ' is-primary' : ''}`} onClick={openSkillHub}><GraduationCap aria-hidden="true" /><span>Neil 的 skill 小站</span></button>
-        <button className="active-project-switch" type="button" onClick={requestProjectChange} title={projectDir || '尚未选择工程'}>
-          <span>当前工程</span><strong>{activeProject?.name || '请选择'}</strong>
-        </button>
-        <button className="workspace-settings" type="button" onClick={onOpenSettings} title="外观与软件助手设置" aria-label="打开设置"><Settings aria-hidden="true" /></button>
+        <div className="workspace-nav-tabs workspace-shell-box nes-container is-dark" role="tablist" aria-label="工作区视图">
+          <button data-tour-id="tab-repo" type="button" role="tab" aria-selected={mode === 'repo'} className={`nes-btn${mode === 'repo' ? ' is-primary' : ''}`} onClick={() => setMode('repo')}><Boxes aria-hidden="true" /><span>仓库</span></button>
+          <button data-tour-id="tab-monitor" type="button" role="tab" aria-selected={mode === 'monitor'} className={`nes-btn${mode === 'monitor' ? ' is-primary' : ''}`} onClick={() => setMode('monitor')}><MonitorUp aria-hidden="true" /><span>监视器</span></button>
+          <button data-tour-id="tab-tasks" type="button" role="tab" aria-selected={mode === 'tasks'} className={`nes-btn${mode === 'tasks' ? ' is-primary' : ''}`} onClick={() => setMode('tasks')}><Workflow aria-hidden="true" /><span>任务管理器</span></button>
+          <button data-tour-id="tab-editor" type="button" role="tab" aria-selected={mode === 'editor'} className={`nes-btn${mode === 'editor' ? ' is-primary' : ''}`} onClick={() => setMode('editor')}><Code2 aria-hidden="true" /><span>编辑器</span></button>
+          <button data-tour-id="tab-explore" type="button" role="tab" aria-selected={mode === 'explore'} className={`nes-btn${mode === 'explore' ? ' is-primary' : ''}`} onClick={openExploreHome}><Compass aria-hidden="true" /><span>探索</span></button>
+          <button data-tour-id="tab-skill-hub" type="button" role="tab" aria-selected={mode === 'skillHub'} className={`nes-btn${mode === 'skillHub' ? ' is-primary' : ''}`} onClick={openSkillHub}><GraduationCap aria-hidden="true" /><span>Neil 的 skill 小站</span></button>
+        </div>
+        <div className="workspace-shell-actions workspace-shell-box nes-container is-dark">
+          <button className="active-project-switch" type="button" onClick={requestProjectChange} title={projectDir || '尚未选择工程'}>
+            <span>当前工程</span><strong>{activeProject?.name || '请选择'}</strong>
+          </button>
+          <button className="workspace-settings" type="button" onClick={onOpenSettings} title="外观与软件助手设置" aria-label="打开设置"><Settings aria-hidden="true" /></button>
+          <div className="workspace-window-controls" role="group" aria-label="窗口控制">
+            <button type="button" onClick={() => void window.electronAPI.minimizeWindow()} title="最小化" aria-label="最小化窗口"><Minus aria-hidden="true" /></button>
+            <button type="button" onClick={() => void window.electronAPI.toggleMaximizeWindow()} title="最大化或还原" aria-label="最大化或还原窗口"><Square aria-hidden="true" /></button>
+            <button className="is-close" type="button" onClick={() => void window.electronAPI.closeWindow()} title="关闭" aria-label="关闭窗口"><X aria-hidden="true" /></button>
+          </div>
+        </div>
         <span className="ui-build-label">{UI_BUILD_LABEL}</span>
       </div>), document.body)}
 

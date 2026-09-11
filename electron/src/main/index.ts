@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { flushBrowserStorage, openTabUrl, setupBrowserView, updateBrowserViewBounds } from './browser-view';
@@ -203,6 +203,8 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     show: false,
+    frame: false,
+    autoHideMenuBar: true,
     backgroundColor: '#1a1b26',
     title: 'Catnip Forge · Catnip 硬件智能开发平台',
     icon: path.join(getResourcesDir(), 'electron', 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
@@ -212,6 +214,7 @@ function createWindow() {
       contextIsolation: true,
     },
   });
+  mainWindow.setMenuBarVisibility(false);
 
   const syncBrowserBounds = () => updateBrowserViewBounds();
   const resyncBrowserBounds = () => {
@@ -246,6 +249,28 @@ function createWindow() {
   });
   ipcMain.handle('software-assistant:ask', async (_event, messages: SoftwareAssistantMessage[]) => {
     return askSoftwareAssistant(Array.isArray(messages) ? messages : []);
+  });
+  ipcMain.removeHandler('window:minimize');
+  ipcMain.removeHandler('window:toggle-maximize');
+  ipcMain.removeHandler('window:close');
+  ipcMain.handle('window:minimize', (event) => {
+    const owner = BrowserWindow.fromWebContents(event.sender);
+    if (!owner || owner.isDestroyed()) return { ok: false };
+    owner.minimize();
+    return { ok: true };
+  });
+  ipcMain.handle('window:toggle-maximize', (event) => {
+    const owner = BrowserWindow.fromWebContents(event.sender);
+    if (!owner || owner.isDestroyed()) return { ok: false, maximized: false };
+    if (owner.isMaximized()) owner.unmaximize();
+    else owner.maximize();
+    return { ok: true, maximized: owner.isMaximized() };
+  });
+  ipcMain.handle('window:close', (event) => {
+    const owner = BrowserWindow.fromWebContents(event.sender);
+    if (!owner || owner.isDestroyed()) return { ok: false };
+    owner.close();
+    return { ok: true };
   });
 
   if (process.env.NODE_ENV === 'development' || process.env.ELECTRON_DEV === '1') {
@@ -304,6 +329,7 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  Menu.setApplicationMenu(null);
   await startSerialMonitorBridge();
   await startAttachmentBridge();
   createSplashWindow();

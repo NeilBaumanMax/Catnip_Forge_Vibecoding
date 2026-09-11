@@ -12,6 +12,8 @@ const globalStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles'
 const appleStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'apple.less'), 'utf8');
 const exploreStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'explore.less'), 'utf8');
 const rendererMain = fs.readFileSync(path.join(root, 'src', 'renderer', 'main.tsx'), 'utf8');
+const mainProcess = fs.readFileSync(path.join(root, 'src', 'main', 'index.ts'), 'utf8');
+const preload = fs.readFileSync(path.join(root, 'src', 'preload', 'index.ts'), 'utf8');
 const ideaEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-idea-guagua.png'));
 const diagnosisEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-diagnosis-guagua.png'));
 
@@ -105,5 +107,17 @@ assert.match(exploreStyles, /\.explore-idea-action-bar/, 'Idea cards need a stab
 assert.match(exploreStyles, /\.explore-entry-card--diagnosis[\s\S]{0,500}var\(--explore-cyan\)/, 'diagnosis entry needs a distinct cyan treatment');
 assert.match(exploreStyles, /\.explore-entry-card--idea em[\s\S]{0,100}var\(--explore-purple\)/, 'idea entry needs a distinct purple treatment');
 assert.match(exploreStyles, /\.explore-entry-illustration/, 'entry illustration layout is missing');
+assert.match(mainProcess, /mainWindow = new BrowserWindow\(\{[\s\S]{0,320}frame:\s*false/, 'main window must use the custom frameless chrome');
+assert.match(mainProcess, /Menu\.setApplicationMenu\(null\)/, 'native application menu must be removed');
+assert.match(mainProcess, /ipcMain\.handle\('window:minimize'/, 'window minimize IPC is missing');
+assert.match(mainProcess, /ipcMain\.handle\('window:toggle-maximize'/, 'window maximize IPC is missing');
+assert.match(mainProcess, /ipcMain\.handle\('window:close'/, 'window close IPC is missing');
+assert.match(preload, /minimizeWindow:[\s\S]{0,120}window:minimize/, 'preload minimize bridge is missing');
+assert.match(preload, /toggleMaximizeWindow:[\s\S]{0,140}window:toggle-maximize/, 'preload maximize bridge is missing');
+assert.match(preload, /closeWindow:[\s\S]{0,120}window:close/, 'preload close bridge is missing');
+assert.match(browserPanel, /workspace-window-controls[\s\S]{0,900}minimizeWindow[\s\S]{0,400}toggleMaximizeWindow[\s\S]{0,400}closeWindow/, 'functional custom window controls are missing');
+assert.match(browserPanel, /catnip-app-icon\.png/, 'the supplied Catnip app icon must be used by the workspace brand');
+assert.match(browserPanel, /workspace-brand workspace-shell-box[\s\S]{0,700}workspace-nav-tabs workspace-shell-box[\s\S]{0,1800}workspace-shell-actions workspace-shell-box/, 'the top shell must remain split into brand, tab, and action surfaces');
+assert.match(browserPanel, /data-tour-id="tab-tasks"[\s\S]{0,300}<span>任务管理器<\/span>/, 'task manager label must be complete');
 
 console.log('explore UI contract passed: existing flows retained; evidence/conflicts/source detail/stages/container layouts/theme accessibility present');

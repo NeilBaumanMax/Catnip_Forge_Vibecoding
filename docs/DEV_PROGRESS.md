@@ -226,3 +226,17 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] Explore Hero、连接状态、双入口标签和下方历史/知识/工程摘要收敛。
 - [x] 顶部品牌、六标签、当前工程与设置改为全局独立首行，并新增 1536 宽度几何门禁。
 - [x] 第二轮同视口比较完成，`design-qa.md` 维持 `passed`。
+
+### Phase 15 第三轮
+
+- [x] 1573 × 1276 下双入口增高约 50%，历史/知识/工程区域随剩余高度填充，数据行增加独立边框卡片。
+- [x] Electron 主窗口移除原生标题栏与菜单，新增真实最小化、最大化/还原、关闭控制。
+- [x] 六个工作区标签收拢为中部约 48% 宽的紧凑组，工程、设置和窗口控制固定在右侧独立轨道。
+- [x] 1536 / 1573 目标视口、8 组响应式、Explore 四阶段流程、类型与构建门禁通过；最终并排 QA 为 `passed`。
+
+### Phase 15 第四轮
+
+- [x] 顶栏拆为品牌、六标签、工程/设置/窗口操作三个独立框；中部桌面宽度约 50%。
+- [x] 用户提供的方形呱呱替换品牌与 Electron PNG/ICO 图标，ICO 256 × 256 解码通过。
+- [x] 助手 GitHub 按钮删除“作者”称谓；“任务管理器”取消截断并加入几何门禁。
+- [x] TypeScript、Main/Renderer build、Explore UI/layout、Onboarding、真实 Electron 软件助手 CDP 与 2048px 聚焦视觉 QA 通过。

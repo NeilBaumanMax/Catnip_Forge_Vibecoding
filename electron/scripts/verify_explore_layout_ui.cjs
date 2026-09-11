@@ -12,6 +12,8 @@ const outputDir = path.join(root, '.tmp');
 const screenshotPath = path.join(outputDir, 'explore-layout-ui.png');
 const entryScreenshotPath = path.join(outputDir, 'explore-entry-layout-ui.png');
 const targetScreenshotPath = path.join(outputDir, 'explore-entry-target-1536x1024.png');
+const shellScreenshotPath = path.join(outputDir, 'workspace-shell-target-2048x1152.png');
+const tallTargetScreenshotPath = path.join(outputDir, 'explore-entry-target-1573x1276.png');
 let vite;
 let chrome;
 let socket;
@@ -121,7 +123,7 @@ async function measure(width, height, leftPercent, collapsed = false) {
         loaded: Boolean(image?.complete && image.naturalWidth >= 1200 && image.naturalHeight >= 1200),
         anchoredRight: Boolean(artRect && artRect.left >= cardRect.left + cardRect.width * 0.47 && artRect.right <= cardRect.right + cardRect.width * 0.08),
         copyClear: Boolean(artRect && copyRight <= artRect.left + 2),
-        card: cardRect ? [cardRect.left, cardRect.right, cardRect.width] : null,
+        card: cardRect ? [cardRect.left, cardRect.right, cardRect.width, cardRect.height] : null,
         art: artRect ? [artRect.left, artRect.right, artRect.width] : null,
         copyRight,
       };
@@ -275,14 +277,18 @@ async function main() {
     const submitRect = submit.getBoundingClientRect();
     const navRect = document.querySelector('.workbench-mode-tabs').getBoundingClientRect();
     const brandRect = document.querySelector('.workspace-brand').getBoundingClientRect();
+    const tabSurfaceRect = document.querySelector('.workspace-nav-tabs').getBoundingClientRect();
+    const actionSurfaceRect = document.querySelector('.workspace-shell-actions').getBoundingClientRect();
     const firstTabRect = document.querySelector('[data-tour-id="tab-repo"]').getBoundingClientRect();
     const skillTabRect = document.querySelector('[data-tour-id="tab-skill-hub"]').getBoundingClientRect();
+    const taskTabRect = document.querySelector('[data-tour-id="tab-tasks"]').getBoundingClientRect();
+    const taskLabelRect = document.querySelector('[data-tour-id="tab-tasks"] span').getBoundingClientRect();
     const projectRect = document.querySelector('.active-project-switch').getBoundingClientRect();
     const settingsRect = document.querySelector('.workspace-settings').getBoundingClientRect();
-    const navTopDelta = Math.max(
-      Math.abs(brandRect.top - firstTabRect.top),
-      Math.abs(firstTabRect.top - projectRect.top),
-      Math.abs(projectRect.top - settingsRect.top),
+    const controlsRect = document.querySelector('.workspace-window-controls').getBoundingClientRect();
+    const surfaceTopDelta = Math.max(
+      Math.abs(brandRect.top - tabSurfaceRect.top),
+      Math.abs(tabSurfaceRect.top - actionSurfaceRect.top),
     );
     return {
       quickActionCount: quickActions.length,
@@ -291,13 +297,20 @@ async function main() {
       promptInjected: composer.value,
       brand: document.querySelector('.workspace-brand strong')?.textContent || '',
       settingsVisible: (document.querySelector('.workspace-settings')?.getBoundingClientRect().width || 0) > 0,
-      topRowAligned: navTopDelta <= 5,
+      windowControlCount: document.querySelectorAll('.workspace-window-controls button').length,
+      topRowAligned: surfaceTopDelta <= 1,
+      surfacesSeparated: brandRect.right < tabSurfaceRect.left && tabSurfaceRect.right < actionSurfaceRect.left,
+      taskLabelVisible: taskLabelRect.left >= taskTabRect.left && taskLabelRect.right <= taskTabRect.right,
       brandBeforeTabs: brandRect.right <= firstTabRect.left + 1,
       projectAfterTabs: skillTabRect.right <= projectRect.left + 1,
       settingsAfterProject: projectRect.right <= settingsRect.left + 1,
+      controlsAfterSettings: settingsRect.right <= controlsRect.left + 1,
+      controlsInsideViewport: controlsRect.right <= innerWidth - 8,
       navSpansViewport: navRect.left <= 10 && navRect.right >= innerWidth - 10,
       navGeometry: {
         brand: [brandRect.left, brandRect.right, brandRect.top],
+        tabs: [tabSurfaceRect.left, tabSurfaceRect.right, tabSurfaceRect.top],
+        actions: [actionSurfaceRect.left, actionSurfaceRect.right, actionSurfaceRect.top],
         firstTab: [firstTabRect.left, firstTabRect.right, firstTabRect.top],
         skillTab: [skillTabRect.left, skillTabRect.right, skillTabRect.top],
         project: [projectRect.left, projectRect.right, projectRect.top],
@@ -307,7 +320,7 @@ async function main() {
       submitVisible: submitRect.width > 0 && submitRect.right <= panelRect.right + 1 && submitRect.bottom <= panelRect.bottom + 1,
     };
   })()`);
-  if (chatShell.missing || chatShell.quickActionCount !== 4 || chatShell.suggestionCount !== 4 || chatShell.historyRailActionCount !== 4 || !chatShell.promptInjected.includes('当前工程') || chatShell.brand !== 'Catnip Forge' || !chatShell.settingsVisible || !chatShell.topRowAligned || !chatShell.brandBeforeTabs || !chatShell.projectAfterTabs || !chatShell.settingsAfterProject || !chatShell.navSpansViewport || !chatShell.composerVisible || !chatShell.submitVisible) {
+  if (chatShell.missing || chatShell.quickActionCount !== 4 || chatShell.suggestionCount !== 4 || chatShell.historyRailActionCount !== 4 || !chatShell.promptInjected.includes('当前工程') || chatShell.brand !== 'Catnip Forge' || !chatShell.settingsVisible || chatShell.windowControlCount !== 3 || !chatShell.topRowAligned || !chatShell.surfacesSeparated || !chatShell.taskLabelVisible || !chatShell.brandBeforeTabs || !chatShell.projectAfterTabs || !chatShell.settingsAfterProject || !chatShell.controlsAfterSettings || !chatShell.controlsInsideViewport || !chatShell.navSpansViewport || !chatShell.composerVisible || !chatShell.submitVisible) {
     throw new Error(`chat shell interaction mismatch: ${JSON.stringify(chatShell)}`);
   }
 
@@ -323,7 +336,7 @@ async function main() {
     if (scenario.entryColumns !== expectedEntries || !scenario.panelUsesWorkspace) {
       throw new Error(`home layout mismatch: ${JSON.stringify(scenario)}`);
     }
-    if (scenario.entryArt.length !== 2 || scenario.entryArt.some((item) => !item.loaded || !item.anchoredRight || !item.copyClear)) {
+    if (scenario.entryArt.length !== 2 || scenario.entryArt.some((item) => !item.loaded || !item.anchoredRight || !item.copyClear || item.card[3] < 370)) {
       throw new Error(`entry illustration layout mismatch: ${JSON.stringify(scenario)}`);
     }
   }
@@ -350,17 +363,46 @@ async function main() {
       columns: getComputedStyle(document.querySelector('.workbench-mode-tabs')).gridTemplateColumns,
       nav: rect('.workbench-mode-tabs'),
       brand: rect('.workspace-brand'),
+      tabSurface: rect('.workspace-nav-tabs'),
+      actionSurface: rect('.workspace-shell-actions'),
       firstTab: rect('[data-tour-id="tab-repo"]'),
       skillTab: rect('[data-tour-id="tab-skill-hub"]'),
       project: rect('.active-project-switch'),
       settings: rect('.workspace-settings'),
+      controls: rect('.workspace-window-controls'),
     };
   })()`);
-  if (!targetNav.settings || targetNav.settings[1] > targetNav.viewport[0] - 8 || targetNav.settings[2] > targetNav.nav[2] + 6) {
+  if (!targetNav.settings || !targetNav.controls || !targetNav.tabSurface || !targetNav.actionSurface
+      || targetNav.controls[1] > targetNav.viewport[0] - 8
+      || targetNav.settings[2] > targetNav.nav[2] + 10 || targetNav.controls[2] > targetNav.nav[2] + 10
+      || targetNav.brand[1] >= targetNav.tabSurface[0] || targetNav.tabSurface[1] >= targetNav.actionSurface[0]) {
     throw new Error(`target navigation geometry mismatch: ${JSON.stringify(targetNav)}`);
   }
   const targetScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(targetScreenshotPath, Buffer.from(targetScreenshot.data, 'base64'));
+
+  await setViewport(2048, 1152);
+  await wait(120);
+  const shellScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+  fs.writeFileSync(shellScreenshotPath, Buffer.from(shellScreenshot.data, 'base64'));
+
+  await setViewport(1573, 1276);
+  await evaluate(`(() => {
+    const body = document.querySelector('.app-body');
+    if (body && !body.classList.contains('app-body--left-collapsed')) document.querySelector('[data-tour-id="agent-panel-toggle"]')?.click();
+  })()`);
+  await wait(180);
+  const tallTarget = await evaluate(`(() => {
+    const entries = [...document.querySelectorAll('.explore-entry-card')].map((entry) => entry.getBoundingClientRect().height);
+    const dashboard = document.querySelector('.explore-home-dashboard-grid')?.getBoundingClientRect();
+    const controls = document.querySelector('.workspace-window-controls')?.getBoundingClientRect();
+    return { viewport: [innerWidth, innerHeight], entries, dashboardHeight: dashboard?.height || 0, controlsRight: controls?.right || 0 };
+  })()`);
+  if (tallTarget.entries.some((height) => height < 430) || tallTarget.dashboardHeight < 480 || tallTarget.controlsRight > 1565) {
+    throw new Error(`tall target layout mismatch: ${JSON.stringify(tallTarget)}`);
+  }
+  const tallTargetScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+  fs.writeFileSync(tallTargetScreenshotPath, Buffer.from(tallTargetScreenshot.data, 'base64'));
 
   await setViewport(2560, 1440);
   const flowResult = await evaluate(`(async () => {
@@ -433,7 +475,7 @@ async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   const screenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log(JSON.stringify({ chatShell, targetNav, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, screenshotPath, consoleErrors }, null, 2));
+  console.log(JSON.stringify({ chatShell, targetNav, tallTarget, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, tallTargetScreenshotPath, screenshotPath, consoleErrors }, null, 2));
 }
 
 main().catch((error) => {

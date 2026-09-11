@@ -182,3 +182,34 @@
 - 第二次因正文宽度选择器误命中入口插画失败；排除插画节点后发现约 5px 重叠，将插画宽度从 50% 收敛为 49% 后通过。
 - 新增 1536 宽度顶部栏几何断言时，首次准确暴露设置按钮换到第二行；根因是导航仍受旧八列网格与 BrowserPanel 层级影响，改为全局 portal + 九列网格后通过。
 - 第二轮同视口证据为 `electron/.tmp/phase15-v2-comparison.png`；最终视觉结论见根目录 `design-qa.md`。
+
+## 14. 第三轮 16:9 与无边框窗口施工范围
+
+用户以 `codex-clipboard-IPnre5.png` 指出 1573 × 1276 窗口下 Explore 下半部留白过大，并以 `codex-clipboard-JXPylP.png` / `codex-clipboard-IPnre5.png` 要求：
+
+- Explore 双入口相对第二轮再增高约 50%，插画同步按 contain 放大但不得遮挡正文。
+- Explore 历史、知识和当前工程区域随可用高度展开；列表行使用独立浅色卡片、边框与悬停态，避免信息粘连。
+- 顶部应用栏收敛为“品牌左、导航居中、工程/设置/窗口控制右”的单行结构，标签宽度更紧凑，不再平均铺满整行。
+- Windows 主窗口移除原生标题栏和菜单，使用 Renderer 自绘的最小化、最大化/还原和关闭按钮；按钮只通过最小 IPC 调用当前 `BrowserWindow`，不引入第二套窗口系统。
+
+门禁新增：Main 窗口 `frame: false` / 无菜单，Preload 仅暴露三个窗口动作；Renderer 布局专项验证自绘按钮存在、同排、位于设置之后，Explore 入口增高且 16:9/高窗口下摘要区纵向填充。关闭按钮不在自动化中实际触发，避免破坏测试宿主进程。
+
+## 15. 第三轮实施与复测结果
+
+- Explore 双入口固定为 438px 高（紧凑视口 380px），相对第二轮 292px 提升约 50%；1573 × 1276 下摘要网格最小高度 490px，历史、知识和工程卡随剩余高度展开。
+- 历史行、知识行和工程摘要行增加独立浅蓝底、边框、圆角与悬停态；真实数据为空时仍显示诚实空态，不写入参考图中的虚构内容。
+- 主窗口改为 `frame: false` 并移除原生菜单；Renderer 顶栏新增最小化、最大化/还原、关闭三个按钮，通过 Preload 的三个最小 IPC 调用当前 `BrowserWindow`。
+- 顶栏最终使用 12 列显式轨道：品牌、弹性留白、六个紧凑标签、弹性留白、工程、设置、窗口控制。旧九列 cascade lock 曾把窗口控制挤出视口，现由文件末尾 Pass 3 lock 覆盖并加入几何门禁。
+- `verify:explore-layout-ui` 最终通过：1536 × 1024 标签组横跨 320–1054px（734px，约视口 48%），窗口控制位于 1389–1521px；1573 × 1276 两入口均为 438px、摘要区 558px、控制区右边界 1558px，console error 0。
+- 同视口最终并排证据：`electron/.tmp/phase15-v3-final-comparison.png`。真实搜索、Build/Flash/Serial 和实机验证未执行，`REAL_HARDWARE_VALIDATION_PENDING` 不变。
+
+## 16. 第四轮三段式顶栏与品牌图标
+
+用户以 `codex-clipboard-NqedPo.png`、`codex-clipboard-F09384.png`、`codex-clipboard-dzsEqZ.png`、`codex-clipboard-I1Cmro.png` 补充以下真相：
+
+- 助手 GitHub 按钮删除“作者”二字，仅保留 `Neil Bauman · GitHub`；无论贡献者数量如何变化，都不把 Neil 描述为唯一作者。
+- 顶栏不再是一条连续长框，拆成品牌、六工作区标签、工程/设置/窗口操作三个独立玻璃框；中间框约占桌面视口 50%。
+- 用户提供的方形呱呱图作为品牌和软件图标，生成 Renderer PNG、512px 应用 PNG 与包含 256px PNG 帧的 ICO；不重新绘制或替换角色。
+- “任务管理器”必须完整显示；门禁检查文本边界位于按钮内部，不能依靠省略号掩盖布局不足。
+
+最终 1536 × 1024 几何为：品牌框 x=14–234、中部框 x=319–1087、右侧框 x=1172–1522；“任务管理器”完整，三框分离且窗口控制位于视口内。2048px 实现截图为 `electron/.tmp/workspace-shell-target-2048x1152.png`，聚焦对照为 `electron/.tmp/phase15-v4-shell-comparison.png`。

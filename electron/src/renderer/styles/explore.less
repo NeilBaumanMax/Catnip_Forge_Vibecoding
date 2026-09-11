@@ -966,6 +966,212 @@
   .explore-entry-tags { display: none; }
 }
 
+/* Phase 15 fidelity pass 3: 16:9 fill, denser data rows, and native-feeling
+   frameless window controls based on the selected desktop reference. */
+.workspace-global-nav {
+  grid-template-columns: 180px minmax(24px, 1fr) 105px 105px 125px 105px 100px 175px minmax(24px, 1fr) 165px 42px 132px !important;
+  gap: 4px !important;
+  border: 1px solid rgba(103, 157, 243, 0.28) !important;
+  border-radius: 12px !important;
+  background: rgba(6, 27, 75, 0.94) !important;
+  box-shadow: 0 5px 18px rgba(0, 8, 40, 0.26), inset 0 1px rgba(171, 207, 255, 0.1) !important;
+}
+.workspace-global-nav .workspace-brand { grid-column: 1; }
+.workspace-global-nav [data-tour-id="tab-repo"] { grid-column: 3; }
+.workspace-global-nav [data-tour-id="tab-monitor"] { grid-column: 4; }
+.workspace-global-nav [data-tour-id="tab-tasks"] { grid-column: 5; }
+.workspace-global-nav [data-tour-id="tab-editor"] { grid-column: 6; }
+.workspace-global-nav [data-tour-id="tab-explore"] { grid-column: 7; }
+.workspace-global-nav [data-tour-id="tab-skill-hub"] { grid-column: 8; }
+.workspace-global-nav .active-project-switch { grid-column: 10; }
+.workspace-global-nav .active-project-switch { width: 100% !important; justify-self: stretch !important; }
+.workspace-global-nav .workspace-settings { grid-column: 11; }
+.workspace-window-controls {
+  grid-column: 12;
+  height: 40px;
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  align-items: stretch;
+  overflow: hidden;
+  border-left: 1px solid rgba(116, 166, 238, 0.18);
+  -webkit-app-region: no-drag;
+}
+:root[data-theme="dark"] .workbench-mode-tabs .workspace-window-controls button {
+  width: 44px;
+  min-width: 44px;
+  height: 40px;
+  padding: 0 !important;
+  color: #cfe3ff !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  box-shadow: none !important;
+}
+.workspace-window-controls button svg { width: 16px !important; height: 16px !important; padding: 0 !important; background: transparent !important; border: 0 !important; filter: none !important; }
+:root[data-theme="dark"] .workbench-mode-tabs .workspace-window-controls button:hover { color: #fff !important; background: rgba(92, 150, 235, 0.2) !important; }
+:root[data-theme="dark"] .workbench-mode-tabs .workspace-window-controls button.is-close:hover { background: #e5484d !important; }
+
+.explore-panel:not(.explore-panel--flow) { gap: 14px; }
+.explore-panel:not(.explore-panel--flow) .explore-entry-card {
+  min-height: 438px;
+  padding-block: 26px 22px;
+}
+.explore-panel:not(.explore-panel--flow) .explore-entry-illustration {
+  bottom: -1%;
+  height: 116%;
+}
+.explore-panel:not(.explore-panel--flow) .explore-home-dashboard-grid {
+  min-height: 490px;
+  flex: 1 0 auto;
+  grid-template-rows: minmax(190px, 0.72fr) minmax(250px, 1fr);
+  align-items: stretch;
+}
+.explore-panel:not(.explore-panel--flow) .explore-session-history,
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-preview,
+.explore-panel:not(.explore-panel--flow) .explore-project-preview { height: 100%; }
+.explore-session-list,
+.explore-knowledge-list { display: grid; gap: 8px; padding-top: 10px; }
+.explore-session-list li {
+  padding: 4px 7px;
+  background: #f6faff;
+  border: 1px solid rgba(76, 129, 205, 0.18);
+  border-radius: 10px;
+  box-shadow: 0 3px 9px rgba(32, 78, 143, 0.045);
+}
+.explore-session-list li:hover { border-color: rgba(49, 115, 215, 0.34); background: #f0f7ff; }
+.explore-knowledge-row {
+  padding: 12px;
+  background: #f6faff;
+  border: 1px solid rgba(76, 129, 205, 0.18);
+  border-radius: 10px;
+  box-shadow: 0 3px 9px rgba(32, 78, 143, 0.045);
+}
+.explore-knowledge-row:hover { border-color: rgba(49, 115, 215, 0.34); background: #f0f7ff; }
+.explore-project-summary > div,
+.explore-project-summary code {
+  border: 1px solid rgba(76, 129, 205, 0.12);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.66);
+}
+
+@media (max-height: 1050px) {
+  .explore-panel:not(.explore-panel--flow) .explore-entry-card { min-height: 380px; }
+  .explore-panel:not(.explore-panel--flow) .explore-home-dashboard-grid { min-height: 440px; }
+}
+
+@media (max-width: 1320px) {
+  .workspace-global-nav {
+    grid-template-columns: 140px 4px repeat(4, minmax(70px, 1fr)) 88px 150px 4px 126px 38px 108px !important;
+  }
+  .workspace-window-controls { grid-template-columns: repeat(3, 36px); }
+  :root[data-theme="dark"] .workbench-mode-tabs .workspace-window-controls button { width: 36px; min-width: 36px; }
+}
+
+@media (max-width: 1000px) {
+  .workspace-global-nav { grid-template-columns: 120px 1fr repeat(5, 42px) 74px 1fr 100px 36px 96px !important; }
+  .workspace-global-nav > [data-tour-id] > span { display: none; }
+  .workspace-window-controls { grid-template-columns: repeat(3, 32px); }
+  :root[data-theme="dark"] .workbench-mode-tabs .workspace-window-controls button { width: 32px; min-width: 32px; }
+}
+
+/* Pass 4 final shell: three separate surfaces instead of one full-width box. */
+:root[data-theme="dark"] .workspace-global-nav,
+.workspace-global-nav {
+  display: grid !important;
+  grid-template-columns: 220px minmax(650px, 50vw) 350px !important;
+  justify-content: space-between;
+  gap: 12px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+.workspace-shell-box {
+  min-width: 0;
+  height: 50px;
+  box-sizing: border-box;
+  pointer-events: auto;
+  background: rgba(6, 27, 75, 0.94) !important;
+  border: 1px solid rgba(103, 157, 243, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 5px 18px rgba(0, 8, 40, 0.24), inset 0 1px rgba(171, 207, 255, 0.1) !important;
+  -webkit-app-region: drag;
+}
+
+.workspace-nav-tabs {
+  display: grid;
+  grid-template-columns: 104px 104px 132px 104px 92px 154px;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px !important;
+}
+
+.workspace-nav-tabs > button {
+  grid-column: auto !important;
+  width: 100%;
+  min-width: 0;
+  overflow: visible !important;
+  -webkit-app-region: no-drag;
+}
+
+.workspace-nav-tabs > button > span {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap;
+}
+
+.workspace-nav-tabs [data-tour-id="tab-tasks"] { min-width: 132px; }
+
+.workspace-shell-actions {
+  display: grid;
+  grid-template-columns: minmax(128px, 1fr) 42px 132px;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px !important;
+}
+
+.workspace-shell-actions .active-project-switch,
+.workspace-shell-actions .workspace-settings,
+.workspace-shell-actions .workspace-window-controls {
+  grid-column: auto !important;
+  -webkit-app-region: no-drag;
+}
+
+.workspace-shell-actions .workspace-window-controls {
+  width: 132px;
+  border-left: 1px solid rgba(116, 166, 238, 0.18);
+}
+
+@media (max-width: 1320px) {
+  :root[data-theme="dark"] .workspace-global-nav,
+  .workspace-global-nav {
+    grid-template-columns: 172px minmax(550px, 1fr) 310px !important;
+    gap: 8px !important;
+  }
+  .workspace-nav-tabs {
+    grid-template-columns: 84px 84px 120px 84px 76px minmax(118px, 1fr);
+  }
+  .workspace-nav-tabs [data-tour-id="tab-tasks"] { min-width: 120px; }
+  .workspace-shell-actions { grid-template-columns: minmax(112px, 1fr) 40px 108px; }
+  .workspace-shell-actions .workspace-window-controls { width: 108px; }
+}
+
+@media (max-width: 1080px) {
+  :root[data-theme="dark"] .workspace-global-nav,
+  .workspace-global-nav {
+    grid-template-columns: 150px minmax(390px, 1fr) 278px !important;
+  }
+  .workspace-brand small,
+  .workspace-nav-tabs > button > span { display: none; }
+  .workspace-nav-tabs { grid-template-columns: repeat(6, minmax(48px, 1fr)); }
+  .workspace-nav-tabs [data-tour-id="tab-tasks"] { min-width: 0; }
+  .workspace-shell-actions { grid-template-columns: minmax(100px, 1fr) 38px 96px; }
+  .workspace-shell-actions .workspace-window-controls { width: 96px; }
+}
+
 /* Phase 15: the cosmic shell stays decorative while the real product UI and
    its existing interaction contracts remain in the foreground. */
 :root[data-theme="dark"] body {
@@ -1617,4 +1823,110 @@
   .explore-home-header .explore-hero { max-width: 78%; }
   .explore-entry-card { min-height: 270px; }
   .explore-entry-tags { display: none; }
+}
+
+/* Pass 3 final cascade lock: reserve a compact centered navigation cluster and
+   keep the frameless window controls in a dedicated right-edge track. */
+:root[data-theme="dark"] .workspace-global-nav,
+.workspace-global-nav {
+  grid-template-columns:
+    180px minmax(12px, 1fr)
+    repeat(5, minmax(92px, 112px)) minmax(132px, 154px)
+    minmax(12px, 1fr) 160px 42px 132px !important;
+}
+
+.workspace-global-nav > button:nth-of-type(1) { grid-column: 3; }
+.workspace-global-nav > button:nth-of-type(2) { grid-column: 4; }
+.workspace-global-nav > button:nth-of-type(3) { grid-column: 5; }
+.workspace-global-nav > button:nth-of-type(4) { grid-column: 6; }
+.workspace-global-nav > button:nth-of-type(5) { grid-column: 7; }
+.workspace-global-nav > button:nth-of-type(6) { grid-column: 8; }
+.workspace-global-nav .active-project-switch { grid-column: 10 !important; min-width: 0 !important; }
+.workspace-global-nav .workspace-settings { grid-column: 11; }
+.workspace-global-nav .workspace-window-controls { grid-column: 12; }
+
+@media (max-width: 1320px) {
+  :root[data-theme="dark"] .workspace-global-nav,
+  .workspace-global-nav {
+    grid-template-columns:
+      150px minmax(6px, 1fr)
+      repeat(5, minmax(74px, 94px)) minmax(108px, 132px)
+      minmax(6px, 1fr) 132px 40px 108px !important;
+  }
+  .workspace-window-controls { grid-template-columns: repeat(3, 36px); }
+  :root[data-theme="dark"] .workbench-mode-tabs .workspace-window-controls button { width: 36px; min-width: 36px; }
+}
+
+@media (max-width: 1000px) {
+  :root[data-theme="dark"] .workspace-global-nav,
+  .workspace-global-nav {
+    grid-template-columns:
+      120px minmax(2px, 1fr)
+      repeat(5, 42px) 74px
+      minmax(2px, 1fr) 104px 36px 96px !important;
+  }
+  .workspace-window-controls { grid-template-columns: repeat(3, 32px); }
+  :root[data-theme="dark"] .workbench-mode-tabs .workspace-window-controls button { width: 32px; min-width: 32px; }
+}
+
+/* Pass 4 cascade lock must remain last: the shell now has three child boxes. */
+:root[data-theme="dark"] .workspace-global-nav,
+.workspace-global-nav {
+  grid-template-columns: 220px minmax(650px, 50vw) 350px !important;
+}
+
+@media (max-width: 1320px) {
+  :root[data-theme="dark"] .workspace-global-nav,
+  .workspace-global-nav { grid-template-columns: 172px minmax(550px, 1fr) 310px !important; }
+}
+
+@media (max-width: 1000px) {
+  :root[data-theme="dark"] .workspace-global-nav,
+  .workspace-global-nav { grid-template-columns: 140px minmax(420px, 1fr) 270px !important; }
+}
+
+.workspace-shell-actions .active-project-switch,
+.workspace-shell-actions .workspace-settings,
+.workspace-shell-actions .workspace-window-controls {
+  grid-column: auto !important;
+}
+
+.workspace-shell-actions .active-project-switch {
+  width: 100% !important;
+  min-width: 0 !important;
+  justify-self: stretch !important;
+}
+
+.workspace-shell-actions .workspace-settings {
+  width: 40px !important;
+  min-width: 40px !important;
+  height: 40px !important;
+}
+
+.workspace-shell-actions .workspace-window-controls {
+  width: 132px !important;
+  height: 40px !important;
+  grid-template-columns: repeat(3, 44px) !important;
+}
+
+@media (max-width: 1320px) {
+  .workspace-shell-actions .workspace-window-controls {
+    width: 108px !important;
+    grid-template-columns: repeat(3, 36px) !important;
+  }
+  :root[data-theme="dark"] .workbench-mode-tabs .workspace-window-controls button {
+    width: 36px;
+    min-width: 36px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .workspace-shell-actions .workspace-window-controls {
+    width: 96px !important;
+    grid-template-columns: repeat(3, 32px) !important;
+  }
+  :root[data-theme="dark"] .workbench-mode-tabs .workspace-window-controls button {
+    width: 32px;
+    min-width: 32px;
+  }
 }

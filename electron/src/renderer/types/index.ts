@@ -290,6 +290,9 @@ export interface SerialMonitorSnapshot {
 }
 
 export interface WindowAPI {
+  minimizeWindow: () => Promise<{ ok: boolean }>;
+  toggleMaximizeWindow: () => Promise<{ ok: boolean; maximized: boolean }>;
+  closeWindow: () => Promise<{ ok: boolean }>;
   getStartupStatus: () => Promise<StartupStatus>;
   saveStartupApiKey: (key: string, qwenKey?: string) => Promise<{ ok: boolean; qwenSaved: boolean; restarting: boolean; status: Pick<StartupStatus, 'apiKeyReady' | 'qwenApiKeyReady' | 'playwrightReady' | 'firstRun'> }>;
   askSoftwareAssistant: (messages: Array<Pick<SoftwareAssistantMessage, 'role' | 'content'>>) => Promise<{ ok: true; text: string }>;

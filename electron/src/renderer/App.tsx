@@ -3,7 +3,7 @@ import ChatPanel from './components/ChatPanel';
 import BrowserPanel from './components/BrowserPanel';
 import CatnipOnboarding from './components/CatnipOnboarding';
 import MarkdownContent from './components/MarkdownContent';
-import catnipForgeIcon from './assets/catnip-forge.png';
+import catnipForgeIcon from './assets/catnip-app-icon.png';
 import catnipAssistantImage from './assets/catnip-assistant.png';
 import guaguaAvatarImage from './assets/guagua-avatar.png';
 import githubMarkImage from './assets/github-mark.png';
@@ -1042,11 +1042,11 @@ export default function App() {
                     type="button"
                     className="software-assistant-author-link"
                     onClick={() => void window.electronAPI.openExternalUrl(AUTHOR_GITHUB_URL)}
-                    title="在系统默认浏览器打开作者 GitHub"
-                    aria-label="在系统浏览器打开作者 Neil Bauman 的 GitHub"
+                    title="在系统默认浏览器打开 Neil Bauman 的 GitHub"
+                    aria-label="在系统浏览器打开 Neil Bauman 的 GitHub"
                   >
                     <img src={githubMarkImage} alt="" aria-hidden="true" />
-                    <span>作者 Neil Bauman · GitHub</span>
+                    <span>Neil Bauman · GitHub</span>
                     <span aria-hidden="true">↗</span>
                   </button>
                 </span>

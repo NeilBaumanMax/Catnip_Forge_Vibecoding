@@ -110,7 +110,7 @@ async function main() {
       && rect.right <= result.viewport.width && rect.bottom <= result.viewport.height;
     if (!result?.triggerImageLoaded || !result?.avatarImageLoaded || !result?.githubMarkLoaded || !result?.fullBodyTrigger || !result?.popoverVisible || !result?.textarea || !result?.composerContained || result?.actionButtons !== 6 || !result?.onboardingButton || !result?.sizeAdjusted
       || result?.title !== "Neil·Bauman's 学院呱呱" || !result?.welcome?.includes('Catnip Forge')
-      || !result?.authorLink?.includes('Neil Bauman') || !result?.authorLinkLabel?.includes('系统浏览器') || !inViewport) {
+      || !result?.authorLink?.includes('Neil Bauman') || result?.authorLink?.includes('作者') || !result?.authorLinkLabel?.includes('系统浏览器') || !inViewport) {
       throw new Error(`software assistant UI verification failed: ${JSON.stringify(result)}`);
     }
 

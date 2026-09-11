@@ -445,3 +445,32 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 | 同视口视觉 QA | 通过 | `phase15-v2-comparison.png`；P0/P1/P2 清零 |
 
 首次失败依次为全局品牌测试定位过时、入口插画误中正文选择器、49% 前约 5px 文图重叠，以及新增导航门禁发现设置按钮换行；均修正根因并复测。临时 Chromium profile 仍可能提示 `EPERM`，退出码 0。
+
+## 2026-09-11 Phase 15 第三轮无边框窗口与 16:9 收敛
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| Electron typecheck / Main build | 通过 | 无边框 BrowserWindow、三个最小窗口 IPC 与 Preload 类型正确 |
+| Electron Renderer build | 通过 | 顶栏 12 列最终锁、增高入口与摘要卡片样式进入构建 |
+| `verify:explore-ui` / `verify:explore-entry` / `verify:onboarding-ui` | 通过 | Explore 产品边界、双入口和新手旅程未回归 |
+| `verify:explore-layout-ui` | 通过 | 1536 标签组约 48% 宽、3 个窗口按钮可见；1573 × 1276 入口 438px、摘要区 558px；8 组响应式与四阶段流程通过，console error 0 |
+| 同视口视觉 QA | 通过 | `phase15-v3-final-comparison.png`；P0/P1/P2 清零 |
+| `git diff --check` | 通过 | 无 whitespace error，仅 LF → CRLF 工作树提示 |
+
+首次布局失败是目标导航顶部阈值比实际 6.5px 严 0.5px，按 8px 壳层真实边界修正；随后用户截图暴露旧九列 cascade lock 把第 12 列窗口控制挤出视口，追加最终 12 列锁并复测通过。未执行真实搜索、新包或硬件动作，`REAL_HARDWARE_VALIDATION_PENDING`。
+
+## 2026-09-11 Phase 15 第四轮三段式顶栏
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | 通过 | 三容器 DOM、图标导入和助手文案类型正确 |
+| `npm.cmd --prefix electron run build:main` | 通过 | Main 保持无边框窗口与图标路径 |
+| `npm.cmd --prefix electron run build:renderer` | 通过 | 2820 modules；仅保留既有大 chunk warning |
+| `npm.cmd --prefix electron run verify:explore-ui` | 通过 | 新增品牌图标、三容器结构和完整任务管理器静态契约 |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | 通过 | 三框分离、任务文字完整、窗口控制可见；1536/1573/2048 截图、8 组响应式、四阶段流程、console error 0 |
+| `npm.cmd --prefix electron run verify:onboarding-ui` | 通过 | 24 步旅程和六工作区交互未回归 |
+| `npm.cmd --prefix electron run verify:software-assistant-ui` | 通过 | 真实 Electron CDP；链接为 `Neil Bauman · GitHub` 且不含“作者” |
+| ICO 解码检查 | 通过 | `electron/assets/icon.ico` 可由 System.Drawing 解码为 256 × 256 |
+| 同宽视觉 QA | 通过 | `phase15-v4-shell-comparison.png`；2048px 顶栏源图与实现聚焦比较，P0/P1/P2 清零 |
+
+首次布局复测暴露旧 Pass 3 十二列规则仍在文件末尾覆盖三容器网格，导致中部框被压到 117px、右侧内容错位；将三列 lock 移至最终层后修复。旧门禁随后以内部按钮顶部比较三个独立框，产生 9px 伪失败；更新为框表面顶边和间距检查。首次助手 CDP 检查因真实 Electron 尚未启动而找不到 9230，启动后复测通过。一次 Renderer 构建命令因输入错误返回 npm unknown command，使用文档规定命令立即通过，不属于源码失败。真实桌面启动时已有 Renderer 占用 5173，新 Main 仍成功连接现有开发服务并开放 9230；未终止用户已有进程。

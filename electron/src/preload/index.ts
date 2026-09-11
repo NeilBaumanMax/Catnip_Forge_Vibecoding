@@ -3,6 +3,9 @@ import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreContextG
 import type { ExploreHandoffArtifact, ExploreWorkSessionRecord } from '../common/project-session';
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  minimizeWindow: () => ipcRenderer.invoke('window:minimize'),
+  toggleMaximizeWindow: () => ipcRenderer.invoke('window:toggle-maximize'),
+  closeWindow: () => ipcRenderer.invoke('window:close'),
   getStartupStatus: () => ipcRenderer.invoke('startup:status'),
   saveStartupApiKey: (key: string, qwenKey?: string) => ipcRenderer.invoke('startup:save-apikey', key, qwenKey),
   askSoftwareAssistant: (messages: Array<{ role: 'user' | 'assistant'; content: string }>) => ipcRenderer.invoke('software-assistant:ask', messages),
