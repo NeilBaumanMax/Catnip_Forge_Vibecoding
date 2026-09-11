@@ -1,3 +1,17 @@
+# Fidelity pass 15 — Explore flow header parity (2026-09-11)
+
+- Source comparison: user captures `codex-clipboard-9Pno0F.png` (Idea) and `codex-clipboard-pyokZY.png` (Diagnosis), with Diagnosis selected as the geometry standard.
+- Implementation evidence: `electron/.tmp/explore-idea-workspace-target-1448x1086.png` and `electron/.tmp/explore-diagnosis-workspace-target-1448x1086.png`.
+- Focused same-viewport comparison: `electron/.tmp/phase15-pass15-flow-header-parity.png`; both captures use a 1448 × 1086 CSS viewport and are stacked without scaling.
+- [P1 fixed] Idea previously used a different header height, column ratio, back-button size/offset, title spacing, subtitle width, and stage-step geometry.
+- [P1 fixed] The Idea draft badge used an obsolete absolute position and could escape beneath the back button; draft state is now hidden consistently on both initial flow screens.
+- Both flows now share a 132px header, 48px back control, identical copy baseline, 31/69 header grid, 62px stage cards, and matching responsive breakpoints.
+- Automated checks validate the header/copy boundaries, back-button containment, hidden draft badge, stage descriptions, responsive layout matrix, full handoff flow, and zero console errors.
+
+No actionable P0/P1/P2 findings remain for this correction.
+
+final result: passed
+
 # Phase 15 Visual QA — fidelity pass 2
 
 日期：2026-09-11
@@ -50,6 +64,19 @@
 - 悬浮学院呱呱继续尊重用户可拖动并持久化的位置，可能覆盖当前工程摘要的一小部分。
 
 P0/P1/P2 已清零；保留差异均来自真实性、系统窗口边界或既有用户偏好。
+
+final result: passed
+
+## Fidelity pass 14 — 2026-09-11
+
+- Source correction: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-cWH19E.png` and focused crop `codex-clipboard-UCcLzw.png` showed a missing back control, header copy crossing the border, and the draft status escaping below the header.
+- Post-fix implementation: `electron/.tmp/explore-diagnosis-workspace-target-1448x1086.png` at 1448 × 1086, dark Diagnosis describe state.
+- [P1 fixed] The back control only had offsets, not positioning, so it occupied the same grid cell behind the title. It is now explicitly absolute with a visible 48 × 48 hit target and z-index 4.
+- [P1 fixed] The header grew from 112px to 132px and its subtitle is single-line at desktop widths, keeping all title copy inside the rounded border; narrow layouts restore normal wrapping.
+- [P2 fixed] The legacy draft badge inherited an absolute offset and appeared between the header and question card. Draft is now hidden on this dedicated Diagnosis header; meaningful non-draft states remain available at the header's lower-right edge.
+- Automated geometry verifies the back control is fully inside the header, header copy ends at least 8px above its bottom edge, and draft computes to `display: none`. Full responsive and four-stage flow gates remain green.
+
+No actionable P0/P1/P2 findings remain for this correction.
 
 final result: passed
 

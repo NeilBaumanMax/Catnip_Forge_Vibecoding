@@ -1,5 +1,12 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-11 — Latest UI correction: shared Explore header
+
+- Idea now uses the Diagnosis header geometry: 132px surface, 48px return button, 31/69 copy-to-stage grid, and 62px stage cards.
+- Both initial flow screens keep their own wording/art while sharing identical alignment and responsive breakpoints.
+- Draft badges are hidden on both initial screens; non-draft runtime statuses remain supported.
+- Evidence: `electron/.tmp/phase15-pass15-flow-header-parity.png`; layout regression gate passes at the shared 1448 × 1086 viewport.
+
 更新时间：2026-09-11（Asia/Shanghai）
 
 这是下一位施工 Agent 的第一入口。开工必须动态执行 `git branch --show-current`、`git status --short --branch`、`git rev-parse HEAD`，并只读核对 `origin`；下列提交号是交接审计时证据，不代替实时 Git。
@@ -102,3 +109,8 @@ Secret 不进源码、Renderer、Chat、日志、URL、截图、Agent 输出或�
 - 布局门禁新增同尺寸 Diagnosis 描述态，验证问题卡、至少 5 条 Context、真实插画、4 个阶段副说明、双图标 CTA、深色画布和列高关系；既有 8 组响应式及全流程仍通过。
 - 同尺寸证据：`electron/.tmp/explore-diagnosis-workspace-target-1448x1086.png`；源图/实现对照：`electron/.tmp/phase15-pass13-diagnosis-comparison.png`。
 - 未执行真实知乎/全网搜索、Build/Flash/Serial 或实机动作；`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留。
+
+### 解问题头部纠偏
+
+- 用户实屏发现返回键被标题遮住、说明文字越过头部边框、草稿状态掉到问题卡上方。现已将返回键固定为头部内的 48px 绝对定位控件，头部增至 132px，桌面说明保持单行；Diagnosis 草稿态隐藏，其他运行状态保留。
+- 布局专项新增返回键边界、标题说明边界与草稿隐藏断言，1448 × 1086 截图复核通过。

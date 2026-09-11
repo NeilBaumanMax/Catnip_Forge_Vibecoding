@@ -16,7 +16,7 @@ const shellScreenshotPath = path.join(outputDir, 'workspace-shell-target-2048x11
 const skillHubScreenshotPath = path.join(outputDir, 'skill-hub-topline-2048x1152.png');
 const exploreHomeScreenshotPath = path.join(outputDir, 'explore-home-target-2048x1105.png');
 const tallTargetScreenshotPath = path.join(outputDir, 'explore-entry-target-1573x1276.png');
-const ideaWorkspaceScreenshotPath = path.join(outputDir, 'explore-idea-workspace-target-1421x1105.png');
+const ideaWorkspaceScreenshotPath = path.join(outputDir, 'explore-idea-workspace-target-1448x1086.png');
 const diagnosisWorkspaceScreenshotPath = path.join(outputDir, 'explore-diagnosis-workspace-target-1448x1086.png');
 let vite;
 let chrome;
@@ -579,7 +579,7 @@ async function main() {
   const tallTargetScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(tallTargetScreenshotPath, Buffer.from(tallTargetScreenshot.data, 'base64'));
 
-  await setViewport(1421, 1105);
+  await setViewport(1448, 1086);
   await evaluate(`document.querySelector('[data-tour-id="explore-idea"]')?.click()`);
   await wait(180);
   const ideaWorkspace = await evaluate(`(() => {
@@ -590,6 +590,10 @@ async function main() {
     const conversation = panel?.querySelector('.explore-conversation');
     const artwork = panel?.querySelector('.explore-idea-visual img');
     const cta = panel?.querySelector('.explore-primary-cta');
+    const header = panel?.querySelector('.explore-flow-header');
+    const back = panel?.querySelector('.explore-back-button');
+    const headerCopy = panel?.querySelector('.explore-flow-header > div');
+    const draftStatus = panel?.querySelector('.explore-session-status.is-draft');
     const panelStyle = panel ? getComputedStyle(panel) : null;
     const inside = (inner, outer) => {
       const innerRect = inner?.getBoundingClientRect();
@@ -604,12 +608,27 @@ async function main() {
       promptCount: panel?.querySelectorAll('.explore-idea-prompts button').length || 0,
       stageDescriptions: panel?.querySelectorAll('.explore-stage-copy small').length || 0,
       ctaHasIcons: cta?.querySelectorAll('svg').length === 2,
+      backButtonVisible: Boolean(back && header
+        && back.getBoundingClientRect().width >= 44
+        && back.getBoundingClientRect().left >= header.getBoundingClientRect().left
+        && back.getBoundingClientRect().right <= header.getBoundingClientRect().right
+        && back.getBoundingClientRect().top >= header.getBoundingClientRect().top
+        && back.getBoundingClientRect().bottom <= header.getBoundingClientRect().bottom),
+      headerContainsCopy: Boolean(headerCopy && header
+        && headerCopy.getBoundingClientRect().bottom <= header.getBoundingClientRect().bottom - 8),
+      draftStatusHidden: !draftStatus || getComputedStyle(draftStatus).display === 'none',
+      diagnosisHeaderGeometry: Boolean(header && back
+        && Math.abs(header.getBoundingClientRect().height - 132) <= 2
+        && Math.abs(back.getBoundingClientRect().width - 48) <= 1
+        && Math.abs(back.getBoundingClientRect().height - 48) <= 1),
       outputTallerThanInput: Boolean(output && input && output.getBoundingClientRect().height >= input.getBoundingClientRect().height),
       darkCanvas: Boolean(panelStyle?.backgroundImage.includes('radial-gradient') && panelStyle.backgroundImage.includes('linear-gradient')),
     };
   })()`);
   if (!ideaWorkspace.exists || ideaWorkspace.columns !== 2 || !ideaWorkspace.conversationInsideInput || !ideaWorkspace.artworkLoaded
       || ideaWorkspace.promptCount !== 5 || ideaWorkspace.stageDescriptions !== 4 || !ideaWorkspace.ctaHasIcons
+      || !ideaWorkspace.backButtonVisible || !ideaWorkspace.headerContainsCopy || !ideaWorkspace.draftStatusHidden
+      || !ideaWorkspace.diagnosisHeaderGeometry
       || !ideaWorkspace.outputTallerThanInput || !ideaWorkspace.darkCanvas) {
     throw new Error(`idea workspace layout mismatch: ${JSON.stringify(ideaWorkspace)}`);
   }
@@ -629,11 +648,24 @@ async function main() {
     const artwork = panel?.querySelector('.explore-diagnosis-visual img');
     const cta = panel?.querySelector('.explore-primary-cta');
     const question = panel?.querySelector('.explore-diagnosis-question');
+    const header = panel?.querySelector('.explore-flow-header');
+    const back = panel?.querySelector('.explore-back-button');
+    const headerCopy = panel?.querySelector('.explore-flow-header > div');
+    const draftStatus = panel?.querySelector('.explore-session-status.is-draft');
     const panelStyle = panel ? getComputedStyle(panel) : null;
     return {
       exists: Boolean(panel),
       columns: form ? getComputedStyle(form).gridTemplateColumns.split(' ').filter(Boolean).length : 0,
       questionCardVisible: Boolean(question && question.getBoundingClientRect().height >= 130),
+      backButtonVisible: Boolean(back && header
+        && back.getBoundingClientRect().width >= 44
+        && back.getBoundingClientRect().left >= header.getBoundingClientRect().left
+        && back.getBoundingClientRect().right <= header.getBoundingClientRect().right
+        && back.getBoundingClientRect().top >= header.getBoundingClientRect().top
+        && back.getBoundingClientRect().bottom <= header.getBoundingClientRect().bottom),
+      headerContainsCopy: Boolean(headerCopy && header
+        && headerCopy.getBoundingClientRect().bottom <= header.getBoundingClientRect().bottom - 8),
+      draftStatusHidden: !draftStatus || getComputedStyle(draftStatus).display === 'none',
       contextCardCount: panel?.querySelectorAll('.explore-context-row').length || 0,
       artworkLoaded: Boolean(artwork?.complete && artwork.naturalWidth >= 1400 && artwork.naturalHeight >= 800),
       stageDescriptions: panel?.querySelectorAll('.explore-stage-copy small').length || 0,
@@ -643,6 +675,8 @@ async function main() {
     };
   })()`);
   if (!diagnosisWorkspace.exists || diagnosisWorkspace.columns !== 2 || !diagnosisWorkspace.questionCardVisible
+      || !diagnosisWorkspace.backButtonVisible || !diagnosisWorkspace.headerContainsCopy
+      || !diagnosisWorkspace.draftStatusHidden
       || diagnosisWorkspace.contextCardCount < 5 || !diagnosisWorkspace.artworkLoaded
       || diagnosisWorkspace.stageDescriptions !== 4 || !diagnosisWorkspace.ctaHasIcons
       || !diagnosisWorkspace.outputTallerThanInput || !diagnosisWorkspace.darkCanvas) {

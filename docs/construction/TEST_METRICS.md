@@ -1,5 +1,14 @@
 # 测试度量与证据
 
+## 2026-09-11 — Explore header parity gate
+
+| Command | Result | Evidence |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | PASS | Idea and Diagnosis render at 1448 × 1086; both return controls and header copy remain contained; draft badges hidden; shared 132px/48px geometry; responsive matrix and handoff flow pass; console errors 0. |
+| Same-viewport visual QA | PASS | `electron/.tmp/phase15-pass15-flow-header-parity.png`; Idea above, Diagnosis below, no scaling. |
+
+The transient Chromium profile cleanup can still report a best-effort Windows `EPERM` message after exit; the verification command exits successfully and product checks pass.
+
 统计单位：命令目标，不把 smoke 内 assert 数伪报为测试用例数量。失败尝试保留；未执行不算通过。日期 2026-09-07；基线 f6e20e8e。
 
 ## Phase 0
@@ -567,6 +576,13 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 首轮视觉对照发现标题块被 Grid 自动排到第二行并与问题卡重叠，显式固定标题与阶段导航在第一行后修复。第二轮发现 Hero 标题末字形成第三行，将 copy 区扩至 48%、标题上限降至 40px 后恢复两行。两项均经重新截图与同尺寸组合图复核。
 
 本轮未执行真实知乎/全网搜索、Windows 打包、Build/Flash/Serial 或实机动作；`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留。
+
+### 第十三轮头部纠偏复测
+
+| 检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | 通过 | 返回键完整位于头部、标题说明距底边 ≥8px、草稿态隐藏；8 组响应式、Diagnosis/handoff 与 console error 0 |
+| 1448 × 1086 视觉复核 | 通过 | 返回键恢复，头部文字和状态均不再越界 |
 
 ## 2026-09-11 Phase 15 第十二轮找灵感工作页
 

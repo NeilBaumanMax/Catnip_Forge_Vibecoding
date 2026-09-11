@@ -1,5 +1,12 @@
 # 施工日志
 
+## 2026-09-11 — Phase 15 pass 15
+
+- Standardized the Idea and Diagnosis flow headers on the Diagnosis layout geometry.
+- Preserved flow-specific content (Idea sparkle and Diagnosis specialty badge) while unifying spacing, sizing, and responsive behavior.
+- `verify:explore-layout-ui` passed with Idea/Diagnosis back-button, header-copy, hidden-draft, and geometry assertions; console errors remained 0.
+- Visual comparison: `electron/.tmp/phase15-pass15-flow-header-parity.png`.
+
 ## 2026-08-08 — v1.5.0 Windows 成品重建与隔离 Python 验收
 
 - 完整执行 Runtime/Electron typecheck、生产构建和 `pack:win`，重建后的 `win-unpacked` 共 41,920 个文件、`4,464,201,281` 字节，`app.asar` SHA-256 为 `7CEB034B634238D25CDB8552376E3718D6F6679598325ED9B0679C71630095B3`。
@@ -1002,3 +1009,9 @@
 - 首轮同尺寸视觉 QA 修复标题 Grid 错行重叠；第二轮收敛 Hero 标题宽度和字号，消除第三行孤字。最终证据为 `electron/.tmp/phase15-pass13-diagnosis-comparison.png`。
 - TypeScript、Renderer build、Explore UI/layout、8 组响应式、完整 Diagnosis/handoff 与 console error 0 通过。
 - 未执行真实知乎/全网搜索、新 Windows 包、Build/Flash/Serial 或实机验证；`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留。
+
+### 第十三轮实屏纠偏
+
+- 用户实屏指出返回键消失、头部说明越界以及“草稿”掉出头部。根因为返回键只有 top/left 而没有定位属性、112px 头部不足，以及旧草稿 badge 的绝对坐标仍生效。
+- 返回键改为头部内 absolute/z-index 4，头部增至 132px，桌面说明单行；草稿态在 Diagnosis 专用页隐藏，非草稿状态仍可显示。
+- `verify:explore-layout-ui` 新增三个几何/计算样式断言并通过，最新 1448 × 1086 截图确认无越界。

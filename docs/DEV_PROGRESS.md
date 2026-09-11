@@ -1,5 +1,12 @@
 # 开发进度
 
+## 2026-09-11 — Explore header parity correction
+
+- Aligned the Idea flow header to the Diagnosis flow standard: 132px header, 48px return control, matching title/subtitle baseline, grid ratio, and four-stage navigation geometry.
+- Hid the obsolete draft badge on the Idea initial screen, matching the Diagnosis correction and preventing detached text.
+- Added regression assertions for return-control containment, copy containment, draft visibility, and shared header geometry.
+- Same-viewport visual evidence: `electron/.tmp/phase15-pass15-flow-header-parity.png` at 1448 × 1086 per flow.
+
 > 以当前代码为准。
 
 ---
@@ -291,3 +298,4 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] 右侧接入学院呱呱工程侦探研究室插画，并增加问题线索、原因判断、排查建议三列报告空态。
 - [x] Context checkbox、历史收藏、四阶段分析/计划/交接/确认门禁和状态恢复保持不变。
 - [x] TypeScript、Renderer build、Explore UI/layout、8 组响应式、完整 Diagnosis/handoff 与 1448 × 1086 同尺寸视觉 QA 通过。
+- [x] 纠正 Diagnosis 返回键遮挡、头部说明越界和草稿状态跑位，并加入对应几何回归断言。
