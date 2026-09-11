@@ -16,6 +16,7 @@ const shellScreenshotPath = path.join(outputDir, 'workspace-shell-target-2048x11
 const skillHubScreenshotPath = path.join(outputDir, 'skill-hub-topline-2048x1152.png');
 const exploreHomeScreenshotPath = path.join(outputDir, 'explore-home-target-2048x1105.png');
 const tallTargetScreenshotPath = path.join(outputDir, 'explore-entry-target-1573x1276.png');
+const ideaWorkspaceScreenshotPath = path.join(outputDir, 'explore-idea-workspace-target-1421x1105.png');
 let vite;
 let chrome;
 let socket;
@@ -577,6 +578,45 @@ async function main() {
   const tallTargetScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(tallTargetScreenshotPath, Buffer.from(tallTargetScreenshot.data, 'base64'));
 
+  await setViewport(1421, 1105);
+  await evaluate(`document.querySelector('[data-tour-id="explore-idea"]')?.click()`);
+  await wait(180);
+  const ideaWorkspace = await evaluate(`(() => {
+    const panel = document.querySelector('[data-tour-id="panel-explore-idea"]');
+    const form = panel?.querySelector('.explore-form');
+    const input = panel?.querySelector('.explore-input-pane');
+    const output = panel?.querySelector('.explore-output-pane');
+    const conversation = panel?.querySelector('.explore-conversation');
+    const artwork = panel?.querySelector('.explore-idea-visual img');
+    const cta = panel?.querySelector('.explore-primary-cta');
+    const panelStyle = panel ? getComputedStyle(panel) : null;
+    const inside = (inner, outer) => {
+      const innerRect = inner?.getBoundingClientRect();
+      const outerRect = outer?.getBoundingClientRect();
+      return Boolean(innerRect && outerRect && innerRect.left >= outerRect.left && innerRect.right <= outerRect.right && innerRect.top >= outerRect.top && innerRect.bottom <= outerRect.bottom + 1);
+    };
+    return {
+      exists: Boolean(panel),
+      columns: form ? getComputedStyle(form).gridTemplateColumns.split(' ').filter(Boolean).length : 0,
+      conversationInsideInput: inside(conversation, input),
+      artworkLoaded: Boolean(artwork?.complete && artwork.naturalWidth >= 1400 && artwork.naturalHeight >= 800),
+      promptCount: panel?.querySelectorAll('.explore-idea-prompts button').length || 0,
+      stageDescriptions: panel?.querySelectorAll('.explore-stage-copy small').length || 0,
+      ctaHasIcons: cta?.querySelectorAll('svg').length === 2,
+      outputTallerThanInput: Boolean(output && input && output.getBoundingClientRect().height >= input.getBoundingClientRect().height),
+      darkCanvas: Boolean(panelStyle?.backgroundImage.includes('radial-gradient') && panelStyle.backgroundImage.includes('linear-gradient')),
+    };
+  })()`);
+  if (!ideaWorkspace.exists || ideaWorkspace.columns !== 2 || !ideaWorkspace.conversationInsideInput || !ideaWorkspace.artworkLoaded
+      || ideaWorkspace.promptCount !== 5 || ideaWorkspace.stageDescriptions !== 4 || !ideaWorkspace.ctaHasIcons
+      || !ideaWorkspace.outputTallerThanInput || !ideaWorkspace.darkCanvas) {
+    throw new Error(`idea workspace layout mismatch: ${JSON.stringify(ideaWorkspace)}`);
+  }
+  const ideaWorkspaceScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+  fs.writeFileSync(ideaWorkspaceScreenshotPath, Buffer.from(ideaWorkspaceScreenshot.data, 'base64'));
+  await evaluate(`document.querySelector('.explore-back-button')?.click()`);
+  await wait(120);
+
   await setViewport(2560, 1440);
   const flowResult = await evaluate(`(async () => {
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -602,8 +642,9 @@ async function main() {
     for (let attempt = 0; attempt < 80 && !document.querySelector('.explore-plan-steps'); attempt += 1) await wait(50);
     const planStage = document.querySelector('.explore-stage-nav [aria-current="step"]')?.textContent || '';
     const planSteps = document.querySelectorAll('.explore-plan-steps li').length;
-    for (let attempt = 0; attempt < 80 && ![...document.querySelectorAll('.explore-stage-nav button')].find((button) => button.textContent.includes('执行') && !button.disabled); attempt += 1) await wait(50);
-    [...document.querySelectorAll('.explore-stage-nav button')].find((button) => button.textContent.includes('执行') && !button.disabled)?.click();
+    const executeButton = () => document.querySelector('.explore-stage-nav li:nth-child(4) button');
+    for (let attempt = 0; attempt < 80 && executeButton()?.disabled; attempt += 1) await wait(50);
+    if (!executeButton()?.disabled) executeButton().click();
     for (let attempt = 0; attempt < 40 && !document.querySelector('.explore-artifact-view'); attempt += 1) await wait(50);
     const confirm = document.querySelector('[data-tour-id="explore-confirm-execution"]');
     const executeStage = document.querySelector('.explore-stage-nav [aria-current="step"]')?.textContent || '';
@@ -648,7 +689,7 @@ async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   const screenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log(JSON.stringify({ chatShell, targetNav, skillHubTopline, dashboardScroll, tallTarget, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, skillHubScreenshotPath, exploreHomeScreenshotPath, tallTargetScreenshotPath, screenshotPath, consoleErrors }, null, 2));
+  console.log(JSON.stringify({ chatShell, targetNav, skillHubTopline, dashboardScroll, tallTarget, ideaWorkspace, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, skillHubScreenshotPath, exploreHomeScreenshotPath, tallTargetScreenshotPath, ideaWorkspaceScreenshotPath, screenshotPath, consoleErrors }, null, 2));
 }
 
 main().catch((error) => {

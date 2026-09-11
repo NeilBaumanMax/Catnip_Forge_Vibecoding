@@ -277,3 +277,10 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 
 - [x] 将知乎已连接/检查中状态卡收紧到 52px，同时保留平台、结果与重新检查入口。
 - [x] 安装、Secret 和错误态保持展开；新增 Hero 边界与紧凑高度门禁，专项构建及视觉 QA 通过。
+
+### Phase 15 第十二轮
+
+- [x] 找灵感工作页改为深蓝 30/70 双列，左侧整合输入、示例、真实条件、主操作和本次探索对话。
+- [x] 右侧加入真实学院夜间研究室插画、知乎价值说明和三列结构化结果空态；四阶段导航补齐副说明。
+- [x] 示例标签支持回填，既有 Explore Session、知乎连接、分析与确认交接门禁保持不变。
+- [x] TypeScript、Renderer build、Explore UI/layout、8 组响应式、Diagnosis/handoff 与 1421 × 1105 同尺寸视觉 QA 通过。

@@ -984,3 +984,12 @@
 - 功能轨移除右边框、阴影，遮罩改为从 `rgba(7,31,78,0.52)` 平滑过渡到透明；底图和布局保持不变。
 - Explore 布局专项首次通过：接缝门禁、历史满幅、8 组响应式、四阶段流程和 console error 0；聚焦证据为 `electron/.tmp/phase15-pass10-chat-seam-comparison.png`。
 - 未执行真实搜索、新 Windows 包、Build/Flash/Serial 或实机验证；`REAL_HARDWARE_VALIDATION_PENDING`。
+
+## 2026-09-11 — Phase 15 第十二轮找灵感工作页高保真重构
+
+- 用户选定 `codex-clipboard-xHyTv3.png` 为找灵感工作页目标。页面由浅色稀疏表单重构为深蓝 30/70 工作区，左侧使用连续卡片承载想法输入、示例、工程条件、知乎主操作与 Explore Session 对话。
+- 生成并接入 16:9 学院夜间研究室位图 `explore-idea-workspace.png`，右侧叠加知乎探索价值说明，下方保留结构化结果空态；所有操作图标来自既有 Lucide 体系。
+- 四阶段导航增加副说明和完成态图标，提示标签可直接回填输入；未改变 Explore 只分析、确认后才交给 Agent 的程序门禁。
+- 布局专项首轮暴露旧浅色 `!important` 覆盖深色画布，修正级联后通过；新增阶段副说明又使旧文本选择器误点第三阶段，改为稳定的第四按钮定位后通过。
+- TypeScript、Renderer build、Explore UI/layout、8 组响应式、Diagnosis/handoff 与 console error 0 全部通过。同尺寸视觉证据为 `electron/.tmp/phase15-pass12-idea-comparison.png`。
+- 未执行真实知乎搜索、新 Windows 包、Build/Flash/Serial 或实机验证；`REAL_HARDWARE_VALIDATION_PENDING`。

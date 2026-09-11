@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { BookMarked, Cpu, ExternalLink, FolderOpen, History, Lightbulb, PlayCircle, SearchCheck, Sparkles, Star } from 'lucide-react';
+import { ArrowRight, BookMarked, BookOpenCheck, Cpu, ExternalLink, FileText, FolderOpen, History, Lightbulb, MessageCircle, PlayCircle, RefreshCw, Search, SearchCheck, Sparkles, Star } from 'lucide-react';
 import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextItem, ExploreRequest, HandoffContext, IdeaResult, KnowledgeCard, SourceEvidence, ExploreZhihuConnectionStatus } from '../../common/explore';
 import type { ExploreConversationMessage, ExploreHandoffArtifact, ExploreWorkSessionRecord, ExploreWorkSessionSummary, ExploreWorkStatus } from '../../common/project-session';
 import ExploreSourceList from './explore/ExploreSourceList';
 import ExploreStageNav, { type ExploreStage } from './explore/ExploreStageNav';
 import exploreIdeaGuagua from '../assets/explore-idea-guagua.png';
 import exploreDiagnosisGuagua from '../assets/explore-diagnosis-guagua.png';
+import exploreIdeaWorkspace from '../assets/explore-idea-workspace.png';
 
 type ExploreView = 'home' | 'idea' | 'diagnosis';
 
@@ -39,6 +40,8 @@ const CONTEXT_KIND_LABELS: Record<ExploreContextItem['kind'], string> = {
   serial: 'Serial',
   knowledge: 'Knowledge',
 };
+
+const IDEA_PROMPTS = ['桌面设备', '智能硬件', '学习工具', '生活创意'];
 
 function verificationLabel(status: KnowledgeCard['verificationStatus']): string {
   if (status === 'verified_effective') return '已验证有效';
@@ -1263,7 +1266,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
 
   const conversationView = activeWorkSession ? (
     <section className="explore-conversation" aria-labelledby="explore-conversation-title">
-      <header><div><span className="explore-section-kicker">EXPLORE AGENT</span><h3 id="explore-conversation-title">本次探索对话</h3></div><span>{conversation.length} 条</span></header>
+      <header><div><span className="explore-section-kicker">EXPLORE AGENT</span><h3 id="explore-conversation-title"><MessageCircle aria-hidden="true" />本次探索对话</h3></div><span>{conversation.length} 条</span></header>
       {conversation.length ? <ol>{conversation.map((message) => (
         <li key={message.id} className={`is-${message.role} is-${message.kind}`}>
           <span>{message.role === 'user' ? '你' : message.role === 'assistant' ? '探索 AI' : '系统'}</span>
@@ -1275,12 +1278,13 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   ) : null;
 
   return (
-    <section className={`explore-panel explore-panel--flow is-stage-${displayStage}`} data-tour-id={isIdea ? 'panel-explore-idea' : 'panel-explore-diagnosis'}>
+    <section className={`explore-panel explore-panel--flow${isIdea ? ' explore-panel--idea-flow' : ''} is-stage-${displayStage}`} data-tour-id={isIdea ? 'panel-explore-idea' : 'panel-explore-diagnosis'}>
       <header className="explore-flow-header">
         <button type="button" className="explore-back-button" onClick={() => { setView('home'); void refreshWorkSessions(); }} aria-label="返回探索首页">←</button>
         <div>
           <span className="explore-eyebrow">{isIdea ? 'IDEA' : 'INVESTIGATION'}</span>
-          <h2>{isIdea ? '找灵感' : '解问题'}</h2>
+          <h2>{isIdea ? <>找灵感 <Sparkles aria-hidden="true" /></> : '解问题'}</h2>
+          {isIdea ? <p>在知乎上发现真实案例、经验与观点，为你的想法提供更多可能性。</p> : null}
         </div>
         <ExploreStageNav current={displayStage} furthest={furthestStage} onSelect={(stage) => void selectStage(stage)} />
         <span className={'explore-session-status is-' + workStatus}>{workStatusLabel(workStatus)}</span>
@@ -1293,7 +1297,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
           {displayStage === 'describe' && (editingInput || !analysisRequest) ? (
             <>
               <label className="explore-field">
-                <span>{isIdea ? '你想做什么？' : '现在遇到了什么问题？'}</span>
+                <span>{isIdea ? <><Lightbulb aria-hidden="true" />你想做什么？</> : '现在遇到了什么问题？'}</span>
                 <textarea
                   value={requestText}
                   onChange={(event) => isIdea ? setGoal(event.target.value) : setProblem(event.target.value)}
@@ -1305,11 +1309,24 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
               </label>
 
               {isIdea ? (
+                <div className="explore-idea-prompts" aria-label="灵感示例">
+                  {IDEA_PROMPTS.map((prompt) => (
+                    <button type="button" key={prompt} onClick={() => setGoal(`我想做一个${prompt}项目`)}>{prompt}</button>
+                  ))}
+                  <button type="button" className="is-refresh" aria-label="换一组灵感示例" onClick={() => {
+                    const current = IDEA_PROMPTS.findIndex((item) => goal.includes(item));
+                    const next = IDEA_PROMPTS[(Math.max(0, current) + 1) % IDEA_PROMPTS.length];
+                    setGoal(`我想做一个${next}项目`);
+                  }}><RefreshCw aria-hidden="true" /></button>
+                </div>
+              ) : null}
+
+              {isIdea ? (
                 <section className="explore-condition-list" aria-labelledby="explore-condition-title">
-                  <h3 id="explore-condition-title">当前条件</h3>
+                  <h3 id="explore-condition-title"><FolderOpen aria-hidden="true" />当前条件 <small>从项目自动读取</small></h3>
                   <dl>
-                    <div><dt><span className="is-project">P</span>工程</dt><dd>{currentProject || '尚未选择，Catnip 将按新项目理解'}</dd></div>
-                    <div><dt><span className="is-hardware">H</span>硬件</dt><dd>{hardwareSummary}</dd></div>
+                    <div><dt><span className="is-project"><FolderOpen aria-hidden="true" /></span>工程路径</dt><dd>{currentProject || '尚未选择，Catnip 将按新项目理解'}</dd></div>
+                    <div><dt><span className="is-hardware"><Cpu aria-hidden="true" /></span>硬件状态</dt><dd>{hardwareSummary}</dd></div>
                   </dl>
                 </section>
               ) : (
@@ -1363,7 +1380,9 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
 
               <div className="explore-submit-row">
                 <button className="explore-primary-cta" type="submit" disabled={analysisPending || (!isIdea && contextLoading) || !(isIdea ? goal.trim() : problem.trim())}>
-                  {!isIdea && contextLoading ? '正在收集 Context…' : analysisPending ? '正在分析…' : isIdea ? '开始探索' : '开始分析'}
+                  {isIdea && !analysisPending ? <Search aria-hidden="true" /> : null}
+                  <span>{!isIdea && contextLoading ? '正在收集 Context…' : analysisPending ? '正在分析…' : isIdea ? '开始在知乎探索' : '开始分析'}</span>
+                  {isIdea && !analysisPending ? <ArrowRight aria-hidden="true" /> : null}
                 </button>
                 <span>分析阶段不会修改文件、Build、Flash 或操作串口。</span>
               </div>
@@ -1378,6 +1397,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
               <button type="button" onClick={editRequest} disabled={analysisPending || planPending}>修改描述与资料</button>
             </section>
           )}
+          {isIdea ? conversationView : null}
         </section>
 
         <section className="explore-output-pane" aria-live="polite" aria-label="探索输出">
@@ -1385,17 +1405,42 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             <div className="explore-loading-state" role="status"><span aria-hidden="true" /><div><strong>Catnip 正在形成判断</strong><p>正在整理真实来源与当前条件，不会修改工程。</p></div></div>
           ) : null}
           {displayStage === 'describe' && !analysisPending && !analysisResult ? (
-            <div className="explore-output-empty">
-              <span aria-hidden="true">{isIdea ? '✦' : '⌁'}</span>
-              <div><strong>{isIdea ? '探索结果将在这里展开' : '调查报告将在这里展开'}</strong><p>{isIdea ? '输入目标后，候选方向、匹配度与来源会并列呈现。' : '工程证据、社区经验、外部资料与来源冲突会在这里交叉呈现。'}</p></div>
-            </div>
+            isIdea ? (
+              <div className="explore-idea-empty-shell">
+                <section className="explore-idea-visual" aria-label="知乎灵感探索说明">
+                  <img src={exploreIdeaWorkspace} alt="学院呱呱在深蓝研究工作室里使用电脑寻找灵感" />
+                  <div className="explore-idea-visual-copy">
+                    <span>EXPLORE ON ZHIHU</span>
+                    <h3>从真实的讨论中<br />找到你的<span>灵感</span></h3>
+                    <ul>
+                      <li><MessageCircle aria-hidden="true" /><div><strong>搜索相关话题与案例</strong><small>基于你的想法，在知乎中查找相关讨论</small></div></li>
+                      <li><BookOpenCheck aria-hidden="true" /><div><strong>提炼有价值的观点</strong><small>AI 帮你整理核心经验和思路</small></div></li>
+                      <li><Sparkles aria-hidden="true" /><div><strong>转化为可执行的灵感</strong><small>结合你的项目条件，生成具体参考方向</small></div></li>
+                    </ul>
+                  </div>
+                </section>
+                <section className="explore-idea-empty-summary">
+                  <header><Sparkles aria-hidden="true" /><div><strong>探索结果将在这里展开</strong><p>输入目标后，AI 将在知乎搜索相关内容，并以结构化的方式呈现给你。</p></div></header>
+                  <div>
+                    <span><Search aria-hidden="true" /><strong>相关话题</strong><small>知乎高质量问答与讨论</small></span>
+                    <span><FileText aria-hidden="true" /><strong>观点提炼</strong><small>AI 总结关键信息</small></span>
+                    <span><Lightbulb aria-hidden="true" /><strong>灵感建议</strong><small>结合项目的可执行方向</small></span>
+                  </div>
+                </section>
+              </div>
+            ) : (
+              <div className="explore-output-empty">
+                <SearchCheck aria-hidden="true" />
+                <div><strong>调查报告将在这里展开</strong><p>工程证据、社区经验、外部资料与来源冲突会在这里交叉呈现。</p></div>
+              </div>
+            )
           ) : null}
           {displayStage === 'plan' ? planView : null}
           {displayStage === 'execute' ? artifactView : null}
           {displayStage === 'analyze' ? <>{ideaResults}{diagnosisResults}</> : null}
         </section>
       </form>
-      {conversationView}
+      {!isIdea ? conversationView : null}
     </section>
   );
 }

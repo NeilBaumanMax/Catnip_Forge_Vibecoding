@@ -85,3 +85,12 @@ Secret 不进源码、Renderer、Chat、日志、URL、截图、Agent 输出或�
 
 - Phase 15 第十一轮将知乎已连接/检查中状态收紧为 52px 单行卡，平台名、连接结果和重新检查完整显示；安装、Secret 与错误态保持展开高度。
 - 布局门禁确认紧凑状态卡完全落在 Explore Hero 内；聚焦证据为 `electron/.tmp/phase15-pass11-zhihu-status-comparison.png`。
+
+## 2026-09-11 找灵感工作页高保真重构
+
+- 按用户选定的 1421 × 1105 目标图，将找灵感工作页重构为深蓝 30/70 两列：左侧集中想法输入、示例、真实工程条件、主操作与本次探索对话，右侧为学院夜间研究室 Hero 和结构化结果空态。
+- 新增真实位图 `electron/src/renderer/assets/explore-idea-workspace.png`；可见图标继续使用 Lucide，未用 CSS 图形冒充插画或新增第二套 Agent/Skill/任务系统。
+- 四阶段导航补充副说明；示例标签可回填输入；知乎连接状态、既有 Explore Session、分析/计划/确认门禁及 Agent 交接行为保持不变。
+- 1421 × 1105 同尺寸证据为 `electron/.tmp/explore-idea-workspace-target-1421x1105.png`，源图/实现纵向对照为 `electron/.tmp/phase15-pass12-idea-comparison.png`。
+- TypeScript、Renderer build、Explore 静态契约及布局专项通过；布局专项同时覆盖 8 组响应式、Diagnosis 四阶段与 handoff 恢复、console error 0。
+- 本轮未执行真实知乎搜索、Build/Flash/Serial 或实机动作；`REAL_HARDWARE_VALIDATION_PENDING` 保留。

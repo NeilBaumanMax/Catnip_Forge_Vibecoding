@@ -553,3 +553,18 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 | 聚焦视觉 QA | 通过 | `phase15-pass11-zhihu-status-comparison.png`；状态、按钮与下边界均完整可见 |
 
 本轮未执行真实知乎请求、Windows 打包、Build/Flash/Serial 或实机动作；`REAL_HARDWARE_VALIDATION_PENDING` 保留。
+
+## 2026-09-11 Phase 15 第十二轮找灵感工作页
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | 通过 | 新 DOM、Lucide 图标、提示回填和阶段副说明类型正确 |
+| `npm.cmd --prefix electron run build:renderer` | 通过 | 2821 modules；仅保留既有大 chunk warning |
+| `npm.cmd --prefix electron run verify:explore-ui` | 通过 | 知乎安全边界、双入口与四阶段产品契约未回归 |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | 通过 | 30/70 两列、对话归属、真实插画、5 个提示按钮、4 个阶段副说明、CTA 图标和深色画布；8 组响应式、Diagnosis/handoff、console error 0 |
+| `git diff --check` | 通过 | 无 whitespace error，仅工作树 LF → CRLF 提示 |
+| 同尺寸视觉 QA | 通过 | `phase15-pass12-idea-comparison.png`；目标与实现均为 1421 × 1105，P0/P1/P2 清零 |
+
+布局专项首次失败因旧规则的浅色 `!important` 覆盖新深色画布，提升最终规则优先级后修复。第二次失败因“确认计划”的副说明包含“可执行”，旧测试按文本误点第三阶段；改为按第四个阶段按钮定位后通过。两次均完成根因修复，未绕过产品门禁。
+
+本轮未执行真实知乎请求、Windows 打包、Build/Flash/Serial 或实机动作；`REAL_HARDWARE_VALIDATION_PENDING` 保留。

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Check } from 'lucide-react';
 
 export type ExploreStage = 'describe' | 'analyze' | 'plan' | 'execute';
 
@@ -8,11 +9,11 @@ interface Props {
   onSelect: (stage: ExploreStage) => void;
 }
 
-const STAGES: Array<{ id: ExploreStage; label: string; index: string }> = [
-  { id: 'describe', label: '描述', index: '1' },
-  { id: 'analyze', label: '查看结论', index: '2' },
-  { id: 'plan', label: '确认计划', index: '3' },
-  { id: 'execute', label: '执行', index: '4' },
+const STAGES: Array<{ id: ExploreStage; label: string; description: string; index: string }> = [
+  { id: 'describe', label: '描述', description: '输入你的想法', index: '1' },
+  { id: 'analyze', label: '查看结论', description: 'AI 分析知乎内容', index: '2' },
+  { id: 'plan', label: '确认计划', description: '生成可执行方案', index: '3' },
+  { id: 'execute', label: '执行', description: '进入 Agent 工作区', index: '4' },
 ];
 
 export default function ExploreStageNav({ current, furthest, onSelect }: Props) {
@@ -27,8 +28,8 @@ export default function ExploreStageNav({ current, furthest, onSelect }: Props) 
           return (
             <li key={stage.id} className={`is-${state}`}>
               <button type="button" disabled={!available} onClick={() => onSelect(stage.id)} aria-current={state === 'current' ? 'step' : undefined}>
-                <span>{index < furthestIndex ? '✓' : stage.index}</span>
-                <strong>{stage.label}</strong>
+                <span>{index < furthestIndex ? <Check aria-hidden="true" /> : stage.index}</span>
+                <span className="explore-stage-copy"><strong>{stage.label}</strong><small>{stage.description}</small></span>
               </button>
             </li>
           );

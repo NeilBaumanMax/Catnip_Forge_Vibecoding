@@ -53,6 +53,21 @@ P0/P1/P2 已清零；保留差异均来自真实性、系统窗口边界或既�
 
 final result: passed
 
+## Fidelity pass 12 — 2026-09-11
+
+- Source: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-xHyTv3.png` (1421 × 1105, selected deep-blue Idea workspace).
+- Implementation: `electron/.tmp/explore-idea-workspace-target-1421x1105.png`; same-size stacked comparison: `electron/.tmp/phase15-pass12-idea-comparison.png`.
+- [P1 fixed] The flat light canvas and sparse 2-column form were replaced by the selected deep-navy visual system, a compact four-stage navigator, a 30/70 working layout, and clearly bounded input/condition/conversation cards.
+- [P1 fixed] The right empty pane now uses a real 16:9 academy-studio raster featuring 学院呱呱, with readable Zhihu value copy and a structured three-part result placeholder below it.
+- [P2 fixed] Idea examples are working buttons, current project/hardware facts remain live product data, the primary action stays inside the existing Explore analysis flow, and the conversation remains part of the same Explore Session rather than a second Agent system.
+- [P2 fixed] Stage labels now carry descriptions without wrapping vertically; the connected Zhihu state remains visible and compact, while narrow containers return to a single-column layout.
+- Automated evidence confirms two desktop columns, conversation containment, loaded 1400 × 800 artwork, five prompt controls, four stage descriptions, two CTA icons, output/input height balance, eight responsive layouts, four-stage handoff persistence, and zero Renderer console errors.
+- Accepted P3: the application-wide draggable assistant can overlay a small part of the lower result region depending on its persisted position. The result heading reserves a 150px desktop safe area, and the overlay itself remains movable rather than being hidden for this page.
+
+No actionable P0/P1/P2 findings remain for this pass.
+
+final result: passed
+
 ## Fidelity pass 10 — 2026-09-11
 
 **Evidence**
