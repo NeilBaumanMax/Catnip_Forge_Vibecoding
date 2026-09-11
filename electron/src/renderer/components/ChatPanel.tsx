@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { BrainCircuit, Clock3, Code2, FolderClock, Lightbulb, List, MessageCircleMore, Pin, Search, Sparkles, Wrench } from 'lucide-react';
+import { BrainCircuit, Clock3, Code2, FolderClock, Lightbulb, List, MessageCircleMore, Paperclip, Pin, Search, Send, Sparkles, Wrench } from 'lucide-react';
 import type { AgentTaskInput, AgentTaskStatus, AttachmentReference, ChatConversationSummary, ChatMessage, ManagedSkillSummary, SkillReference, TaskStep, TaskSubmitMode } from '../types';
 import MarkdownContent from './MarkdownContent';
 import TaskProgress from './TaskProgress';
@@ -800,7 +800,7 @@ export default function ChatPanel({
                 });
             }}
           >
-            <span aria-hidden="true">📎</span> {attachmentPicking ? '读取中…' : `附件${attachments.length ? ` · ${attachments.length}` : ''}`}
+            <Paperclip aria-hidden="true" /> {attachmentPicking ? '读取中…' : `附件${attachments.length ? ` · ${attachments.length}` : ''}`}
           </button>
           <div className="chat-skill-picker-wrap" ref={skillPickerRef}>
             <button
@@ -868,7 +868,7 @@ export default function ChatPanel({
               </div>
             ) : null}
           </div>
-          <button className="nes-btn is-primary" type="submit" disabled={readOnlyConversation || (!input.trim() && !attachments.length)}>{taskStatus.busy ? '追加要求' : '发送'}</button>
+          <button className="chat-submit nes-btn is-primary" type="submit" disabled={readOnlyConversation || (!input.trim() && !attachments.length)} aria-label={taskStatus.busy ? '追加要求' : '发送'} title={taskStatus.busy ? '追加要求' : '发送'}><Send aria-hidden="true" /></button>
           {taskStatus.busy ? <button className="nes-btn is-warning" type="button" disabled={!input.trim() && !attachments.length} onClick={() => submit('queue')}>排队</button> : null}
           {taskStatus.busy ? <button className="nes-btn is-error" type="button" onClick={onStop}>停止</button> : null}
         </div>

@@ -499,3 +499,18 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 | 归一化视觉 QA | 通过 | `phase15-v7-explore-comparison.png`；源图 2559 × 1381 归一化为 2048 × 1105 后与实现并排 |
 
 本轮专项首次即通过；未执行真实知乎请求、Build/Flash/Serial 或实机验证。
+
+## 2026-09-11 Phase 15 第七/八轮启动与工作区细节
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | 通过 | Browser/Chat/Explore DOM、Lucide Paperclip/Send 与样式类型正确 |
+| `npm.cmd --prefix electron run build:main` | 通过 | 启动页仍由既有 Main 启动时间线加载 |
+| `npm.cmd --prefix electron run build:renderer` | 通过 | 2820 modules；仅既有大 chunk warning |
+| `npm.cmd --prefix electron run verify:chat-presentation` | 通过 | Agent 消息/工具展示契约未回归 |
+| `npm.cmd --prefix electron run verify:explore-ui` | 通过 | 双入口、知乎安全边界和四阶段门禁未回归 |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | 通过 | 品牌、Composer、历史图、双滚动槽、长路径、Skill 单行和 8 组响应式通过；console error 0 |
+| `npm.cmd --prefix electron run verify:splash-ui` | 通过 | 760 × 470；新图标和学院呱呱加载，13px 蓝色进度轨，进度 63%，无 overflow |
+| `git diff --check` | 通过 | 无 whitespace error，仅 LF → CRLF 提示 |
+
+布局专项首次新增双滚动断言时 fixture 的历史列表为空，改用临时样式节点验证真实计算样式；Skill 单行首次以顶边判断不同高度控件而误报，改为视觉中心线对齐。两次均为测试实现问题。未执行真实搜索、Windows 打包或真机动作，`REAL_HARDWARE_VALIDATION_PENDING` 保留。

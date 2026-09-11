@@ -953,3 +953,12 @@
 - 首页、双入口及摘要区改用低亮度蓝紫渐变，减少纯白眩光但保持深色文字对比。
 - 布局专项新增连接卡左侧几何、入口高度和字体尺寸门禁；TypeScript、Renderer build、Explore UI/layout 均通过。
 - 用户 2559 × 1381 截图归一化至 2048 × 1105 后与实现并排，证据为 `electron/.tmp/phase15-v7-explore-comparison.png`。
+
+## 2026-09-11 — Phase 15 第七/八轮启动页与细节收敛
+
+- 使用内置图像编辑将用户给出的学院呱呱补全为 1254 × 1254、32bpp ARGB 透明角色图；首版把棋盘格烘焙进像素而弃用，第二版角像素 Alpha=0 后进入 `splash-guagua-v2.png`。
+- 启动页换用既有 `icon.png`，改为深蓝/青/紫色主题和 13px 蓝色进度轨；真实 Electron CDP 检查资源、时间线、63% 状态、无 overflow 并生成截图。
+- Explore 连接组件进入 Hero 连续背景；历史/知识列表改为独立常驻滚动，工程路径省略。左侧历史图扩大到 96% 高度，Composer 操作收进统一框并用 Lucide 纸飞机发送。
+- 品牌取消蓝色玻璃外框并放大；Skill 小站删除重复两行，只保留蓝色单行标签/地址/打开控制。
+- 布局专项验证品牌无框、Composer containment、纸飞机、历史图、双滚动槽、长路径、Skill 单行及既有 8 组响应式/四阶段流程；Renderer console error 0。
+- 未执行真实知乎请求、新 Windows 包、Build/Flash/Serial 或实机验证；`REAL_HARDWARE_VALIDATION_PENDING`。

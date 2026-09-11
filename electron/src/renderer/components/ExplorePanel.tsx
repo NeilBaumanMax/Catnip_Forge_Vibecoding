@@ -954,10 +954,10 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
           <div className="explore-home-metrics" aria-label="探索状态摘要">
             <span className="explore-metric"><strong>{knowledgeCards.length}</strong> 条本地知识</span>
           </div>
+          <div className="explore-home-status-row" aria-label="知乎连接入口">
+            {connectionBadge}
+          </div>
         </header>
-        <div className="explore-home-status-row" aria-label="知乎连接入口">
-          {connectionBadge}
-        </div>
         {notice ? <div className="explore-connection-notice" role="status">{notice}</div> : null}
         <div className="explore-entry-grid">
           <button className="explore-entry-card explore-entry-card--idea" type="button" onClick={() => enter('idea')} data-tour-id="explore-idea">

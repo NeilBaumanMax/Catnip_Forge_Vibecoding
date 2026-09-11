@@ -53,6 +53,35 @@ P0/P1/P2 已清零；保留差异均来自真实性、系统窗口边界或既�
 
 final result: passed
 
+## Fidelity pass 8 — 2026-09-11
+
+**Combined evidence**
+
+- Splash: `electron/.tmp/phase15-pass8-splash-comparison.png`; user source 740 × 446 and implementation shell normalized from the real 760 × 470 Electron capture.
+- Explore: `electron/.tmp/phase15-pass8-explore-comparison.png`; user 980 × 946 reference and the 2048 × 1105 implementation right panel normalized to the same review frame.
+- Chat: `electron/.tmp/phase15-pass8-chat-comparison.png`; user 596 × 1024 reference and the implementation left workspace crop normalized to 596 × 1024.
+- Skill Hub: `electron/.tmp/phase15-pass8-skill-comparison.png`; preserves each source aspect ratio and makes the requested two-row → one-row change explicit.
+
+**Findings and fixes**
+
+- [P1 fixed] History and local-knowledge cards had no independent scroll ownership; long associated-project paths could expand the record. Both lists now compute to `overflow-y: scroll` with stable gutters, and paths compute to hidden/ellipsis/nowrap inside the row.
+- [P1 fixed] Skill Hub repeated tab switching, Browser Workbench and the current URL across multiple dark rows. The Skill view now renders one 56px blue row containing the visible tab region, URL field and Open action; the three redundant bars are absent.
+- [P2 fixed] The chat composer split its editor and actions into separate surfaces. The textarea, attachment control, Skill control and square Lucide Send button now share one bordered composer; geometry verification confirms the action row is contained.
+- [P2 fixed] The history illustration occupied too little of the tall rail. The supplied raster now fills 96% of the rail height with bottom anchoring and a dark readability overlay, without stretching.
+- [P2 fixed] The top-left brand remained visually boxed and its caption was undersized. The brand surface is now transparent with no border/shadow/backdrop filter; icon is 42px, name 16px and caption 10px. The middle navigation and right action glass surfaces remain distinct.
+- [P2 fixed] Splash branding and mascot no longer matched the current product. The new software icon and a genuine-alpha Academy Guagua are used on a deep navy/cyan/violet surface; the progress track increased from 7px green to 13px blue.
+- [P2 fixed] The Explore Hero, connection entry and cards felt like disconnected bands. The real Zhihu status/action card now sits inside the Hero's continuous visual region, followed directly by the two entry cards.
+
+**Accessibility and behavior**
+
+- Existing semantic buttons, labels, keyboard handling, reduced-motion splash handling, connection Secret boundary and Explore four-stage confirmation gate are unchanged.
+- Automated checks cover 1200–3840px desktop widths, 534–1802px Explore container widths, scroll containment, no overflow, loaded raster dimensions, visible window controls and zero Renderer console errors.
+- The floating assistant remains user-draggable and position-persistent; its fixture position is not treated as a layout target for this pass.
+
+No actionable P0/P1/P2 findings remain for the requested surfaces.
+
+final result: passed
+
 ## Fidelity pass 6 — 2026-09-11
 
 - Source visual truth: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-v0IC9N.png` at 2559 × 1381 pixels, showing the live Explore home before this correction.

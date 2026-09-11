@@ -975,6 +975,41 @@ export default function BrowserPanel({
 
       {mode === 'workbench' || mode === 'skillHub' ? (
         <div className="workbench-browser" data-tour-id="panel-skill-hub">
+          {mode === 'skillHub' ? (
+            <div className="skill-hub-command-row">
+              <div className="browser-tabs" aria-label="Skill 小站页面">
+                {visibleTabs.length ? visibleTabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    className={`browser-tab nes-btn${tab.active ? ' is-primary' : ''}`}
+                    type="button"
+                    onClick={() => handleSelectTab(tab.id)}
+                    title={tab.title || tab.url}
+                  >
+                    <span className="browser-tab-title">{tab.title || tab.url}</span>
+                    <span
+                      className="browser-tab-close"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`关闭 ${tab.title || tab.url}`}
+                      onClick={(event) => { event.stopPropagation(); handleCloseTab(tab.id); }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          handleCloseTab(tab.id);
+                        }
+                      }}
+                    >×</span>
+                  </button>
+                )) : <span className="browser-tab-empty">没有打开的小站页面</span>}
+              </div>
+              <form onSubmit={handleNavigate} aria-label="打开 Skill 小站地址">
+                <input className="nes-input" value={inputUrl} onChange={(event) => setInputUrl(event.target.value)} placeholder="输入 Skill 小站网址" />
+                <button className="nes-btn is-primary" type="submit">打开</button>
+              </form>
+            </div>
+          ) : (<>
           <div className="browser-shell-header nes-container is-dark">
             <div className="browser-tabs">
               {visibleTabs.length ? visibleTabs.map((tab) => (
@@ -1043,6 +1078,7 @@ export default function BrowserPanel({
             </div> : null}
           </div>
           <div className="browser-current-url">{selectedTab?.url || inputUrl || 'about:blank'}</div>
+          </>)}
           <div className="browser-stage" ref={browserStageRef}>
             <div className="browser-stage-frame" />
             {!selectedTab ? (

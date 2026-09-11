@@ -2017,6 +2017,293 @@
   .explore-panel:not(.explore-panel--flow) .explore-entry-card { min-height: 410px; }
 }
 
+/* Phase 15, fidelity pass 7: keep dashboard records inside their own cards.
+   History and local knowledge each own a visible, stable vertical scroll lane. */
+.explore-panel:not(.explore-panel--flow) .explore-session-history,
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-preview {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-session-history > .explore-section-header,
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-preview > .explore-section-header {
+  flex: 0 0 auto;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-session-list,
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-list {
+  min-height: 0;
+  flex: 1 1 auto;
+  align-content: start;
+  padding-right: 7px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(69, 126, 214, 0.72) rgba(72, 111, 175, 0.1);
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-session-list::-webkit-scrollbar,
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-list::-webkit-scrollbar {
+  width: 9px;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-session-list::-webkit-scrollbar-track,
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-list::-webkit-scrollbar-track {
+  margin-block: 10px 2px;
+  background: rgba(72, 111, 175, 0.1);
+  border-radius: 999px;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-session-list::-webkit-scrollbar-thumb,
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-list::-webkit-scrollbar-thumb {
+  min-height: 32px;
+  background: linear-gradient(180deg, rgba(79, 145, 239, 0.86), rgba(79, 104, 201, 0.7));
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-row {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-main > p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-main > small {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Phase 15, fidelity pass 8: unify the Explore hero/entry surface, enlarge the
+   unboxed product signature, and match the compact in-card composer reference. */
+.workspace-brand.workspace-shell-box {
+  padding-left: 0;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.workspace-brand img {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+}
+
+.workspace-brand strong { font-size: 16px; }
+.workspace-brand small { color: #a9c5ed; font-size: 10px; font-weight: 600; }
+
+.explore-panel:not(.explore-panel--flow) {
+  gap: 0;
+  background: linear-gradient(155deg, rgba(220, 234, 250, 0.98), rgba(232, 228, 247, 0.96));
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-home-header {
+  min-height: 228px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr;
+  align-items: start;
+  gap: 12px 18px;
+  padding-bottom: 18px;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-home-header .explore-hero {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-home-metrics {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-home-status-row {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  width: min(52%, 590px);
+  align-self: end;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-home-status-row .explore-connection-status {
+  width: 100%;
+  min-height: 84px;
+  background: linear-gradient(135deg, rgba(212, 229, 249, 0.88), rgba(226, 222, 246, 0.86));
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-entry-grid {
+  margin-inline: -14px;
+  padding: 14px;
+  border-top: 0;
+  background: linear-gradient(180deg, rgba(217, 232, 249, 0.68), rgba(229, 232, 248, 0.42));
+}
+
+:root[data-theme="dark"] .chat-history-main,
+.chat-history-main {
+  background:
+    linear-gradient(180deg, rgba(5, 24, 67, 0.98) 0 18%, rgba(5, 24, 67, 0.42) 45%, rgba(5, 24, 67, 0.04) 72%),
+    url("../assets/chat-history-night-v2.png") center bottom / auto 96% no-repeat;
+}
+
+:root[data-theme="dark"] .chat-input,
+.chat-input {
+  margin: 8px;
+  gap: 4px;
+  padding: 8px;
+  overflow: visible;
+  background: rgba(10, 37, 84, 0.9) !important;
+  border: 1px solid rgba(122, 173, 242, 0.4) !important;
+  border-radius: 12px;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.06);
+}
+
+:root[data-theme="dark"] .chat-composer-editor,
+.chat-composer-editor {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 8px;
+}
+
+.chat-input-actions {
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+}
+
+.chat-input-actions .chat-attachment-button,
+.chat-input-actions .chat-skill-button {
+  min-width: 0;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #eef6ff !important;
+  background: rgba(111, 150, 210, 0.2) !important;
+  border: 1px solid rgba(138, 181, 241, 0.34) !important;
+  border-radius: 8px !important;
+}
+
+.chat-input-actions .chat-attachment-button svg,
+.chat-input-actions .chat-submit svg { width: 17px; height: 17px; }
+
+.chat-input-actions .chat-submit {
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+  margin-left: auto;
+  padding: 0 !important;
+  color: #fff !important;
+  background: linear-gradient(145deg, #247cff, #1264ee) !important;
+  border: 1px solid #5ba7ff !important;
+  border-radius: 10px !important;
+  box-shadow: 0 7px 17px rgba(19, 92, 225, 0.34) !important;
+}
+
+.chat-input-actions .chat-submit:disabled {
+  opacity: 0.72 !important;
+  color: #fff !important;
+  background: linear-gradient(145deg, #247cff, #1264ee) !important;
+  border-color: #5ba7ff !important;
+  box-shadow: none !important;
+}
+
+.skill-hub-command-row {
+  min-width: 0;
+  min-height: 56px;
+  display: grid;
+  grid-template-columns: minmax(180px, 0.34fr) minmax(320px, 1.66fr);
+  align-items: center;
+  gap: 10px;
+  padding: 7px 9px;
+  color: #eaf4ff;
+  background: rgba(9, 40, 99, 0.9);
+  border: 1px solid rgba(104, 164, 247, 0.36);
+  border-radius: 12px;
+  box-shadow: 0 7px 18px rgba(0, 9, 42, 0.2), inset 0 1px rgba(187, 220, 255, 0.1);
+}
+
+.skill-hub-command-row .browser-tabs {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.skill-hub-command-row .browser-tab,
+:root[data-theme="dark"] .skill-hub-command-row .browser-tab.is-primary {
+  min-height: 40px;
+  color: #dcecff !important;
+  background: rgba(43, 98, 184, 0.28) !important;
+  border: 1px solid rgba(111, 169, 249, 0.28) !important;
+  border-radius: 9px !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="dark"] .skill-hub-command-row .browser-tab.is-primary {
+  color: #fff !important;
+  background: linear-gradient(145deg, #287df7, #1e67d9) !important;
+  border-color: rgba(125, 189, 255, 0.68) !important;
+}
+
+.skill-hub-command-row .browser-tab-close {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  color: #ffabb2;
+  border-radius: 6px;
+}
+
+.skill-hub-command-row form {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
+}
+
+.skill-hub-command-row form input {
+  min-width: 0;
+  height: 40px;
+  color: #eef6ff;
+  background: rgba(4, 21, 58, 0.76) !important;
+  border: 1px solid rgba(121, 172, 239, 0.38) !important;
+  border-radius: 9px;
+}
+
+.skill-hub-command-row form button {
+  min-width: 62px;
+  min-height: 40px;
+  background: #246fdd !important;
+  border-color: #5ba4ff !important;
+  border-radius: 9px !important;
+}
+
+@container explore (max-width: 699px) {
+  .explore-panel:not(.explore-panel--flow) .explore-home-header {
+    min-height: 260px;
+    grid-template-columns: 1fr;
+  }
+  .explore-panel:not(.explore-panel--flow) .explore-home-metrics { grid-column: 1; grid-row: 2; }
+  .explore-panel:not(.explore-panel--flow) .explore-home-status-row { grid-column: 1; grid-row: 3; width: 100%; }
+}
+
 /* The global positioning layer is geometry only. Any material here recreates
    the retired full-width bar and hides the cosmic wallpaper between segments. */
 :root[data-theme="dark"] .workspace-global-nav,

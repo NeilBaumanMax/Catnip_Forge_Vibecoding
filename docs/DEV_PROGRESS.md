@@ -253,3 +253,11 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] 知乎状态、重新检查和待连接操作迁入左侧独立卡片，不再与 Hero 状态胶囊重复。
 - [x] 首页画布和内容卡使用低亮度蓝紫渐变，系统放大 Explore 主要文字层级。
 - [x] TypeScript、Renderer build、Explore UI/layout 与 2048 × 1105 归一化视觉 QA 通过。
+
+### Phase 15 第七/八轮
+
+- [x] 启动页换用新软件图标、透明学院呱呱、深蓝彩色背景和 13px 蓝色进度条，真实 5 秒时间线保持不变。
+- [x] Explore 历史/知识分别增加常驻滚动槽，长路径和摘要限制在条目卡片内；知乎状态进入 Hero 连续背景。
+- [x] 历史夜景扩大填充；Composer 将附件、Skills 与纸飞机发送按钮统一收进输入容器。
+- [x] 左上品牌去框并放大；Skill 小站标签与域名框合并为单行蓝色命令栏。
+- [x] TypeScript、Main/Renderer build、Chat/Explore 专项、布局矩阵、启动页真实 Electron CDP 与四组组合视觉 QA 通过。

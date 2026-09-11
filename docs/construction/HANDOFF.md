@@ -41,6 +41,7 @@
 - Phase 15 第四轮：顶栏拆为品牌、六标签、工程/设置/窗口操作三个独立框；中部在 2048px 视口占约 50%，任务管理器完整显示。用户提供的方形呱呱已用于品牌与 Electron PNG/ICO；助手链接改为 `Neil Bauman · GitHub`，不再使用“作者”称谓。
 - Phase 15 第五轮：移除三个分段上的 NES 黑灰表面，并彻底清空全宽定位层的背景、阴影、滤镜与伪元素；现在只有三个蓝色半透明玻璃框，框间直接露出星空壁纸。专项门禁已覆盖该材质契约。
 - Phase 15 第六轮：Explore 双入口增至桌面 500px，知乎状态与安全连接操作成为左侧独立卡片；首页改为低亮度蓝紫渐变并系统放大标题、正文、标签与数据文字。2048 × 1105 归一化对照和可读性门禁通过。
+- Phase 15 第七/八轮：启动页改为新软件图标、透明学院呱呱、深蓝彩色表面和 13px 蓝色进度条；Explore 连接入口并入 Hero 背景，历史/知识获得独立稳定滚动区并约束长路径；历史夜景扩大填充，Composer 操作进入输入框且发送改为纸飞机；品牌去框并放大；Skill 小站压缩为蓝色单行标签/地址栏。专项构建、布局与视觉比较通过。
 
 ## 最新发布与验证证据
 
@@ -48,6 +49,7 @@
 - Phase 13 `pack:win`、`verify:release`、`verify:version` 通过；发布目录总计 4,468,679,868 bytes。
 - 随包 Node v22.14.0、隔离 Python/pyserial 3.5、ESP-IDF v5.4.3、Claude Code 2.1.167；DeepSeek/Qwen API Key 未入包。未配置代码签名。
 - Runtime/Electron typecheck、Main/Renderer build、Explore UI 和布局专项通过。布局覆盖 Explore 宽度 534–1802px，两张图完成加载且不遮挡文字，Renderer console error 为 0。
+- 最新布局专项额外验证：顶部品牌无框且图标 ≥40px、Composer 操作位于统一输入框内、纸飞机按钮保持蓝色、历史图覆盖扩大、Explore 历史/知识滚动槽稳定、长工程路径省略、Skill 小站单行高度 ≤64px 且旧冗余栏不存在。
 - Windows Headless Chromium 退出时偶发临时 profile `EPERM` 最佳努力清理提示，但专项退出码为 0；不要误记为产品失败。
 
 ## 尚未完成与不得虚称

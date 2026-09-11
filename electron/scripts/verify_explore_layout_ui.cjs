@@ -13,6 +13,7 @@ const screenshotPath = path.join(outputDir, 'explore-layout-ui.png');
 const entryScreenshotPath = path.join(outputDir, 'explore-entry-layout-ui.png');
 const targetScreenshotPath = path.join(outputDir, 'explore-entry-target-1536x1024.png');
 const shellScreenshotPath = path.join(outputDir, 'workspace-shell-target-2048x1152.png');
+const skillHubScreenshotPath = path.join(outputDir, 'skill-hub-topline-2048x1152.png');
 const exploreHomeScreenshotPath = path.join(outputDir, 'explore-home-target-2048x1105.png');
 const tallTargetScreenshotPath = path.join(outputDir, 'explore-entry-target-1573x1276.png');
 let vite;
@@ -197,6 +198,7 @@ async function main() {
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
       snapshot: { input: '', selectedContextIds: [], selectedKnowledgeIds: [], analysisRequest: null, analysisResult: null, planResult: null, planHandoff: null, selectedIdeaId: '', editingInput: true, gatheredContext: null, analysisTaskId: null, analysisRequestId: null, planTaskId: null, planRequestId: null, executionStarted: false, executionTaskId: null, executionDisposition: null, notice: '', displayStage: 'describe', conversation: [], handoffArtifact: null },
     });
+    sessions.push(makeSession('diagnosis'), makeSession('idea'));
     window.electronAPI = {
       getStartupStatus: async () => ({ firstRun: false, playwrightReady: true }),
       getProjectSessionStatus: async () => ({ projectsRoot: 'hardboard/projects', activeProject: { id: 'project-ui-smoke', name: 'demo', projectDir: 'hardboard/projects/demo', relativePath: 'hardboard/projects/demo', available: true }, suggestedProjectId: null, projects: [] }),
@@ -292,6 +294,14 @@ async function main() {
     const shell = document.querySelector('.workspace-global-nav');
     const shellBoxes = [...document.querySelectorAll('.workspace-shell-box')];
     const shellStyle = getComputedStyle(shell);
+    const brandStyle = getComputedStyle(document.querySelector('.workspace-brand'));
+    const brandIconRect = document.querySelector('.workspace-brand img')?.getBoundingClientRect();
+    const brandCaptionStyle = getComputedStyle(document.querySelector('.workspace-brand small'));
+    const chatInputRect = document.querySelector('.chat-input')?.getBoundingClientRect();
+    const composerActionsRect = document.querySelector('.chat-input-actions')?.getBoundingClientRect();
+    const submitRectInComposer = document.querySelector('.chat-submit')?.getBoundingClientRect();
+    const submitStyle = getComputedStyle(document.querySelector('.chat-submit'));
+    const historyMainStyle = getComputedStyle(document.querySelector('.chat-history-main'));
     const isBlueGlass = (element) => {
       const channels = getComputedStyle(element).backgroundColor.match(/[0-9.]+/g)?.map(Number) || [];
       if (channels.length === 4 && channels[3] > 1) channels[3] /= 100;
@@ -318,6 +328,21 @@ async function main() {
         && shellStyle.backdropFilter === 'none'
         && shellStyle.filter === 'none',
       blueGlassSurfaceCount: shellBoxes.filter((box) => isBlueGlass(box) && !box.classList.contains('is-dark')).length,
+      brandUnboxed: brandStyle.backgroundColor === 'rgba(0, 0, 0, 0)'
+        && brandStyle.borderTopWidth === '0px'
+        && brandStyle.boxShadow === 'none'
+        && (brandIconRect?.width || 0) >= 40
+        && Number.parseFloat(brandCaptionStyle.fontSize) >= 10,
+      composerActionsInside: Boolean(chatInputRect && composerActionsRect
+        && composerActionsRect.left >= chatInputRect.left
+        && composerActionsRect.right <= chatInputRect.right
+        && composerActionsRect.bottom <= chatInputRect.bottom),
+      submitIsPaperPlane: Boolean(submitRectInComposer
+        && Math.abs(submitRectInComposer.width - submitRectInComposer.height) <= 1
+        && document.querySelector('.chat-submit svg')),
+      submitKeepsBlueIdleState: submitStyle.backgroundImage.includes('linear-gradient')
+        && Number.parseFloat(submitStyle.opacity) >= 0.7,
+      historyArtworkExpanded: historyMainStyle.backgroundSize.includes('96%'),
       shellMaterials: shellBoxes.map((box) => ({
         className: box.className,
         backgroundColor: getComputedStyle(box).backgroundColor,
@@ -341,10 +366,10 @@ async function main() {
       submitVisible: submitRect.width > 0 && submitRect.right <= panelRect.right + 1 && submitRect.bottom <= panelRect.bottom + 1,
     };
   })()`);
-  if (!chatShell.outerFrameRemoved || chatShell.blueGlassSurfaceCount !== 3) {
+  if (!chatShell.outerFrameRemoved || chatShell.blueGlassSurfaceCount !== 2 || !chatShell.brandUnboxed) {
     throw new Error(`top shell material mismatch: ${JSON.stringify(chatShell)}`);
   }
-  if (chatShell.missing || chatShell.quickActionCount !== 4 || chatShell.suggestionCount !== 4 || chatShell.historyRailActionCount !== 4 || !chatShell.promptInjected.includes('当前工程') || chatShell.brand !== 'Catnip Forge' || !chatShell.settingsVisible || chatShell.windowControlCount !== 3 || !chatShell.topRowAligned || !chatShell.surfacesSeparated || !chatShell.taskLabelVisible || !chatShell.brandBeforeTabs || !chatShell.projectAfterTabs || !chatShell.settingsAfterProject || !chatShell.controlsAfterSettings || !chatShell.controlsInsideViewport || !chatShell.navSpansViewport || !chatShell.composerVisible || !chatShell.submitVisible) {
+  if (chatShell.missing || chatShell.quickActionCount !== 4 || chatShell.suggestionCount !== 4 || chatShell.historyRailActionCount !== 4 || !chatShell.promptInjected.includes('当前工程') || chatShell.brand !== 'Catnip Forge' || !chatShell.settingsVisible || chatShell.windowControlCount !== 3 || !chatShell.topRowAligned || !chatShell.surfacesSeparated || !chatShell.taskLabelVisible || !chatShell.brandBeforeTabs || !chatShell.projectAfterTabs || !chatShell.settingsAfterProject || !chatShell.controlsAfterSettings || !chatShell.controlsInsideViewport || !chatShell.navSpansViewport || !chatShell.composerVisible || !chatShell.submitVisible || !chatShell.composerActionsInside || !chatShell.submitIsPaperPlane || !chatShell.submitKeepsBlueIdleState || !chatShell.historyArtworkExpanded) {
     throw new Error(`chat shell interaction mismatch: ${JSON.stringify(chatShell)}`);
   }
 
@@ -410,13 +435,97 @@ async function main() {
   const shellScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(shellScreenshotPath, Buffer.from(shellScreenshot.data, 'base64'));
 
+  const skillHubTopline = await evaluate(`(async () => {
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    document.querySelector('[data-tour-id="tab-skill-hub"]')?.click();
+    await wait(160);
+    const row = document.querySelector('.skill-hub-command-row');
+    const rowRect = row?.getBoundingClientRect();
+    const tabsRect = row?.querySelector('.browser-tabs')?.getBoundingClientRect();
+    const formRect = row?.querySelector('form')?.getBoundingClientRect();
+    const channels = row ? getComputedStyle(row).backgroundColor.match(/[0-9.]+/g)?.map(Number) || [] : [];
+    return {
+      exists: Boolean(row),
+      height: rowRect?.height || 0,
+      geometry: {
+        row: rowRect ? [rowRect.left, rowRect.top, rowRect.right, rowRect.bottom] : null,
+        tabs: tabsRect ? [tabsRect.left, tabsRect.top, tabsRect.right, tabsRect.bottom] : null,
+        form: formRect ? [formRect.left, formRect.top, formRect.right, formRect.bottom] : null,
+      },
+      oneLine: Boolean(rowRect && tabsRect && formRect
+        && Math.abs((tabsRect.top + tabsRect.bottom) / 2 - (formRect.top + formRect.bottom) / 2) <= 2
+        && tabsRect.bottom <= rowRect.bottom
+        && formRect.bottom <= rowRect.bottom),
+      blueSurface: channels.length >= 3 && channels[2] > channels[0] && channels[2] > channels[1],
+      redundantBarsRemoved: !document.querySelector('.browser-shell-header')
+        && !document.querySelector('.browser-toolbar--skillHub')
+        && !document.querySelector('.browser-current-url'),
+    };
+  })()`);
+  if (!skillHubTopline.exists || skillHubTopline.height > 64 || !skillHubTopline.oneLine
+      || !skillHubTopline.blueSurface || !skillHubTopline.redundantBarsRemoved) {
+    throw new Error(`Skill Hub top line mismatch: ${JSON.stringify(skillHubTopline)}`);
+  }
+  const skillHubScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+  fs.writeFileSync(skillHubScreenshotPath, Buffer.from(skillHubScreenshot.data, 'base64'));
+
   await setViewport(2048, 1105);
   await evaluate(`(() => {
+    document.querySelector('[data-tour-id="tab-explore"]')?.click();
     const body = document.querySelector('.app-body');
     if (body?.classList.contains('app-body--left-collapsed')) document.querySelector('[data-tour-id="agent-panel-toggle"]')?.click();
     body?.style.setProperty('--left-panel-width', '30%');
   })()`);
   await wait(180);
+  const dashboardScroll = await evaluate(`(() => {
+    const inspect = (selector) => {
+      let list = document.querySelector(selector);
+      const section = document.querySelector(selector === '.explore-session-list'
+        ? '.explore-session-history'
+        : '.explore-knowledge-preview');
+      const injectedForStyleCheck = !list && Boolean(section);
+      if (injectedForStyleCheck) {
+        list = document.createElement('ul');
+        list.className = selector.slice(1);
+        section.append(list);
+      }
+      const listRect = list?.getBoundingClientRect();
+      const sectionRect = section?.getBoundingClientRect();
+      const result = {
+        overflowY: list ? getComputedStyle(list).overflowY : '',
+        gutter: list ? getComputedStyle(list).scrollbarGutter : '',
+        insideSection: Boolean(listRect && sectionRect
+          && listRect.left >= sectionRect.left
+          && listRect.right <= sectionRect.right
+          && listRect.bottom <= sectionRect.bottom + 1),
+      };
+      if (injectedForStyleCheck) list.remove();
+      return result;
+    };
+    const knowledgePath = document.querySelector('.explore-knowledge-main > small');
+    return {
+      history: inspect('.explore-session-list'),
+      knowledge: inspect('.explore-knowledge-list'),
+      knowledgePath: knowledgePath ? {
+        overflow: getComputedStyle(knowledgePath).overflow,
+        textOverflow: getComputedStyle(knowledgePath).textOverflow,
+        whiteSpace: getComputedStyle(knowledgePath).whiteSpace,
+        insideRow: knowledgePath.getBoundingClientRect().right
+          <= knowledgePath.closest('.explore-knowledge-row').getBoundingClientRect().right + 1,
+      } : null,
+    };
+  })()`);
+  if (dashboardScroll.history.overflowY !== 'scroll'
+      || dashboardScroll.knowledge.overflowY !== 'scroll'
+      || !dashboardScroll.history.gutter.includes('stable')
+      || !dashboardScroll.knowledge.gutter.includes('stable')
+      || !dashboardScroll.history.insideSection
+      || !dashboardScroll.knowledge.insideSection
+      || dashboardScroll.knowledgePath?.textOverflow !== 'ellipsis'
+      || dashboardScroll.knowledgePath?.whiteSpace !== 'nowrap'
+      || !dashboardScroll.knowledgePath?.insideRow) {
+    throw new Error(`Explore dashboard scroll containment mismatch: ${JSON.stringify(dashboardScroll)}`);
+  }
   const exploreHomeScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(exploreHomeScreenshotPath, Buffer.from(exploreHomeScreenshot.data, 'base64'));
 
@@ -518,7 +627,7 @@ async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   const screenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log(JSON.stringify({ chatShell, targetNav, tallTarget, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, exploreHomeScreenshotPath, tallTargetScreenshotPath, screenshotPath, consoleErrors }, null, 2));
+  console.log(JSON.stringify({ chatShell, targetNav, skillHubTopline, dashboardScroll, tallTarget, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, skillHubScreenshotPath, exploreHomeScreenshotPath, tallTargetScreenshotPath, screenshotPath, consoleErrors }, null, 2));
 }
 
 main().catch((error) => {

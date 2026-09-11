@@ -232,3 +232,14 @@
 - 首页画布、双入口与三块摘要区改为低亮度蓝紫渐变，降低连续纯白面积，同时维持深蓝正文对比度。
 - Explore 标题、正文、入口标题/说明/按钮/标签、历史、知识库和工程摘要文字分层放大；门禁验证入口标题不小于 31px、说明不小于 15px。
 - 用户截图 2559 × 1381 归一化为 2048 × 1105，与同尺寸实现并排比较于 `electron/.tmp/phase15-v7-explore-comparison.png`。
+
+## 第七/八轮：启动页、内容滚动与工作区细节收敛（2026-09-11）
+
+- 启动页左上角使用既有新软件图标；学院呱呱由用户参考图经内置图像编辑补全为透明 PNG，保存为 `electron/assets/splash-guagua-v2.png`。
+- 启动页保持原有真实进度时间线，只替换深蓝彩色视觉层和 13px 蓝色进度轨，不改变主进程启动语义。
+- Explore 的知乎连接状态保留真实状态与安全操作，但进入 Hero 的同一连续背景；历史/知识列表各自拥有稳定滚动槽，长路径单行省略，不再越过条目卡片。
+- 左侧历史夜景提高背景覆盖；Composer 改为一个统一容器，附件、Skills 和蓝色纸飞机发送按钮都位于容器内部。
+- 顶部品牌去除独立外框，图标和副标题放大；中间/右侧蓝色玻璃框不变。
+- Skill 小站删除重复的标签头、下方 Browser Workbench 和当前 URL 行，标签与地址表单合并为一条蓝色命令栏。
+- `verify:splash-ui` 与 `verify:explore-layout-ui` 分别覆盖启动页资源/进度/无溢出，以及双滚动槽、路径省略、品牌、Composer、历史图、Skill 单行与既有响应式/四阶段流程。
+- 对照证据：`phase15-pass8-splash-comparison.png`、`phase15-pass8-explore-comparison.png`、`phase15-pass8-chat-comparison.png`、`phase15-pass8-skill-comparison.png`；结论见根目录 `design-qa.md`。

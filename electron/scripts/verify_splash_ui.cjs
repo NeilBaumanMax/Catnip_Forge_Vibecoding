@@ -52,9 +52,9 @@ async function main() {
         const shell = document.querySelector('.splash');
         const shellRect = shell?.getBoundingClientRect();
         const cat = document.querySelector('.cat');
-        const logo = document.querySelector('.product-mark');
-        const leaf = document.querySelector('.brand-mark');
+        const brandMark = document.querySelector('.brand-mark');
         const bar = document.getElementById('progress-bar');
+        const track = document.querySelector('.progress-track');
         const heading = document.querySelector('h1');
         return {
           title: document.title,
@@ -65,10 +65,16 @@ async function main() {
             right: shellRect.right,
             bottom: shellRect.bottom,
           } : null,
-          assetsLoaded: [cat, logo, leaf].every((image) => image?.complete && image?.naturalWidth > 0),
+          assetsLoaded: [cat, brandMark].every((image) => image?.complete && image?.naturalWidth > 0),
+          assetSources: {
+            mascot: cat?.getAttribute('src'),
+            brand: brandMark?.getAttribute('src'),
+          },
           status: document.getElementById('status')?.textContent,
           progress: document.getElementById('progress-value')?.textContent,
           progressWidth: bar?.style.width,
+          progressTrackHeight: track ? getComputedStyle(track).height : '',
+          progressBarBackground: bar ? getComputedStyle(bar).backgroundImage : '',
           defaultTimeline,
           firstTimelineSample,
           secondTimelineSample,
@@ -87,9 +93,13 @@ async function main() {
     if (
       result?.title !== 'Catnip Forge — 启动中'
       || !result?.assetsLoaded
+      || result?.assetSources?.mascot !== './splash-guagua-v2.png'
+      || result?.assetSources?.brand !== './icon.png'
       || result?.status !== '正在验证启动界面'
       || result?.progress !== '63%'
       || result?.progressWidth !== '63%'
+      || Number.parseFloat(result?.progressTrackHeight) < 12
+      || !result?.progressBarBackground?.includes('linear-gradient')
       || result?.defaultTimeline?.defaultDurationMs !== 5000
       || (!result?.firstTimelineSample?.reducedMotion && (
         result?.firstTimelineSample?.progress <= 8
