@@ -1,5 +1,19 @@
 # 测试度量与证据
 
+## 2026-09-11 — Clean Windows package gate
+
+| Command | Result | Evidence |
+| --- | --- | --- |
+| Clean `npm.cmd --prefix electron run pack:win` | PASS | Deleted the previous `dist-package` directory, then rebuilt Runtime, Main, Renderer, and `win-unpacked` from scratch. |
+| `npm.cmd --prefix electron run verify:release` | PASS | v2.0.0 / Build 7201; Node v22.14.0, isolated Python/pyserial 3.5, ESP-IDF v5.4.3, Claude Code 2.1.167; no real DeepSeek/Qwen key. |
+| Isolated packaged first run | PASS | Fresh temporary APPDATA reports `firstRun=true`, no API key, startup dialog and Playwright ready; temporary APPDATA and packaged processes were removed afterward. |
+| Full packaged-state filename scan | PASS | 41,927 files / 4,502,224,578 bytes; zero `.catnip`, knowledge/favorite/history/session/conversation JSON, logs, events, recordings, or browser-profile matches. |
+
+Artifact: `electron/dist-package/win-unpacked/Catnip Forge.exe`; SHA-256 `F62CAD60A7E94BAD05D4D6CF209F912670C8A652A4DDB35EA5FF611E9A01E226`.
+
+Failure history: the first packaged-first-run attempt found the correct fresh state but failed its legacy `.chat-history-brand img` assertion because normal startup now opens Explore. The gate now accepts the visible 42px workspace brand (while retaining the 26px chat fallback), and the rerun passed. This was a test expectation drift, not a product/package failure.
+
+
 ## 2026-09-11 — Repository workspace gate
 
 | Command | Result | Evidence |

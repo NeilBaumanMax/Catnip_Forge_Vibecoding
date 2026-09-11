@@ -1,5 +1,14 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-11 — Latest clean Windows package
+
+- Rebuilt `electron/dist-package/win-unpacked` from an empty output directory at commit `69d895a7`.
+- Package contains 41,927 files / 4,502,224,578 bytes. `Catnip Forge.exe` SHA-256 is `F62CAD60A7E94BAD05D4D6CF209F912670C8A652A4DDB35EA5FF611E9A01E226`.
+- Release gate and isolated packaged first-run pass. Full filename scan finds no `.catnip`, local knowledge/favorites, conversation/history/session state, logs, events, recordings, browser profile, or real DeepSeek/Qwen key.
+- Temporary first-run APPDATA and all packaged verification processes were removed. The user's development `.catnip` directory remains untouched and untracked.
+- Pre-package remote recovery tag: `backup/pre-clean-package-20260911` → `69d895a7`.
+
+
 ## 2026-09-11 — Latest workspace correction: Task Manager / Monitor
 
 - Normal desktop startup now opens Explore; the workbench smoke-test fixture still starts in Repository for its isolated assertions.

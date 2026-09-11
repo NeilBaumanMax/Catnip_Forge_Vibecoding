@@ -1,5 +1,13 @@
 # 施工日志
 
+## 2026-09-11 — Clean package rebuild
+
+- 建立并推送 `backup/pre-clean-package-20260911`，随后精确删除旧 `electron/dist-package` 并完整执行 `pack:win`。
+- `verify:release` 通过；全包文件名扫描确认没有 `.catnip`、收藏/历史/会话状态、运行日志、事件、录制、Chrome profile 或真实 API Key。
+- 隔离 APPDATA 首启第一次因默认探索使旧 `.chat-history-brand` 断言失效；改为校验当前 `.workspace-brand`（兼容旧聊天品牌）后复测通过。
+- 验收临时数据和成品进程已清理；用户工程 `.catnip` 未触碰。
+
+
 ## 2026-09-11 — Phase 15 pass 19
 
 - 默认可见工作区改为探索，并保留 smoke-test 专用仓库初始态。

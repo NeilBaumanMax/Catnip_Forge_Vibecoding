@@ -38,7 +38,7 @@ async function main() {
       expression: `(async () => {
         const status = await window.electronAPI.getStartupStatus();
         const rejected = await window.electronAPI.saveStartupApiKey('sk-your-key-here');
-        const brandIcon = document.querySelector('.chat-history-brand img');
+        const brandIcon = document.querySelector('.workspace-brand img, .chat-history-brand img');
         const brandRect = brandIcon?.getBoundingClientRect();
         const startupIcon = document.querySelector('.startup-key-brand img');
         return {
@@ -68,10 +68,13 @@ async function main() {
     const result = evaluated.result?.value;
     const ok = result?.modal && result?.skillButton && result?.firstRun && !result?.apiKeyReady
       && result?.playwrightReady && result?.placeholderRejected && /resources[\\/]apikey\.txt$/i.test(result?.keyPath || '');
+    const brandIconWidth = result?.brandIconSize?.width ?? 0;
+    const brandIconHeight = result?.brandIconSize?.height ?? 0;
+    const brandIconSizeValid = [26, 42].some((size) => (
+      Math.abs(brandIconWidth - size) < 0.1 && Math.abs(brandIconHeight - size) < 0.1
+    ));
     const branded = result?.title?.includes('Catnip Forge') && result?.brandIconLoaded && result?.startupIconLoaded
-      && result?.positioningVisible
-      && Math.abs((result?.brandIconSize?.width ?? 0) - 26) < 0.1
-      && Math.abs((result?.brandIconSize?.height ?? 0) - 26) < 0.1;
+      && result?.positioningVisible && brandIconSizeValid;
     if (!ok || !branded) throw new Error(`packaged first-run verification failed: ${JSON.stringify(result)}`);
     console.log(JSON.stringify({ ok: true, ...result }, null, 2));
   } finally {
