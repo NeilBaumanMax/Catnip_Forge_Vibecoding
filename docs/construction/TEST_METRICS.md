@@ -433,3 +433,15 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 首次视觉评审发现 Hero 占高和当前工程落到首屏以下，修复后重新生成同视口对照图。Headless Chromium 仍有 Windows 临时 profile `EPERM` 清理提示，退出码为 0。未运行真实搜索、新包或硬件验收；`REAL_HARDWARE_VALIDATION_PENDING`不变。
 
 图标接入后 `verify:explore-ui` 首次因旧 DOM 正则不接受按钮中新增的图标和 `<span>` 而失败；产品语义与交互未失效。更新为同时验证 `Compass` 与“探索”文案后复测通过。
+
+## 2026-09-11 Phase 15 第二轮高保真收敛
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | 通过 | Portal 顶部栏、Chat/Explore DOM 与图标类型正确 |
+| `npm.cmd --prefix electron run build:renderer` | 通过 | 两张 v2 位图进入构建；仅既有大 chunk warning |
+| `verify:explore-ui` | 通过 | 双入口与四阶段静态契约未回归 |
+| `verify:explore-layout-ui` | 通过 | 4 个快捷卡/建议、全局导航几何、8 组入口布局与流程，console error 0 |
+| 同视口视觉 QA | 通过 | `phase15-v2-comparison.png`；P0/P1/P2 清零 |
+
+首次失败依次为全局品牌测试定位过时、入口插画误中正文选择器、49% 前约 5px 文图重叠，以及新增导航门禁发现设置按钮换行；均修正根因并复测。临时 Chromium profile 仍可能提示 `EPERM`，退出码 0。

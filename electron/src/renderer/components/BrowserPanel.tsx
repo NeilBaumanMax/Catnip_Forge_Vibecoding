@@ -1,14 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Boxes, Code2, Compass, GraduationCap, MonitorUp, Workflow } from 'lucide-react';
+import { Boxes, Code2, Compass, GraduationCap, MonitorUp, Settings, Workflow } from 'lucide-react';
 import WorkspacePanel from './WorkspacePanel';
 import CodeEditor from './CodeEditor';
 import ExplorePanel, { type ExploreDiagnosisSeed } from './ExplorePanel';
 import type { BrowserTab, HardboardDevice, HardboardRuntimeState, ProjectSummary, RecordingSummary, RuntimeEvent, SerialMonitorEvent, SerialMonitorSnapshot, WorkbenchItem, WorkbenchOverview } from '../types';
+import catnipForgeIcon from '../assets/catnip-forge.png';
 
 interface Props {
   activeProject: ProjectSummary | null;
   onRequestProjectChange: () => void;
+  onOpenSettings: () => void;
   url: string;
   onNavigate: (url: string) => void;
   tabs: BrowserTab[];
@@ -236,6 +238,7 @@ function eventText(event: RuntimeEvent): string {
 export default function BrowserPanel({
   activeProject,
   onRequestProjectChange,
+  onOpenSettings,
   url,
   onNavigate,
   tabs,
@@ -943,7 +946,11 @@ export default function BrowserPanel({
 
   return (
     <div className={`browser-panel browser-panel--${mode} nes-container is-rounded`}>
-      <div className="workbench-mode-tabs nes-container is-dark" role="tablist" aria-label="工作区视图">
+      {createPortal((<div className="workbench-mode-tabs workspace-global-nav nes-container is-dark" role="tablist" aria-label="工作区视图">
+        <div className="workspace-brand" aria-label="Catnip Forge，让想法变成现实">
+          <img src={catnipForgeIcon} alt="" aria-hidden="true" />
+          <span><strong>Catnip Forge</strong><small>让想法 · 变成现实</small></span>
+        </div>
         <button data-tour-id="tab-repo" type="button" role="tab" aria-selected={mode === 'repo'} className={`nes-btn${mode === 'repo' ? ' is-primary' : ''}`} onClick={() => setMode('repo')}><Boxes aria-hidden="true" /><span>仓库</span></button>
         <button data-tour-id="tab-monitor" type="button" role="tab" aria-selected={mode === 'monitor'} className={`nes-btn${mode === 'monitor' ? ' is-primary' : ''}`} onClick={() => setMode('monitor')}><MonitorUp aria-hidden="true" /><span>监视器</span></button>
         <button data-tour-id="tab-tasks" type="button" role="tab" aria-selected={mode === 'tasks'} className={`nes-btn${mode === 'tasks' ? ' is-primary' : ''}`} onClick={() => setMode('tasks')}><Workflow aria-hidden="true" /><span>任务管理器</span></button>
@@ -953,8 +960,9 @@ export default function BrowserPanel({
         <button className="active-project-switch" type="button" onClick={requestProjectChange} title={projectDir || '尚未选择工程'}>
           <span>当前工程</span><strong>{activeProject?.name || '请选择'}</strong>
         </button>
+        <button className="workspace-settings" type="button" onClick={onOpenSettings} title="外观与软件助手设置" aria-label="打开设置"><Settings aria-hidden="true" /></button>
         <span className="ui-build-label">{UI_BUILD_LABEL}</span>
-      </div>
+      </div>), document.body)}
 
       {mode === 'workbench' || mode === 'skillHub' ? (
         <div className="workbench-browser" data-tour-id="panel-skill-hub">

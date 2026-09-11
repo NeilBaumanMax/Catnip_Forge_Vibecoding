@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Lightbulb, SearchCheck } from 'lucide-react';
+import { BookMarked, Cpu, ExternalLink, FolderOpen, History, Lightbulb, PlayCircle, SearchCheck, Sparkles, Star } from 'lucide-react';
 import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextItem, ExploreRequest, HandoffContext, IdeaResult, KnowledgeCard, SourceEvidence, ExploreZhihuConnectionStatus } from '../../common/explore';
 import type { ExploreConversationMessage, ExploreHandoffArtifact, ExploreWorkSessionRecord, ExploreWorkSessionSummary, ExploreWorkStatus } from '../../common/project-session';
 import ExploreSourceList from './explore/ExploreSourceList';
@@ -969,6 +969,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             <strong>找灵感</strong>
             <span>描述你想做的东西，Catnip 会结合当前工程和硬件条件，给出真正能落地的方向。</span>
             <em>开始探索 <span aria-hidden="true">→</span></em>
+            <span className="explore-entry-tags" aria-label="找灵感内容类型"><span>创意启发</span><span>技术方案</span><span>设计灵感</span><span>最佳实践</span></span>
           </button>
           <button className="explore-entry-card explore-entry-card--diagnosis" type="button" onClick={() => enter('diagnosis')} data-tour-id="explore-diagnosis">
             <span className="explore-entry-illustration" aria-hidden="true"><img src={exploreDiagnosisGuagua} alt="" /></span>
@@ -977,12 +978,13 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             <strong>解问题</strong>
             <span>选择必要的工程和运行证据，再用社区经验与权威资料交叉判断。</span>
             <em>分析当前问题 <span aria-hidden="true">→</span></em>
+            <span className="explore-entry-tags" aria-label="解问题内容类型"><span>问题分析</span><span>报错诊断</span><span>方案对比</span><span>代码示例</span></span>
           </button>
         </div>
         <div className="explore-home-dashboard-grid">
         <section className="explore-session-history" aria-labelledby="explore-history-title">
           <header className="explore-section-header">
-            <div><span className="explore-section-kicker">PROJECT HISTORY</span><h3 id="explore-history-title">当前工程的探索记录</h3></div>
+            <div className="explore-section-heading"><span className="explore-section-title-icon is-history" aria-hidden="true"><History /></span><div><span className="explore-section-kicker">PROJECT HISTORY</span><h3 id="explore-history-title">最近的探索记录</h3></div></div>
             <div className="explore-history-actions">
               <button type="button" onClick={() => void openWorkSession('idea', undefined, true)}>新建灵感</button>
               <button type="button" onClick={() => void openWorkSession('diagnosis', undefined, true)}>新建调查</button>
@@ -993,7 +995,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
               {workSessions.slice(0, 12).map((session) => (
                 <li key={session.id}>
                   <button className="explore-session-open" type="button" onClick={() => void openWorkSession(session.mode, session.id)}>
-                    <span className={'explore-session-kind is-' + session.mode}>{session.mode === 'idea' ? '灵感' : '调查'}</span>
+                    <span className={'explore-session-kind is-' + session.mode}>{session.mode === 'idea' ? <Sparkles aria-hidden="true" /> : <SearchCheck aria-hidden="true" />}{session.mode === 'idea' ? '灵感' : '问题'}</span>
                     <span><strong>{session.title}</strong><small>{new Date(session.updatedAt).toLocaleString()} · {workStatusLabel(session.status)}</small></span>
                     <span aria-hidden="true">→</span>
                   </button>
@@ -1005,7 +1007,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
         </section>
         <section className="explore-knowledge-preview" data-tour-id="explore-saved-knowledge" aria-labelledby="explore-knowledge-title">
           <header className="explore-section-header">
-            <div><span className="explore-section-kicker">LOCAL KNOWLEDGE</span><h3 id="explore-knowledge-title">已收藏知识</h3></div>
+            <div className="explore-section-heading"><span className="explore-section-title-icon is-knowledge" aria-hidden="true"><Star /></span><div><span className="explore-section-kicker">LOCAL KNOWLEDGE</span><h3 id="explore-knowledge-title">我的知识库</h3></div></div>
             <span>{knowledgeCards.length} 条 · 只在你选择后使用</span>
           </header>
           {knowledgeCards.length ? (
@@ -1015,6 +1017,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
                 <li key={card.id} className="explore-knowledge-row">
                   <div className="explore-knowledge-main">
                     <div className="explore-knowledge-heading">
+                      <BookMarked className="explore-row-icon" aria-hidden="true" />
                       <span className={`explore-verification-badge is-${card.verificationStatus}`}>{verificationLabel(card.verificationStatus)}</span>
                       <button className="explore-knowledge-link" type="button" onClick={() => openSource(card.source.url)}>{card.source.title}</button>
                     </div>
@@ -1077,14 +1080,14 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
         </section>
         <section className="explore-project-preview" aria-labelledby="explore-project-title">
           <header className="explore-section-header">
-            <div><span className="explore-section-kicker">CURRENT PROJECT</span><h3 id="explore-project-title">当前工程</h3></div>
+            <div className="explore-section-heading"><span className="explore-section-title-icon is-project" aria-hidden="true"><FolderOpen /></span><div><span className="explore-section-kicker">CURRENT PROJECT</span><h3 id="explore-project-title">当前工程</h3></div></div>
             <span>探索与 Agent 共用同一工程上下文</span>
           </header>
           <div className="explore-project-summary">
-            <div><span>工程</span><strong>{currentProject.split(/[\\/]/).filter(Boolean).at(-1) || '尚未选择'}</strong></div>
-            <div><span>硬件</span><strong>{hardwareSummary}</strong></div>
-            <div><span>运行</span><strong>{runtimeSummary}</strong></div>
-            <code title={currentProject}>{currentProject || '请先选择一个工程'}</code>
+            <div><FolderOpen aria-hidden="true" /><span>工程</span><strong>{currentProject.split(/[\\/]/).filter(Boolean).at(-1) || '尚未选择'}</strong></div>
+            <div><Cpu aria-hidden="true" /><span>硬件</span><strong>{hardwareSummary}</strong></div>
+            <div><PlayCircle aria-hidden="true" /><span>运行</span><strong>{runtimeSummary}</strong></div>
+            <code title={currentProject}><ExternalLink aria-hidden="true" />{currentProject || '请先选择一个工程'}</code>
           </div>
         </section>
         </div>

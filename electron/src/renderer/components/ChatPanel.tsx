@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { BrainCircuit, Clock3, Code2, FolderClock, Lightbulb, List, MessageCircleMore, Pin, Search, Sparkles, Wrench } from 'lucide-react';
 import type { AgentTaskInput, AgentTaskStatus, AttachmentReference, ChatConversationSummary, ChatMessage, ManagedSkillSummary, SkillReference, TaskStep, TaskSubmitMode } from '../types';
 import MarkdownContent from './MarkdownContent';
 import TaskProgress from './TaskProgress';
-import catnipForgeIcon from '../assets/catnip-forge.png';
-import catnipAssistantImage from '../assets/catnip-assistant.png';
+import catnipAgentWelcomeImage from '../assets/catnip-agent-welcome-v2.png';
 
 interface Props {
   messages: ChatMessage[];
@@ -31,11 +31,17 @@ const HISTORY_COLLAPSED_KEY = 'vibeide.chat.historyCollapsed';
 const COMPOSER_HEIGHT_KEY = 'vibeide.chat.composerHeight';
 const COMPOSER_MIN_HEIGHT = 64;
 const COMPOSER_MAX_HEIGHT = 320;
-const CHAT_STARTERS = [
-  '帮我分析当前工程里最值得先解决的问题',
-  '解释一下这个工程的核心结构',
-  '帮我找一个能落地的新功能方向',
-  '为当前工程制定下一步开发计划',
+const CHAT_ACTIONS = [
+  { label: '分析代码问题', prompt: '帮我分析当前工程里最值得先解决的问题', icon: Code2, tone: 'blue' },
+  { label: '实现新功能', prompt: '帮我找一个能落地的新功能方向', icon: Sparkles, tone: 'purple' },
+  { label: '解释技术概念', prompt: '解释一下这个工程的核心结构', icon: BrainCircuit, tone: 'violet' },
+  { label: '制定开发计划', prompt: '为当前工程制定下一步开发计划', icon: List, tone: 'cyan' },
+] as const;
+const CHAT_SUGGESTIONS = [
+  '如何用 ESP32-S3 做一个触摸屏项目？',
+  '帮我分析一下这个报错信息',
+  '给我一些 UI 设计的灵感',
+  '帮我制定一个项目开发计划',
 ] as const;
 const SKILL_MARKER_COLORS = [
   { fill: 'rgba(255, 214, 64, 0.58)', strong: 'rgba(255, 196, 0, 0.78)' },
@@ -319,6 +325,8 @@ export default function ChatPanel({
   const [attachmentPicking, setAttachmentPicking] = useState(false);
   const [professionalView, setProfessionalView] = useState(readProfessionalView);
   const [historyCollapsed, setHistoryCollapsed] = useState(readHistoryCollapsed);
+  const [historyQuery, setHistoryQuery] = useState('');
+  const [historyFilter, setHistoryFilter] = useState<'all' | 'recent' | 'pinned'>('all');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
@@ -489,6 +497,15 @@ export default function ChatPanel({
   const activeExecutionKey = taskStatus.activeTaskId ? `task:${taskStatus.activeTaskId}` : null;
   const activeConversation = conversations.find((conversation) => conversation.id === activeConversationId);
   const readOnlyConversation = Boolean(activeConversation?.readOnly);
+  const visibleConversations = useMemo(() => {
+    const query = historyQuery.trim().toLocaleLowerCase('zh-CN');
+    const recentThreshold = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    return conversations.filter((conversation) => {
+      if (historyFilter === 'pinned' && !conversation.pinned) return false;
+      if (historyFilter === 'recent' && new Date(conversation.updatedAt).getTime() < recentThreshold) return false;
+      return !query || conversation.title.toLocaleLowerCase('zh-CN').includes(query);
+    });
+  }, [conversations, historyFilter, historyQuery]);
   const inputSkillRefs = useMemo(() => skillReferencesFromText(input, skills), [input, skills]);
   const visibleSkills = useMemo(() => {
     const query = skillQuery.trim().toLowerCase();
@@ -499,15 +516,24 @@ export default function ChatPanel({
   return (
     <div className={`chat-panel nes-container is-rounded${historyCollapsed ? ' chat-panel--history-collapsed' : ''}`}>
       <aside className="chat-history" data-tour-id="chat-history" aria-label="历史对话">
+        <nav className="chat-history-rail" aria-label="对话筛选">
+          <button className={historyFilter === 'all' ? 'is-active' : ''} type="button" title="全部对话" aria-label="全部对话" onClick={() => setHistoryFilter('all')}><MessageCircleMore aria-hidden="true" /></button>
+          <button className={historyFilter === 'recent' ? 'is-active' : ''} type="button" title="最近 7 天" aria-label="最近 7 天" onClick={() => setHistoryFilter('recent')}><Clock3 aria-hidden="true" /></button>
+          <button className={historyFilter === 'pinned' ? 'is-active' : ''} type="button" title="已置顶" aria-label="已置顶" onClick={() => setHistoryFilter('pinned')}><Pin aria-hidden="true" /></button>
+          <button type="button" disabled={taskStatus.busy} title="新建对话" aria-label="新建对话" onClick={onCreateConversation}><FolderClock aria-hidden="true" /></button>
+        </nav>
+        <div className="chat-history-main">
         <div className="chat-history-header">
-          <div className="chat-history-brand" title="Catnip Forge · Catnip 硬件智能开发平台">
-            <img src={catnipForgeIcon} alt="" aria-hidden="true" />
-            <span><strong>Catnip Forge</strong><small>让想法 · 变成现实</small></span>
-          </div>
+          <label className="chat-history-search">
+            <Search aria-hidden="true" />
+            <input value={historyQuery} onChange={(event) => setHistoryQuery(event.target.value)} placeholder="搜索历史对话…" aria-label="搜索历史对话" />
+          </label>
           <button type="button" disabled={taskStatus.busy} onClick={onCreateConversation} title={taskStatus.busy ? 'Agent 工作结束后可新建对话' : '新建对话'} aria-label="新建对话">＋</button>
         </div>
+        <button className="chat-history-new" type="button" disabled={taskStatus.busy} onClick={onCreateConversation}><Sparkles aria-hidden="true" /><span>新对话</span><kbd>⌘ N</kbd></button>
         <div className="chat-history-list">
-          {conversations.map((conversation) => (
+          <span className="chat-history-period">{historyFilter === 'pinned' ? '已置顶' : historyFilter === 'recent' ? '最近 7 天' : '历史对话'}</span>
+          {visibleConversations.map((conversation) => (
             <div key={conversation.id} className={`chat-history-item${conversation.id === activeConversationId ? ' is-active' : ''}${conversation.pinned ? ' is-pinned' : ''}${conversation.readOnly ? ' is-read-only' : ''}`}>
               <button
                 type="button"
@@ -572,8 +598,10 @@ export default function ChatPanel({
               ) : null}
             </div>
           ))}
+          {!visibleConversations.length ? <p className="chat-history-empty-copy">没有匹配的对话</p> : null}
         </div>
         {historyError ? <p className="chat-history-error" title={historyError}>{historyError}</p> : null}
+        </div>
       </aside>
       <section className="chat-conversation">
       <div className="chat-title">
@@ -615,22 +643,32 @@ export default function ChatPanel({
       <div className="chat-messages">
         {messages.length === 0 ? (
           <div className="chat-empty-state">
-            <img src={catnipAssistantImage} alt="" aria-hidden="true" />
+            <img src={catnipAgentWelcomeImage} alt="" aria-hidden="true" />
             <span className="chat-empty-kicker">CATNIP AGENT</span>
             <strong>你好！我是学院呱呱</strong>
             <p>有什么想法或工程问题，一起实现吧。</p>
             <div className="chat-empty-actions" aria-label="快捷开始">
-              {CHAT_STARTERS.map((starter) => (
+              {CHAT_ACTIONS.map(({ label, prompt, icon: Icon, tone }) => (
                 <button
-                  key={starter}
+                  key={label}
+                  className={`is-${tone}`}
                   type="button"
                   disabled={readOnlyConversation}
                   onClick={() => {
-                    setInput(starter);
+                    setInput(prompt);
                     requestAnimationFrame(() => textareaRef.current?.focus());
                   }}
                 >
-                  {starter}
+                  <Icon aria-hidden="true" /><span>{label}</span>
+                </button>
+              ))}
+            </div>
+            <div className="chat-empty-suggestions">
+              <span>你可以这样开始：</span>
+              {CHAT_SUGGESTIONS.map((suggestion, index) => (
+                <button key={suggestion} type="button" disabled={readOnlyConversation} onClick={() => { setInput(suggestion); requestAnimationFrame(() => textareaRef.current?.focus()); }}>
+                  {index === 0 ? <Lightbulb aria-hidden="true" /> : index === 1 ? <Search aria-hidden="true" /> : index === 2 ? <Sparkles aria-hidden="true" /> : <Wrench aria-hidden="true" />}
+                  <span>{suggestion}</span>
                 </button>
               ))}
             </div>

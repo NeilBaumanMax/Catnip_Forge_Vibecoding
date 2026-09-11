@@ -155,3 +155,30 @@
 - Headless Chromium 退出时仍有 Windows 临时 profile `EPERM` 最佳努力清理提示，脚本退出码为 0，不是产品失败。
 - `git diff --check`：通过，仅有 LF → CRLF 工作树提示。
 - 未运行真实搜索、模型 Agent 改码、新 Windows 包、Build/Flash/Serial 或实机验收；`REAL_HARDWARE_VALIDATION_PENDING`不变。
+
+## 12. 第二轮局部高保真收敛
+
+用户于 2026-09-11 补充 7 张局部视觉真相，要求不再只参考总体风格，而是对以下区域做更精确的构图、密度和图标匹配：
+
+- 历史侧栏：`codex-clipboard-58wGhG.png`，使用窄图标轨、历史列表和底部城市夜景 + 电脑呱呱的连续垂直构图。
+- Agent 欢迎区：`codex-clipboard-iz0rJ0.png` 与 `codex-clipboard-k9i5ro.png`，主角是举星星的学院呱呱，快捷卡需增加颜色、内容层级和真实图标。
+- Explore 总览：`codex-clipboard-3uGbOg.png`，Hero 不使用独立白色卡框；连接状态扩大并保持可操作。
+- Explore Hero：`codex-clipboard-Ja58lU.png`，使用从深蓝到学院室内的通栏背景，中文标题直接落在背景上。
+- Explore 双入口：`codex-clipboard-kQI9xb.png`，保持现有两张呱呱插画，增大卡高并露出完整角色；增加“从一个念头/线索开始”与底部语义标签。
+- 下方信息区：`codex-clipboard-tZJcm1.png`，探索历史用带语义图标、时间和类型标签的紧凑行；知识库和当前工程并排，强调色、字重和分隔线与参考一致。
+
+数据边界不变：参考图中的历史标题、日期、知识项和文件行只表达布局密度，实施不得写死或伪造；仍由当前工程的真实会话、Explore Session、Knowledge Store 和已有工程摘要驱动。
+
+第二轮验收时将为历史侧栏、Agent 欢迎区、Explore Hero/双入口与下方信息区生成同视口局部对照；重新执行 Electron typecheck/build、Explore UI/layout、Onboarding 和 `git diff --check`。
+
+## 13. 第二轮实施结果与故障记录
+
+- 新增 `chat-history-night-v2.png`：按纵向槽位生成深蓝学院城市夜景、手写品牌句与电脑呱呱；Renderer 中仅作为历史侧栏背景。
+- 新增 `catnip-agent-welcome-v2.png`：透明背景的举星星学院呱呱，替换 Agent 空态中比例和姿态不符的旧形象。
+- 历史区增加窄功能轨、搜索、真实过滤和蓝色新对话按钮；Agent 空态增加四张彩色快捷卡和四条建议，均写入既有 composer。
+- Explore Hero 去除独立卡框、放大连接状态；双入口提高卡高并增加语义标签；历史、知识和工程摘要按参考重排但不伪造数据。
+- 顶部导航通过 React portal 提升为全局独立层，品牌、六工作区、工程选择和设置同排；设置继续调用既有外观/软件助手面板。
+- `verify:explore-layout-ui` 第一次因旧测试仍在历史区查找品牌失败；更新为全局品牌和新增交互契约。
+- 第二次因正文宽度选择器误命中入口插画失败；排除插画节点后发现约 5px 重叠，将插画宽度从 50% 收敛为 49% 后通过。
+- 新增 1536 宽度顶部栏几何断言时，首次准确暴露设置按钮换到第二行；根因是导航仍受旧八列网格与 BrowserPanel 层级影响，改为全局 portal + 九列网格后通过。
+- 第二轮同视口证据为 `electron/.tmp/phase15-v2-comparison.png`；最终视觉结论见根目录 `design-qa.md`。

@@ -916,6 +916,7 @@ export default function App() {
           <BrowserPanel
             activeProject={projectSession?.activeProject || null}
             onRequestProjectChange={() => setProjectPickerOpen(true)}
+            onOpenSettings={() => setAppearanceMenuOpen(true)}
             url={browserUrl}
             onNavigate={handleNavigate}
             tabs={tabs}

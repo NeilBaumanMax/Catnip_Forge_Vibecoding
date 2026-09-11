@@ -914,3 +914,10 @@
 - 增强 `verify:explore-layout-ui`：生成 1536 × 1024 截图，验证 Chat 快捷输入与八组 Explore 布局/流程。
 - Runtime/Electron typecheck/build、Explore/Onboarding 专项与同视口视觉 QA 通过。`smoke:chat-ui` 因用户旧成品占用固定 CDP 9230 超时，未终止用户进程；当前 Renderer 定向门禁代替覆盖本轮变更。
 - 未执行真实搜索、新 Windows 包或硬件动作；`REAL_HARDWARE_VALIDATION_PENDING`。
+
+## 2026-09-11 — Phase 15 第二轮局部高保真
+
+- 新增纵向历史夜景与透明 Agent 欢迎呱呱两张槽位适配位图；历史栏、快捷卡、建议和 Explore 首页按用户 7 张局部参考收敛。
+- 顶部工作区栏通过 portal 成为全局独立首行，设置继续打开既有设置面板；几何门禁覆盖品牌、六标签、工程和设置的顺序、同排与视口边界。
+- 修复入口插画误中正文宽度规则、文图重叠及 1536 宽度设置换行；8 组布局、流程契约与控制台检查通过。
+- 同视口比较写入 `electron/.tmp/phase15-v2-comparison.png`；未执行真实搜索、新包或硬件动作。

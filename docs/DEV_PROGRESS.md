@@ -219,3 +219,10 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] Electron/Runtime typecheck/build 与 Explore/Onboarding 专项通过。
 - [ ] 固定 CDP 9230 被用户旧成品占用，Chat/Project Session 外部 smoke 未重试；当前 Renderer 定向门禁已通过。
 - [ ] `REAL_HARDWARE_VALIDATION_PENDING`：未运行真实 Build/Flash/Serial 和实机验收。
+
+### Phase 15 第二轮
+
+- [x] 历史侧栏、Agent 欢迎形象、彩色快捷卡与建议按局部参考收敛。
+- [x] Explore Hero、连接状态、双入口标签和下方历史/知识/工程摘要收敛。
+- [x] 顶部品牌、六标签、当前工程与设置改为全局独立首行，并新增 1536 宽度几何门禁。
+- [x] 第二轮同视口比较完成，`design-qa.md` 维持 `passed`。

@@ -121,6 +121,9 @@ async function measure(width, height, leftPercent, collapsed = false) {
         loaded: Boolean(image?.complete && image.naturalWidth >= 1200 && image.naturalHeight >= 1200),
         anchoredRight: Boolean(artRect && artRect.left >= cardRect.left + cardRect.width * 0.47 && artRect.right <= cardRect.right + cardRect.width * 0.08),
         copyClear: Boolean(artRect && copyRight <= artRect.left + 2),
+        card: cardRect ? [cardRect.left, cardRect.right, cardRect.width] : null,
+        art: artRect ? [artRect.left, artRect.right, artRect.width] : null,
+        copyRight,
       };
     });
     return {
@@ -270,15 +273,41 @@ async function main() {
     const panelRect = document.querySelector('.chat-panel').getBoundingClientRect();
     const composerRect = composer.getBoundingClientRect();
     const submitRect = submit.getBoundingClientRect();
+    const navRect = document.querySelector('.workbench-mode-tabs').getBoundingClientRect();
+    const brandRect = document.querySelector('.workspace-brand').getBoundingClientRect();
+    const firstTabRect = document.querySelector('[data-tour-id="tab-repo"]').getBoundingClientRect();
+    const skillTabRect = document.querySelector('[data-tour-id="tab-skill-hub"]').getBoundingClientRect();
+    const projectRect = document.querySelector('.active-project-switch').getBoundingClientRect();
+    const settingsRect = document.querySelector('.workspace-settings').getBoundingClientRect();
+    const navTopDelta = Math.max(
+      Math.abs(brandRect.top - firstTabRect.top),
+      Math.abs(firstTabRect.top - projectRect.top),
+      Math.abs(projectRect.top - settingsRect.top),
+    );
     return {
       quickActionCount: quickActions.length,
+      suggestionCount: document.querySelectorAll('.chat-empty-suggestions button').length,
+      historyRailActionCount: document.querySelectorAll('.chat-history-rail button').length,
       promptInjected: composer.value,
-      brand: document.querySelector('.chat-history-brand strong')?.textContent || '',
+      brand: document.querySelector('.workspace-brand strong')?.textContent || '',
+      settingsVisible: (document.querySelector('.workspace-settings')?.getBoundingClientRect().width || 0) > 0,
+      topRowAligned: navTopDelta <= 5,
+      brandBeforeTabs: brandRect.right <= firstTabRect.left + 1,
+      projectAfterTabs: skillTabRect.right <= projectRect.left + 1,
+      settingsAfterProject: projectRect.right <= settingsRect.left + 1,
+      navSpansViewport: navRect.left <= 10 && navRect.right >= innerWidth - 10,
+      navGeometry: {
+        brand: [brandRect.left, brandRect.right, brandRect.top],
+        firstTab: [firstTabRect.left, firstTabRect.right, firstTabRect.top],
+        skillTab: [skillTabRect.left, skillTabRect.right, skillTabRect.top],
+        project: [projectRect.left, projectRect.right, projectRect.top],
+        settings: [settingsRect.left, settingsRect.right, settingsRect.top],
+      },
       composerVisible: composerRect.width > 0 && composerRect.bottom <= panelRect.bottom + 1,
       submitVisible: submitRect.width > 0 && submitRect.right <= panelRect.right + 1 && submitRect.bottom <= panelRect.bottom + 1,
     };
   })()`);
-  if (chatShell.missing || chatShell.quickActionCount !== 4 || !chatShell.promptInjected.includes('当前工程') || chatShell.brand !== 'Catnip Forge' || !chatShell.composerVisible || !chatShell.submitVisible) {
+  if (chatShell.missing || chatShell.quickActionCount !== 4 || chatShell.suggestionCount !== 4 || chatShell.historyRailActionCount !== 4 || !chatShell.promptInjected.includes('当前工程') || chatShell.brand !== 'Catnip Forge' || !chatShell.settingsVisible || !chatShell.topRowAligned || !chatShell.brandBeforeTabs || !chatShell.projectAfterTabs || !chatShell.settingsAfterProject || !chatShell.navSpansViewport || !chatShell.composerVisible || !chatShell.submitVisible) {
     throw new Error(`chat shell interaction mismatch: ${JSON.stringify(chatShell)}`);
   }
 
@@ -311,6 +340,25 @@ async function main() {
     document.querySelector('.app-body')?.style.setProperty('--left-panel-width', '37%');
   })()`);
   await wait(180);
+  const targetNav = await evaluate(`(() => {
+    const rect = (selector) => {
+      const value = document.querySelector(selector)?.getBoundingClientRect();
+      return value ? [value.left, value.right, value.top, value.bottom] : null;
+    };
+    return {
+      viewport: [innerWidth, innerHeight],
+      columns: getComputedStyle(document.querySelector('.workbench-mode-tabs')).gridTemplateColumns,
+      nav: rect('.workbench-mode-tabs'),
+      brand: rect('.workspace-brand'),
+      firstTab: rect('[data-tour-id="tab-repo"]'),
+      skillTab: rect('[data-tour-id="tab-skill-hub"]'),
+      project: rect('.active-project-switch'),
+      settings: rect('.workspace-settings'),
+    };
+  })()`);
+  if (!targetNav.settings || targetNav.settings[1] > targetNav.viewport[0] - 8 || targetNav.settings[2] > targetNav.nav[2] + 6) {
+    throw new Error(`target navigation geometry mismatch: ${JSON.stringify(targetNav)}`);
+  }
   const targetScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(targetScreenshotPath, Buffer.from(targetScreenshot.data, 'base64'));
 
@@ -385,7 +433,7 @@ async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   const screenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log(JSON.stringify({ chatShell, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, screenshotPath, consoleErrors }, null, 2));
+  console.log(JSON.stringify({ chatShell, targetNav, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, screenshotPath, consoleErrors }, null, 2));
 }
 
 main().catch((error) => {
