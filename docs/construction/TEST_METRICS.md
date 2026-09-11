@@ -528,3 +528,16 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 | 聚焦视觉 QA | 通过 | `phase15-pass9-chat-comparison.png`；功能轨空带消失，角色比例从首轮 128% 收敛到 112% |
 
 首次并行启动布局专项后，后续两次重试因测试 Vite 未监听 5174 超时；单独启动同一临时 Vite 后继续。新增计算样式断言首次把正则写入模板字符串，转义后在浏览器侧成为非法正则；改为解析完整 RGBA 数组。第二次因门禁在设置主题前运行，仅 dark 选择器未命中；将历史背景契约应用于组件本身后通过。这些均为验证环境/测试实现问题，不是产品交互失败。
+
+## 2026-09-11 Phase 15 第十轮历史接缝消除
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | 通过 | CSS 与门禁脚本改动未引入类型错误 |
+| `npm.cmd --prefix electron run build:renderer` | 通过 | 2820 modules；仅既有大 chunk warning |
+| `npm.cmd --prefix electron run verify:chat-presentation` | 通过 | Chat 展示契约未回归 |
+| `npm.cmd --prefix electron run verify:explore-ui` | 通过 | Explore 静态产品契约未回归 |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | 通过 | 功能轨右边框 0、无阴影、横向渐隐存在；历史满幅、8 组响应式、四阶段流程和 console error 0 |
+| 聚焦视觉 QA | 通过 | `phase15-pass10-chat-seam-comparison.png`；源图中的贯穿硬线已消除，插画连续且导航仍可读 |
+
+本轮专项首次通过；未修改 Agent、Explore 数据或硬件路径，未执行真实搜索、Windows 打包或实机动作。

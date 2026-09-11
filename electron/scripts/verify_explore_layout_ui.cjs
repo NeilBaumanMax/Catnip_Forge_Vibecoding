@@ -350,11 +350,16 @@ async function main() {
         && historyStyle.backgroundSize.includes('112%')
         && historyMainStyle.backgroundImage === 'none'
         && historyRailAlpha < 0.8,
+      historyRailSeamRemoved: historyRailStyle.borderRightWidth === '0px'
+        && historyRailStyle.boxShadow === 'none'
+        && historyRailStyle.backgroundImage.includes('linear-gradient'),
       historyArtworkDetails: {
         backgroundImage: historyStyle.backgroundImage,
         backgroundSize: historyStyle.backgroundSize,
         mainBackgroundImage: historyMainStyle.backgroundImage,
         railBackgroundColor: historyRailStyle.backgroundColor,
+        railBackgroundImage: historyRailStyle.backgroundImage,
+        railBorderRightWidth: historyRailStyle.borderRightWidth,
         railAlpha: historyRailAlpha,
       },
       shellMaterials: shellBoxes.map((box) => ({
@@ -383,7 +388,7 @@ async function main() {
   if (!chatShell.outerFrameRemoved || chatShell.blueGlassSurfaceCount !== 2 || !chatShell.brandUnboxed) {
     throw new Error(`top shell material mismatch: ${JSON.stringify(chatShell)}`);
   }
-  if (chatShell.missing || chatShell.quickActionCount !== 4 || chatShell.suggestionCount !== 4 || chatShell.historyRailActionCount !== 4 || !chatShell.promptInjected.includes('当前工程') || chatShell.brand !== 'Catnip Forge' || !chatShell.settingsVisible || chatShell.windowControlCount !== 3 || !chatShell.topRowAligned || !chatShell.surfacesSeparated || !chatShell.taskLabelVisible || !chatShell.brandBeforeTabs || !chatShell.projectAfterTabs || !chatShell.settingsAfterProject || !chatShell.controlsAfterSettings || !chatShell.controlsInsideViewport || !chatShell.navSpansViewport || !chatShell.composerVisible || !chatShell.submitVisible || !chatShell.composerActionsInside || !chatShell.submitIsPaperPlane || !chatShell.submitKeepsBlueIdleState || !chatShell.historyArtworkFillsPanel) {
+  if (chatShell.missing || chatShell.quickActionCount !== 4 || chatShell.suggestionCount !== 4 || chatShell.historyRailActionCount !== 4 || !chatShell.promptInjected.includes('当前工程') || chatShell.brand !== 'Catnip Forge' || !chatShell.settingsVisible || chatShell.windowControlCount !== 3 || !chatShell.topRowAligned || !chatShell.surfacesSeparated || !chatShell.taskLabelVisible || !chatShell.brandBeforeTabs || !chatShell.projectAfterTabs || !chatShell.settingsAfterProject || !chatShell.controlsAfterSettings || !chatShell.controlsInsideViewport || !chatShell.navSpansViewport || !chatShell.composerVisible || !chatShell.submitVisible || !chatShell.composerActionsInside || !chatShell.submitIsPaperPlane || !chatShell.submitKeepsBlueIdleState || !chatShell.historyArtworkFillsPanel || !chatShell.historyRailSeamRemoved) {
     throw new Error(`chat shell interaction mismatch: ${JSON.stringify(chatShell)}`);
   }
 

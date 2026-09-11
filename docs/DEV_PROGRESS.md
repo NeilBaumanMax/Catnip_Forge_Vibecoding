@@ -267,3 +267,8 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] 夜景背景提升到整个历史面板，功能轨和会话列表共享连续插画，不再保留纯色空带。
 - [x] 128% 首轮比例经视觉复核收敛为 112%，减少素材上部留白并保留更完整的学院呱呱。
 - [x] TypeScript、Main/Renderer build、Chat 展示、Explore 布局矩阵和聚焦组合视觉 QA 通过。
+
+### Phase 15 第十轮
+
+- [x] 删除功能轨和列表列之间的 1px 硬分隔及阴影，改为向右透明的深蓝渐隐遮罩。
+- [x] 接缝计算样式门禁、完整布局矩阵、四阶段流程与聚焦组合视觉 QA 通过。

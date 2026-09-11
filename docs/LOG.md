@@ -970,3 +970,10 @@
 - 首版 128% 高度覆盖在聚焦截图中导致呱呱过大，最终改为 112% 等比覆盖、51% 横向焦点和底部锚定。
 - 类型、Main/Renderer 构建、Chat 展示与 Explore 布局专项通过；8 组响应式、四阶段流程和 console error 0，聚焦证据为 `electron/.tmp/phase15-pass9-chat-comparison.png`。
 - 未执行真实搜索、Windows 打包、Build/Flash/Serial 或实机验证；`REAL_HARDWARE_VALIDATION_PENDING`。
+
+## 2026-09-11 — Phase 15 第十轮历史功能轨接缝消除
+
+- 用户实屏确认功能轨右侧仍有贯穿夜景的硬线；定位为旧 1px 右边框和矩形遮罩共同造成，而非位图本身。
+- 功能轨移除右边框、阴影，遮罩改为从 `rgba(7,31,78,0.52)` 平滑过渡到透明；底图和布局保持不变。
+- Explore 布局专项首次通过：接缝门禁、历史满幅、8 组响应式、四阶段流程和 console error 0；聚焦证据为 `electron/.tmp/phase15-pass10-chat-seam-comparison.png`。
+- 未执行真实搜索、新 Windows 包、Build/Flash/Serial 或实机验证；`REAL_HARDWARE_VALIDATION_PENDING`。

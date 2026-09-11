@@ -53,6 +53,25 @@ P0/P1/P2 已清零；保留差异均来自真实性、系统窗口边界或既�
 
 final result: passed
 
+## Fidelity pass 10 — 2026-09-11
+
+**Evidence**
+
+- Source visual truth: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-0Nd9pJ.png`, showing the hard vertical seam through the shared history artwork.
+- Implementation: `electron/.tmp/explore-entry-layout-ui.png`, 1920 × 1080 CSS pixels at device scale 1.
+- Focused combined comparison: `electron/.tmp/phase15-pass10-chat-seam-comparison.png`; source and implementation history panels are normalized to the same 1080px height and shown together.
+- State: expanded Agent panel, dark history artwork, visible rail controls and conversation list; layout interactions and the four-stage Explore flow passed with 0 Renderer console errors.
+
+**Findings and required fidelity surfaces**
+
+- [P1 fixed] The rail's 1px right border created a sharp line across the illustration. It now computes to 0px with no box shadow.
+- [P2 fixed] A uniform rail overlay still produced a rectangular tone change after border removal. The overlay now fades horizontally from navy to transparent at the shared edge.
+- Typography/copy and spacing remain unchanged; colors retain the navy hierarchy without a hard boundary; the original raster remains single-mounted and aspect-correct; no reference-only content or substitute asset was introduced; rail buttons and conversation controls remain functional.
+
+No actionable P0/P1/P2 findings remain for this correction.
+
+final result: passed
+
 ## Fidelity pass 9 — 2026-09-11
 
 **Evidence**
