@@ -1,5 +1,13 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-11 — Latest correction: concurrent Explore sessions and source links
+
+- Idea and Diagnosis analyses are now isolated by originating session/request. Switching modes during analysis is supported; late status/result/error events persist to the background session and do not replace the active screen.
+- The conversation visibly records the official Zhihu Skill search start and traceable-source return state.
+- Analyze-stage cards use the deep-blue visual system with readable secondary copy.
+- Zhihu source buttons use the Main-process external URL bridge. The bridge accepts only credential-free HTTP/HTTPS URLs and opens them in the system browser.
+- Regression evidence: `verify:explore-ui`, `verify:explore-layout-ui`, Electron typecheck, Main/Renderer builds, and `electron/.tmp/phase15-pass16-results-comparison.png`.
+
 ## 2026-09-11 — Latest UI correction: shared Explore header
 
 - Idea now uses the Diagnosis header geometry: 132px surface, 48px return button, 31/69 copy-to-stage grid, and 62px stage cards.

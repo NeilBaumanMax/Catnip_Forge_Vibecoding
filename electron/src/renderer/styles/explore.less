@@ -1922,6 +1922,68 @@
   }
 }
 
+/* Pass 16: deep result surfaces and visible official Zhihu Skill activity. */
+.explore-panel--idea-flow,
+.explore-panel--diagnosis-flow {
+  --ui-text: #f2f7ff;
+  --ui-text-secondary: #c3d6f1;
+  --ui-text-tertiary: #86a5cf;
+  --ui-surface: #071f4e;
+  --ui-control-bg: rgba(19, 57, 119, 0.82);
+  --ui-fill: rgba(41, 82, 148, 0.55);
+  --ui-separator: rgba(94, 153, 238, 0.3);
+  --ui-separator-strong: rgba(112, 174, 255, 0.48);
+  --ui-shadow-sm: 0 12px 30px rgba(0, 10, 42, 0.24);
+  --explore-glass: rgba(10, 39, 91, 0.94);
+  --explore-hairline: rgba(116, 169, 240, 0.24);
+}
+
+.explore-panel--idea-flow.is-stage-analyze .explore-output-pane,
+.explore-panel--diagnosis-flow.is-stage-analyze .explore-output-pane {
+  color: #f2f7ff;
+  background: linear-gradient(145deg, rgba(7, 30, 76, 0.96), rgba(10, 42, 94, 0.9));
+  border: 1px solid rgba(83, 151, 244, 0.38);
+  border-radius: 17px;
+  box-shadow: 0 18px 42px rgba(0, 10, 42, 0.28);
+}
+
+.explore-panel--idea-flow .explore-idea-option,
+.explore-panel--diagnosis-flow .explore-hypothesis article {
+  color: #eef6ff;
+  background: linear-gradient(145deg, rgba(15, 53, 114, 0.96), rgba(8, 34, 81, 0.98));
+  border-color: rgba(91, 156, 246, 0.36);
+}
+
+.explore-panel--idea-flow .explore-source-actions button,
+.explore-panel--diagnosis-flow .explore-source-actions button {
+  color: #d8e8ff;
+  background: rgba(24, 70, 139, 0.82);
+  border-color: rgba(106, 169, 252, 0.4);
+}
+
+.explore-panel--idea-flow .explore-source-actions button:last-child,
+.explore-panel--diagnosis-flow .explore-source-actions button:last-child {
+  color: #89e2ba;
+  background: rgba(18, 89, 92, 0.44);
+  border-color: rgba(102, 218, 168, 0.42);
+}
+
+.explore-conversation li.is-skill-activity {
+  color: #eaf6ff;
+  background: linear-gradient(100deg, rgba(21, 99, 213, 0.82), rgba(34, 71, 151, 0.74));
+  border: 1px solid rgba(91, 181, 255, 0.68);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.12), 0 8px 18px rgba(0, 19, 64, 0.22);
+}
+.explore-conversation li.is-skill-activity > span {
+  padding: 4px 7px;
+  color: #05265b;
+  background: #77d4ff;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.explore-conversation li.is-skill-activity p { color: #edf7ff; font-weight: 650; }
+.explore-conversation li.is-skill-activity time { color: #b9d7ff; }
+
 /* Phase 15, fidelity pass 12: selected deep-blue Idea workspace. */
 .explore-panel--idea-flow {
   position: relative;

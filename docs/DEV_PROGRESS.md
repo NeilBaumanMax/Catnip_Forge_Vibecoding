@@ -1,5 +1,13 @@
 # 开发进度
 
+## 2026-09-11 — Explore 并发会话与来源入口修复
+
+- 找灵感分析运行期间可进入解问题；异步结果按 requestId 写回原始工程会话，不再劫持当前页面。
+- 第二步结果卡统一为深蓝色主题，并提高正文、辅助文字和来源操作的可读性。
+- 本次探索对话会重点展示官方知乎 Skill 的检索开始和可追溯来源返回状态。
+- “打开知乎原文”改为通过 Main 安全校验后交给系统浏览器；仅允许无凭据的 HTTP/HTTPS URL。
+- 自动回归覆盖并发切换、后台结果恢复、Skill 状态、精确来源 URL 和零控制台错误。
+
 ## 2026-09-11 — Explore header parity correction
 
 - Aligned the Idea flow header to the Diagnosis flow standard: 132px header, 48px return control, matching title/subtitle baseline, grid ratio, and four-stage navigation geometry.

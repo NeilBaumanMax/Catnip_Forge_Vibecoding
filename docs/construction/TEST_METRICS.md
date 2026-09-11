@@ -1,5 +1,18 @@
 # 测试度量与证据
 
+## 2026-09-11 — Explore concurrent mode/source gate
+
+| Command | Result | Evidence |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | PASS | Renderer/Main TypeScript contracts pass after session routing and external URL bridge changes. |
+| `npm.cmd --prefix electron run verify:explore-ui` | PASS | Static contract covers request/session routing, highlighted Zhihu Skill activity, deep result tokens, and safe external opening. |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | PASS | Idea remains bound to its background session while Diagnosis stays active; result restores as deep blue; the clicked source URL is exactly `https://www.zhihu.com/question/ui-smoke-idea`; console errors 0. |
+| `npm.cmd --prefix electron run build:main` | PASS | Main-process gateway build succeeds. |
+| `npm.cmd --prefix electron run build:renderer` | PASS | Production Renderer build succeeds; the existing >500 kB chunk warning remains visible. |
+| `git diff --check` | PASS | No whitespace errors; Git reports only the repository's LF→CRLF checkout warning. |
+
+Visual evidence: `electron/.tmp/phase15-pass16-results-comparison.png` at the user's 1565 × 1304 capture size. The layout smoke may emit a best-effort Windows Chromium-profile `EPERM` cleanup warning after passing; exit status remains 0.
+
 ## 2026-09-11 — Explore header parity gate
 
 | Command | Result | Evidence |

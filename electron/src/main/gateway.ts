@@ -36,8 +36,6 @@ import { registerExploreContextIpc } from './explore-context';
 import { registerExploreSessionIpc } from './explore-session';
 import { activateProject, assertPathInActiveProject, createProject, getProjectSessionStatus, requireActiveProject } from './project-session';
 
-const AUTHOR_GITHUB_URL = 'https://github.com/NeilBaumanMax';
-
 export function startGateway(mainWindow: BrowserWindow): void {
   // Gateway 提供 pushUI 能力 — Worker 通过它推消息到 UI
   const pushUI = (channel: string, data: unknown) => {
@@ -261,8 +259,14 @@ export function startGateway(mainWindow: BrowserWindow): void {
   });
 
   ipcMain.handle('app:open-external', async (_event, url: unknown) => {
-    if (url !== AUTHOR_GITHUB_URL) throw new Error('不允许打开此外部地址');
-    await shell.openExternal(AUTHOR_GITHUB_URL);
+    if (typeof url !== 'string' || url.length > 2_048) throw new Error('外部地址无效');
+    let target: URL;
+    try { target = new URL(url); }
+    catch { throw new Error('外部地址无效'); }
+    if (!['https:', 'http:'].includes(target.protocol) || target.username || target.password) {
+      throw new Error('只允许打开不含凭据的 HTTP/HTTPS 来源');
+    }
+    await shell.openExternal(target.toString());
     return { ok: true };
   });
 

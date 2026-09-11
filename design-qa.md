@@ -1,3 +1,17 @@
+# Fidelity pass 16 — concurrent Explore results and source actions (2026-09-11)
+
+- Source truth: user capture `codex-clipboard-xhcLfS.png` (1565 × 1304).
+- Same-size evidence: `electron/.tmp/phase15-pass16-results-comparison.png`; reference above, implementation below, without scaling.
+- [P1 fixed] A running Idea request no longer takes over a newly opened Diagnosis workspace. Each request remains bound to its originating project session and finishes in the background.
+- [P1 fixed] Result cards now use the deep-blue Explore palette with readable secondary text instead of pale cards with white text.
+- [P1 fixed] “打开知乎原文” now opens the validated HTTP(S) source in the system browser.
+- [P2 fixed] The conversation shows prominent Zhihu Skill activity before search and after traceable sources return.
+- The automated scenario submits Idea, switches to Diagnosis during analysis, waits for completion, restores the Idea result, and opens its exact Zhihu URL.
+
+No actionable P0/P1/P2 findings remain for this correction.
+
+final result: passed
+
 # Fidelity pass 15 — Explore flow header parity (2026-09-11)
 
 - Source comparison: user captures `codex-clipboard-9Pno0F.png` (Idea) and `codex-clipboard-pyokZY.png` (Diagnosis), with Diagnosis selected as the geometry standard.

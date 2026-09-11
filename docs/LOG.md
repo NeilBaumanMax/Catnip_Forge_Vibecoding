@@ -1,5 +1,13 @@
 # 施工日志
 
+## 2026-09-11 — Phase 15 pass 16
+
+- 修复找灵感分析尚未完成时切换到解问题仍被旧结果带回找灵感的问题：请求与原始 Explore session 绑定，后台消息、错误和最终结果串行写回对应会话。
+- 分析前即保存用户输入与知乎 Skill 状态；取得来源后继续在“本次探索对话”突出显示处理进度。
+- 结果区域收口为深蓝渐变卡片与高对比文字；知乎原文操作通过受控 `app:open-external` 在系统浏览器打开。
+- `typecheck`、Explore UI contract、真实布局交互 smoke、Main build、Renderer build 和 `git diff --check` 通过；Chromium 临时目录仍可能出现退出后的 Windows EPERM 提示，但命令退出 0。
+- 同尺寸视觉证据：`electron/.tmp/phase15-pass16-results-comparison.png`。
+
 ## 2026-09-11 — Phase 15 pass 15
 
 - Standardized the Idea and Diagnosis flow headers on the Diagnosis layout geometry.

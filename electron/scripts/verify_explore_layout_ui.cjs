@@ -194,6 +194,7 @@ async function main() {
       verificationRecords: [{ id: 'verification-ui-smoke', status: 'verified_effective', projectId: 'hardboard/projects/demo', summary: '降低 SPI 时钟后实机显示恢复。', evidenceRefs: ['serial:42', 'build:7'], createdAt: new Date().toISOString() }],
     };
     const sessions = [];
+    window.__exploreSessions = sessions;
     const makeSession = (mode) => ({
       version: 1, id: 'explore-' + crypto.randomUUID(), projectId: 'project-ui-smoke', mode,
       title: mode === 'idea' ? '新灵感探索' : '新问题调查', status: 'draft',
@@ -204,10 +205,13 @@ async function main() {
     window.electronAPI = {
       getStartupStatus: async () => ({ firstRun: false, playwrightReady: true }),
       getProjectSessionStatus: async () => ({ projectsRoot: 'hardboard/projects', activeProject: { id: 'project-ui-smoke', name: 'demo', projectDir: 'hardboard/projects/demo', relativePath: 'hardboard/projects/demo', available: true }, suggestedProjectId: null, projects: [] }),
-      listExploreWorkSessions: async (mode) => sessions.filter((item) => !mode || item.mode === mode).map(({ snapshot, version, ...item }) => item),
+      listExploreWorkSessions: async (mode) => sessions
+        .filter((item) => !mode || item.mode === mode)
+        .sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))
+        .map(({ snapshot, version, ...item }) => item),
       createExploreWorkSession: async (mode) => { const item = makeSession(mode); sessions.unshift(item); return structuredClone(item); },
       getExploreWorkSession: async (mode, id) => structuredClone(sessions.find((item) => item.mode === mode && item.id === id)),
-      saveExploreWorkSession: async (record) => { const index = sessions.findIndex((item) => item.id === record.id); if (index >= 0) sessions[index] = structuredClone(record); return structuredClone(record); },
+      saveExploreWorkSession: async (record) => { const saved = { ...structuredClone(record), updatedAt: new Date().toISOString() }; const index = sessions.findIndex((item) => item.id === record.id); if (index >= 0) sessions[index] = saved; return structuredClone(saved); },
       listExploreKnowledge: async () => [knowledge],
       findRelatedExploreKnowledge: async () => [knowledge],
       selectExploreKnowledgeForContext: async () => [knowledge],
@@ -241,8 +245,12 @@ async function main() {
               nextValidation: '把 SPI 时钟降到 40MHz，重新 Build、Flash，并观察串口与屏幕。',
             }],
           } : undefined,
-          ideas: request.mode === 'idea' ? [] : undefined,
-        }), 20);
+          ideas: request.mode === 'idea' ? [{
+            id: 'idea-ui-smoke', title: '桌面语音陪伴机器人', value: '用现有 ESP32-S3 做一个可验证的最小陪伴交互。',
+            implementationDirection: '先完成麦克风、扬声器和联网问答的单轮闭环。', compatibility: '复用当前工程与 ESP-IDF 组件。',
+            sources: [source('zhihu', 'ESP32-S3 语音机器人实践', 'https://www.zhihu.com/question/ui-smoke-idea')],
+          }] : undefined,
+        }), window.__analysisDelay || 20);
         return { ok: true, taskId: 'analysis-task', requestId: 'analysis-ui-smoke', disposition: 'started', sourceCount: 2 };
       },
       startExplorePlan: async () => {
@@ -257,6 +265,7 @@ async function main() {
       getExploreHandoffArtifact: async (sessionId) => ({ version: 1, projectId: 'project-ui-smoke', sessionId, mode: 'diagnosis', handoffId: 'handoff-ui-smoke', planRequestId: 'plan-ui-smoke', digest: 'a'.repeat(64), relativeDir: '.catnip/handoffs/' + sessionId, planMarkdown: '# 执行计划\\n\\n界面验证计划', handoffMarkdown: '# Explore → 工程 Agent 交接\\n\\n界面验证交接', createdAt: new Date().toISOString() }),
       confirmExploreExecution: async () => ({ ok: true, taskId: 'execution-task', disposition: 'queued' }),
       navigateBrowser: async () => ({ ok: true }),
+      openExternalUrl: async (url) => { window.__openedExternalUrl = url; return { ok: true }; },
       setBrowserBounds: async () => ({ ok: true }),
     };
     const exploreTab = document.querySelector('[data-tour-id="tab-explore"]');
@@ -754,12 +763,78 @@ async function main() {
   if (!flowResult.sourceButtonHeights.length || flowResult.sourceButtonHeights.some((height) => height < 36)) throw new Error(`source actions are not prominent enough: ${JSON.stringify(flowResult.sourceButtonHeights)}`);
   if (!flowResult.returnPreserved || !flowResult.workspaceSwitchPreserved) throw new Error(`Explore work was lost during navigation: ${JSON.stringify(flowResult)}`);
   if (!flowResult.themes.light.primary || flowResult.themes.light.primary === flowResult.themes.dark.primary) throw new Error(`theme tokens did not change: ${JSON.stringify(flowResult.themes)}`);
+
+  const concurrentModeSwitch = await evaluate(`(async () => {
+    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    document.querySelector('.explore-back-button')?.click();
+    await wait(100);
+    document.querySelector('[data-tour-id="explore-idea"]')?.click();
+    await wait(140);
+    window.__analysisDelay = 700;
+    const textarea = document.querySelector('[data-tour-id="panel-explore-idea"] textarea');
+    const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+    setter.call(textarea, '我想做一个桌面语音陪伴机器人');
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    await wait(30);
+    textarea.closest('form').requestSubmit();
+    await wait(90);
+    const skillActivityWhilePending = document.querySelectorAll('[data-zhihu-skill-activity="true"]').length;
+    document.querySelector('.explore-back-button')?.click();
+    await wait(90);
+    document.querySelector('[data-tour-id="explore-diagnosis"]')?.click();
+    await wait(160);
+    const switchedToDiagnosis = Boolean(document.querySelector('[data-tour-id="panel-explore-diagnosis"]'));
+    const diagnosisTitleWhileIdeaRuns = document.querySelector('.explore-flow-header h2')?.textContent || '';
+    await wait(850);
+    const stayedOnDiagnosis = Boolean(document.querySelector('[data-tour-id="panel-explore-diagnosis"]'));
+    const backgroundIdeaPersisted = window.__exploreSessions.some((item) => item.mode === 'idea' && item.status === 'result_ready' && item.snapshot.analysisResult?.mode === 'idea');
+    document.querySelector('.explore-back-button')?.click();
+    await wait(90);
+    document.querySelector('[data-tour-id="explore-idea"]')?.click();
+    await wait(140);
+    window.__analysisDelay = 20;
+    const nextTextarea = document.querySelector('[data-tour-id="panel-explore-idea"] textarea');
+    if (nextTextarea) {
+      setter.call(nextTextarea, '我想做一个桌面语音陪伴机器人');
+      nextTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+      await wait(30);
+      nextTextarea.closest('form').requestSubmit();
+      await wait(220);
+    }
+    const ideaCard = document.querySelector('.explore-idea-option');
+    const ideaCardStyle = ideaCard ? getComputedStyle(ideaCard) : null;
+    const reading = ideaCard?.querySelector('.explore-reading-copy');
+    const readingStyle = reading ? getComputedStyle(reading) : null;
+    document.querySelector('.explore-source-open')?.click();
+    await wait(40);
+    return {
+      skillActivityWhilePending,
+      switchedToDiagnosis,
+      diagnosisTitleWhileIdeaRuns,
+      stayedOnDiagnosis,
+      backgroundIdeaPersisted,
+      ideaResultRestored: Boolean(ideaCard),
+      activePanel: document.querySelector('.explore-panel--flow')?.className || '',
+      ideaSessions: window.__exploreSessions.filter((item) => item.mode === 'idea').map((item) => ({ id: item.id, status: item.status, resultMode: item.snapshot.analysisResult?.mode || '', stage: item.snapshot.displayStage })),
+      ideaCardBackground: ideaCardStyle?.backgroundImage || '',
+      ideaCardText: readingStyle?.color || '',
+      openedExternalUrl: window.__openedExternalUrl || '',
+    };
+  })()`);
+  if (concurrentModeSwitch.skillActivityWhilePending < 2 || !concurrentModeSwitch.switchedToDiagnosis
+      || !concurrentModeSwitch.diagnosisTitleWhileIdeaRuns.includes('解问题') || !concurrentModeSwitch.stayedOnDiagnosis || !concurrentModeSwitch.backgroundIdeaPersisted
+      || !concurrentModeSwitch.ideaResultRestored || !concurrentModeSwitch.ideaCardBackground.includes('linear-gradient')
+      || concurrentModeSwitch.ideaCardText === 'rgb(255, 255, 255)'
+      || concurrentModeSwitch.openedExternalUrl !== 'https://www.zhihu.com/question/ui-smoke-idea') {
+    throw new Error(`concurrent Explore mode/source regression: ${JSON.stringify(concurrentModeSwitch)}`);
+  }
   if (consoleErrors.length) throw new Error(`renderer errors: ${JSON.stringify(consoleErrors)}`);
 
   fs.mkdirSync(outputDir, { recursive: true });
+  await setViewport(1565, 1304);
   const screenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log(JSON.stringify({ chatShell, targetNav, skillHubTopline, dashboardScroll, tallTarget, ideaWorkspace, diagnosisWorkspace, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, skillHubScreenshotPath, exploreHomeScreenshotPath, tallTargetScreenshotPath, ideaWorkspaceScreenshotPath, diagnosisWorkspaceScreenshotPath, screenshotPath, consoleErrors }, null, 2));
+  console.log(JSON.stringify({ chatShell, targetNav, skillHubTopline, dashboardScroll, tallTarget, ideaWorkspace, diagnosisWorkspace, scenarios, flowResult, concurrentModeSwitch, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, skillHubScreenshotPath, exploreHomeScreenshotPath, tallTargetScreenshotPath, ideaWorkspaceScreenshotPath, diagnosisWorkspaceScreenshotPath, screenshotPath, consoleErrors }, null, 2));
 }
 
 main().catch((error) => {

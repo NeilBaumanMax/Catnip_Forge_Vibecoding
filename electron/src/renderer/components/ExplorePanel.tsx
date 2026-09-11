@@ -123,6 +123,9 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   const restoringContextSelection = useRef<string[] | null>(null);
   const activeAnalysisRequestId = useRef<string | null>(null);
   const activePlanRequestId = useRef<string | null>(null);
+  const activeWorkSessionId = useRef<string | null>(null);
+  const inFlightAnalysisSessions = useRef(new Map<string, { sessionId: string; mode: 'idea' | 'diagnosis' }>());
+  const backgroundSessionWrites = useRef(new Map<string, Promise<void>>());
   const connectionWatchId = useRef(0);
   const autoConnectionPrompted = useRef(false);
 
@@ -140,11 +143,15 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   };
 
   const applyWorkSession = (session: ExploreWorkSessionRecord) => {
-    const wasInterrupted = session.status === 'analyzing' || session.status === 'planning';
+    const liveAnalysis = Boolean(session.snapshot.analysisRequestId
+      && inFlightAnalysisSessions.current.get(session.snapshot.analysisRequestId)?.sessionId === session.id);
+    const wasInterrupted = (session.status === 'analyzing' && !liveAnalysis) || session.status === 'planning';
     const snapshot = wasInterrupted
       ? { ...session.snapshot, notice: '上次分析在应用关闭或页面离开时中断，请重新发起。' }
       : session.snapshot;
     const restoredSession = wasInterrupted ? { ...session, status: 'interrupted' as const, snapshot } : session;
+    activeWorkSessionId.current = restoredSession.id;
+    latestWorkSession.current = restoredSession;
     setActiveWorkSession(restoredSession);
     setWorkStatus(restoredSession.status);
     setView(session.mode);
@@ -174,7 +181,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
     setDisplayStage(snapshot.displayStage);
     setConversation(snapshot.conversation);
     setHandoffArtifact(snapshot.handoffArtifact);
-    setAnalysisPending(false);
+    setAnalysisPending(liveAnalysis);
     setPlanPending(false);
     setExecutionPending(false);
   };
@@ -190,9 +197,9 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   };
 
   const openWorkSession = async (mode: 'idea' | 'diagnosis', id?: string, forceNew = false) => {
-    if ((analysisPending || planPending) && activeWorkSession) {
+    if (planPending && activeWorkSession) {
       setView(activeWorkSession.mode);
-      setNotice('当前探索仍在运行，请等待完成后再打开其他记录。');
+      setNotice('当前执行计划仍在生成，请等待完成后再打开其他记录。');
       return;
     }
     if (!forceNew && activeWorkSession?.mode === mode && (!id || id === activeWorkSession.id)) {
@@ -200,6 +207,9 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       return;
     }
     try {
+      if (latestWorkSession.current) {
+        await window.electronAPI.saveExploreWorkSession(latestWorkSession.current);
+      }
       const sessions = await refreshWorkSessions();
       const targetId = forceNew ? undefined : id || sessions.find((item) => item.mode === mode)?.id;
       const session = targetId
@@ -218,6 +228,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       setWorkSessions(sessions);
       if (activeWorkSession?.id === session.id) {
         setActiveWorkSession(null);
+        activeWorkSessionId.current = null;
         latestWorkSession.current = null;
       }
     } catch (error) {
@@ -228,6 +239,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   useEffect(() => {
     setView('home');
     setActiveWorkSession(null);
+    activeWorkSessionId.current = null;
     latestWorkSession.current = null;
     activeAnalysisRequestId.current = null;
     activePlanRequestId.current = null;
@@ -235,6 +247,28 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       setNotice(error instanceof Error ? error.message : '无法读取探索历史');
     });
   }, [projectId]);
+
+  const queueBackgroundSessionUpdate = (
+    target: { sessionId: string; mode: 'idea' | 'diagnosis' },
+    update: (session: ExploreWorkSessionRecord) => ExploreWorkSessionRecord,
+  ) => {
+    const previous = backgroundSessionWrites.current.get(target.sessionId) || Promise.resolve();
+    const next = previous
+      .catch(() => undefined)
+      .then(async () => {
+        const session = await window.electronAPI.getExploreWorkSession(target.mode, target.sessionId);
+        await window.electronAPI.saveExploreWorkSession(update(session));
+      })
+      .then(() => { void refreshWorkSessions(); })
+      .catch(() => undefined)
+      .finally(() => {
+        if (backgroundSessionWrites.current.get(target.sessionId) === next) {
+          backgroundSessionWrites.current.delete(target.sessionId);
+        }
+      });
+    backgroundSessionWrites.current.set(target.sessionId, next);
+    return next;
+  };
 
   useEffect(() => {
     if (!activeWorkSession) return;
@@ -455,20 +489,65 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             });
         }
       } else {
-        if (result.requestId !== activeAnalysisRequestId.current) return;
+        const backgroundTarget = inFlightAnalysisSessions.current.get(result.requestId);
+        const isActiveResult = result.requestId === activeAnalysisRequestId.current
+          && (!backgroundTarget || backgroundTarget.sessionId === activeWorkSessionId.current);
+        if (!isActiveResult && !backgroundTarget) return;
+        const resultMessage = result.mode === 'idea'
+          ? `已形成 ${result.ideas.length} 个可实现方向。`
+          : `已形成 ${result.diagnosis.hypotheses.length} 个优先验证假设。`;
+        if (!isActiveResult && backgroundTarget) {
+          void queueBackgroundSessionUpdate(backgroundTarget, (session) => {
+            const message: ExploreConversationMessage = {
+              id: crypto.randomUUID(), role: 'assistant', kind: 'result', text: resultMessage,
+              createdAt: new Date().toISOString(), requestId: result.requestId,
+            };
+            return {
+              ...session,
+              status: 'result_ready',
+              snapshot: {
+                ...session.snapshot,
+                analysisResult: result,
+                displayStage: 'analyze',
+                notice: '分析完成，以下结论均保留原始来源。',
+                conversation: [...session.snapshot.conversation, message].slice(-200),
+              },
+            };
+          }).finally(() => inFlightAnalysisSessions.current.delete(result.requestId));
+          return;
+        }
+        inFlightAnalysisSessions.current.delete(result.requestId);
         setAnalysisResult(result);
         setAnalysisPending(false);
         setWorkStatus('result_ready');
         setDisplayStage('analyze');
-        appendExploreMessage('assistant', 'result', result.mode === 'idea'
-          ? `已形成 ${result.ideas.length} 个可实现方向。`
-          : `已形成 ${result.diagnosis.hypotheses.length} 个优先验证假设。`, { requestId: result.requestId });
+        appendExploreMessage('assistant', 'result', resultMessage, { requestId: result.requestId });
         setNotice('分析完成，以下结论均保留原始来源。');
       }
     });
     window.electronAPI.onExploreAnalysisError((error) => {
       const expectedRequestId = error.mode === 'plan' ? activePlanRequestId.current : activeAnalysisRequestId.current;
-      if (error.requestId && error.requestId !== expectedRequestId) return;
+      const backgroundTarget = error.requestId ? inFlightAnalysisSessions.current.get(error.requestId) : undefined;
+      if (error.requestId && error.requestId !== expectedRequestId && !backgroundTarget) return;
+      if (error.mode === 'analysis' && error.requestId && backgroundTarget && backgroundTarget.sessionId !== activeWorkSessionId.current) {
+        void queueBackgroundSessionUpdate(backgroundTarget, (session) => {
+          const message: ExploreConversationMessage = {
+            id: crypto.randomUUID(), role: 'system', kind: 'error', text: error.message,
+            createdAt: new Date().toISOString(), requestId: error.requestId,
+          };
+          return {
+            ...session,
+            status: 'error',
+            snapshot: {
+              ...session.snapshot,
+              notice: error.message,
+              conversation: [...session.snapshot.conversation, message].slice(-200),
+            },
+          };
+        }).finally(() => inFlightAnalysisSessions.current.delete(error.requestId!));
+        return;
+      }
+      if (error.requestId) inFlightAnalysisSessions.current.delete(error.requestId);
       setAnalysisPending(false);
       setPlanPending(false);
       setWorkStatus('error');
@@ -477,8 +556,19 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
     });
     window.electronAPI.onExploreConversationMessage((message) => {
       const expected = message.mode === 'plan' ? activePlanRequestId.current : activeAnalysisRequestId.current;
-      if (message.requestId && message.requestId !== expected) return;
       if (!message.text || message.kind === 'detail') return;
+      const backgroundTarget = message.requestId ? inFlightAnalysisSessions.current.get(message.requestId) : undefined;
+      if (message.requestId && message.requestId !== expected && !backgroundTarget) return;
+      if (message.mode === 'analysis' && message.requestId && backgroundTarget && backgroundTarget.sessionId !== activeWorkSessionId.current) {
+        void queueBackgroundSessionUpdate(backgroundTarget, (session) => {
+          const item: ExploreConversationMessage = {
+            id: crypto.randomUUID(), role: 'assistant', kind: message.error ? 'error' : 'status', text: message.text,
+            createdAt: new Date(message.timestamp || Date.now()).toISOString(), requestId: message.requestId, taskId: message.taskId,
+          };
+          return { ...session, snapshot: { ...session.snapshot, conversation: [...session.snapshot.conversation, item].slice(-200) } };
+        });
+        return;
+      }
       appendExploreMessage('assistant', message.error ? 'error' : 'status', message.text, { requestId: message.requestId, taskId: message.taskId });
     });
   }, []);
@@ -593,7 +683,9 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
 
   const prepareRequest = async (event: React.FormEvent) => {
     event.preventDefault();
+    const originSession = activeWorkSession;
     try {
+      if (!originSession) throw new Error('当前探索会话尚未准备完成');
       const relatedIds = new Set(relatedKnowledge.map((card) => card.id));
       const explicitlySelectedIds = selectedKnowledgeIds.filter((id) => relatedIds.has(id));
       const selectedKnowledge = view === 'diagnosis' && explicitlySelectedIds.length
@@ -649,13 +741,73 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       activeAnalysisRequestId.current = null;
       setAnalysisRequest(prepared.request);
       setEditingInput(false);
+      const requestMessage = appendExploreMessage('user', 'request', prepared.request.goal);
+      const skillMessage = appendExploreMessage(
+        'system',
+        'status',
+        prepared.request.mode === 'idea'
+          ? '[知乎 Skill] 正在调用官方搜索能力：检查连接后检索与想法相关的真实问答和案例。'
+          : '[知乎 Skill] 正在调用官方搜索能力：检索社区经验，并与工程 Context 和外部资料交叉核对。',
+      );
+      const sessionBeforeSearch = latestWorkSession.current?.id === originSession.id ? latestWorkSession.current : originSession;
+      const persistedPendingSession: ExploreWorkSessionRecord = {
+        ...sessionBeforeSearch,
+        title: prepared.request.goal.replace(/\s+/g, ' ').slice(0, 80),
+        status: 'analyzing',
+        snapshot: {
+          ...sessionBeforeSearch.snapshot,
+          input: prepared.request.goal,
+          analysisRequest: prepared.request,
+          analysisResult: null,
+          displayStage: 'analyze',
+          editingInput: false,
+          conversation: [...sessionBeforeSearch.snapshot.conversation, requestMessage, skillMessage].slice(-200),
+        },
+      };
+      latestWorkSession.current = persistedPendingSession;
+      await window.electronAPI.saveExploreWorkSession(persistedPendingSession);
       const started = await window.electronAPI.startExploreAnalysis(prepared.request);
+      const target = { sessionId: originSession.id, mode: prepared.request.mode };
+      const sourceStatus = `[知乎 Skill] 已返回 ${started.sourceCount} 条可追溯来源，正在交给 Explore AI 提炼结论。`;
+      inFlightAnalysisSessions.current.set(started.requestId, target);
+      if (activeWorkSessionId.current !== originSession.id) {
+        void queueBackgroundSessionUpdate(target, (session) => {
+          const statusMessage: ExploreConversationMessage = {
+            id: crypto.randomUUID(), role: 'assistant', kind: 'status', text: sourceStatus,
+            createdAt: new Date().toISOString(), requestId: started.requestId, taskId: started.taskId,
+          };
+          return {
+            ...session,
+            status: 'analyzing',
+            snapshot: {
+              ...session.snapshot,
+              analysisRequest: prepared.request,
+              analysisTaskId: started.taskId,
+              analysisRequestId: started.requestId,
+              displayStage: 'analyze',
+              editingInput: false,
+              notice: `已取得 ${started.sourceCount} 条来源，Catnip 正在形成判断。`,
+              conversation: [...session.snapshot.conversation, statusMessage].slice(-200),
+            },
+          };
+        });
+        return;
+      }
       setAnalysisTaskId(started.taskId);
       setAnalysisRequestId(started.requestId);
       activeAnalysisRequestId.current = started.requestId;
-      appendExploreMessage('user', 'request', prepared.request.goal, { requestId: started.requestId, taskId: started.taskId });
+      appendExploreMessage('assistant', 'status', sourceStatus, { requestId: started.requestId, taskId: started.taskId });
       setNotice(`已取得 ${started.sourceCount} 条来源，Catnip 正在形成判断。`);
     } catch (error) {
+      if (originSession && activeWorkSessionId.current !== originSession.id) {
+        const message = error instanceof Error ? error.message : '无法准备探索请求';
+        void queueBackgroundSessionUpdate({ sessionId: originSession.id, mode: originSession.mode }, (session) => ({
+          ...session,
+          status: 'error',
+          snapshot: { ...session.snapshot, notice: message },
+        }));
+        return;
+      }
       setAnalysisPending(false);
       setWorkStatus('error');
       setNotice(error instanceof Error ? error.message : '无法准备探索请求');
@@ -893,8 +1045,12 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
     }
   };
 
-  const openSource = (url: string) => {
-    void window.electronAPI.navigateBrowser(url);
+  const openSource = async (url: string) => {
+    try {
+      await window.electronAPI.openExternalUrl(url);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : '无法打开来源原文');
+    }
   };
 
   const sourceList = (sources: SourceEvidence[], label: string) => (
@@ -903,7 +1059,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       savedUrls={savedSourceUrls}
       savingSourceUrl={savingSourceUrl}
       label={label}
-      onOpen={openSource}
+      onOpen={(url) => void openSource(url)}
       onSave={(source) => void saveSource(source)}
     />
   );
@@ -1005,7 +1161,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             <ul className="explore-session-list">
               {workSessions.slice(0, 12).map((session) => (
                 <li key={session.id}>
-                  <button className="explore-session-open" type="button" onClick={() => void openWorkSession(session.mode, session.id)}>
+                  <button className="explore-session-open" type="button" data-explore-session-id={session.id} onClick={() => void openWorkSession(session.mode, session.id)}>
                     <span className={'explore-session-kind is-' + session.mode}>{session.mode === 'idea' ? <Sparkles aria-hidden="true" /> : <SearchCheck aria-hidden="true" />}{session.mode === 'idea' ? '灵感' : '问题'}</span>
                     <span><strong>{session.title}</strong><small>{new Date(session.updatedAt).toLocaleString()} · {workStatusLabel(session.status)}</small></span>
                     <span aria-hidden="true">→</span>
@@ -1277,13 +1433,20 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   const conversationView = activeWorkSession ? (
     <section className="explore-conversation" aria-labelledby="explore-conversation-title">
       <header><div><span className="explore-section-kicker">EXPLORE AGENT</span><h3 id="explore-conversation-title"><MessageCircle aria-hidden="true" />本次探索对话</h3></div><span>{conversation.length} 条</span></header>
-      {conversation.length ? <ol>{conversation.map((message) => (
-        <li key={message.id} className={`is-${message.role} is-${message.kind}`}>
-          <span>{message.role === 'user' ? '你' : message.role === 'assistant' ? '探索 AI' : '系统'}</span>
-          <p>{message.text}</p>
-          <time>{new Date(message.createdAt).toLocaleTimeString()}</time>
-        </li>
-      ))}</ol> : <p className="explore-history-empty">描述并开始分析后，这里会单独记录本次探索过程，不会写入左侧工程 Agent 对话。</p>}
+      {conversation.length ? <ol>{conversation.map((message) => {
+        const isZhihuSkillActivity = message.kind === 'status' && message.text.startsWith('[知乎 Skill]');
+        return (
+          <li
+            key={message.id}
+            className={`is-${message.role} is-${message.kind}${isZhihuSkillActivity ? ' is-skill-activity' : ''}`}
+            data-zhihu-skill-activity={isZhihuSkillActivity ? 'true' : undefined}
+          >
+            <span>{isZhihuSkillActivity ? '知乎 Skill' : message.role === 'user' ? '你' : message.role === 'assistant' ? '探索 AI' : '系统'}</span>
+            <p>{isZhihuSkillActivity ? message.text.replace(/^\[知乎 Skill\]\s*/, '') : message.text}</p>
+            <time>{new Date(message.createdAt).toLocaleTimeString()}</time>
+          </li>
+        );
+      })}</ol> : <p className="explore-history-empty">描述并开始分析后，这里会单独记录本次探索过程，不会写入左侧工程 Agent 对话。</p>}
     </section>
   ) : null;
 

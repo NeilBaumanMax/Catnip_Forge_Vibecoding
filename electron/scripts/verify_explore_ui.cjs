@@ -13,6 +13,7 @@ const appleStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles',
 const exploreStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'explore.less'), 'utf8');
 const rendererMain = fs.readFileSync(path.join(root, 'src', 'renderer', 'main.tsx'), 'utf8');
 const mainProcess = fs.readFileSync(path.join(root, 'src', 'main', 'index.ts'), 'utf8');
+const gateway = fs.readFileSync(path.join(root, 'src', 'main', 'gateway.ts'), 'utf8');
 const preload = fs.readFileSync(path.join(root, 'src', 'preload', 'index.ts'), 'utf8');
 const ideaEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-idea-guagua.png'));
 const diagnosisEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-diagnosis-guagua.png'));
@@ -79,12 +80,19 @@ assert.match(exploreStageNav, /'describe'[\s\S]*'analyze'[\s\S]*'plan'[\s\S]*'ex
 assert.match(exploreStageNav, /onClick=\{\(\) => onSelect\(stage\.id\)\}/, 'reached stages must be directly selectable');
 assert.match(explorePanel, /本次探索对话/, 'Explore needs a separate conversation view');
 assert.match(explorePanel, /onExploreConversationMessage/, 'Explore conversation must use its own event channel');
+assert.match(explorePanel, /inFlightAnalysisSessions/, 'running analyses must retain their originating mode/session');
+assert.match(explorePanel, /queueBackgroundSessionUpdate/, 'background Explore results must persist without hijacking the active mode');
+assert.match(explorePanel, /\[知乎 Skill\][\s\S]{0,260}官方搜索能力/, 'official Zhihu Skill activity must be visible in the Explore conversation');
+assert.match(explorePanel, /data-zhihu-skill-activity/, 'Zhihu Skill activity needs a distinct visible state');
 assert.match(explorePanel, /createExploreHandoffArtifact/, 'plan completion must create project handoff artifacts');
 assert.match(explorePanel, /getExploreHandoffArtifact/, 'execution view must reload project handoff artifacts');
 assert.match(explorePanel, /snapshot:\s*\{[\s\S]{0,500}handoffArtifact: artifact[\s\S]{0,300}saveExploreWorkSession\(persisted\)/, 'handoff metadata must be explicitly persisted with the Explore dialogue');
 assert.match(explorePanel, /status: 'execution_queued'[\s\S]{0,700}conversation: persistedConversation[\s\S]{0,400}await window\.electronAPI\.saveExploreWorkSession\(persisted\)/, 'execution confirmation must be persisted before leaving Explore');
 assert.match(explorePanel, /确认提交给工程 Agent/, 'explicit engineering Agent submission action is missing');
 assert.match(exploreSourceList, /打开知乎原文/, 'Zhihu source action must be explicit');
+assert.match(explorePanel, /openExternalUrl\(url\)/, 'source actions must open a visible external URL instead of a hidden browser view');
+assert.match(gateway, /ipcMain\.handle\('app:open-external'[\s\S]{0,520}\['https:', 'http:'\]/, 'external source opening must remain restricted to HTTP(S)');
+assert.match(gateway, /target\.username \|\| target\.password/, 'external source URLs must reject embedded credentials');
 assert.match(exploreSourceList, /收藏到知识库/, 'knowledge save action must be prominent and explicit');
 
 assert.match(globalStyles, /grid-template-columns: repeat\(5, minmax\(70px, 1fr\)\) minmax\(145px, 1\.35fr\) minmax\(160px, 1\.1fr\) auto/);
@@ -104,6 +112,8 @@ assert.match(exploreStyles, /prefers-reduced-transparency/);
 assert.match(exploreStyles, /prefers-contrast/);
 assert.match(exploreStyles, /\.explore-source-actions button \{ min-height: 36px/, 'source buttons need a stable 36px hit target');
 assert.match(exploreStyles, /\.explore-idea-action-bar/, 'Idea cards need a stable footer action area');
+assert.match(exploreStyles, /Pass 16:[\s\S]{0,900}--ui-surface:\s*#071f4e/, 'flow result pages need local deep-blue surface tokens');
+assert.match(exploreStyles, /\.explore-conversation li\.is-skill-activity/, 'Zhihu Skill activity needs emphasized conversation styling');
 assert.match(exploreStyles, /\.explore-entry-card--diagnosis[\s\S]{0,500}var\(--explore-cyan\)/, 'diagnosis entry needs a distinct cyan treatment');
 assert.match(exploreStyles, /\.explore-entry-card--idea em[\s\S]{0,100}var\(--explore-purple\)/, 'idea entry needs a distinct purple treatment');
 assert.match(exploreStyles, /\.explore-entry-illustration/, 'entry illustration layout is missing');
