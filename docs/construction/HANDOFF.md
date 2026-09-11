@@ -94,3 +94,11 @@ Secret 不进源码、Renderer、Chat、日志、URL、截图、Agent 输出或�
 - 1421 × 1105 同尺寸证据为 `electron/.tmp/explore-idea-workspace-target-1421x1105.png`，源图/实现纵向对照为 `electron/.tmp/phase15-pass12-idea-comparison.png`。
 - TypeScript、Renderer build、Explore 静态契约及布局专项通过；布局专项同时覆盖 8 组响应式、Diagnosis 四阶段与 handoff 恢复、console error 0。
 - 本轮未执行真实知乎搜索、Build/Flash/Serial 或实机动作；`REAL_HARDWARE_VALIDATION_PENDING` 保留。
+
+## 2026-09-11 解问题工作页高保真重构
+
+- 解问题初始页已按 1448 × 1086 目标改为深蓝 30/70 双列；左侧保留真实问题输入、Context 勾选、工程证据、历史知识和分析动作，右侧加入学院呱呱诊断工作室 Hero 与三类报告空态。
+- 新增 `electron/src/renderer/assets/explore-diagnosis-workspace.png`；问题示例按钮可回填输入，Context 卡仍绑定原 checkbox，四阶段 Analyze → Plan → Handoff → Agent 确认门禁未改。
+- 布局门禁新增同尺寸 Diagnosis 描述态，验证问题卡、至少 5 条 Context、真实插画、4 个阶段副说明、双图标 CTA、深色画布和列高关系；既有 8 组响应式及全流程仍通过。
+- 同尺寸证据：`electron/.tmp/explore-diagnosis-workspace-target-1448x1086.png`；源图/实现对照：`electron/.tmp/phase15-pass13-diagnosis-comparison.png`。
+- 未执行真实知乎/全网搜索、Build/Flash/Serial 或实机动作；`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留。

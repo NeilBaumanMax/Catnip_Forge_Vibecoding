@@ -554,6 +554,20 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 
 本轮未执行真实知乎请求、Windows 打包、Build/Flash/Serial 或实机动作；`REAL_HARDWARE_VALIDATION_PENDING` 保留。
 
+## 2026-09-11 Phase 15 第十三轮解问题工作页
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | 通过 | Context 图标映射、问题示例和 Diagnosis 空态类型正确 |
+| `npm.cmd --prefix electron run build:renderer` | 通过 | 2822 modules；仅保留既有大 chunk warning |
+| `npm.cmd --prefix electron run verify:explore-ui` | 通过 | 双入口、来源、四阶段与确认门禁静态契约未回归 |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | 通过 | Diagnosis 30/70 双列、问题卡、6 条 Context、真实插画、4 个阶段副说明、双图标 CTA 和深色画布；8 组响应式、完整 Diagnosis/handoff、console error 0 |
+| 同尺寸视觉 QA | 通过 | `phase15-pass13-diagnosis-comparison.png`；源图与实现均为 1448 × 1086，P0/P1/P2 清零 |
+
+首轮视觉对照发现标题块被 Grid 自动排到第二行并与问题卡重叠，显式固定标题与阶段导航在第一行后修复。第二轮发现 Hero 标题末字形成第三行，将 copy 区扩至 48%、标题上限降至 40px 后恢复两行。两项均经重新截图与同尺寸组合图复核。
+
+本轮未执行真实知乎/全网搜索、Windows 打包、Build/Flash/Serial 或实机动作；`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留。
+
 ## 2026-09-11 Phase 15 第十二轮找灵感工作页
 
 | 命令/检查 | 最终结果 | 说明 |

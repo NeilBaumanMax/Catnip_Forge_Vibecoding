@@ -284,3 +284,10 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] 右侧加入真实学院夜间研究室插画、知乎价值说明和三列结构化结果空态；四阶段导航补齐副说明。
 - [x] 示例标签支持回填，既有 Explore Session、知乎连接、分析与确认交接门禁保持不变。
 - [x] TypeScript、Renderer build、Explore UI/layout、8 组响应式、Diagnosis/handoff 与 1421 × 1105 同尺寸视觉 QA 通过。
+
+### Phase 15 第十三轮
+
+- [x] 解问题工作页改为深蓝 30/70 双列，左侧整合问题输入、示例、真实 Context、工程证据与分析主操作。
+- [x] 右侧接入学院呱呱工程侦探研究室插画，并增加问题线索、原因判断、排查建议三列报告空态。
+- [x] Context checkbox、历史收藏、四阶段分析/计划/交接/确认门禁和状态恢复保持不变。
+- [x] TypeScript、Renderer build、Explore UI/layout、8 组响应式、完整 Diagnosis/handoff 与 1448 × 1086 同尺寸视觉 QA 通过。

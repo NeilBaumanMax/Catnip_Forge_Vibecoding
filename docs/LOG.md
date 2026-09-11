@@ -993,3 +993,12 @@
 - 布局专项首轮暴露旧浅色 `!important` 覆盖深色画布，修正级联后通过；新增阶段副说明又使旧文本选择器误点第三阶段，改为稳定的第四按钮定位后通过。
 - TypeScript、Renderer build、Explore UI/layout、8 组响应式、Diagnosis/handoff 与 console error 0 全部通过。同尺寸视觉证据为 `electron/.tmp/phase15-pass12-idea-comparison.png`。
 - 未执行真实知乎搜索、新 Windows 包、Build/Flash/Serial 或实机验证；`REAL_HARDWARE_VALIDATION_PENDING`。
+
+## 2026-09-11 — Phase 15 第十三轮解问题工作页高保真重构
+
+- 用户以 `codex-clipboard-QdAs1V.png` 选定解问题工作页目标；初始描述态由浅色松散表单重构为深蓝 30/70 双列，左侧 Context 使用可勾选紧凑证据卡和独立滚动槽。
+- 通过内置 Image Gen 生成学院呱呱工程侦探研究室 16:9 位图并接入 Renderer；右侧以工程证据、经验资料和 AI 分析为主叙事，下方提供三类结构化调查报告空态。
+- 问题示例按钮、Context 选择、Analysis、Plan、Handoff 和 Agent 确认行为均复用现有产品链路，未新增第二套 Agent、Skill 或任务系统。
+- 首轮同尺寸视觉 QA 修复标题 Grid 错行重叠；第二轮收敛 Hero 标题宽度和字号，消除第三行孤字。最终证据为 `electron/.tmp/phase15-pass13-diagnosis-comparison.png`。
+- TypeScript、Renderer build、Explore UI/layout、8 组响应式、完整 Diagnosis/handoff 与 console error 0 通过。
+- 未执行真实知乎/全网搜索、新 Windows 包、Build/Flash/Serial 或实机验证；`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 保留。

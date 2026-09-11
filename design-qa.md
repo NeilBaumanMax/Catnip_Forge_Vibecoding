@@ -53,6 +53,27 @@ P0/P1/P2 已清零；保留差异均来自真实性、系统窗口边界或既�
 
 final result: passed
 
+## Fidelity pass 13 — 2026-09-11
+
+- Source: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-QdAs1V.png` (1448 × 1086, selected deep-blue Investigation workspace).
+- Implementation: `electron/.tmp/explore-diagnosis-workspace-target-1448x1086.png`; exact-size stacked comparison: `electron/.tmp/phase15-pass13-diagnosis-comparison.png`.
+- State: Diagnosis describe step with gathered project Context, dark theme, collapsed Agent panel; CSS viewport and both comparison images are 1448 × 1086 at device scale 1.
+- Full-view evidence checks the 30/70 composition, header/stage hierarchy, dense evidence column, hero crop and lower report structure. A separate focused crop was unnecessary because the exact-size comparison keeps the question, Context rows, stage copy and CTA legible.
+- [P1 fixed] The former light canvas, unbounded source text and oversized empty area were replaced by the selected navy card system, internally scrolling Context rail, prominent analysis CTA, and structured right workspace.
+- [P1 fixed] A project-owned 16:9 raster now shows 学院呱呱 as a hardware-debugging detective with laptop, magnifier and code/build panels; it preserves a dark copy zone instead of substituting CSS or placeholder art.
+- [P2 fixed] The first implementation allowed the header title block to auto-place beneath the stage row, causing overlap with the question card. The final grid explicitly anchors the title and stage navigation to row one; the post-fix exact-size comparison shows clear separation.
+- [P2 fixed] The hero headline initially wrapped “成” onto a third line. The final 48% copy region and 40px cap reproduce the intended two-line hierarchy without covering the mascot.
+- Typography/copy: title, stage descriptions, Context hierarchy and CTA weights follow the reference; the product keeps truthful fixture/live data instead of copying fictional source text.
+- Spacing/layout: desktop uses 30/70 columns and equal-height work areas; narrow containers return to one column. Cards, radii and vertical rhythm match the existing Catnip design system.
+- Colors/tokens: navy, electric blue, cyan, violet and amber accents match the selected source; semantic Build, Serial, source and hardware colors remain distinct.
+- Image quality: the generated 1674 × 942 PNG is sharp, full-bleed and correctly cropped; no visible image asset is replaced by CSS art.
+- Interactions: the example button fills the problem, Context checkboxes remain usable, CTA starts the existing analysis, and four-stage plan/handoff persistence still passes.
+- Accepted P3: the app-wide draggable assistant may float over the lower report region depending on persisted position; it does not block the three report cards and remains movable.
+
+No actionable P0/P1/P2 findings remain for this pass.
+
+final result: passed
+
 ## Fidelity pass 12 — 2026-09-11
 
 - Source: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-xHyTv3.png` (1421 × 1105, selected deep-blue Idea workspace).

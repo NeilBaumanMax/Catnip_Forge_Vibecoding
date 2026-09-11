@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, BookMarked, BookOpenCheck, Cpu, ExternalLink, FileText, FolderOpen, History, Lightbulb, MessageCircle, PlayCircle, RefreshCw, Search, SearchCheck, Sparkles, Star } from 'lucide-react';
+import { ArrowRight, BookMarked, BookOpenCheck, Box, Code2, Cpu, ExternalLink, FileText, FolderOpen, Hammer, History, Lightbulb, ListChecks, MessageCircle, PenLine, PlayCircle, RefreshCw, ScanSearch, Search, SearchCheck, Sparkles, Star, Target, Terminal } from 'lucide-react';
 import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextItem, ExploreRequest, HandoffContext, IdeaResult, KnowledgeCard, SourceEvidence, ExploreZhihuConnectionStatus } from '../../common/explore';
 import type { ExploreConversationMessage, ExploreHandoffArtifact, ExploreWorkSessionRecord, ExploreWorkSessionSummary, ExploreWorkStatus } from '../../common/project-session';
 import ExploreSourceList from './explore/ExploreSourceList';
@@ -7,6 +7,7 @@ import ExploreStageNav, { type ExploreStage } from './explore/ExploreStageNav';
 import exploreIdeaGuagua from '../assets/explore-idea-guagua.png';
 import exploreDiagnosisGuagua from '../assets/explore-diagnosis-guagua.png';
 import exploreIdeaWorkspace from '../assets/explore-idea-workspace.png';
+import exploreDiagnosisWorkspace from '../assets/explore-diagnosis-workspace.png';
 
 type ExploreView = 'home' | 'idea' | 'diagnosis';
 
@@ -42,6 +43,15 @@ const CONTEXT_KIND_LABELS: Record<ExploreContextItem['kind'], string> = {
 };
 
 const IDEA_PROMPTS = ['桌面设备', '智能硬件', '学习工具', '生活创意'];
+
+function ContextKindIcon({ kind }: { kind: ExploreContextItem['kind'] }) {
+  if (kind === 'project') return <Box aria-hidden="true" />;
+  if (kind === 'target' || kind === 'hardware') return <Cpu aria-hidden="true" />;
+  if (kind === 'build') return <Hammer aria-hidden="true" />;
+  if (kind === 'serial') return <Terminal aria-hidden="true" />;
+  if (kind === 'source') return <Code2 aria-hidden="true" />;
+  return <BookMarked aria-hidden="true" />;
+}
 
 function verificationLabel(status: KnowledgeCard['verificationStatus']): string {
   if (status === 'verified_effective') return '已验证有效';
@@ -1278,13 +1288,13 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   ) : null;
 
   return (
-    <section className={`explore-panel explore-panel--flow${isIdea ? ' explore-panel--idea-flow' : ''} is-stage-${displayStage}`} data-tour-id={isIdea ? 'panel-explore-idea' : 'panel-explore-diagnosis'}>
+    <section className={`explore-panel explore-panel--flow ${isIdea ? 'explore-panel--idea-flow' : 'explore-panel--diagnosis-flow'} is-stage-${displayStage}`} data-tour-id={isIdea ? 'panel-explore-idea' : 'panel-explore-diagnosis'}>
       <header className="explore-flow-header">
         <button type="button" className="explore-back-button" onClick={() => { setView('home'); void refreshWorkSessions(); }} aria-label="返回探索首页">←</button>
         <div>
           <span className="explore-eyebrow">{isIdea ? 'IDEA' : 'INVESTIGATION'}</span>
-          <h2>{isIdea ? <>找灵感 <Sparkles aria-hidden="true" /></> : '解问题'}</h2>
-          {isIdea ? <p>在知乎上发现真实案例、经验与观点，为你的想法提供更多可能性。</p> : null}
+          <h2>{isIdea ? <>找灵感 <Sparkles aria-hidden="true" /></> : <>解问题 <small>专用</small></>}</h2>
+          <p>{isIdea ? '在知乎上发现真实案例、经验与观点，为你的想法提供更多可能性。' : '从问题出发，结合工程与资料，找到可执行的解决方案。'}</p>
         </div>
         <ExploreStageNav current={displayStage} furthest={furthestStage} onSelect={(stage) => void selectStage(stage)} />
         <span className={'explore-session-status is-' + workStatus}>{workStatusLabel(workStatus)}</span>
@@ -1296,17 +1306,21 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
         <section className="explore-input-pane" aria-label={isIdea ? '想法与当前条件' : '问题与分析资料'}>
           {displayStage === 'describe' && (editingInput || !analysisRequest) ? (
             <>
-              <label className="explore-field">
-                <span>{isIdea ? <><Lightbulb aria-hidden="true" />你想做什么？</> : '现在遇到了什么问题？'}</span>
-                <textarea
-                  value={requestText}
-                  onChange={(event) => isIdea ? setGoal(event.target.value) : setProblem(event.target.value)}
-                  placeholder={isIdea
-                    ? '例如：我想做一个放在桌面上、有陪伴感的小设备。'
-                    : '例如：固件可以 Build 和 Flash，但 Wi-Fi 在真实运行时反复断开。'}
-                  maxLength={4000}
-                />
-              </label>
+              {isIdea ? (
+                <label className="explore-field">
+                  <span><Lightbulb aria-hidden="true" />你想做什么？</span>
+                  <textarea value={requestText} onChange={(event) => setGoal(event.target.value)} placeholder="例如：我想做一个放在桌面上、有陪伴感的小设备。" maxLength={4000} />
+                </label>
+              ) : (
+                <section className="explore-diagnosis-question">
+                  <header>
+                    <strong><PenLine aria-hidden="true" />现在遇到了什么问题？</strong>
+                    <button type="button" onClick={() => setProblem('固件可以 Build 和 Flash，但 Wi-Fi 在真实运行时反复断开。')}>不知道怎么描述？ <span>试试示例</span></button>
+                  </header>
+                  <textarea aria-label="描述当前问题" value={requestText} onChange={(event) => setProblem(event.target.value)} placeholder="例如：固件可以 Build 和 Flash，但 Wi-Fi 在真实运行时反复断开。" maxLength={4000} />
+                  <small>{requestText.length}/4000</small>
+                </section>
+              )}
 
               {isIdea ? (
                 <div className="explore-idea-prompts" aria-label="灵感示例">
@@ -1332,7 +1346,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
               ) : (
                 <>
                   <fieldset className="explore-context-picker">
-                    <legend>本次分析 Context</legend>
+                    <legend><ListChecks aria-hidden="true" />本次分析 Context</legend>
                     <p>{contextLoading ? '正在收集有界工程证据...' : '已自动选择当前可用证据。取消勾选后，该项不会进入分析。'}</p>
                     {contextError ? <p className="explore-context-error" role="alert">{contextError}</p> : null}
                     <div className="explore-context-list">
@@ -1344,7 +1358,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
                             disabled={!item.available}
                             onChange={() => toggleContext(item.id)}
                           />
-                          <span className={`explore-context-kind is-${item.kind}`}>{CONTEXT_KIND_LABELS[item.kind]}</span>
+                          <span className={`explore-context-kind is-${item.kind}`}><ContextKindIcon kind={item.kind} /><small>{CONTEXT_KIND_LABELS[item.kind]}</small></span>
                           <span><strong>{item.label}</strong><small>{item.summary}</small></span>
                         </label>
                       ))}
@@ -1380,9 +1394,9 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
 
               <div className="explore-submit-row">
                 <button className="explore-primary-cta" type="submit" disabled={analysisPending || (!isIdea && contextLoading) || !(isIdea ? goal.trim() : problem.trim())}>
-                  {isIdea && !analysisPending ? <Search aria-hidden="true" /> : null}
-                  <span>{!isIdea && contextLoading ? '正在收集 Context…' : analysisPending ? '正在分析…' : isIdea ? '开始在知乎探索' : '开始分析'}</span>
-                  {isIdea && !analysisPending ? <ArrowRight aria-hidden="true" /> : null}
+                  {!analysisPending ? <Search aria-hidden="true" /> : null}
+                  <span>{!isIdea && contextLoading ? '正在收集 Context…' : analysisPending ? '正在分析…' : isIdea ? '开始在知乎探索' : '开始问题分析'}</span>
+                  {!analysisPending ? <ArrowRight aria-hidden="true" /> : null}
                 </button>
                 <span>分析阶段不会修改文件、Build、Flash 或操作串口。</span>
               </div>
@@ -1429,9 +1443,29 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
                 </section>
               </div>
             ) : (
-              <div className="explore-output-empty">
-                <SearchCheck aria-hidden="true" />
-                <div><strong>调查报告将在这里展开</strong><p>工程证据、社区经验、外部资料与来源冲突会在这里交叉呈现。</p></div>
+              <div className="explore-diagnosis-empty-shell">
+                <section className="explore-diagnosis-visual" aria-label="工程问题分析说明">
+                  <img src={exploreDiagnosisWorkspace} alt="学院呱呱在深蓝工程工作室中使用放大镜分析代码和运行状态" />
+                  <div className="explore-diagnosis-visual-copy">
+                    <span>CATNIP FORGE</span>
+                    <h3>把复杂问题拆解成<br /><em>可执行的答案</em></h3>
+                    <strong><Sparkles aria-hidden="true" />工程证据 + 经验资料 + AI 分析</strong>
+                    <ul>
+                      <li><FolderOpen aria-hidden="true" /><div><b>读取工程上下文</b><small>分析工程配置、代码结构与开发板状态</small></div></li>
+                      <li><FileText aria-hidden="true" /><div><b>结合源码与日志</b><small>综合 Build / Flash / 串口等多维线索</small></div></li>
+                      <li><Target aria-hidden="true" /><div><b>定位可能根因</b><small>对照经验知识库，给出可信的原因判断</small></div></li>
+                      <li><Lightbulb aria-hidden="true" /><div><b>生成排查建议</b><small>提供具体、可执行的解决方案</small></div></li>
+                    </ul>
+                  </div>
+                </section>
+                <section className="explore-diagnosis-empty-summary">
+                  <header><FileText aria-hidden="true" /><div><strong>调查报告将在这里展开</strong><p>基于你的问题，AI 将结合工程证据、社区经验、外部资料与来源冲突交叉呈现。</p></div></header>
+                  <div>
+                    <span><Search aria-hidden="true" /><strong>问题线索</strong><small>整理关键现象、日志片段<br />和相关代码位置。</small></span>
+                    <span><ScanSearch aria-hidden="true" /><strong>原因判断</strong><small>分析可能的根本原因，<br />并给出依据与置信度。</small></span>
+                    <span><Lightbulb aria-hidden="true" /><strong>排查建议</strong><small>提供具体的操作步骤<br />和验证方法。</small></span>
+                  </div>
+                </section>
               </div>
             )
           ) : null}

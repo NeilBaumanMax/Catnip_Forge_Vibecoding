@@ -17,6 +17,7 @@ const skillHubScreenshotPath = path.join(outputDir, 'skill-hub-topline-2048x1152
 const exploreHomeScreenshotPath = path.join(outputDir, 'explore-home-target-2048x1105.png');
 const tallTargetScreenshotPath = path.join(outputDir, 'explore-entry-target-1573x1276.png');
 const ideaWorkspaceScreenshotPath = path.join(outputDir, 'explore-idea-workspace-target-1421x1105.png');
+const diagnosisWorkspaceScreenshotPath = path.join(outputDir, 'explore-diagnosis-workspace-target-1448x1086.png');
 let vite;
 let chrome;
 let socket;
@@ -617,6 +618,41 @@ async function main() {
   await evaluate(`document.querySelector('.explore-back-button')?.click()`);
   await wait(120);
 
+  await setViewport(1448, 1086);
+  await evaluate(`document.querySelector('[data-tour-id="explore-diagnosis"]')?.click()`);
+  await wait(180);
+  const diagnosisWorkspace = await evaluate(`(() => {
+    const panel = document.querySelector('[data-tour-id="panel-explore-diagnosis"]');
+    const form = panel?.querySelector('.explore-form');
+    const input = panel?.querySelector('.explore-input-pane');
+    const output = panel?.querySelector('.explore-output-pane');
+    const artwork = panel?.querySelector('.explore-diagnosis-visual img');
+    const cta = panel?.querySelector('.explore-primary-cta');
+    const question = panel?.querySelector('.explore-diagnosis-question');
+    const panelStyle = panel ? getComputedStyle(panel) : null;
+    return {
+      exists: Boolean(panel),
+      columns: form ? getComputedStyle(form).gridTemplateColumns.split(' ').filter(Boolean).length : 0,
+      questionCardVisible: Boolean(question && question.getBoundingClientRect().height >= 130),
+      contextCardCount: panel?.querySelectorAll('.explore-context-row').length || 0,
+      artworkLoaded: Boolean(artwork?.complete && artwork.naturalWidth >= 1400 && artwork.naturalHeight >= 800),
+      stageDescriptions: panel?.querySelectorAll('.explore-stage-copy small').length || 0,
+      ctaHasIcons: cta?.querySelectorAll('svg').length === 2,
+      outputTallerThanInput: Boolean(output && input && output.getBoundingClientRect().height >= input.getBoundingClientRect().height),
+      darkCanvas: Boolean(panelStyle?.backgroundImage.includes('radial-gradient') && panelStyle.backgroundImage.includes('linear-gradient')),
+    };
+  })()`);
+  if (!diagnosisWorkspace.exists || diagnosisWorkspace.columns !== 2 || !diagnosisWorkspace.questionCardVisible
+      || diagnosisWorkspace.contextCardCount < 5 || !diagnosisWorkspace.artworkLoaded
+      || diagnosisWorkspace.stageDescriptions !== 4 || !diagnosisWorkspace.ctaHasIcons
+      || !diagnosisWorkspace.outputTallerThanInput || !diagnosisWorkspace.darkCanvas) {
+    throw new Error(`diagnosis workspace layout mismatch: ${JSON.stringify(diagnosisWorkspace)}`);
+  }
+  const diagnosisWorkspaceScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+  fs.writeFileSync(diagnosisWorkspaceScreenshotPath, Buffer.from(diagnosisWorkspaceScreenshot.data, 'base64'));
+  await evaluate(`document.querySelector('.explore-back-button')?.click()`);
+  await wait(120);
+
   await setViewport(2560, 1440);
   const flowResult = await evaluate(`(async () => {
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -624,8 +660,8 @@ async function main() {
     if (body.classList.contains('app-body--left-collapsed')) document.querySelector('[data-tour-id="agent-panel-toggle"]').click();
     body.style.setProperty('--left-panel-width', '34%');
     document.querySelector('[data-tour-id="explore-diagnosis"]').click();
-    for (let attempt = 0; attempt < 40 && !document.querySelector('.explore-field textarea'); attempt += 1) await wait(50);
-    const textarea = document.querySelector('.explore-field textarea');
+    for (let attempt = 0; attempt < 40 && !document.querySelector('.explore-diagnosis-question textarea'); attempt += 1) await wait(50);
+    const textarea = document.querySelector('.explore-diagnosis-question textarea');
     Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(textarea, '固件可以 Build 和 Flash，但 AMOLED 屏幕保持黑屏。');
     textarea.dispatchEvent(new Event('input', { bubbles: true }));
     await wait(500);
@@ -689,7 +725,7 @@ async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   const screenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log(JSON.stringify({ chatShell, targetNav, skillHubTopline, dashboardScroll, tallTarget, ideaWorkspace, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, skillHubScreenshotPath, exploreHomeScreenshotPath, tallTargetScreenshotPath, ideaWorkspaceScreenshotPath, screenshotPath, consoleErrors }, null, 2));
+  console.log(JSON.stringify({ chatShell, targetNav, skillHubTopline, dashboardScroll, tallTarget, ideaWorkspace, diagnosisWorkspace, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, skillHubScreenshotPath, exploreHomeScreenshotPath, tallTargetScreenshotPath, ideaWorkspaceScreenshotPath, diagnosisWorkspaceScreenshotPath, screenshotPath, consoleErrors }, null, 2));
 }
 
 main().catch((error) => {
