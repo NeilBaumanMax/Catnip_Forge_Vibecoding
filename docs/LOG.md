@@ -905,3 +905,12 @@
 - Gateway 变薄
 - Agent 流式输出接入
 - Runtime MCP 可稳定被 Claude Code 调用
+
+## 2026-09-11 — 星光工坊 UI v2 Aurora
+
+- 在 `idea_to_production` 上按交接包先完成控件、真实数据与回调映射，再实施 `UI_CORE` Phase 1–4。
+- 新增 Aurora 外观并保留 light/dark；统一深海蓝外壳、明亮右工作区、Agent/输入/导航/弹层层级。
+- Explore 两入口接入本地合法学院呱呱动作图，并覆盖首页、记录、Context、来源、计划、交接与确认阶段；未改只分析和一次性确认程序门禁。
+- 学院呱呱替换旧助手空态/引导品牌展示；DeepSeek provider、模型、执行器、IPC 与 Secret 路径无改动。
+- 新增真正覆盖 TSX 的 `typecheck:renderer`，补齐 Aurora/动作图/横幅裁切/学院呱呱 UI 回归。
+- Runtime/Electron 类型和构建、专项回归、8 场景布局与隔离真实 Electron Workbench smoke 通过。未重新打包、未真实搜索/调用模型/执行硬件；`REAL_HARDWARE_VALIDATION_PENDING`。

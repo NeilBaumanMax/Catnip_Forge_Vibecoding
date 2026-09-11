@@ -104,3 +104,12 @@ Phase 0：13 个检查目标通过、2 次 pytest 启动失败、3 组未验证�
 - Agent 列表不再暴露未归属只读历史；用户数据中的 legacy session/unassigned 记录已按用户要求清除。
 - 当前发布版本：`v2.0.0` / Build `7201` / npm `2.0.0-7201` / PE `2.0.0.7201`。
 - `pack:win`、`verify:release`、`verify:version` 通过；包入口为 `electron/dist-package/win-unpacked/Catnip Forge.exe`。
+
+## 2026-09-11 · 星光工坊 UI v2 Aurora
+
+- 已按用户交接包完成 Phase 0 现场映射和无冲突 `UI_CORE`：默认 Aurora 外观、深海蓝 Agent/导航、明亮工作区、Explore 紫/青双入口动作插画、全流程表单/来源/计划/交接主题、学院呱呱空态与引导。
+- 现有 light/dark 继续有效；DeepSeek、会话、工程选择、附件、Skills、队列、Explore Context/知识/来源、只分析/只计划/一次性确认、Runtime/Hardboard/Serial 契约均保留。没有新增概念图里的假模型选择器、连接状态、示例记录或第二套任务系统。
+- 新增 Renderer TSX 类型门禁。Runtime/Electron 类型与构建、Explore/Chat/会话/门禁/Skill/硬件 mock 专项和隔离真实 Electron Workbench smoke 均通过；布局覆盖 8 个视口/分栏并留下 1536×1024 截图。
+- `verify:software-assistant-ui` 与 `verify:project-session-ui` 因没有正在运行的指定 CDP 成品目标标记 `ENVIRONMENT_BLOCKED`；本轮未重打 Windows 包。发布时需基于本提交重打并复测 packaged UI、release/version、离线资源和 Secret 门禁。
+- GPU 独立工作流未获本轮授权，启动策略未改；未执行真实搜索、DeepSeek 请求或硬件动作，`REAL_HARDWARE_VALIDATION_PENDING` 保留。
+- 详细文件映射、首次失败和截图证据见 [Phase 0 基线](PHASE_UI_V2_AURORA_BASELINE.md) 与 [Aurora 交付报告](PHASE_UI_V2_AURORA_DELIVERY.md)。

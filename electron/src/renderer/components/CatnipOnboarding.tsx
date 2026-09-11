@@ -39,7 +39,7 @@ const STEPS: TourStep[] = [
   {
     id: 'welcome',
     eyebrow: '欢迎来到 Catnip Forge',
-    title: '跟着猫薄荷认识工作区',
+    title: '跟着学院呱呱认识工作区',
     content: '这是一段约 5 分钟的离线导览。不会修改工程、调用模型、编译、烧录或打开串口，你可以随时退出。',
     actionLabel: '开始认识',
   },
@@ -55,7 +55,7 @@ const STEPS: TourStep[] = [
     id: 'repository-tab',
     eyebrow: '第二站 · 资源仓库',
     title: '请点击“仓库”',
-    content: '这里集中管理 Skills、硬件工程和参考代码。亲自点击高亮按钮，猫薄荷会继续带路。',
+    content: '这里集中管理 Skills、硬件工程和参考代码。亲自点击高亮按钮，学院呱呱会继续带路。',
     target: '[data-tour-id="tab-repo"]',
     actionLabel: '等待点击“仓库”',
     advanceOnTargetClick: true,
@@ -201,22 +201,22 @@ const STEPS: TourStep[] = [
     title: '点“＋ Skills”加入专业能力',
     content: '选择器会把 @Skill 插入当前光标位置，可在一条任务中加入多个 Skill。也可以直接输入“@”搜索，退格一次可完整删除引用。',
     target: '[data-tour-id="skill-button"]',
-    actionLabel: '最后认识猫薄荷',
+    actionLabel: '最后认识学院呱呱',
     prepare: 'agent',
   },
   {
     id: 'assistant-trigger',
-    eyebrow: '软件助手 · 猫薄荷',
-    title: '请点击右下角的猫薄荷',
+    eyebrow: '软件助手 · 学院呱呱',
+    title: '请点击右下角的学院呱呱',
     content: '除了开发 Agent，我也是软件使用聊天机器人。点击高亮的小猫打开我的设置和问答面板。',
     target: '[data-tour-id="assistant-trigger"]',
-    actionLabel: '等待点击猫薄荷',
+    actionLabel: '等待点击学院呱呱',
     advanceOnTargetClick: true,
   },
   {
     id: 'assistant',
     eyebrow: '软件助手 · 随时来问我',
-    title: '不会使用软件，就问猫薄荷',
+    title: '不会使用软件，就问学院呱呱',
     content: '我可以回答界面、编译、烧录、串口和 Skills 的使用问题。顶部可切换亮暗模式、重播新手教程、调节小猫显示大小；小猫本身还可以拖动。',
     target: '.software-assistant-popover',
     actionLabel: '完成新手旅程',
@@ -226,7 +226,7 @@ const STEPS: TourStep[] = [
     id: 'complete',
     eyebrow: '新手旅程完成 · Enjoy',
     title: 'One Prompt, Working Hardware',
-    content: '从一句 Prompt，到真正运行的硬件。现在把你的目标告诉 Agent，开始创造吧；遇到不会的地方，猫薄荷一直在右下角等你。',
+    content: '从一句 Prompt，到真正运行的硬件。现在把你的目标告诉 Agent，开始创造吧；遇到不会的地方，学院呱呱一直在右下角等你。',
     actionLabel: '开始创造',
   },
 ];
@@ -411,7 +411,7 @@ export default function CatnipOnboarding({
       <section className="catnip-onboarding-invitation" role="dialog" aria-labelledby="catnip-invitation-title">
         <img src={catnipAssistantImage} alt="" aria-hidden="true" />
         <div>
-          <span>猫薄荷新手旅程</span>
+          <span>学院呱呱新手旅程</span>
           <h2 id="catnip-invitation-title">第一次使用 Catnip Forge？</h2>
           <p>我可以用约 5 分钟带你认识主要功能。全程离线，不会碰你的工程或硬件。</p>
           <div className="catnip-onboarding-invitation-actions">

@@ -57,7 +57,7 @@ function detectLanguage(filePath: string): string {
 }
 
 const configureMonaco: BeforeMount = (instance) => {
-  if (!instance.languages.getLanguages().some((language) => language.id === 'cmake')) {
+  if (!instance.languages.getLanguages().some((language: { id: string }) => language.id === 'cmake')) {
     instance.languages.register({ id: 'cmake', extensions: ['.cmake'], filenames: ['CMakeLists.txt'] });
     instance.languages.setMonarchTokensProvider('cmake', {
       ignoreCase: true,

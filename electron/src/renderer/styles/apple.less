@@ -2314,6 +2314,345 @@ select.nes-select {
   textarea { background: #fff !important; }
 }
 
+/* Catnip Forge “Starlight Workshop” preset. Business components keep their
+   existing state and callbacks; this layer only changes materials and layout. */
+:root[data-theme="aurora"] {
+  color-scheme: dark;
+  --ui-accent: #4f8cff;
+  --ui-accent-hover: #6b9dff;
+  --ui-accent-pressed: #3575ea;
+  --ui-green: #48b987;
+  --ui-orange: #e9a743;
+  --ui-red: #ff7380;
+  --ui-text: #edf4ff;
+  --ui-text-secondary: #b5c5e0;
+  --ui-text-tertiary: #8398bb;
+  --ui-canvas: #08142f;
+  --ui-surface: rgba(20, 36, 64, 0.94);
+  --ui-surface-solid: #142440;
+  --ui-sidebar: rgba(12, 27, 58, 0.94);
+  --ui-toolbar: rgba(20, 39, 75, 0.92);
+  --ui-control-bg: rgba(29, 53, 90, 0.88);
+  --ui-fill: rgba(147, 177, 226, 0.1);
+  --ui-fill-hover: rgba(147, 177, 226, 0.17);
+  --ui-separator: rgba(174, 201, 245, 0.14);
+  --ui-separator-strong: rgba(174, 201, 245, 0.26);
+  --ui-focus: rgba(93, 153, 255, 0.3);
+  --ui-scrollbar-thumb: rgba(130, 161, 213, 0.4);
+  --ui-shadow-sm: 0 10px 28px rgba(2, 8, 24, 0.18);
+  --ui-shadow-lg: 0 24px 70px rgba(2, 8, 24, 0.42);
+  --ui-radius-sm: 10px;
+  --ui-radius: 16px;
+  --ui-radius-lg: 20px;
+  --nes-navy: #0c1735;
+  --nes-blue: #4f8cff;
+  --nes-blue-2: #6b9dff;
+  --nes-white: #edf4ff;
+  --nes-red: #ff7380;
+  --nes-yellow: #f5c45b;
+  --nes-green: #48b987;
+  --nes-ink: #edf4ff;
+  --nes-shadow: transparent;
+  --nes-border: rgba(174, 201, 245, 0.16);
+}
+
+:root[data-theme="aurora"] body {
+  background:
+    radial-gradient(ellipse at 12% 108%, rgba(124, 58, 237, 0.22), transparent 36%),
+    radial-gradient(ellipse at 92% -12%, rgba(36, 92, 219, 0.38), transparent 40%),
+    linear-gradient(145deg, #07122b 0%, #0c1735 52%, #102454 100%);
+}
+
+:root[data-theme="aurora"] .app {
+  padding: 8px;
+  background:
+    radial-gradient(circle at 4% 8%, rgba(245, 196, 91, 0.3) 0 1px, transparent 2px),
+    radial-gradient(circle at 77% 4%, rgba(185, 210, 255, 0.35) 0 1px, transparent 2px),
+    radial-gradient(circle at 96% 74%, rgba(185, 210, 255, 0.24) 0 1px, transparent 2px);
+  background-size: 150px 150px, 210px 210px, 175px 175px;
+}
+
+:root[data-theme="aurora"] .app-body {
+  gap: 8px;
+}
+
+:root[data-theme="aurora"] .chat-panel,
+:root[data-theme="aurora"] .browser-panel {
+  overflow: hidden;
+  border: 1px solid rgba(174, 201, 245, 0.18) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 20px 55px rgba(1, 7, 24, 0.3) !important;
+}
+
+:root[data-theme="aurora"] .chat-panel {
+  grid-template-columns: minmax(132px, 27%) minmax(0, 1fr);
+  color: #edf4ff;
+  background: rgba(15, 30, 59, 0.9);
+}
+
+:root[data-theme="aurora"] .chat-history {
+  position: relative;
+  color: #dfeaff;
+  background:
+    radial-gradient(circle at 28% 90%, rgba(124, 58, 237, 0.2), transparent 26%),
+    linear-gradient(180deg, rgba(10, 25, 55, 0.98), rgba(13, 29, 61, 0.94));
+  border-right-color: rgba(174, 201, 245, 0.12);
+}
+
+:root[data-theme="aurora"] .chat-history::after {
+  content: "";
+  position: absolute;
+  inset: auto 10px 12px;
+  height: 116px;
+  pointer-events: none;
+  opacity: 0.6;
+  background:
+    linear-gradient(150deg, transparent 0 48%, rgba(62, 112, 187, 0.32) 49% 63%, transparent 64%),
+    radial-gradient(ellipse at 22% 96%, rgba(245, 196, 91, 0.28), transparent 34%),
+    radial-gradient(circle at 68% 42%, rgba(245, 196, 91, 0.75) 0 2px, transparent 3px),
+    radial-gradient(circle at 82% 18%, rgba(185, 210, 255, 0.7) 0 1px, transparent 2px);
+  border-radius: 14px;
+}
+
+:root[data-theme="aurora"] .chat-history-header {
+  min-height: 52px;
+  border-bottom-color: rgba(174, 201, 245, 0.12);
+}
+
+:root[data-theme="aurora"] .chat-history-header button,
+:root[data-theme="aurora"] .chat-history-toggle,
+:root[data-theme="aurora"] .chat-history-more {
+  color: #cfe0ff;
+  background: rgba(143, 175, 227, 0.1);
+}
+
+:root[data-theme="aurora"] .chat-history-list {
+  position: relative;
+  z-index: 1;
+  padding: 8px;
+  padding-bottom: 120px;
+}
+
+:root[data-theme="aurora"] .chat-history-item {
+  border-radius: 10px;
+}
+
+:root[data-theme="aurora"] .chat-history-item:hover { background: rgba(132, 166, 224, 0.1); }
+:root[data-theme="aurora"] .chat-history-item.is-active {
+  background: linear-gradient(100deg, rgba(79, 140, 255, 0.3), rgba(124, 58, 237, 0.14));
+  box-shadow: inset 3px 0 #6b9dff;
+}
+
+:root[data-theme="aurora"] .chat-history-select,
+:root[data-theme="aurora"] .chat-history-item.is-active .chat-history-select { color: #edf4ff; }
+:root[data-theme="aurora"] .chat-history-select small { color: #8fa5c9; }
+
+:root[data-theme="aurora"] .chat-conversation {
+  background:
+    radial-gradient(circle at 82% 12%, rgba(79, 140, 255, 0.12), transparent 32%),
+    #142440;
+}
+
+:root[data-theme="aurora"] .chat-title {
+  min-height: 52px;
+  color: #edf4ff;
+  background: rgba(17, 34, 66, 0.88);
+  border-bottom-color: rgba(174, 201, 245, 0.12);
+}
+
+:root[data-theme="aurora"] .chat-professional-toggle {
+  color: #9bc2ff;
+  background: rgba(79, 140, 255, 0.12);
+  border-color: rgba(107, 157, 255, 0.22);
+}
+
+:root[data-theme="aurora"] .chat-agent-status {
+  color: #b9ebd5;
+  background: rgba(72, 185, 135, 0.12);
+}
+
+:root[data-theme="aurora"] .chat-messages {
+  padding: clamp(16px, 2vw, 26px);
+}
+
+:root[data-theme="aurora"] .chat-empty-state {
+  min-height: 100%;
+  color: #9eafd0;
+}
+
+:root[data-theme="aurora"] .chat-empty-state img {
+  width: clamp(104px, 11vw, 144px);
+  max-height: 168px;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 30px rgba(1, 7, 24, 0.36));
+}
+
+:root[data-theme="aurora"] .chat-empty-state strong {
+  color: #edf4ff;
+  font-size: clamp(17px, 1.35vw, 21px);
+}
+
+:root[data-theme="aurora"] .chat-empty-state span { color: #9eafd0; }
+:root[data-theme="aurora"] .chat-msg--agent { background: rgba(29, 53, 90, 0.74) !important; }
+:root[data-theme="aurora"] .chat-msg--user { background: rgba(48, 94, 174, 0.5) !important; }
+
+:root[data-theme="aurora"] .chat-input {
+  margin: 0 12px 12px;
+  padding: 10px;
+  background: rgba(24, 46, 82, 0.94);
+  border: 1px solid rgba(174, 201, 245, 0.16);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(1, 7, 24, 0.24);
+}
+
+:root[data-theme="aurora"] .chat-input .chat-composer-editor textarea.nes-input,
+:root[data-theme="aurora"] .chat-input-highlight {
+  color: #edf4ff !important;
+  background: rgba(7, 18, 43, 0.62) !important;
+}
+
+:root[data-theme="aurora"] .panel-divider {
+  width: 8px;
+  background: rgba(5, 15, 38, 0.64);
+  border: 0;
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+:root[data-theme="aurora"] .panel-divider::before { width: 2px; height: 54px; background: rgba(151, 182, 234, 0.28); box-shadow: none; }
+:root[data-theme="aurora"] .panel-divider-toggle { color: #cfe0ff; background: #1d355a; border-color: rgba(174, 201, 245, 0.2); border-radius: 8px; }
+
+:root[data-theme="aurora"] .browser-panel {
+  --ui-accent: #245cdb;
+  --ui-accent-hover: #174ec5;
+  --ui-accent-pressed: #123fa7;
+  --ui-green: #2d8a65;
+  --ui-orange: #a56716;
+  --ui-red: #c63c4a;
+  --ui-text: #16264b;
+  --ui-text-secondary: #566987;
+  --ui-text-tertiary: #71819c;
+  --ui-surface: rgba(247, 250, 255, 0.92);
+  --ui-surface-solid: #f7faff;
+  --ui-sidebar: rgba(231, 240, 255, 0.94);
+  --ui-toolbar: rgba(241, 247, 255, 0.92);
+  --ui-control-bg: rgba(255, 255, 255, 0.92);
+  --ui-fill: rgba(36, 92, 219, 0.07);
+  --ui-fill-hover: rgba(36, 92, 219, 0.12);
+  --ui-separator: rgba(38, 71, 126, 0.14);
+  --ui-separator-strong: rgba(38, 71, 126, 0.25);
+  --ui-focus: rgba(36, 92, 219, 0.24);
+  color: var(--ui-text);
+  background: linear-gradient(145deg, #edf4ff, #e7f0ff);
+}
+
+:root[data-theme="aurora"] .workbench-mode-tabs {
+  min-height: 52px;
+  padding: 7px !important;
+  color: #dce9ff !important;
+  background: rgba(12, 23, 53, 0.96) !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(174, 201, 245, 0.16) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="aurora"] .workbench-mode-tabs .nes-btn {
+  min-height: 38px;
+  color: #b9cae7 !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="aurora"] .workbench-mode-tabs .nes-btn:hover { color: #fff !important; background: rgba(127, 160, 220, 0.12) !important; }
+:root[data-theme="aurora"] .workbench-mode-tabs .nes-btn.is-primary {
+  color: #fff !important;
+  background: linear-gradient(135deg, #245cdb, #4f8cff) !important;
+  box-shadow: 0 7px 18px rgba(36, 92, 219, 0.32) !important;
+}
+
+:root[data-theme="aurora"] .active-project-switch {
+  min-height: 38px;
+  color: #dce9ff;
+  background: rgba(29, 53, 90, 0.76);
+  border-color: rgba(174, 201, 245, 0.18);
+  border-radius: 10px;
+}
+
+:root[data-theme="aurora"] .active-project-switch span { color: #8fa5c9; }
+:root[data-theme="aurora"] .active-project-switch strong { color: #83b3ff; }
+:root[data-theme="aurora"] .ui-build-label { color: #7f93b6; }
+
+:root[data-theme="aurora"] .workspace-panel,
+:root[data-theme="aurora"] .serial-monitor,
+:root[data-theme="aurora"] .task-manager-panel,
+:root[data-theme="aurora"] .editor-workspace {
+  background: transparent;
+}
+
+:root[data-theme="aurora"] .workspace-hero,
+:root[data-theme="aurora"] .workspace-section,
+:root[data-theme="aurora"] .task-manager-compile,
+:root[data-theme="aurora"] .task-manager-diagnostics {
+  background: rgba(255, 255, 255, 0.78) !important;
+  border-color: rgba(52, 83, 137, 0.13) !important;
+  box-shadow: 0 10px 28px rgba(39, 70, 124, 0.08) !important;
+  backdrop-filter: blur(18px) saturate(120%);
+}
+
+:root[data-theme="aurora"] .workspace-hero {
+  background:
+    radial-gradient(circle at 90% 20%, rgba(124, 58, 237, 0.12), transparent 32%),
+    linear-gradient(120deg, rgba(255, 255, 255, 0.92), rgba(230, 240, 255, 0.82)) !important;
+}
+
+:root[data-theme="aurora"] .skill-manager-row,
+:root[data-theme="aurora"] .workspace-item {
+  background: transparent !important;
+  border-color: transparent !important;
+  border-bottom-color: rgba(52, 83, 137, 0.12) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="aurora"] .skill-manager-row:hover,
+:root[data-theme="aurora"] .workspace-item:hover { background: rgba(36, 92, 219, 0.06) !important; }
+
+:root[data-theme="aurora"] .startup-key-backdrop,
+:root[data-theme="aurora"] .project-picker-backdrop {
+  background: rgba(4, 12, 31, 0.72);
+  backdrop-filter: blur(18px) saturate(120%);
+}
+
+:root[data-theme="aurora"] .startup-key-dialog,
+:root[data-theme="aurora"] .project-picker-dialog,
+:root[data-theme="aurora"] .software-assistant-popover,
+:root[data-theme="aurora"] .skill-editor {
+  border: 1px solid rgba(152, 183, 233, 0.22);
+  box-shadow: 0 30px 90px rgba(1, 7, 24, 0.48);
+}
+
+:root[data-theme="aurora"] .appearance-settings-trigger {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+@media (max-width: 820px) {
+  :root[data-theme="aurora"] .app { padding: 5px; }
+  :root[data-theme="aurora"] .chat-input { margin: 0 7px 7px; }
+  :root[data-theme="aurora"] .workbench-mode-tabs { min-height: 46px; padding: 4px !important; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-theme="aurora"] .chat-panel,
+  :root[data-theme="aurora"] .chat-conversation,
+  :root[data-theme="aurora"] .chat-history,
+  :root[data-theme="aurora"] .workspace-hero,
+  :root[data-theme="aurora"] .workspace-section { backdrop-filter: none; }
+}
+
 :root[data-theme="dark"] {
     color-scheme: dark;
     --ui-accent: #0a84ff;
