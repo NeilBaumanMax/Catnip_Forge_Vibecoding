@@ -246,3 +246,10 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] 删除三段容器的 NES 黑灰表面，恢复蓝色半透明玻璃材质。
 - [x] 清除外层全宽长条的背景、边框、阴影、滤镜与伪元素，框间星空壁纸恢复可见。
 - [x] 增加计算样式回归门禁并完成 `phase15-v6-shell-comparison.png` 聚焦视觉 QA。
+
+### Phase 15 第六轮
+
+- [x] Explore 双入口提升至桌面 500px，并保留低高度/窄容器可用高度。
+- [x] 知乎状态、重新检查和待连接操作迁入左侧独立卡片，不再与 Hero 状态胶囊重复。
+- [x] 首页画布和内容卡使用低亮度蓝紫渐变，系统放大 Explore 主要文字层级。
+- [x] TypeScript、Renderer build、Explore UI/layout 与 2048 × 1105 归一化视觉 QA 通过。

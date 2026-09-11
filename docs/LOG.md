@@ -945,3 +945,11 @@
 - 将全宽 `.workspace-global-nav` 收敛为纯几何定位层，显式清除背景、边框、阴影、滤镜、背景模糊和伪元素；三段间隙恢复显示星空壁纸。
 - `verify:explore-layout-ui` 新增计算样式门禁；第一次因测试错误重复换算 RGBA alpha 误报，修正后通过，三个分段均为 `rgba(9, 39, 98, 0.76)`。
 - 最终 2048px 聚焦对照为 `electron/.tmp/phase15-v6-shell-comparison.png`；未执行真实搜索、新 Windows 包或硬件动作。
+
+## 2026-09-11 — Phase 15 第六轮 Explore 可读性与连接入口
+
+- Explore 首页移除 Hero 中重复的知乎状态胶囊；真实连接状态、重新检查、安装/配置操作及安全说明统一进入左侧独立卡片。
+- 双入口桌面高度增至 500px，低高度窗口 450px、窄容器 410px；入口标题最高 40px、正文 15px，历史/知识/工程摘要文字同步放大。
+- 首页、双入口及摘要区改用低亮度蓝紫渐变，减少纯白眩光但保持深色文字对比。
+- 布局专项新增连接卡左侧几何、入口高度和字体尺寸门禁；TypeScript、Renderer build、Explore UI/layout 均通过。
+- 用户 2559 × 1381 截图归一化至 2048 × 1105 后与实现并排，证据为 `electron/.tmp/phase15-v7-explore-comparison.png`。

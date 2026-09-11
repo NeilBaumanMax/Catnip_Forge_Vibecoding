@@ -53,6 +53,34 @@ P0/P1/P2 已清零；保留差异均来自真实性、系统窗口边界或既�
 
 final result: passed
 
+## Fidelity pass 6 — 2026-09-11
+
+- Source visual truth: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-v0IC9N.png` at 2559 × 1381 pixels, showing the live Explore home before this correction.
+- Normalization: source resized to 2048 × 1105 at device scale 1 equivalent; implementation captured at a 2048 × 1105 CSS viewport with the left workspace set to 30%.
+- Implementation: `electron/.tmp/explore-home-target-2048x1105.png`.
+- Full-view comparison: `electron/.tmp/phase15-v7-explore-comparison.png`, normalized source left and implementation right.
+- Focused review was performed on the full-height entry and connection region because both are readable at the 4096 × 1105 combined resolution; no additional crop was required.
+
+**Comparison history and findings**
+
+- [P1 fixed] Explore typography was materially smaller than the surrounding desktop shell. Entry titles now compute to 40px on desktop (31.2px compact), descriptions to 15px, Hero copy to 17px, and history/knowledge/project text was raised by one hierarchy step.
+- [P2 fixed] The 438px entry target still appeared shallow in the user's live viewport. Desktop cards now measure 500px; low-height windows use 450px and narrow containers use 410px without text/art overlap.
+- [P2 fixed] The connected Zhihu state was reduced to a Hero pill while the full connection component disappeared. The real status and all existing safe connection actions now render in one independent left-aligned card.
+- [P2 fixed] Large near-white surfaces made the page feel overexposed. The home canvas, entry cards and dashboard surfaces now use restrained blue-purple gradients with dark navy text preserved.
+
+**Required fidelity surfaces**
+
+- Fonts/typography: larger optical hierarchy, readable body size and unchanged system font fallback; automated minimums cover entry titles and descriptions.
+- Spacing/layout: connection card occupies the left half; cards are taller and illustrations remain right-anchored without crossing copy in all eight responsive scenarios.
+- Colors/tokens: brightness is reduced with cool blue-purple gradients; semantic purple/cyan entry accents and success/error connection colors remain intact.
+- Image quality: the supplied Explore mascot assets remain unchanged, sharp and uncropped; no substitute asset or code-drawn illustration was added.
+- Copy/content: live connection messages, actions, sessions, knowledge and project data continue to come from existing product state. Test screenshots use honest fixture/empty state rather than copying reference data.
+- Interactions/accessibility: both entries, refresh/install/configure connection actions, six workspace tabs and four-stage Explore flow remain functional; console errors are 0.
+
+No actionable P0/P1/P2 findings remain for this correction.
+
+final result: passed
+
 ## Fidelity pass 5 — 2026-09-11
 
 - Source: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-MFkVAd.png`, showing the unwanted continuous dark strip behind the three shell segments.

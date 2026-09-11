@@ -13,6 +13,7 @@ const screenshotPath = path.join(outputDir, 'explore-layout-ui.png');
 const entryScreenshotPath = path.join(outputDir, 'explore-entry-layout-ui.png');
 const targetScreenshotPath = path.join(outputDir, 'explore-entry-target-1536x1024.png');
 const shellScreenshotPath = path.join(outputDir, 'workspace-shell-target-2048x1152.png');
+const exploreHomeScreenshotPath = path.join(outputDir, 'explore-home-target-2048x1105.png');
 const tallTargetScreenshotPath = path.join(outputDir, 'explore-entry-target-1573x1276.png');
 let vite;
 let chrome;
@@ -123,6 +124,8 @@ async function measure(width, height, leftPercent, collapsed = false) {
         loaded: Boolean(image?.complete && image.naturalWidth >= 1200 && image.naturalHeight >= 1200),
         anchoredRight: Boolean(artRect && artRect.left >= cardRect.left + cardRect.width * 0.47 && artRect.right <= cardRect.right + cardRect.width * 0.08),
         copyClear: Boolean(artRect && copyRight <= artRect.left + 2),
+        titleFontSize: Number.parseFloat(getComputedStyle(title).fontSize),
+        descriptionFontSize: Number.parseFloat(getComputedStyle(description).fontSize),
         card: cardRect ? [cardRect.left, cardRect.right, cardRect.width, cardRect.height] : null,
         art: artRect ? [artRect.left, artRect.right, artRect.width] : null,
         copyRight,
@@ -357,7 +360,7 @@ async function main() {
     if (scenario.entryColumns !== expectedEntries || !scenario.panelUsesWorkspace) {
       throw new Error(`home layout mismatch: ${JSON.stringify(scenario)}`);
     }
-    if (scenario.entryArt.length !== 2 || scenario.entryArt.some((item) => !item.loaded || !item.anchoredRight || !item.copyClear || item.card[3] < 370)) {
+    if (scenario.entryArt.length !== 2 || scenario.entryArt.some((item) => !item.loaded || !item.anchoredRight || !item.copyClear || item.card[3] < 400 || item.titleFontSize < 31 || item.descriptionFontSize < 15)) {
       throw new Error(`entry illustration layout mismatch: ${JSON.stringify(scenario)}`);
     }
   }
@@ -407,6 +410,16 @@ async function main() {
   const shellScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(shellScreenshotPath, Buffer.from(shellScreenshot.data, 'base64'));
 
+  await setViewport(2048, 1105);
+  await evaluate(`(() => {
+    const body = document.querySelector('.app-body');
+    if (body?.classList.contains('app-body--left-collapsed')) document.querySelector('[data-tour-id="agent-panel-toggle"]')?.click();
+    body?.style.setProperty('--left-panel-width', '30%');
+  })()`);
+  await wait(180);
+  const exploreHomeScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
+  fs.writeFileSync(exploreHomeScreenshotPath, Buffer.from(exploreHomeScreenshot.data, 'base64'));
+
   await setViewport(1573, 1276);
   await evaluate(`(() => {
     const body = document.querySelector('.app-body');
@@ -416,10 +429,19 @@ async function main() {
   const tallTarget = await evaluate(`(() => {
     const entries = [...document.querySelectorAll('.explore-entry-card')].map((entry) => entry.getBoundingClientRect().height);
     const dashboard = document.querySelector('.explore-home-dashboard-grid')?.getBoundingClientRect();
+    const panel = document.querySelector('.explore-panel')?.getBoundingClientRect();
+    const connection = document.querySelector('.explore-home-status-row .explore-connection-status')?.getBoundingClientRect();
     const controls = document.querySelector('.workspace-window-controls')?.getBoundingClientRect();
-    return { viewport: [innerWidth, innerHeight], entries, dashboardHeight: dashboard?.height || 0, controlsRight: controls?.right || 0 };
+    return {
+      viewport: [innerWidth, innerHeight],
+      entries,
+      dashboardHeight: dashboard?.height || 0,
+      controlsRight: controls?.right || 0,
+      connectionVisible: Boolean(connection && connection.width > 300 && connection.height >= 80),
+      connectionIsLeftCard: Boolean(connection && panel && connection.left <= panel.left + 30 && connection.right <= panel.left + panel.width * 0.55),
+    };
   })()`);
-  if (tallTarget.entries.some((height) => height < 430) || tallTarget.dashboardHeight < 480 || tallTarget.controlsRight > 1565) {
+  if (tallTarget.entries.some((height) => height < 490) || tallTarget.dashboardHeight < 480 || tallTarget.controlsRight > 1565 || !tallTarget.connectionVisible || !tallTarget.connectionIsLeftCard) {
     throw new Error(`tall target layout mismatch: ${JSON.stringify(tallTarget)}`);
   }
   const tallTargetScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
@@ -496,7 +518,7 @@ async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   const screenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log(JSON.stringify({ chatShell, targetNav, tallTarget, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, tallTargetScreenshotPath, screenshotPath, consoleErrors }, null, 2));
+  console.log(JSON.stringify({ chatShell, targetNav, tallTarget, scenarios, flowResult, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, exploreHomeScreenshotPath, tallTargetScreenshotPath, screenshotPath, consoleErrors }, null, 2));
 }
 
 main().catch((error) => {

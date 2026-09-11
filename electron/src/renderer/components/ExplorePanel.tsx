@@ -952,14 +952,12 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             <p className="explore-reading-copy">把模糊想法变成可实现方向，或者结合工程证据定位问题。</p>
           </div>
           <div className="explore-home-metrics" aria-label="探索状态摘要">
-            <span className={`explore-metric explore-metric--${connectionState}`}>
-              <i aria-hidden="true" />
-              {connectionState === 'connected' ? '知乎已连接' : connectionState === 'needs_secret' ? '知乎待连接' : connectionState === 'needs_install' ? '连接组件待安装' : connectionState === 'error' ? '连接异常' : '检查连接中'}
-            </span>
             <span className="explore-metric"><strong>{knowledgeCards.length}</strong> 条本地知识</span>
           </div>
         </header>
-        {connectionBadge}
+        <div className="explore-home-status-row" aria-label="知乎连接入口">
+          {connectionBadge}
+        </div>
         {notice ? <div className="explore-connection-notice" role="status">{notice}</div> : null}
         <div className="explore-entry-grid">
           <button className="explore-entry-card explore-entry-card--idea" type="button" onClick={() => enter('idea')} data-tour-id="explore-idea">

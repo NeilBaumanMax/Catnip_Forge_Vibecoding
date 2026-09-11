@@ -487,3 +487,15 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 | `git diff --check` | 通过 | 无 whitespace error，仅工作树 LF → CRLF 提示 |
 
 首次新增材质门禁因 RGBA alpha 已是 0–1 小数却被再次除以 100，误报三个蓝色表面为 0；修正检测逻辑后复测为 3。该失败属于测试实现错误，计算样式证据为三个 `rgba(9, 39, 98, 0.76)` 表面。
+
+## 2026-09-11 Phase 15 第六轮 Explore 可读性
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | 通过 | 独立连接区 DOM 与现有连接状态类型正确 |
+| `npm.cmd --prefix electron run build:renderer` | 通过 | 2820 modules；仅既有大 chunk warning |
+| `npm.cmd --prefix electron run verify:explore-ui` | 通过 | 知乎安全边界、双入口和四阶段流程静态契约未回归 |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | 通过 | 连接卡位于左半区；入口桌面 500px/窄屏 410px；标题 ≥31px、说明 ≥15px；8 组响应式和 console error 0 |
+| 归一化视觉 QA | 通过 | `phase15-v7-explore-comparison.png`；源图 2559 × 1381 归一化为 2048 × 1105 后与实现并排 |
+
+本轮专项首次即通过；未执行真实知乎请求、Build/Flash/Serial 或实机验证。

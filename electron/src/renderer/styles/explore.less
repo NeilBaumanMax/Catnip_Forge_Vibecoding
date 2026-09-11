@@ -1921,6 +1921,102 @@
   }
 }
 
+/* Pass 6: improve Explore readability and separate the Zhihu connection entry. */
+.explore-panel:not(.explore-panel--flow) {
+  font-size: 14px;
+  background: linear-gradient(145deg, rgba(218, 234, 250, 0.98) 0%, rgba(232, 229, 247, 0.97) 48%, rgba(211, 232, 245, 0.98) 100%) !important;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-home-header .explore-hero h2 {
+  font-size: clamp(44px, 4.2vw, 60px);
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-eyebrow { font-size: 12px; }
+.explore-panel:not(.explore-panel--flow) .explore-home-header .explore-hero p {
+  font-size: 17px;
+  line-height: 1.5;
+}
+.explore-panel:not(.explore-panel--flow) .explore-metric {
+  min-height: 38px;
+  padding-inline: 13px;
+  font-size: 13px;
+}
+
+.explore-home-status-row {
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.explore-home-status-row .explore-connection-status {
+  width: calc(50% - 6px);
+  min-height: 82px;
+  display: grid !important;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(211, 228, 248, 0.96), rgba(225, 220, 245, 0.94));
+  border: 1px solid rgba(72, 126, 201, 0.28);
+  border-radius: 14px;
+  box-shadow: 0 7px 20px rgba(28, 72, 139, 0.1), inset 0 1px rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px) saturate(125%);
+}
+
+.explore-home-status-row .explore-connection-copy > span { font-size: 11px; }
+.explore-home-status-row .explore-connection-copy strong { font-size: 15px; line-height: 1.35; }
+.explore-home-status-row .explore-connection-copy p { font-size: 13px; }
+.explore-home-status-row .explore-connection-actions button { font-size: 13px; }
+.explore-home-status-row .explore-connection-steps li { font-size: 12px; }
+
+.explore-panel:not(.explore-panel--flow) .explore-entry-card {
+  min-height: 500px;
+  background: linear-gradient(145deg, #ead3f7 0%, #e4dcf5 52%, #d9e5f6 100%);
+}
+.explore-panel:not(.explore-panel--flow) .explore-entry-card--diagnosis {
+  background: linear-gradient(145deg, #c9e9ef 0%, #d3e6f2 55%, #dce3f4 100%);
+}
+.explore-panel:not(.explore-panel--flow) .explore-entry-index { font-size: 12px; }
+.explore-panel:not(.explore-panel--flow) .explore-entry-card strong {
+  font-size: clamp(31px, 2.6vw, 40px);
+}
+.explore-panel:not(.explore-panel--flow) .explore-entry-card > span:not(.explore-entry-index, .explore-entry-symbol, .explore-entry-tags, .explore-entry-illustration) {
+  font-size: 15px;
+  line-height: 1.65;
+}
+.explore-panel:not(.explore-panel--flow) .explore-entry-card em { font-size: 14px; }
+.explore-panel:not(.explore-panel--flow) .explore-entry-tags > span {
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-session-history,
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-preview,
+.explore-panel:not(.explore-panel--flow) .explore-project-preview {
+  background: linear-gradient(145deg, rgba(226, 237, 250, 0.94), rgba(238, 234, 248, 0.9));
+}
+.explore-panel:not(.explore-panel--flow) .explore-section-kicker { font-size: 10px; }
+.explore-panel:not(.explore-panel--flow) .explore-section-header h3 { font-size: 19px; }
+.explore-panel:not(.explore-panel--flow) .explore-section-header > span,
+.explore-panel:not(.explore-panel--flow) .explore-history-actions button { font-size: 12px; }
+.explore-panel:not(.explore-panel--flow) .explore-session-list strong,
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-link { font-size: 14px; }
+.explore-panel:not(.explore-panel--flow) .explore-session-list small,
+.explore-panel:not(.explore-panel--flow) .explore-history-empty,
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-main > small { font-size: 11px; }
+.explore-panel:not(.explore-panel--flow) .explore-session-kind,
+.explore-panel:not(.explore-panel--flow) .explore-verification-badge { font-size: 10px; }
+.explore-panel:not(.explore-panel--flow) .explore-knowledge-main p { font-size: 13px; line-height: 1.5; }
+.explore-panel:not(.explore-panel--flow) .explore-project-summary span { font-size: 12px; }
+.explore-panel:not(.explore-panel--flow) .explore-project-summary strong { font-size: 14px; }
+.explore-panel:not(.explore-panel--flow) .explore-project-summary code { font-size: 11px; }
+
+@media (max-height: 1050px) {
+  .explore-panel:not(.explore-panel--flow) .explore-entry-card { min-height: 450px; }
+}
+
+@container explore (max-width: 699px) {
+  .explore-home-status-row .explore-connection-status { width: 100%; }
+  .explore-panel:not(.explore-panel--flow) .explore-entry-card { min-height: 410px; }
+}
+
 /* The global positioning layer is geometry only. Any material here recreates
    the retired full-width bar and hides the cosmic wallpaper between segments. */
 :root[data-theme="dark"] .workspace-global-nav,
