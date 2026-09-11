@@ -286,26 +286,24 @@ export function getWorkbenchOverview(): WorkbenchOverview {
       {
         id: 'hardware-files',
         title: '硬件工程',
-        description: '可编译/烧录工程里的 C、CMake、配置和头文件',
+        description: '可编译、烧录并持续开发的硬件工程目录',
         folderPath: getHardboardDir('projects'),
-        items: listFilesRecursive(getHardboardDir('projects'), {
-          limit: 24,
-          include: /(?:CMakeLists\.txt|sdkconfig(?:\.defaults)?|\.c$|\.h$|\.cpp$|\.hpp$|\.S$)/i,
-          category: 'hardware',
-        }),
-        emptyText: '还没有硬件工程文件',
+        items: listDirectory(getHardboardDir('projects'), {
+          limit: 100,
+          enrich: (item) => ({ ...item, category: 'hardware' }),
+        }).filter((item) => item.kind === 'dir'),
+        emptyText: '还没有硬件工程目录',
       },
       {
         id: 'reference-code',
         title: '参考代码',
-        description: 'ESP-IDF 参考示例与可复用片段',
+        description: 'ESP-IDF 参考示例与可复用代码目录',
         folderPath: getHardboardDir('example'),
-        items: listFilesRecursive(getHardboardDir('example'), {
-          limit: 16,
-          include: /(?:CMakeLists\.txt|README\.md|\.c$|\.h$|\.cpp$|\.hpp$|\.md$)/i,
-          category: 'reference',
-        }),
-        emptyText: '还没有参考代码',
+        items: listDirectory(getHardboardDir('example'), {
+          limit: 100,
+          enrich: (item) => ({ ...item, category: 'reference' }),
+        }).filter((item) => item.kind === 'dir'),
+        emptyText: '还没有参考代码目录',
       },
       {
         id: 'skills',

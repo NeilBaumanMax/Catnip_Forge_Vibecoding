@@ -1,5 +1,13 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-11 — Latest repository workspace correction
+
+- Repository uses the selected deep-blue Skill Repository layout with working Skill filters, search, sort, and existing Skill Manager actions.
+- Hardware projects and reference code stay expanded and enumerate real top-level folders. Each collection has `立即同步` wired to the existing overview refresh and `打开目录` wired to the guarded folder bridge.
+- The renderer smoke contract requires Skills-first ordering, expanded folder-only resources, and both collection actions.
+- Evidence: Electron typecheck/Main/Renderer builds and live 1124 × 912 CDP verification pass; `electron/.tmp/phase15-pass18-repository-comparison.png` is the same-size visual comparison.
+- The standalone workbench smoke launcher still hits the pre-existing Windows Chromium GPU-process failure; do not report it as passed. The desktop app is left running for review.
+
 ## 2026-09-11 — Latest correction: empty drafts and history rename
 
 - `returnToExploreHome` discards only a pristine default draft. Any input, custom title, result, conversation, plan, handoff, or execution state keeps the session.

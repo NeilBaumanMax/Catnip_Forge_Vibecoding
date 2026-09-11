@@ -835,31 +835,27 @@ export default function App() {
     window.setTimeout(() => {
       const skillManager = document.querySelector<HTMLElement>('.skill-manager');
       const resourceSections = [...document.querySelectorAll<HTMLElement>('[data-workbench-resource]')];
-      const toggles = resourceSections.map((section) => section.querySelector<HTMLButtonElement>('.workspace-resource-toggle'));
+      const headers = resourceSections.map((section) => section.querySelector<HTMLElement>('.workspace-resource-toggle'));
       const skillComesFirst = Boolean(skillManager && resourceSections[0]
         && (skillManager.compareDocumentPosition(resourceSections[0]) & Node.DOCUMENT_POSITION_FOLLOWING));
-      const resourcesDefaultCollapsed = toggles.length > 0 && toggles.every((toggle) => toggle?.getAttribute('aria-expanded') === 'false');
-      if (!skillComesFirst || !resourcesDefaultCollapsed || !toggles[0]) {
+      const resourcesAlwaysExpanded = headers.length > 0 && headers.every((header) => header?.getAttribute('aria-expanded') === 'true');
+      const resourcesVisibleTogether = resourceSections.every((section) => Boolean(section.querySelector<HTMLButtonElement>('.workspace-item-button')));
+      const resourcesShowFolders = resourceSections.every((section) => [...section.querySelectorAll<HTMLElement>('.workspace-item-button')]
+        .every((item) => item.dataset.workbenchKind === 'dir'));
+      const resourcesHaveSync = resourceSections.every((section) => Boolean(section.querySelector<HTMLButtonElement>('.workspace-sync-folder')));
+      const resourcesHaveOpenDirectory = resourceSections.every((section) => (
+        section.querySelector<HTMLButtonElement>('.workspace-open-folder')?.textContent?.trim() === '打开目录'
+      ));
+      const button = resourceSections[0]?.querySelector<HTMLButtonElement>('.workspace-item-button');
+      if (!skillComesFirst || !resourcesAlwaysExpanded || !resourcesVisibleTogether || !resourcesShowFolders
+        || !resourcesHaveSync || !resourcesHaveOpenDirectory || !button) {
         void window.electronAPI.finishWorkbenchSmokeTest?.({
           ok: false,
-          error: '仓库页未保持 Skills 优先或辅助资源默认折叠',
+          error: '仓库页未保持 Skills 优先、资源始终展开、工程目录展示或双操作入口',
         });
         return;
       }
-      toggles[0].click();
-      window.setTimeout(() => {
-        const resourcesExpandedTogether = toggles.every((toggle) => toggle?.getAttribute('aria-expanded') === 'true');
-        const resourcesVisibleTogether = resourceSections.every((section) => Boolean(section.querySelector<HTMLButtonElement>('.workspace-item-button')));
-        const button = resourceSections[0]?.querySelector<HTMLButtonElement>('.workspace-item-button');
-        if (!resourcesExpandedTogether || !resourcesVisibleTogether || !button) {
-          void window.electronAPI.finishWorkbenchSmokeTest?.({
-            ok: false,
-            error: '辅助资源没有同步展开或缺少工作台项目按钮',
-          });
-          return;
-        }
-        button.click();
-      }, 100);
+      button.click();
     }, 500);
   }, [workbench]);
 

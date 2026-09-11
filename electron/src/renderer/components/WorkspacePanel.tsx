@@ -1,5 +1,8 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ChevronDown, Folder, FolderOpen, PackageCheck, Pencil, Plus, RefreshCw, Search, Sparkles, Trash2 } from 'lucide-react';
 import type { ManagedSkillDetail, ManagedSkillSummary, SkillManagerSnapshot, WorkbenchItem, WorkbenchOverview, WorkbenchSection } from '../types';
+import cosmicBackground from '../assets/catnip-cosmic-shell.png';
+import catnipAssistant from '../assets/catnip-assistant.png';
 
 interface Props {
   overview: WorkbenchOverview | null;
@@ -43,6 +46,9 @@ function SkillManager({ onOpenFolder, onRefreshWorkbench }: { onOpenFolder: (fol
   const [editor, setEditor] = useState<ManagedSkillDetail | null>(null);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [filter, setFilter] = useState<'all' | 'deployed' | 'pending' | 'standard'>('all');
+  const [query, setQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState<'updated' | 'name'>('updated');
 
   const refresh = useCallback(async () => {
     const result = await window.electronAPI?.listManagedSkills?.();
@@ -51,6 +57,20 @@ function SkillManager({ onOpenFolder, onRefreshWorkbench }: { onOpenFolder: (fol
   }, []);
 
   useEffect(() => { void refresh(); }, [refresh]);
+
+  const visibleSkills = useMemo(() => {
+    const normalizedQuery = query.trim().toLocaleLowerCase('zh-CN');
+    return [...(snapshot?.skills || [])]
+      .filter((skill) => filter === 'all'
+        || (filter === 'deployed' && skill.deployed)
+        || (filter === 'pending' && !skill.deployed)
+        || (filter === 'standard' && skill.sourceFormat === 'standard'))
+      .filter((skill) => !normalizedQuery
+        || `${skill.name} ${skill.id} ${skill.description} ${skill.command}`.toLocaleLowerCase('zh-CN').includes(normalizedQuery))
+      .sort((left, right) => sortOrder === 'name'
+        ? left.name.localeCompare(right.name, 'zh-CN')
+        : right.updatedAt - left.updatedAt);
+  }, [filter, query, snapshot?.skills, sortOrder]);
 
   const editSkill = async (skill: ManagedSkillSummary) => {
     const result = await window.electronAPI?.getManagedSkill?.(skill.id);
@@ -101,39 +121,46 @@ function SkillManager({ onOpenFolder, onRefreshWorkbench }: { onOpenFolder: (fol
   return (
     <section className="workspace-section skill-manager nes-container is-rounded">
       <div className="workspace-section-header skill-manager-header">
-        <div>
-          <h3>Skills</h3>
-          <p>在固定源仓库中维护，保存后自动部署为 Agent 原生 Skill。</p>
-        </div>
+        <div className="skill-manager-heading"><div><span className="skill-manager-heading-icon" aria-hidden="true"><Sparkles /></span><div><h3>Skills</h3><p>管理 Agent Skills，保存后自动同步到 Agent 工作区。</p></div></div>{snapshot ? <span>{snapshot.status.skillCount} 个 Skill · {snapshot.status.deployedCount} 个已启用</span> : null}</div>
         <div className="skill-manager-actions" data-tour-id="skill-manager-actions">
-          <button className="nes-btn" type="button" onClick={() => snapshot && onOpenFolder(snapshot.status.sourceDir)}>打开目录</button>
-          <button className="nes-btn" type="button" disabled={busy} onClick={() => void syncSkills()}>立即同步</button>
-          <button className="nes-btn is-primary" type="button" disabled={!snapshot?.status.writable} onClick={() => setEditor({ ...EMPTY_SKILL })}>新建 Skill</button>
+          <button className="nes-btn" type="button" onClick={() => snapshot && onOpenFolder(snapshot.status.sourceDir)}><FolderOpen aria-hidden="true" />打开目录</button>
+          <button className="nes-btn" type="button" disabled={busy} onClick={() => void syncSkills()}><RefreshCw aria-hidden="true" />立即同步</button>
+          <button className="nes-btn is-primary" type="button" disabled={!snapshot?.status.writable} onClick={() => setEditor({ ...EMPTY_SKILL })}><Plus aria-hidden="true" />新建 Skill</button>
         </div>
-        {snapshot ? (
-          <div className="skill-manager-status">
-            <span className={snapshot.status.writable ? 'is-ready' : 'is-error'}>{snapshot.status.writable ? '源仓库可写' : '源仓库只读'}</span>
-            <span>{snapshot.status.deployedCount}/{snapshot.status.skillCount} 已部署</span>
-            <code title={snapshot.status.sourceDir}>{snapshot.status.sourceDir}</code>
-          </div>
-        ) : null}
         {feedback ? <div className="skill-manager-feedback" aria-live="polite">{feedback}</div> : null}
       </div>
+      <div className="skill-manager-toolbar">
+        <div className="skill-manager-filters" role="group" aria-label="筛选 Skills">
+          {([
+            ['all', '全部', snapshot?.status.skillCount || 0],
+            ['deployed', '已启用', snapshot?.status.deployedCount || 0],
+            ['pending', '未启用', (snapshot?.status.skillCount || 0) - (snapshot?.status.deployedCount || 0)],
+            ['standard', '标准格式', snapshot?.skills.filter((skill) => skill.sourceFormat === 'standard').length || 0],
+          ] as const).map(([id, label, count]) => <button key={id} type="button" className={filter === id ? 'is-active' : ''} onClick={() => setFilter(id)}>{label} <span>{count}</span></button>)}
+        </div>
+        <label className="skill-manager-search"><Search aria-hidden="true" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索 Skill…" aria-label="搜索 Skill" /></label>
+        <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value as 'updated' | 'name')} aria-label="Skill 排序">
+          <option value="updated">最近更新</option>
+          <option value="name">名称排序</option>
+        </select>
+      </div>
       <div className="skill-manager-list">
-        {snapshot?.skills.length ? snapshot.skills.map((skill) => (
+        {visibleSkills.length ? visibleSkills.map((skill) => (
           <article className="skill-manager-row" key={skill.id}>
-            <div className="skill-manager-state" title={skill.deployed ? 'Agent 已可用' : '等待同步'}>{skill.deployed ? '✓' : '○'}</div>
+            <div className={`skill-manager-state${skill.deployed ? ' is-deployed' : ''}`} title={skill.deployed ? 'Agent 已可用' : '等待同步'}><PackageCheck aria-hidden="true" /></div>
             <div className="skill-manager-copy">
-              <div><strong>{skill.name}</strong><code>{skill.command}</code>{skill.sourceFormat === 'legacy' ? <em>兼容格式</em> : null}</div>
+              <div><strong>{skill.name}</strong><code>{skill.id}</code></div>
               <p>{skill.description}{skill.supportFileCount ? ` · ${skill.supportFileCount} 个支持文件` : ''}</p>
             </div>
+            <div className="skill-manager-badges"><span>{skill.sourceFormat === 'standard' ? '标准' : '兼容'}</span>{skill.supportFileCount ? <em>支持文件</em> : null}</div>
+            <span className={`skill-manager-deployment${skill.deployed ? ' is-deployed' : ''}`}>{skill.deployed ? '已启用' : '待同步'}</span>
             <div className="skill-manager-row-actions">
-              <button type="button" className="nes-btn" onClick={() => onOpenFolder(skill.folderPath)}>打开目录</button>
-              <button type="button" className="nes-btn" onClick={() => void editSkill(skill)}>编辑</button>
-              <button type="button" className="nes-btn is-error" disabled={busy} onClick={() => void deleteSkill(skill)}>删除</button>
+              <button type="button" className="nes-btn" onClick={() => onOpenFolder(skill.folderPath)}><FolderOpen aria-hidden="true" />打开目录</button>
+              <button type="button" className="nes-btn" onClick={() => void editSkill(skill)}><Pencil aria-hidden="true" />编辑</button>
+              <button type="button" className="nes-btn is-error" disabled={busy} onClick={() => void deleteSkill(skill)}><Trash2 aria-hidden="true" />删除</button>
             </div>
           </article>
-        )) : <div className="workspace-empty">暂无 Skill，可点击“新建 Skill”添加。</div>}
+        )) : <div className="workspace-empty">{snapshot?.skills.length ? '没有符合当前筛选条件的 Skill。' : '暂无 Skill，可点击“新建 Skill”添加。'}</div>}
       </div>
       {editor ? (
         <div className="skill-editor-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setEditor(null)}>
@@ -153,40 +180,40 @@ function SkillManager({ onOpenFolder, onRefreshWorkbench }: { onOpenFolder: (fol
 
 function renderResourceSection(
   section: WorkbenchSection,
-  expanded: boolean,
-  onToggle: () => void,
   onOpenItem: (item: WorkbenchItem) => void,
   onOpenFolder: (folderPath: string) => void,
+  onRefresh: () => void,
 ) {
   const contentId = `workspace-resource-${section.id}`;
   return (
     <section
       key={section.id}
-      className={`workspace-section workspace-resource-section is-${expanded ? 'expanded' : 'collapsed'} nes-container is-rounded`}
+      className="workspace-section workspace-resource-section is-expanded nes-container is-rounded"
       data-workbench-resource={section.id}
     >
       <div className="workspace-section-header workspace-resource-header">
-        <button
+        <div
           className="workspace-resource-toggle"
-          type="button"
-          aria-expanded={expanded}
+          aria-expanded="true"
           aria-controls={contentId}
-          onClick={onToggle}
         >
-          <span className="workspace-resource-chevron" aria-hidden="true">›</span>
+          <span className="workspace-resource-chevron" aria-hidden="true"><ChevronDown /></span>
           <span className="workspace-resource-copy">
             <strong>{section.title}</strong>
             <span>{section.description}</span>
           </span>
           <span className="workspace-resource-count">{section.items.length} 项</span>
-          <span className="workspace-resource-action">{expanded ? '收起' : '展开'}</span>
-        </button>
-        {expanded ? <div className="workspace-section-tools workspace-resource-tools">
+        </div>
+        <div className="workspace-section-tools workspace-resource-tools">
           <code>{section.folderPath}</code>
-          <button className="nes-btn workspace-open-folder" type="button" onClick={() => onOpenFolder(section.folderPath)}>在资源管理器中打开</button>
-        </div> : null}
+          <div className="workspace-resource-actions">
+            <button className="nes-btn workspace-sync-folder" type="button" onClick={onRefresh}><RefreshCw aria-hidden="true" />立即同步</button>
+            <button className="nes-btn workspace-open-folder" type="button" onClick={() => onOpenFolder(section.folderPath)}><FolderOpen aria-hidden="true" />打开目录</button>
+          </div>
+        </div>
       </div>
-      <div className="workspace-items" id={contentId} hidden={!expanded}>
+      <div className="workspace-items" id={contentId}>
+        <div className="workspace-items-heading" aria-hidden="true"><span>名称</span><span>类型</span><span>修改时间</span></div>
         {section.items.length ? section.items.map((item: WorkbenchItem) => (
           <button
             key={item.path}
@@ -195,15 +222,16 @@ function renderResourceSection(
             onClick={() => onOpenItem(item)}
             title={`打开 ${item.path}`}
             data-workbench-path={item.path}
+            data-workbench-kind={item.kind}
           >
-            <div className="workspace-item-kind">{item.kind === 'dir' ? 'DIR' : isBrowserRunnable(item) ? 'RUN' : isEditable(item) ? 'EDIT' : 'FILE'}</div>
+            <div className="workspace-item-kind">{item.kind === 'dir' ? <Folder aria-hidden="true" /> : isBrowserRunnable(item) ? 'RUN' : isEditable(item) ? 'EDIT' : 'FILE'}</div>
             <div className="workspace-item-body">
               <strong title={item.summary || item.label || item.name}>{item.summary || item.label || item.name}</strong>
-              <span title={item.detail || item.path}>{item.detail || item.path}</span>
+              <span title={item.path}>{item.kind === 'dir' ? '工程文件夹' : item.detail || item.path}</span>
               {item.sourceUrl ? <em title={item.sourceUrl}>{item.sourceUrl}</em> : null}
             </div>
             <div className="workspace-item-meta">
-              <span>{formatSize(item.size)}</span>
+              <span>{item.kind === 'dir' ? '文件夹' : formatSize(item.size)}</span>
               <span>{formatTime(item.updatedAt)}</span>
             </div>
           </button>
@@ -217,7 +245,6 @@ function renderResourceSection(
 
 export default function WorkspacePanel({ overview, onRefresh, onOpenItem, onEditItem }: Props) {
   const [folderFeedback, setFolderFeedback] = useState<{ message: string; detail: string; tone: 'pending' | 'success' | 'error' } | null>(null);
-  const [resourcesExpanded, setResourcesExpanded] = useState(false);
 
   const handleOpenFolder = async (folderPath: string) => {
     setFolderFeedback({ message: '正在打开目录…', detail: folderPath, tone: 'pending' });
@@ -247,32 +274,31 @@ export default function WorkspacePanel({ overview, onRefresh, onOpenItem, onEdit
   return (
     <div className="workspace-panel">
       <div className="workspace-hero">
-        <div>
+        <img className="workspace-hero-background" src={cosmicBackground} alt="" aria-hidden="true" />
+        <div className="workspace-hero-copy">
           <span className="workspace-eyebrow">Skill Repository</span>
           <h2>Skills 仓库</h2>
-          <p>优先管理 Agent Skills。Skill 保存后会自动部署到 Agent 工作区，并出现在左侧对话输入区的 Skills 选择器中；硬件工程和参考代码可在下方按需展开。</p>
+          <p>优先管理 Agent Skills。Skill 保存后会自动部署到 Agent 工作区，并出现在左侧对话输入区的 Skills 选择器中；硬件工程和参考代码在下方始终展开。</p>
         </div>
-        <div className="workspace-actions">
-          {folderFeedback ? (
-            <span
-              className={`workspace-folder-feedback is-${folderFeedback.tone}`}
-              aria-live="polite"
-              title={folderFeedback.detail}
-            >
-              {folderFeedback.message}
-            </span>
-          ) : null}
-          <button className="nes-btn" type="button" onClick={onRefresh}>刷新目录</button>
-        </div>
+        <div className="workspace-hero-motto" aria-hidden="true">Build with Curiosity<br />Create the Future!</div>
+        <img className="workspace-hero-mascot" src={catnipAssistant} alt="" aria-hidden="true" />
+        {folderFeedback ? (
+          <span
+            className={`workspace-folder-feedback is-${folderFeedback.tone}`}
+            aria-live="polite"
+            title={folderFeedback.detail}
+          >
+            {folderFeedback.message}
+          </span>
+        ) : null}
       </div>
       <div className="workspace-grid">
         {skillSection ? <SkillManager key={skillSection.id} onOpenFolder={(folderPath) => void handleOpenFolder(folderPath)} onRefreshWorkbench={onRefresh} /> : null}
         {resourceSections.map((section) => renderResourceSection(
           section,
-          resourcesExpanded,
-          () => setResourcesExpanded((current) => !current),
           handleOpenItem,
           (folderPath) => void handleOpenFolder(folderPath),
+          onRefresh,
         ))}
       </div>
     </div>

@@ -1,3 +1,18 @@
+# Fidelity pass 18 — Repository workspace (2026-09-11)
+
+- Source: user capture `codex-clipboard-ZWemj2.png` (1124 × 912); prior implementation capture `codex-clipboard-FNakCb.png`.
+- Same-size evidence: `electron/.tmp/phase15-pass18-repository-comparison.png`; reference above and implementation below, each 1124 × 912 without scaling.
+- [P1 fixed] The repository now uses the selected deep-blue Skill Repository composition with a compact skill list, filters, search, sorting, and project collections below it.
+- [P1 fixed] Hardware projects and reference code are always expanded and list real top-level directories rather than recursively flattening their files. The live capture includes `hello_world_esp32s3` and `esp32s3`.
+- [P1 fixed] Both collections expose `立即同步` and `打开目录`; synchronization reuses the existing workbench refresh path and opening remains on the guarded Main-process folder bridge.
+- [P1 fixed] The 1124px responsive rule no longer pushes Skill actions over their descriptive copy, and the collapsed Agent split keeps the repository viewport intact.
+- Runtime visual assertions confirm two expanded folder collections, folder-only rows, two sync actions, two exact `打开目录` labels, four Skill filters, real artwork, and successful refresh without losing directory data.
+- Accepted P3: the product's existing draggable assistant remains visible over the lower-right edge, independent from the repository layout.
+
+No actionable P0/P1/P2 findings remain for this correction.
+
+final result: passed
+
 # Fidelity pass 17 — Explore draft lifecycle and rename (2026-09-11)
 
 - [P1 fixed] Entering “找灵感” or “解问题” and immediately returning no longer leaves an empty history record. Only a pristine default draft is discarded; typed content, analysis, custom titles, plans, and handoff state remain protected.

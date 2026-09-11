@@ -1,5 +1,12 @@
 # 施工日志
 
+## 2026-09-11 — Phase 15 pass 18
+
+- 仓库首页升级为深蓝 Skill Repository；使用现有星空与学院呱呱资产，功能数据继续来自真实 Skill Manager / Workbench。
+- 硬件工程和参考代码始终展开并展示一级目录；两个区域均提供“立即同步”和“打开目录”。
+- Workbench smoke 合约补充常展开、folder-only 和双操作入口断言；真实桌面 CDP 在 1124 × 912 下通过视觉/DOM/同步点击检查。
+- 修复窄视口收起 Agent 后的三列覆盖与 Skill 操作重叠。Electron typecheck、Main build、Renderer production build 通过；独立 workbench smoke 启动仍受当前 Windows Chromium GPU 进程故障阻塞，失败如实保留。
+
 ## 2026-09-11 — Phase 15 pass 17
 
 - 修复 Explore 入口创建空草稿后直接返回仍残留“新灵感探索/新问题调查”的问题。

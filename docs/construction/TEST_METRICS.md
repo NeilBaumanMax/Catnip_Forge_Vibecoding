@@ -1,5 +1,17 @@
 # 测试度量与证据
 
+## 2026-09-11 — Repository workspace gate
+
+| Command | Result | Evidence |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | PASS | Workbench section and renderer action contracts compile. |
+| `npm.cmd --prefix electron run build:main` | PASS | Main workbench directory enumeration compiles. |
+| `npm.cmd --prefix electron run build:renderer` | PASS | Production Renderer build succeeds; existing large-chunk warning remains visible. |
+| Live desktop CDP at 1124 × 912 | PASS | 2 resources expanded, folder-only rows, `hello_world_esp32s3` present, 2 sync actions, 2 exact `打开目录` labels, 4 Skill filters, refresh click preserves directory data. |
+| `npm.cmd --prefix electron run smoke:workbench` | FAIL (environment) | First attempt met an occupied 9230 port while the review app was open; the isolated retry then failed before assertions because Chromium's GPU process exited with `2147483651`, despite `--disable-gpu`. |
+
+Visual evidence: `electron/.tmp/phase15-pass18-repository-comparison.png`, reference and implementation at 1124 × 912 without scaling. No hardware Build/Flash/Serial was requested; `REAL_HARDWARE_VALIDATION_PENDING` remains unchanged.
+
 ## 2026-09-11 — Explore draft lifecycle/rename gate
 
 | Command | Result | Evidence |

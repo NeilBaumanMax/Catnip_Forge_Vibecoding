@@ -1739,6 +1739,7 @@
 
 @media (max-width: 1180px) {
   :root[data-theme="dark"] .app-body { grid-template-columns: minmax(360px, var(--left-panel-width, 39%)) 8px minmax(0, 1fr); }
+  :root[data-theme="dark"] .app-body.app-body--left-collapsed { grid-template-columns: 28px minmax(0, 1fr); }
   :root[data-theme="dark"] .workbench-mode-tabs { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   :root[data-theme="dark"] .active-project-switch { grid-column: 1 / -2; }
   .chat-empty-actions { grid-template-columns: 1fr; }
