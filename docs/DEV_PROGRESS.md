@@ -261,3 +261,9 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] 历史夜景扩大填充；Composer 将附件、Skills 与纸飞机发送按钮统一收进输入容器。
 - [x] 左上品牌去框并放大；Skill 小站标签与域名框合并为单行蓝色命令栏。
 - [x] TypeScript、Main/Renderer build、Chat/Explore 专项、布局矩阵、启动页真实 Electron CDP 与四组组合视觉 QA 通过。
+
+### Phase 15 第九轮
+
+- [x] 夜景背景提升到整个历史面板，功能轨和会话列表共享连续插画，不再保留纯色空带。
+- [x] 128% 首轮比例经视觉复核收敛为 112%，减少素材上部留白并保留更完整的学院呱呱。
+- [x] TypeScript、Main/Renderer build、Chat 展示、Explore 布局矩阵和聚焦组合视觉 QA 通过。

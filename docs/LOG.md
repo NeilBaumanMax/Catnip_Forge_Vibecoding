@@ -962,3 +962,11 @@
 - 品牌取消蓝色玻璃外框并放大；Skill 小站删除重复两行，只保留蓝色单行标签/地址/打开控制。
 - 布局专项验证品牌无框、Composer containment、纸飞机、历史图、双滚动槽、长路径、Skill 单行及既有 8 组响应式/四阶段流程；Renderer console error 0。
 - 未执行真实知乎请求、新 Windows 包、Build/Flash/Serial 或实机验证；`REAL_HARDWARE_VALIDATION_PENDING`。
+
+## 2026-09-11 — Phase 15 第九轮历史插画满幅纠偏
+
+- 用户截图确认历史插画仍只出现在会话列表列，左侧功能轨形成贯穿全高的纯蓝空带；同时素材顶部留白使高窗口中段显空。
+- 将唯一夜景背景移至整个 `.chat-history`，主列背景清空，功能轨和列表改为半透明深蓝可读层；交互与数据逻辑未改。
+- 首版 128% 高度覆盖在聚焦截图中导致呱呱过大，最终改为 112% 等比覆盖、51% 横向焦点和底部锚定。
+- 类型、Main/Renderer 构建、Chat 展示与 Explore 布局专项通过；8 组响应式、四阶段流程和 console error 0，聚焦证据为 `electron/.tmp/phase15-pass9-chat-comparison.png`。
+- 未执行真实搜索、Windows 打包、Build/Flash/Serial 或实机验证；`REAL_HARDWARE_VALIDATION_PENDING`。

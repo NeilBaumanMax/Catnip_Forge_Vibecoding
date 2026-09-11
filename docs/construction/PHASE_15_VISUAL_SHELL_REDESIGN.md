@@ -243,3 +243,14 @@
 - Skill 小站删除重复的标签头、下方 Browser Workbench 和当前 URL 行，标签与地址表单合并为一条蓝色命令栏。
 - `verify:splash-ui` 与 `verify:explore-layout-ui` 分别覆盖启动页资源/进度/无溢出，以及双滚动槽、路径省略、品牌、Composer、历史图、Skill 单行与既有响应式/四阶段流程。
 - 对照证据：`phase15-pass8-splash-comparison.png`、`phase15-pass8-explore-comparison.png`、`phase15-pass8-chat-comparison.png`、`phase15-pass8-skill-comparison.png`；结论见根目录 `design-qa.md`。
+
+## 第九轮：左侧历史插画满幅纠偏（2026-09-11）
+
+用户以 `codex-clipboard-L7ufbW.png` 指出历史侧栏仍存在两类空区：插画只属于右侧会话列表列，44px 功能轨始终为纯色；原始纵向插画上部留白较多，导致高窗口中段仍像未铺图。
+
+- 将 `chat-history-night-v2.png` 从 `.chat-history-main` 提升为整个 `.chat-history` 的统一背景，使功能轨与会话列表共享同一幅夜景。
+- 背景按面板高度放大并保持底部锚定，裁去素材顶部的大块纯蓝留白，让城市、文案和学院呱呱更早进入可视区；禁止非等比拉伸。
+- 功能轨、搜索区和列表只保留半透明深蓝可读层，底部不得重新覆盖为纯色；交互、真实历史数据和筛选行为保持不变。
+- 布局专项门禁验证：背景资产只挂载一次、挂载于整个历史面板、垂直覆盖率大于 100%，且功能轨和主列均允许插画透出。
+
+实施结果：夜景改由整个 `.chat-history` 统一承载，主列不再重复挂图；功能轨遮罩降至 0.62，插画以 112% 面板高度等比铺放并保持底部锚定。128% 首轮视觉检查出现角色过大和脸部裁切，随后收敛为 112%。聚焦对照为 `electron/.tmp/phase15-pass9-chat-comparison.png`，左为用户截图，右为实现；布局专项、类型、Main/Renderer 构建和 Chat 展示契约通过。

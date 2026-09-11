@@ -301,7 +301,11 @@ async function main() {
     const composerActionsRect = document.querySelector('.chat-input-actions')?.getBoundingClientRect();
     const submitRectInComposer = document.querySelector('.chat-submit')?.getBoundingClientRect();
     const submitStyle = getComputedStyle(document.querySelector('.chat-submit'));
+    const historyStyle = getComputedStyle(document.querySelector('.chat-history'));
     const historyMainStyle = getComputedStyle(document.querySelector('.chat-history-main'));
+    const historyRailStyle = getComputedStyle(document.querySelector('.chat-history-rail'));
+    const historyRailChannels = historyRailStyle.backgroundColor.match(/[0-9.]+/g)?.map(Number) || [];
+    const historyRailAlpha = historyRailChannels.length === 4 ? historyRailChannels[3] : 1;
     const isBlueGlass = (element) => {
       const channels = getComputedStyle(element).backgroundColor.match(/[0-9.]+/g)?.map(Number) || [];
       if (channels.length === 4 && channels[3] > 1) channels[3] /= 100;
@@ -342,7 +346,17 @@ async function main() {
         && document.querySelector('.chat-submit svg')),
       submitKeepsBlueIdleState: submitStyle.backgroundImage.includes('linear-gradient')
         && Number.parseFloat(submitStyle.opacity) >= 0.7,
-      historyArtworkExpanded: historyMainStyle.backgroundSize.includes('96%'),
+      historyArtworkFillsPanel: historyStyle.backgroundImage.includes('chat-history-night-v2.png')
+        && historyStyle.backgroundSize.includes('112%')
+        && historyMainStyle.backgroundImage === 'none'
+        && historyRailAlpha < 0.8,
+      historyArtworkDetails: {
+        backgroundImage: historyStyle.backgroundImage,
+        backgroundSize: historyStyle.backgroundSize,
+        mainBackgroundImage: historyMainStyle.backgroundImage,
+        railBackgroundColor: historyRailStyle.backgroundColor,
+        railAlpha: historyRailAlpha,
+      },
       shellMaterials: shellBoxes.map((box) => ({
         className: box.className,
         backgroundColor: getComputedStyle(box).backgroundColor,
@@ -369,7 +383,7 @@ async function main() {
   if (!chatShell.outerFrameRemoved || chatShell.blueGlassSurfaceCount !== 2 || !chatShell.brandUnboxed) {
     throw new Error(`top shell material mismatch: ${JSON.stringify(chatShell)}`);
   }
-  if (chatShell.missing || chatShell.quickActionCount !== 4 || chatShell.suggestionCount !== 4 || chatShell.historyRailActionCount !== 4 || !chatShell.promptInjected.includes('当前工程') || chatShell.brand !== 'Catnip Forge' || !chatShell.settingsVisible || chatShell.windowControlCount !== 3 || !chatShell.topRowAligned || !chatShell.surfacesSeparated || !chatShell.taskLabelVisible || !chatShell.brandBeforeTabs || !chatShell.projectAfterTabs || !chatShell.settingsAfterProject || !chatShell.controlsAfterSettings || !chatShell.controlsInsideViewport || !chatShell.navSpansViewport || !chatShell.composerVisible || !chatShell.submitVisible || !chatShell.composerActionsInside || !chatShell.submitIsPaperPlane || !chatShell.submitKeepsBlueIdleState || !chatShell.historyArtworkExpanded) {
+  if (chatShell.missing || chatShell.quickActionCount !== 4 || chatShell.suggestionCount !== 4 || chatShell.historyRailActionCount !== 4 || !chatShell.promptInjected.includes('当前工程') || chatShell.brand !== 'Catnip Forge' || !chatShell.settingsVisible || chatShell.windowControlCount !== 3 || !chatShell.topRowAligned || !chatShell.surfacesSeparated || !chatShell.taskLabelVisible || !chatShell.brandBeforeTabs || !chatShell.projectAfterTabs || !chatShell.settingsAfterProject || !chatShell.controlsAfterSettings || !chatShell.controlsInsideViewport || !chatShell.navSpansViewport || !chatShell.composerVisible || !chatShell.submitVisible || !chatShell.composerActionsInside || !chatShell.submitIsPaperPlane || !chatShell.submitKeepsBlueIdleState || !chatShell.historyArtworkFillsPanel) {
     throw new Error(`chat shell interaction mismatch: ${JSON.stringify(chatShell)}`);
   }
 

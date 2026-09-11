@@ -514,3 +514,17 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 | `git diff --check` | 通过 | 无 whitespace error，仅 LF → CRLF 提示 |
 
 布局专项首次新增双滚动断言时 fixture 的历史列表为空，改用临时样式节点验证真实计算样式；Skill 单行首次以顶边判断不同高度控件而误报，改为视觉中心线对齐。两次均为测试实现问题。未执行真实搜索、Windows 打包或真机动作，`REAL_HARDWARE_VALIDATION_PENDING` 保留。
+
+## 2026-09-11 Phase 15 第九轮历史插画满幅纠偏
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | 通过 | 样式与布局门禁改动未引入类型错误 |
+| `npm.cmd --prefix electron run build:main` | 通过 | Main 无回归 |
+| `npm.cmd --prefix electron run build:renderer` | 通过 | 2820 modules；仅既有大 chunk warning |
+| `npm.cmd --prefix electron run verify:chat-presentation` | 通过 | Agent 文本与工具块展示契约未回归 |
+| `npm.cmd --prefix electron run verify:explore-ui` | 通过 | 既有 Explore 入口、证据、阶段与主题契约未回归 |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | 通过 | 背景挂载于整个历史面板、主列不重复挂图、112% 等比覆盖、功能轨透图；8 组响应式、四阶段流程、console error 0 |
+| 聚焦视觉 QA | 通过 | `phase15-pass9-chat-comparison.png`；功能轨空带消失，角色比例从首轮 128% 收敛到 112% |
+
+首次并行启动布局专项后，后续两次重试因测试 Vite 未监听 5174 超时；单独启动同一临时 Vite 后继续。新增计算样式断言首次把正则写入模板字符串，转义后在浏览器侧成为非法正则；改为解析完整 RGBA 数组。第二次因门禁在设置主题前运行，仅 dark 选择器未命中；将历史背景契约应用于组件本身后通过。这些均为验证环境/测试实现问题，不是产品交互失败。

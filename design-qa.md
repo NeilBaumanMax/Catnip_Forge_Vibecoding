@@ -53,6 +53,34 @@ P0/P1/P2 已清零；保留差异均来自真实性、系统窗口边界或既�
 
 final result: passed
 
+## Fidelity pass 9 — 2026-09-11
+
+**Evidence**
+
+- Source visual truth: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-L7ufbW.png`, 246 × 1316 pixels, showing the remaining solid-color rail and large empty middle area.
+- Implementation screenshot: `electron/.tmp/explore-entry-layout-ui.png`, 1920 × 1080 CSS pixels at device scale 1.
+- Focused combined comparison: `electron/.tmp/phase15-pass9-chat-comparison.png`. The source was normalized to 202 × 1080; the implementation history panel was cropped at 154 × 1080. Both are shown at equal height in the same image.
+- State: dark desktop shell, expanded Agent panel, empty/current conversation state. Primary Chat quick-action injection and Explore four-stage navigation were exercised; Renderer console errors: 0.
+
+**Comparison history and findings**
+
+- [P1 fixed] The decorative raster belonged only to `.chat-history-main`, leaving the 44px function rail as a full-height solid strip. The raster now belongs once to the complete `.chat-history` surface and remains visible through both columns.
+- [P2 fixed] The asset's upper half contains intentional night-sky negative space, so 96% sizing left too much unarticulated middle area. A first 128% pass removed the gap but enlarged and cropped the mascot excessively; the final 112% equal-aspect placement balances earlier city/text entry with a more complete mascot.
+- [P2 fixed] Opaque child surfaces could have hidden the shared image. The rail now computes to alpha 0.62, the list fades to 0.03, and the main column has no duplicate background image.
+
+**Required fidelity surfaces**
+
+- Fonts/typography: unchanged; search, action, period and conversation text retain their established hierarchy and readable top overlay.
+- Spacing/layout: the two-column 44px + flexible grid is unchanged; the shared artwork crosses the boundary continuously without moving controls.
+- Colors/tokens: the navy overlay preserves the existing blue theme while allowing the violet city and warm mascot colors through toward the bottom.
+- Image quality: the existing 793 × 1983 raster is reused without stretching or code-drawn substitutes; `auto 112%` preserves aspect ratio and bottom anchoring.
+- Copy/content: real conversation labels remain state-driven; no reference-only history was fabricated.
+- Interactions/accessibility: rail filters, search, new conversation, quick actions, composer and workspace navigation remain functional in the automated interaction pass.
+
+No actionable P0/P1/P2 findings remain for this correction.
+
+final result: passed
+
 ## Fidelity pass 8 — 2026-09-11
 
 **Combined evidence**
