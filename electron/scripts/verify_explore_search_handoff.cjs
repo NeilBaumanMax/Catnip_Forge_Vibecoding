@@ -15,7 +15,7 @@ async function main() {
   const { buildExploreSearchCommand, normalizeExploreSearchResponse } = require('../dist/main/explore-zhihu-search.js');
   const { registerExploreAnalysisIpc } = require('../dist/main/explore-analysis.js');
   const { buildAgentLaunchArgs, buildAgentMcpConfig } = require('../dist/main/agent.js');
-  const { Orchestrator, isExploreToolAllowed, routeAgentUiEvent } = require('../dist/main/worker/orchestrator.js');
+  const { Orchestrator, isExploreToolAllowed } = require('../dist/main/worker/orchestrator.js');
   const { normalizeExploreAnalysisResult } = require('../dist/common/explore.js');
 
   const zhihuCommand = buildExploreSearchCommand('zhihu', 'ESP32 Wi-Fi', 99);
@@ -52,7 +52,6 @@ async function main() {
     },
     async (value) => ({ request: value, sources: [source('zhihu', '社区', 'https://www.zhihu.com/question/1')] }),
     () => ({ id: 'project-test', projectDir: 'hardboard/projects/test' }),
-    () => ({ digest: 'a'.repeat(64), handoffId: 'handoff-1', planRequestId: 'ipc-plan' }),
   );
   const request = { mode: 'idea', goal: '桌面设备', context: { items: [] } };
   const started = await registrations.get('explore:analysis:start')({}, request);
@@ -67,7 +66,7 @@ async function main() {
   await registrations.get('explore:handoff:plan')({}, handoff);
   assert.equal(calls[1].kind, 'plan');
   const ipcExecution = await registrations.get('explore:handoff:execute')({}, {
-    planRequestId: 'ipc-plan', handoffId: 'handoff-1', sessionId: 'explore-00000000-0000-0000-0000-000000000000', artifactDigest: 'a'.repeat(64), confirmed: true,
+    planRequestId: 'ipc-plan', handoffId: 'handoff-1', confirmed: true,
   });
   assert.equal(ipcExecution.disposition, 'queued');
   assert.equal(calls[2].kind, 'execution');
@@ -77,10 +76,6 @@ async function main() {
   assert.equal(planArgs[planArgs.indexOf('--tools') + 1], '');
   assert.deepEqual(buildAgentMcpConfig('explore_plan'), { mcpServers: {} });
   assert.equal(isExploreToolAllowed('explore_plan', 'Skill'), false);
-  const routedExplore = routeAgentUiEvent('explore_analysis', 'chat:message', { text: 'progress' }, { requestId: 'request-route', mode: 'idea' });
-  assert.equal(routedExplore.channel, 'explore:conversation:message');
-  assert.equal(routedExplore.payload.requestId, 'request-route');
-  assert.equal(routeAgentUiEvent('default', 'chat:message', { text: 'engineering' }).channel, 'chat:message');
 
   const submissions = [];
   const harness = Object.create(Orchestrator.prototype);
@@ -90,7 +85,6 @@ async function main() {
       submissions.push({ queued, mode });
       return { ok: true, disposition: 'started', taskId: queued.id, activeTaskId: queued.id, queueLength: 0, guidanceCount: 0 };
     },
-    activeEngineeringConversationId: () => 'engineering-conversation',
   });
   harness.submitExplorePlan(handoff, 'plan-request', 'conversation');
   assert.equal(submissions[0].queued.executionProfile, 'explore_plan');
@@ -102,17 +96,17 @@ async function main() {
   }, { requestId: 'plan-request', mode: 'plan' });
   assert.equal(plan.mode, 'plan');
   assert.throws(() => harness.confirmExploreExecution({
-    planRequestId: 'plan-request', handoffId: 'handoff-1', sessionId: 'explore-00000000-0000-0000-0000-000000000000', artifactDigest: 'a'.repeat(64), confirmed: true,
+    planRequestId: 'plan-request', handoffId: 'handoff-1', confirmed: true,
   }), /尚未完成/);
   assert.throws(() => harness.confirmExploreExecution({
-    planRequestId: 'plan-request', handoffId: 'handoff-1', sessionId: 'explore-00000000-0000-0000-0000-000000000000', artifactDigest: 'a'.repeat(64), confirmed: false,
+    planRequestId: 'plan-request', handoffId: 'handoff-1', confirmed: false,
   }), /explicit confirmation/);
   harness.markExplorePlanReady(plan);
   assert.throws(() => harness.confirmExploreExecution({
-    planRequestId: 'plan-request', handoffId: 'wrong-handoff', sessionId: 'explore-00000000-0000-0000-0000-000000000000', artifactDigest: 'a'.repeat(64), confirmed: true,
+    planRequestId: 'plan-request', handoffId: 'wrong-handoff', confirmed: true,
   }), /Handoff 不匹配/);
   const execution = harness.confirmExploreExecution({
-    planRequestId: 'plan-request', handoffId: 'handoff-1', sessionId: 'explore-00000000-0000-0000-0000-000000000000', artifactDigest: 'a'.repeat(64), confirmed: true,
+    planRequestId: 'plan-request', handoffId: 'handoff-1', confirmed: true,
   });
   assert.equal(execution.disposition, 'started');
   assert.equal(submissions[1].queued.executionProfile, 'default');
@@ -120,10 +114,10 @@ async function main() {
   assert.match(submissions[1].queued.text, /用户已.*明确确认执行/);
   assert.match(submissions[1].queued.text, /REAL_HARDWARE_VALIDATION_PENDING/);
   assert.throws(() => harness.confirmExploreExecution({
-    planRequestId: 'plan-request', handoffId: 'handoff-1', sessionId: 'explore-00000000-0000-0000-0000-000000000000', artifactDigest: 'a'.repeat(64), confirmed: true,
+    planRequestId: 'plan-request', handoffId: 'handoff-1', confirmed: true,
   }), /不存在|已经确认/);
   assert.throws(() => harness.confirmExploreExecution({
-    planRequestId: 'forged-plan', handoffId: 'handoff-1', sessionId: 'explore-00000000-0000-0000-0000-000000000000', artifactDigest: 'a'.repeat(64), confirmed: true,
+    planRequestId: 'forged-plan', handoffId: 'handoff-1', confirmed: true,
   }), /不存在/);
   harness.submitExplorePlan(handoff, 'expired-plan', 'conversation');
   const expiredPlan = normalizeExploreAnalysisResult({
@@ -132,7 +126,7 @@ async function main() {
   harness.markExplorePlanReady(expiredPlan);
   harness.confirmableExplorePlans.get('expired-plan').completedAt = Date.now() - (31 * 60 * 1000);
   assert.throws(() => harness.confirmExploreExecution({
-    planRequestId: 'expired-plan', handoffId: 'handoff-1', sessionId: 'explore-00000000-0000-0000-0000-000000000000', artifactDigest: 'a'.repeat(64), confirmed: true,
+    planRequestId: 'expired-plan', handoffId: 'handoff-1', confirmed: true,
   }), /过期|不存在/);
   assert.throws(() => normalizeExploreAnalysisResult({ ...plan, plan: { ...plan.plan, steps: [] } }, { requestId: 'plan-request', mode: 'plan' }), /steps/);
   assert.throws(() => normalizeExploreAnalysisResult({

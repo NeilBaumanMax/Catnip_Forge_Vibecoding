@@ -340,44 +340,6 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 
 `NOT VERIFIED`：用户在真实成品上的返回/重启/切工程人工复测；真实知乎＋全网 Diagnosis；真实 Agent 改码；真实 Build/Flash/Serial；全新 Windows 用户安装与代码签名。
 
-## 2026-09-10 Phase 8 施工基线
-
-| 检查 | 结果 | 说明 |
-| --- | --- | --- |
-| Git 动态状态与远端备份 | 通过 | `idea_to_production` local/origin 为 `050ae64d`；`backup/pre-phase-8-20260910` 已推送并由 `ls-remote` 核对同 hash |
-| 代码根因审计 | 通过 | 确认 Agent/Explore 仍写 userData、Explore 复用左侧 conversation/chat 通道、stepper 不可切换、无工程内 artifact、来源按钮仅 28px/10px |
-| 文档先行范围 | 通过 | Product Truth、D027–D031、主约束、分层、计划、Handoff、测试与独立 Phase 8 基线；无业务源码修改 |
-
-本基线不运行真实搜索、模型、Build、Flash、Serial 或打包。实现专项必须覆盖工程内目录/迁移、Explore 不污染 Agent、四阶段回看、artifact 生成与篡改拒绝、按钮至少 36px 和布局矩阵。
-
-## 2026-09-10 Phase 8 实现与自动回归
-
-| 命令/检查 | 最终结果 | 说明 |
-| --- | --- | --- |
-| Runtime `typecheck` / `build` | 通过 | Runtime 未因工程内状态与交接改造回归 |
-| Electron `typecheck` / `build:main` / `build:renderer` | 通过 | Renderer 1265 modules；保留既有大 chunk warning |
-| `verify:project-session` / `verify:session` | 通过 | `.catnip` manifest/路径门禁、A/B 工程对话隔离、切回恢复、旧源保留与原子写入 |
-| `verify:task-queue` / Explore 8 项专项 | 通过 | 独立 Explore 消息、请求/Context/Knowledge、受限分析、交接确认与一次性执行门禁 |
-| `verify:explore-session` | 通过 | 工程内多历史、独立 conversation、三份 artifact、摘要重读与篡改拒绝 |
-| `verify:hardboard` / `verify:serial-monitor` | 通过 | 既有硬件 Context 和共享串口 mock 未回归；不算真机 |
-| `verify:explore-layout-ui` | 通过 | 8 个视口/分栏场景；四阶段、artifact 预览、36px 来源按钮、light/dark、console error 0 |
-| `git diff --check` | 通过 | 无 whitespace error；仅 LF→CRLF 工作树提示 |
-
-首次失败与修复：TypeScript 首次因对 `unknown` 展开失败，增加对象守卫后通过；Explore session 首次仍断言旧路径，改为验证真实工程 `.catnip`；布局脚本先后缺新 preload stub、模板换行转义和旧第三步确认断言，补齐新契约后通过。`smoke:workbench` 两次因固定 9230 端口被现有进程占用并伴随 Electron GPU 子进程退出，在产品断言前失败；未终止用户进程，保留为环境失败。上表列明的构建与专项最终均通过，Workbench smoke 仍为环境阻塞；未运行真实搜索、真实模型/Agent 改码、真机或重新打包。
-
-## 2026-09-10 Phase 9 清理与 Windows 打包
-
-| 命令/检查 | 最终结果 | 说明 |
-| --- | --- | --- |
-| 精确使用记录/Skill 目标复核 | 通过 | 工程记录叶子目录、收藏、旧 session 与四个 Skill 部署副本均不存在；工程注册表和 manifest 保留 |
-| Runtime/Electron typecheck/build | 通过 | Runtime 构建、Electron Main/Renderer 构建通过；Renderer 保留既有大 chunk warning |
-| `verify:skills` | 通过 | 当前仅 9 个 Skill，四个指定 ID 不存在，旧部署不会复生 |
-| `pack:win` | 通过 | 生成 Windows `win-unpacked`，总计 4,464,671,335 字节 |
-| `verify:release` / `verify:version` | 通过 | `v1.5.0`、Build 7201、PE `1.0.0.7201`；无 DeepSeek/Qwen Key、四个 Skill 或 `.catnip` 使用状态 |
-| `git diff --check` | 通过 | 无 whitespace error；仅 LF→CRLF 工作树提示 |
-
-清理后的聊天、Explore 草稿/交接和收藏不建立备份，符合用户删除授权；四个 Git Skill 源可从 `backup/pre-phase-9-20260910` 恢复。未运行真实搜索、真实 Agent 改码、Build/Flash/Serial 或代码签名。
-
 ## 2026-09-10 Phase 7 文档漂移修正与交接
 
 | 检查 | 最终结果 | 说明 |
@@ -391,21 +353,3 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 首次文档验证额外检查了用户已经运行和配置过的本地 `win-unpacked`，因检测到 `resources/apikey.txt` 而停止。用户随后确认该文件是本人主动配置的本机 API Key，并要求本轮忽略打包、专注文档/开发交接；因此不读取、不删除、不提交该文件，也不把用户配置后的可变目录作为本轮发布包检查对象。该文件位于 Git ignored 的 `electron/dist-package/` 下。
 
 本轮未重复应用构建、真实搜索、Agent 调用或硬件动作；Phase 7 代码和打包验证沿用已记录的 `c4adf879` 证据。`LIVE_DIAGNOSIS_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING` 不变。
-
-## 2026-09-11 星光工坊 UI v2 Aurora
-
-| 命令/检查 | 最终结果 | 说明 |
-| --- | --- | --- |
-| Runtime `typecheck` / `build` | 通过 | Runtime、Hardboard 与 EventBus 无业务改动 |
-| Electron `typecheck` / `build:main` / `build:renderer` | 通过 | Renderer 1267 modules；保留既有大 chunk warning |
-| 新增 `typecheck:renderer` | 通过 | 首次发现 CodeEditor 隐式 `any` 与 Explore nullable request；以具体类型/安全回退修复后通过 |
-| Explore UI/entry/layout | 通过 | 首次几何断言发现横幅 eyebrow 裁切；修复后 8 视口/分栏、三主题、动作图、本页/全流程与 console error 0 |
-| Chat presentation / onboarding / onboarding UI | 通过 | 首次 onboarding UI 仍断言旧品牌；更新为真实学院呱呱 DOM 后通过 |
-| Project/Explore session、Knowledge、Context、Request | 通过 | 工程隔离、恢复、显式选择、Secret 排除与请求清洗未回归 |
-| Explore analysis gate / search handoff / task queue | 通过 | 只分析、无工具只计划、一次性确认与队列保持 |
-| Skills / Hardboard / Serial monitor | 通过 | 软件与 mock 契约回归；不算真机 |
-| `smoke:workbench` | 通过 | 隔离 userData 的真实 Electron 打开真实工程文件 |
-| `verify:software-assistant-ui` / `verify:project-session-ui` | ENVIRONMENT_BLOCKED | 直接运行时没有正在运行的指定 CDP 成品目标；未伪记为通过 |
-| `git diff --check` | 通过 | 无 whitespace error；仅 LF→CRLF 工作树提示 |
-
-本轮未重新打 Windows 包、未执行真实搜索/DeepSeek 请求、真实 Agent 改码或 Build/Flash/Serial。Windows 100%/125%/150% 人工缩放与最终用户视觉接受待验；`REAL_HARDWARE_VALIDATION_PENDING` 保留。完整证据见 [Aurora 交付报告](PHASE_UI_V2_AURORA_DELIVERY.md)。

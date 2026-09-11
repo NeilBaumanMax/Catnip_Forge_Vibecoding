@@ -170,7 +170,7 @@ async function main() {
       version: 1, id: 'explore-' + crypto.randomUUID(), projectId: 'project-ui-smoke', mode,
       title: mode === 'idea' ? '新灵感探索' : '新问题调查', status: 'draft',
       createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-      snapshot: { input: '', selectedContextIds: [], selectedKnowledgeIds: [], analysisRequest: null, analysisResult: null, planResult: null, planHandoff: null, selectedIdeaId: '', editingInput: true, gatheredContext: null, analysisTaskId: null, analysisRequestId: null, planTaskId: null, planRequestId: null, executionStarted: false, executionTaskId: null, executionDisposition: null, notice: '', displayStage: 'describe', conversation: [], handoffArtifact: null },
+      snapshot: { input: '', selectedContextIds: [], selectedKnowledgeIds: [], analysisRequest: null, analysisResult: null, planResult: null, planHandoff: null, selectedIdeaId: '', editingInput: true, gatheredContext: null, analysisTaskId: null, analysisRequestId: null, planTaskId: null, planRequestId: null, executionStarted: false, executionTaskId: null, executionDisposition: null, notice: '' },
     });
     window.electronAPI = {
       getStartupStatus: async () => ({ firstRun: false, playwrightReady: true }),
@@ -197,7 +197,6 @@ async function main() {
       prepareExploreRequest: async (request) => ({ request, selectedContext: request.context.items.filter((item) => item.selected), sourceStrategy: { zhihu: 'required', web: 'required' }, state: 'ready', message: 'ready' }),
       onExploreAnalysisResult: (callback) => { window.__exploreResult = callback; },
       onExploreAnalysisError: () => {},
-      onExploreConversationMessage: () => {},
       startExploreAnalysis: async (request) => {
         setTimeout(() => window.__exploreResult({
           schemaVersion: 1, requestId: 'analysis-ui-smoke', mode: request.mode,
@@ -224,8 +223,6 @@ async function main() {
         } }), 20);
         return { ok: true, taskId: 'plan-task', requestId: 'plan-ui-smoke', disposition: 'started' };
       },
-      createExploreHandoffArtifact: async ({ sessionId, handoff, planResult }) => ({ version: 1, projectId: 'project-ui-smoke', sessionId, mode: handoff.kind === 'idea' ? 'idea' : 'diagnosis', handoffId: handoff.id, planRequestId: planResult.requestId, digest: 'a'.repeat(64), relativeDir: '.catnip/handoffs/' + sessionId, planMarkdown: '# 执行计划\\n\\n界面验证计划', handoffMarkdown: '# Explore → 工程 Agent 交接\\n\\n界面验证交接', createdAt: new Date().toISOString() }),
-      getExploreHandoffArtifact: async (sessionId) => ({ version: 1, projectId: 'project-ui-smoke', sessionId, mode: 'diagnosis', handoffId: 'handoff-ui-smoke', planRequestId: 'plan-ui-smoke', digest: 'a'.repeat(64), relativeDir: '.catnip/handoffs/' + sessionId, planMarkdown: '# 执行计划\\n\\n界面验证计划', handoffMarkdown: '# Explore → 工程 Agent 交接\\n\\n界面验证交接', createdAt: new Date().toISOString() }),
       confirmExploreExecution: async () => ({ ok: true, taskId: 'execution-task', disposition: 'queued' }),
       navigateBrowser: async () => ({ ok: true }),
       setBrowserBounds: async () => ({ ok: true }),
@@ -275,89 +272,51 @@ async function main() {
     const evidence = document.querySelector('.explore-project-evidence')?.textContent || '';
     const conflicts = document.querySelector('.explore-conflict-notice')?.textContent || '';
     const sourceExcerpt = document.querySelector('.explore-source-row > p')?.textContent || '';
-    const sourceButtonHeights = [...document.querySelectorAll('.explore-source-actions button')].map((button) => button.getBoundingClientRect().height);
     const analysisStage = document.querySelector('.explore-stage-nav [aria-current="step"]')?.textContent || '';
     document.querySelector('.explore-diagnosis-report > .explore-generate-plan').click();
     for (let attempt = 0; attempt < 80 && !document.querySelector('.explore-plan-steps'); attempt += 1) await wait(50);
     const planStage = document.querySelector('.explore-stage-nav [aria-current="step"]')?.textContent || '';
-    const planSteps = document.querySelectorAll('.explore-plan-steps li').length;
-    for (let attempt = 0; attempt < 80 && ![...document.querySelectorAll('.explore-stage-nav button')].find((button) => button.textContent.includes('执行') && !button.disabled); attempt += 1) await wait(50);
-    [...document.querySelectorAll('.explore-stage-nav button')].find((button) => button.textContent.includes('执行') && !button.disabled)?.click();
-    for (let attempt = 0; attempt < 40 && !document.querySelector('.explore-artifact-view'); attempt += 1) await wait(50);
     const confirm = document.querySelector('[data-tour-id="explore-confirm-execution"]');
-    const executeStage = document.querySelector('.explore-stage-nav [aria-current="step"]')?.textContent || '';
-    const artifactVisible = Boolean(document.querySelector('.explore-artifact-view pre'));
     const themes = {};
-    for (const theme of ['light', 'dark', 'aurora']) {
+    for (const theme of ['light', 'dark']) {
       document.documentElement.dataset.theme = theme;
-      document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+      document.documentElement.style.colorScheme = theme;
       await wait(30);
       const style = getComputedStyle(document.querySelector('.explore-panel'));
       themes[theme] = { primary: style.getPropertyValue('--explore-primary').trim(), color: style.color, background: style.backgroundColor };
     }
-    document.documentElement.dataset.theme = 'aurora';
-    document.documentElement.style.colorScheme = 'dark';
     document.querySelector('.explore-back-button').click();
     await wait(50);
-    const illustrations = [...document.querySelectorAll('.explore-entry-illustration')].map((image) => ({
-      complete: image.complete,
-      naturalWidth: image.naturalWidth,
-      alt: image.getAttribute('alt'),
-    }));
     document.querySelector('[data-tour-id="explore-diagnosis"]').click();
     await wait(100);
-    const returnPreserved = Boolean(document.querySelector('.explore-artifact-view'));
+    const returnPreserved = Boolean(document.querySelector('.explore-plan-steps'));
     document.querySelector('[data-tour-id="tab-editor"]').click();
     await wait(50);
     document.querySelector('[data-tour-id="tab-explore"]').click();
     await wait(100);
-    const workspaceSwitchPreserved = Boolean(document.querySelector('.explore-artifact-view'));
+    const workspaceSwitchPreserved = Boolean(document.querySelector('.explore-plan-steps'));
     return {
-      panelWidth, formColumns, evidence, conflicts, sourceExcerpt, sourceButtonHeights, analysisStage, planStage, executeStage,
-      planSteps, artifactVisible,
+      panelWidth, formColumns, evidence, conflicts, sourceExcerpt, analysisStage, planStage,
+      planSteps: document.querySelectorAll('.explore-plan-steps li').length,
       confirmEnabled: confirm && !confirm.disabled,
       priorResultCollapsed: !document.querySelector('.explore-prior-result')?.open,
       returnPreserved,
       workspaceSwitchPreserved,
       themes,
-      illustrations,
     };
   })()`);
   if (flowResult.panelWidth < 1200 || flowResult.formColumns !== 2) throw new Error(`wide flow did not use two columns: ${JSON.stringify(flowResult)}`);
   if (!flowResult.evidence.includes('80MHz') || !flowResult.conflicts.includes('官方时序') || !flowResult.sourceExcerpt.includes('来源摘要')) throw new Error(`diagnosis evidence UI incomplete: ${JSON.stringify(flowResult)}`);
-  if (!flowResult.analysisStage.includes('查看结论') || !flowResult.planStage.includes('确认计划') || !flowResult.executeStage.includes('执行')) throw new Error(`stage navigation mismatch: ${JSON.stringify(flowResult)}`);
-  if (flowResult.planSteps !== 2 || !flowResult.artifactVisible || !flowResult.confirmEnabled || !flowResult.priorResultCollapsed) throw new Error(`plan/artifact gate UI mismatch: ${JSON.stringify(flowResult)}`);
-  if (!flowResult.sourceButtonHeights.length || flowResult.sourceButtonHeights.some((height) => height < 36)) throw new Error(`source actions are not prominent enough: ${JSON.stringify(flowResult.sourceButtonHeights)}`);
+  if (!flowResult.analysisStage.includes('查看结论') || !flowResult.planStage.includes('确认计划')) throw new Error(`stage navigation mismatch: ${JSON.stringify(flowResult)}`);
+  if (flowResult.planSteps !== 2 || !flowResult.confirmEnabled || !flowResult.priorResultCollapsed) throw new Error(`plan focus/gate UI mismatch: ${JSON.stringify(flowResult)}`);
   if (!flowResult.returnPreserved || !flowResult.workspaceSwitchPreserved) throw new Error(`Explore work was lost during navigation: ${JSON.stringify(flowResult)}`);
   if (!flowResult.themes.light.primary || flowResult.themes.light.primary === flowResult.themes.dark.primary) throw new Error(`theme tokens did not change: ${JSON.stringify(flowResult.themes)}`);
-  if (!flowResult.themes.aurora.primary || flowResult.themes.aurora.primary === flowResult.themes.dark.primary) throw new Error(`aurora theme tokens are missing: ${JSON.stringify(flowResult.themes)}`);
-  if (flowResult.illustrations.length !== 2 || flowResult.illustrations.some((item) => !item.complete || item.naturalWidth < 512 || item.alt !== '')) throw new Error(`entry illustrations did not load as decorative local assets: ${JSON.stringify(flowResult.illustrations)}`);
   if (consoleErrors.length) throw new Error(`renderer errors: ${JSON.stringify(consoleErrors)}`);
 
-  await evaluate(`document.querySelector('.explore-back-button')?.click()`);
-  await wait(120);
-  await setViewport(1536, 1024);
-  const homeGeometry = await evaluate(`(() => {
-    const panel = document.querySelector('.explore-panel');
-    const hero = document.querySelector('.explore-home-header');
-    const eyebrow = document.querySelector('.explore-eyebrow');
-    const panelRect = panel?.getBoundingClientRect();
-    const heroRect = hero?.getBoundingClientRect();
-    const eyebrowRect = eyebrow?.getBoundingClientRect();
-    return {
-      scrollTop: panel?.scrollTop,
-      panelTop: panelRect?.top,
-      heroTop: heroRect?.top,
-      heroBottom: heroRect?.bottom,
-      eyebrowTop: eyebrowRect?.top,
-      eyebrowBottom: eyebrowRect?.bottom,
-    };
-  })()`);
-  if (homeGeometry.scrollTop !== 0 || homeGeometry.eyebrowTop < homeGeometry.heroTop + 8) throw new Error(`Explore hero is clipped: ${JSON.stringify(homeGeometry)}`);
   fs.mkdirSync(outputDir, { recursive: true });
   const screenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log(JSON.stringify({ scenarios, flowResult, homeGeometry, screenshotPath, consoleErrors }, null, 2));
+  console.log(JSON.stringify({ scenarios, flowResult, screenshotPath, consoleErrors }, null, 2));
 }
 
 main().catch((error) => {

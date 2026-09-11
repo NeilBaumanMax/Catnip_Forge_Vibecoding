@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { IpcMain } from 'electron';
-import { normalizeExploreExecutionConfirmRequest, normalizeHandoffContext, type ExploreAnalysisStartResult, type ExploreExecutionStartResult, type ExplorePlanStartResult, type ExploreRequest, type SourceEvidence } from '../common/explore';
-import { getExploreHandoffArtifact } from './explore-session';
+import { normalizeHandoffContext, type ExploreAnalysisStartResult, type ExploreExecutionStartResult, type ExplorePlanStartResult, type ExploreRequest, type SourceEvidence } from '../common/explore';
 import type { Orchestrator } from './worker/orchestrator';
 import { searchForExplore } from './explore-zhihu-search';
 import { requireActiveProject } from './project-session';
@@ -17,7 +16,6 @@ export function registerExploreAnalysisIpc(
   orchestrator: Pick<Orchestrator, 'submitExploreAnalysis' | 'submitExplorePlan' | 'confirmExploreExecution'>,
   search = searchForExplore,
   requireProject = requireActiveProject,
-  getArtifact = getExploreHandoffArtifact,
 ): void {
   registrar.handle('explore:analysis:start', async (_event, value: unknown): Promise<ExploreAnalysisStartResult> => {
     const project = requireProject();
@@ -40,12 +38,7 @@ export function registerExploreAnalysisIpc(
   });
   registrar.handle('explore:handoff:execute', async (_event, value: unknown): Promise<ExploreExecutionStartResult> => {
     requireProject();
-    const confirmation = normalizeExploreExecutionConfirmRequest(value);
-    const artifact = getArtifact(confirmation.sessionId);
-    if (artifact.digest !== confirmation.artifactDigest || artifact.handoffId !== confirmation.handoffId || artifact.planRequestId !== confirmation.planRequestId) {
-      throw new Error('确认提交的交接材料与工程文件不匹配');
-    }
-    const submitted = orchestrator.confirmExploreExecution(confirmation);
+    const submitted = orchestrator.confirmExploreExecution(value);
     return {
       ok: true,
       taskId: submitted.taskId,

@@ -1,6 +1,6 @@
 appId: com.vibeide.app
 productName: Catnip Forge
-buildVersion: 2.0.0.7201
+buildVersion: 1.0.0.7201
 artifactName: "${productName}-${os}-${arch}.${ext}"
 
 directories:

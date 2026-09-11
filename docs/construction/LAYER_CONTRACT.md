@@ -34,13 +34,6 @@
 - Agent conversation、Worker task、Explore request/plan/handoff、Build/Flash/Serial task 都必须绑定 projectId/projectDir 快照；迟到结果只能回到原工程记录。
 - 本节已由 Phase 7 源码和专项自动化落地；打包版冷启动工程门禁与 Chat UI 已验证。用户成品人工复测仍不得用自动化替代。
 
-## 2026-09-10 Phase 8 工程内状态与交接边界
-
-- 用户新确认的 Phase 8 要求覆盖 Phase 7“project-sessions 只位于 userData”的旧目标；新目标为 `<project>/.catnip/{agent,explore,handoffs}`，路径只由 Main 从 active project 解析并校验。
-- 左侧工程 Agent 与 Explore Agent 复用同一 Worker/模型基础设施，但拥有不同 conversation store 和 Renderer 事件通道；复用基础设施不等于共享对话。
-- Explore 第三阶段只允许 Main 写 `.catnip/handoffs/<sessionId>/` 的结构化交接与 Markdown 计划，不开放任意工程写权限。
-- 第四阶段必须重新读取磁盘 artifact 并校验摘要；Renderer 内存对象、按钮 disabled 或自然语言提示都不能充当确认授权。
-
 
 ## 2026-09-07 知识底座程序边界
 

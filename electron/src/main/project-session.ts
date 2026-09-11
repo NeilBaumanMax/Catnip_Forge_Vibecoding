@@ -235,59 +235,6 @@ export function requireActiveProject(): ProjectSummary {
   return project;
 }
 
-export function getActiveProjectStateRoot(): string {
-  const project = requireActiveProject();
-  const projectReal = fs.realpathSync.native(project.projectDir);
-  const root = path.join(projectReal, '.catnip');
-  if (fs.existsSync(root)) {
-    const stat = fs.lstatSync(root);
-    if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error('工程 .catnip 状态目录无效');
-    const real = fs.realpathSync.native(root);
-    if (normalizedPathKey(path.dirname(real)) !== normalizedPathKey(projectReal)) throw new Error('工程 .catnip 状态目录越界');
-  } else {
-    fs.mkdirSync(root, { recursive: false });
-  }
-  const manifest = path.join(root, 'manifest.json');
-  if (fs.existsSync(manifest)) {
-    let stored: { version?: unknown; projectId?: unknown; projectDir?: unknown };
-    try { stored = JSON.parse(fs.readFileSync(manifest, 'utf8')); }
-    catch (error) { throw new Error(`工程 .catnip manifest 损坏，原文件已保留：${error instanceof Error ? error.message : String(error)}`); }
-    if (stored.version !== 1 || stored.projectId !== project.id || normalizedPathKey(String(stored.projectDir || '')) !== normalizedPathKey(projectReal)) {
-      throw new Error('工程 .catnip manifest 与当前工程不匹配');
-    }
-  } else {
-    writeJsonAtomic(manifest, {
-      version: 1,
-      projectId: project.id,
-      projectDir: projectReal,
-      createdAt: new Date().toISOString(),
-    });
-  }
-  const ignoreFile = path.join(root, '.gitignore');
-  if (!fs.existsSync(ignoreFile)) fs.writeFileSync(ignoreFile, '*\n!.gitignore\n', { encoding: 'utf8', flag: 'wx' });
-  return root;
-}
-
-export function getActiveProjectStatePath(...segments: string[]): string {
-  if (segments.some((segment) => !segment || segment === '.' || segment === '..' || /[\\/]/.test(segment))) {
-    throw new Error('工程状态路径无效');
-  }
-  const root = getActiveProjectStateRoot();
-  let cursor = root;
-  segments.forEach((segment, index) => {
-    cursor = path.join(cursor, segment);
-    if (!fs.existsSync(cursor)) return;
-    const stat = fs.lstatSync(cursor);
-    if (stat.isSymbolicLink()) throw new Error('工程状态路径不能包含符号链接');
-    if (index < segments.length - 1 && !stat.isDirectory()) throw new Error('工程状态路径结构无效');
-  });
-  const target = path.join(root, ...segments);
-  const rootKey = normalizedPathKey(root);
-  const targetKey = normalizedPathKey(target);
-  if (!targetKey.startsWith(`${rootKey}${path.sep}`)) throw new Error('工程状态路径越界');
-  return target;
-}
-
 export function assertPathInActiveProject(targetPath: string): string {
   const project = requireActiveProject();
   const resolved = path.resolve(targetPath);

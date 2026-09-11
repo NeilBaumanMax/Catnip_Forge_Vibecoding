@@ -43,24 +43,6 @@
 - 7a–7f：`COMPLETE`。失败回归、Main Project Session、全模块 active project、Agent 会话隔离、Explore 多历史、路径/request/task/Secret 门禁均已实现并通过专项。
 - 7g 软件与打包自动化：`COMPLETE`。Windows 包、无 Key 首启、显式工程选择、打包版 Chat UI、release/version 已通过。
 - 7g 用户人工成品验收：`NOT VERIFIED`。需复测返回、切页、重启、切工程、Agent 历史、编辑器、烧录目标和新建工程；完成后再恢复真实 Diagnosis 验收。
-
-## Phase 8：工程内会话、独立 Explore Agent 与交接材料
-
-- 施工基线见 [Phase 8 文档](PHASE_8_EXPLORE_AGENT_HANDOFF_BASELINE.md)；施工前远端备份 `backup/pre-phase-8-20260910` 已核对为 `050ae64d`。
-- 8a：`COMPLETE`。工程 `.catnip` 路径、manifest、Agent/Explore store 保留迁移和跨工程/符号链接/损坏保护已实现。
-- 8b：`COMPLETE`。Explore 独立 conversation 与 IPC 已实现，受限分析/计划过程不再进入左侧 `chat:message`。
-- 8c：`COMPLETE`。四阶段可回看；第三阶段生成三份材料，第四阶段从磁盘展示并经摘要/绑定/一次性门禁确认提交。
-- 8d：`COMPLETE`。Source/Idea 操作层级、36px 命中区、keyboard、reduced-motion、wide/normal/compact 和 light/dark 回归已完成。
-- 8e 自动 Review/专项/Runtime/Electron build：`COMPLETE`；成品人工验收、真实 Diagnosis、真实 Agent 改码与硬件：`NOT VERIFIED`。本轮未重新打包 Windows 成品。
-
-## Phase 9：使用记录清理、四个 Skill 移除与重新打包
-
-- 施工与删除边界见 [Phase 9 文档](PHASE_9_USAGE_RESET_SKILL_REMOVAL_PACKAGE.md)；远端恢复点 `backup/pre-phase-9-20260910` 已核对为 `f976be8e`。
-- 9a：停止开发进程，精确删除工程 `.catnip`、收藏 Store、当前/旧工程会话记录。
-- 9b：删除四个指定 Skill 的开发源、开发部署与 userData 部署副本，同时移除产品快捷映射和残留引用。
-- 9c：专项、Runtime/Electron 构建、安全检查、Windows 打包、release/version 与包内容核对。
-- 真实搜索、真实 Agent 改码和真机 Build/Flash/Serial 不属于本轮。
-- 9a–9c：`COMPLETE`。清理目标逐项不存在，剩余 Skill 9 个，Windows `win-unpacked` 已生成并通过 release/version/Skill 内容门禁。
 ## Phase 1 已定位的最小工程范围
 
 - 新增 `agent/skills/zhihu`，按用户 ZIP 原字节导入，不创建假 Skill。

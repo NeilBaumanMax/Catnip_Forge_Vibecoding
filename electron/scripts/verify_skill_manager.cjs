@@ -9,10 +9,7 @@ async function main() {
   const { buildContext } = require('../dist/main/worker/context');
   const before = manager.listManagedSkills();
   assert(before.status.sourceDir.endsWith(path.join('agent', 'skills')), 'source path must remain agent/skills');
-  assert(before.skills.length >= 8, 'remaining bundled skills should be discoverable');
-  for (const removedId of ['1688-source-finding', 'bilibili-search-workflow', 'douyin-product-rank', 'taobao-listing']) {
-    assert(!before.skills.some((skill) => skill.id === removedId), `${removedId} should be removed from bundled skills`);
-  }
+  assert(before.skills.length >= 12, 'bundled skills should be discoverable');
   assert(before.skills.every((skill) => skill.sourceFormat === 'standard'), 'bundled skills must use one folder per skill');
   for (const skill of before.skills) {
     assert.equal(path.basename(skill.folderPath), skill.id, `${skill.id} folder must match its id`);
@@ -21,9 +18,6 @@ async function main() {
 
   const synced = manager.syncManagedSkills();
   assert.equal(synced.status.deployedCount, synced.status.skillCount, 'all source skills should deploy');
-  for (const removedId of ['1688-source-finding', 'bilibili-search-workflow', 'douyin-product-rank', 'taobao-listing']) {
-    assert(!fs.existsSync(path.join(synced.status.deployDir, removedId)), `${removedId} stale deployment was not removed`);
-  }
   for (const skill of synced.skills) {
     const deployed = path.join(synced.status.deployDir, skill.id, 'SKILL.md');
     const text = fs.readFileSync(deployed, 'utf-8');

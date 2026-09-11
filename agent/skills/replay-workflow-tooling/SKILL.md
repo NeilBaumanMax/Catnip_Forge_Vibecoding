@@ -41,15 +41,15 @@ Workflow 名称用稳定、可读、可复用的格式：
 示例：
 
 ```text
-catalog-search-stats-v1
-creator-video-top10-v1
-product-rank-v1
+taobao-search-stats-v1
+bilibili-creator-top10-v1
+douyin-product-rank-v1
 ```
 
 workspace 名称用本次结果对象：
 
 ```text
-catalog-search-stats-20260610
+taobao-search-stats-20260610
 ```
 
 ## 把录制优化成可复用任务

@@ -1,6 +1,6 @@
 # 探索 / 官方 Zhihu Skill MVP 施工主约束
 
-Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定索引：[D001–D031](DECISION_LOG.md)。现场证据：[当前状态报告](PROJECT_STATE_REPORT.md)。用户需求优先于旧规则；历史文档不能授权额外功能。
+Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定索引：[D001–D026](DECISION_LOG.md)。现场证据：[当前状态报告](PROJECT_STATE_REPORT.md)。用户需求优先于旧规则；历史文档不能授权额外功能。
 
 ## 范围与完成定义
 
@@ -21,13 +21,6 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 - Agent 对话按工程隔离；旧全局对话保留为未归属历史，不自动注入新工程。
 - 找灵感与解问题按 `projectId + mode + sessionId` 保存多次历史目录，包含完成、未完成和中断状态；Secret 与未选择资料不得落盘。
 - 详细施工与验收以 [Phase 7 施工基线](PHASE_7_PROJECT_SESSION_BASELINE.md) 为准；实现与自动化证据已回写，用户成品人工复测仍单列为 `NOT VERIFIED`。
-
-## Phase 8 工程内会话与 Explore 交接硬约束
-
-- Phase 7 的 userData 目录是历史实现，不再是目标真相。工程 Agent、Explore session 与 Handoff 必须迁移到当前工程受控 `.catnip/agent`、`.catnip/explore`、`.catnip/handoffs` 子目录；旧数据保留迁移且不覆盖新数据。
-- Explore 受限分析/计划必须使用独立对话记录与事件通道，不能读写左侧工程 Agent conversation。
-- 四阶段只有已到达步骤可回看；第三步生成工程内交接材料，第四步从磁盘展示并经过一次性、绑定工程/会话/计划/材料摘要的确认后才提交既有工程 Agent 队列。
-- 交接材料写入是 Explore 允许的唯一工程内写操作，仅限 `.catnip/handoffs`；仍不得修改业务源码或调用 Build/Flash/Serial。
 
 ## Assumption Register
 

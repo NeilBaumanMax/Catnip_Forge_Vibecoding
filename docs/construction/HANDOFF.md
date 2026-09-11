@@ -4,10 +4,6 @@
 
 ## 当前状态
 
-- 用户已明确授权 Phase 9：清空 Explore 对话/草稿与收藏、工程 Agent 对话和旧会话副本，删除四个指定 Skill，最后重新打 Windows 包。已建立并远端核对 `backup/pre-phase-9-20260910@f976be8e`；精确范围见 [Phase 9 施工文档](PHASE_9_USAGE_RESET_SKILL_REMOVAL_PACKAGE.md)。
-- Phase 9 已完成：指定记录和四个 Skill 已清除，剩余 9 个 Skill；Windows `win-unpacked` 已重新生成并通过 release/version/内容门禁。清理后的聊天与收藏不可从产品内恢复。
-- Phase 8 源码与自动化回归已完成：工程 Agent/Explore 状态改存工程内 `.catnip`；Explore 独立对话且不占左侧 Agent；四阶段可回看；第三步生成工程内交接材料，第四步从磁盘展示并确认后交工程 Agent；来源/收藏/生成计划按钮已统一。详见 [Phase 8 基线与结果](PHASE_8_EXPLORE_AGENT_HANDOFF_BASELINE.md)。新版 Windows 包与用户人工成品体验尚未验证。
-
 - UI 独立施工基线 `b7063512` 与实现提交 `48dd8d32` 已推送；合并前远端备份 `backup/pre-explore-ui-merge-20260910` 已核对为 `d0265836`。
 - `EXPLORE_UI_REFACTOR` 已合入 `idea_to_production`。合并后 Electron/Runtime 构建、Explore 全专项、布局矩阵与 Workbench smoke 均通过；Main/Preload/IPC/Agent/Search/Runtime/Hardboard 未因 UI 重构改变。
 - Explore 首页、Idea、Diagnosis、Source、Knowledge 和 Plan 已按 Research Workspace 重排；保留全部原 IPC、连接、收藏、验证、相关知识显式选择、Handoff 与 Confirm 行为。
@@ -42,18 +38,18 @@
 
 `ExplorePanel.tsx` 通过 preload/Main 调用有界 Context 收集器。解问题可见并可取消当前工程、target、最多 6 个源码候选、最近 24 小时同工程 Build/Flash 事件与最多 40 条共享串口记录；串口会明确标注尚未证明属于所选工程。Main 的 Request 准备仍只保留 `selected=true` 项。
 
-Project Session 由 Main 签发 projectId 并绑定规范化 projectDir；冷启动不自动激活。Agent 数据位于 `<project>/.catnip/agent/conversations.json`，Explore 数据位于 `<project>/.catnip/explore/<mode>/<sessionId>/session.json`，交接材料位于 `<project>/.catnip/handoffs/<sessionId>/`。旧 userData 工程记录在目标不存在时复制并保留源文件；旧全局 Agent 历史只读保留在未归属区。返回 Explore 首页、四阶段回看和切换右侧工作区不清空当前工作，重启后无法续接的 pending 请求转为 interrupted，不自动搜索或消耗额度。
+Project Session 由 Main 签发 projectId 并绑定规范化 projectDir；冷启动不自动激活。Agent 数据位于 `userData/project-sessions/<projectId>/agent/`，Explore 数据位于 `userData/project-sessions/<projectId>/explore/<mode>/<sessionId>/session.json`。旧全局 Agent 历史只读保留在未归属区；返回 Explore 首页和切换右侧工作区不卸载/清空当前工作，重启后无法续接的 pending 请求转为 interrupted，不自动搜索或消耗额度。
 
 官方连接由固定个人中心 URL、独立宿主遮蔽输入和官方 CLI stdin 完成，Secret 不经过 Renderer/Chat。若 CLI 缺失或不兼容，探索页只在用户点击“安装连接组件并继续”后运行固定官方 setup；若 CLI 可用但缺 Secret，进入探索每次最多自动弹窗一次，取消后不循环。Access Secret 已配置并经官方最小调用验收；固定搜索桥的 `search zhihu` 已真实通过，`search global` 等待排障 Demo 验收。
 
-现有 Worker 继续使用单队列和 persistent Agent。`explore_analysis` 与 `explore_plan` 分别执行只分析和无工具只计划，并通过独立 Explore conversation 事件返回，不写左侧工程 Agent 历史。合法计划完成后由 Main 在工程目录写入三份交接材料；第四步从磁盘重读、校验摘要与 project/session/request/handoff 绑定，用户点击“确认提交给工程 Agent”后才以一次性、30 分钟过期门禁提交到当前工程 Agent 对话。确认前不开放文件、Build、Flash 或 Serial。
+现有 Worker 继续使用单队列和 persistent Agent。`explore_analysis` 与 `explore_plan` 分别执行只分析和无工具只计划；合法结构化结果已接入 Idea/Diagnosis、来源和计划 UI。DeepSeek 真实计划输出已通过；计划完成后可由用户点击“确认并执行”，Main 以一次性、绑定计划与交接 ID、30 分钟过期的门禁提交到原有任务队列，确认前不开放文件、Build、Flash 或 Serial。
 
 知识数据位于 Electron `userData/explore/knowledge.json`；历史知识只发现，显式选择后才进入 Context。该本地 Store 与知乎官方 Knowledge Base 不同，MVP 不调用后者。
 ## 下一步 1–3 项
 
-1. 由用户在开发版或下一版成品人工复测：切工程时左侧 Agent 历史切换、Explore 多会话/草稿恢复、四阶段回看与第四步确认提交。
-2. 如需交付安装包，基于 Phase 8 提交重新执行 `pack:win`、release/version、无 Key 首启与 packaged UI 门禁。
-3. 经用户另行授权后继续真实双搜索 Diagnosis；有设备后执行真实工程 Agent 改码与 Build/Flash/Serial 闭环。
+1. 由用户对最新 `electron/dist-package/win-unpacked` 人工复测：返回、切工作区、重启、切工程、Agent 历史、编辑器/烧录目标与新建工程。
+2. 经用户授权具体工程摘要外发且不暴露 Secret，执行真实“解问题”知乎＋全网双搜索 Demo。
+3. 具备设备条件后，在用户确认 Plan 后完成真实修改、Build、Flash、Serial 与 Knowledge 验证回写。
 
 ## Decision 与 Assumption
 
@@ -69,9 +65,8 @@ D001–D020 全部有效，见 `DECISION_LOG.md`。关键约束：页面叫探�
 - A9 CONFIRMED：第五页签、两个入口、Idea/Diagnosis 来源结果和计划展示均已实现并通过 Renderer build。
 - A10 REJECTED：组件本地状态足以承载 Explore 工作。Phase 7 已改为 Main 持久化的按工程会话，并通过返回/切工作区保持回归。
 - A11 REJECTED：空 projectDir 可安全回退到列表第一项或最近 Runtime 工程。Phase 7 已实现冷启动显式工程门禁，打包 UI 验证 `activeProject === null`。
-- A12 REJECTED：全局 Agent Conversation Store 能安全服务多个工程。Phase 8 已将工程 Agent 对话物理存入各工程 `.catnip/agent`，旧全局历史保留为未归属只读。
-- A13 REJECTED：每种 Explore 模式只保存一个最新状态即可。Phase 8 已采用工程内 mode + sessionId 的多历史目录，并持久化各自草稿、阶段和独立对话。
-- A14 CONFIRMED：工程内 JSON/Markdown artifact 可作为 Explore → 工程 Agent 的可审阅边界；自动化已覆盖磁盘重读、摘要/绑定不符、篡改和重复确认拒绝。
+- A12 REJECTED：全局 Agent Conversation Store 能安全服务多个工程。Phase 7 已按工程隔离会话，旧全局历史保留为未归属只读。
+- A13 REJECTED：每种 Explore 模式只保存一个最新状态即可。Phase 7 已采用工程 + 模式 + sessionId 的多历史目录，覆盖完成、草稿与中断记录。
 
 ## Blocker、Known Issues 与真实验证
 
@@ -98,18 +93,3 @@ Phase 0：13 个检查目标通过、2 次 pytest 启动失败、3 组未验证�
 - 只能精确暂存；禁止 `reset --hard`、`clean -fd`、`push --force`、擅自 stash 或覆盖用户修改。撤回已提交工作使用经审查的 `git revert <commit>` 并重新测试。
 
 本次文档漂移修正完成后的提交与远端 hash，必须用 Git 动态查询；不能让提交正文虚称包含自身 hash。
-## 2026-09-11 · v2.0.0 UI 与历史清理
-
-- Explore 编辑回退、计划大圆形执行态、可编辑/可打开 Handoff 材料、四步导航与当前工程标识已修复。
-- Agent 列表不再暴露未归属只读历史；用户数据中的 legacy session/unassigned 记录已按用户要求清除。
-- 当前发布版本：`v2.0.0` / Build `7201` / npm `2.0.0-7201` / PE `2.0.0.7201`。
-- `pack:win`、`verify:release`、`verify:version` 通过；包入口为 `electron/dist-package/win-unpacked/Catnip Forge.exe`。
-
-## 2026-09-11 · 星光工坊 UI v2 Aurora
-
-- 已按用户交接包完成 Phase 0 现场映射和无冲突 `UI_CORE`：默认 Aurora 外观、深海蓝 Agent/导航、明亮工作区、Explore 紫/青双入口动作插画、全流程表单/来源/计划/交接主题、学院呱呱空态与引导。
-- 现有 light/dark 继续有效；DeepSeek、会话、工程选择、附件、Skills、队列、Explore Context/知识/来源、只分析/只计划/一次性确认、Runtime/Hardboard/Serial 契约均保留。没有新增概念图里的假模型选择器、连接状态、示例记录或第二套任务系统。
-- 新增 Renderer TSX 类型门禁。Runtime/Electron 类型与构建、Explore/Chat/会话/门禁/Skill/硬件 mock 专项和隔离真实 Electron Workbench smoke 均通过；布局覆盖 8 个视口/分栏并留下 1536×1024 截图。
-- `verify:software-assistant-ui` 与 `verify:project-session-ui` 因没有正在运行的指定 CDP 成品目标标记 `ENVIRONMENT_BLOCKED`；本轮未重打 Windows 包。发布时需基于本提交重打并复测 packaged UI、release/version、离线资源和 Secret 门禁。
-- GPU 独立工作流未获本轮授权，启动策略未改；未执行真实搜索、DeepSeek 请求或硬件动作，`REAL_HARDWARE_VALIDATION_PENDING` 保留。
-- 详细文件映射、首次失败和截图证据见 [Phase 0 基线](PHASE_UI_V2_AURORA_BASELINE.md) 与 [Aurora 交付报告](PHASE_UI_V2_AURORA_DELIVERY.md)。

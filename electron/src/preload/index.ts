@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreContextGatherRequest, ExploreExecutionConfirmRequest, ExploreRequest, HandoffContext, SaveKnowledgeCardInput } from '../common/explore';
-import type { ExploreHandoffArtifact, ExploreWorkSessionRecord } from '../common/project-session';
+import type { ExploreWorkSessionRecord } from '../common/project-session';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getStartupStatus: () => ipcRenderer.invoke('startup:status'),
@@ -74,12 +74,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onExploreAnalysisError: (cb: (result: { mode: 'analysis' | 'plan'; requestId?: string; message: string }) => void) => {
     ipcRenderer.on('explore:analysis:error', (_event, result) => cb(result));
   },
-  onExploreConversationMessage: (cb: (message: { text: string; timestamp: number; kind?: string; error?: boolean; taskId?: string; requestId?: string; mode: 'analysis' | 'plan' }) => void) => {
-    ipcRenderer.on('explore:conversation:message', (_event, message) => cb(message));
-  },
   startExplorePlan: (handoff: HandoffContext) => ipcRenderer.invoke('explore:handoff:plan', handoff),
-  createExploreHandoffArtifact: (value: { sessionId: string; handoff: HandoffContext; planResult: ExploreAnalysisResult }) => ipcRenderer.invoke('explore:handoff:artifact:create', value) as Promise<ExploreHandoffArtifact>,
-  getExploreHandoffArtifact: (sessionId: string) => ipcRenderer.invoke('explore:handoff:artifact:get', sessionId) as Promise<ExploreHandoffArtifact>,
   confirmExploreExecution: (request: ExploreExecutionConfirmRequest) => ipcRenderer.invoke('explore:handoff:execute', request),
   isWorkbenchSmokeTest: process.env.VIBEIDE_SMOKE_WORKBENCH_OPEN === '1',
   finishWorkbenchSmokeTest: (result: unknown) => ipcRenderer.invoke('smoke:workbench:finish', result),

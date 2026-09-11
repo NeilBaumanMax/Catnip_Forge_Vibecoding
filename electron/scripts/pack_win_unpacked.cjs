@@ -103,7 +103,7 @@ copyTree(path.join(electronRoot, '..', 'runtime', 'node_modules'), path.join(res
   hasSegment(relative, new Set(['.cache', 'chrome_profile', 'recordings', 'workflows', 'logs']))
 ));
 copyTree(path.join(electronRoot, '..', 'runtime', 'hardboard'), path.join(resourcesRoot, 'runtime', 'hardboard'), (relative) => (
-  hasSegment(relative, new Set(['build', '.git', '.cache', '.catnip', 'logs', 'events']))
+  hasSegment(relative, new Set(['build', '.git', '.cache', 'logs', 'events']))
   || /(?:^|\/)esptools\/esp-idf-v[^/]+\/esp-idf\/examples(?:\/|$)/.test(relative)
   || /(?:^|\/)idf-tools\/python_env(?:\/|$)/.test(relative)
 ));

@@ -54,9 +54,6 @@ async function main() {
   if (!alpha || !beta) throw new Error('isolated projects were not discovered');
   activateProject(alpha.id);
   const sessionFile = getClaudeSessionFile();
-  if (sessionFile !== path.join(alpha.projectDir, '.catnip', 'agent', 'conversations.json')) {
-    throw new Error('project Agent conversation is not stored inside the project .catnip directory');
-  }
   fs.mkdirSync(path.dirname(sessionFile), { recursive: true });
 
   try {
@@ -106,11 +103,26 @@ async function main() {
     activateChatConversation(first.id);
     const list = listChatConversations();
     const writableList = list.conversations.filter((conversation) => !conversation.readOnly);
+    const legacySummary = list.conversations.find((conversation) => conversation.id === legacyConversationId);
     if (writableList.length !== 2 || list.activeConversationId !== first.id) {
       throw new Error('multi-conversation list or activation failed');
     }
-    if (list.conversations.some((conversation) => conversation.id === legacyConversationId || conversation.readOnly)) {
-      throw new Error('legacy unassigned history must not be exposed in the Agent conversation list');
+    if (!legacySummary?.readOnly || legacySummary.pinned) {
+      throw new Error('legacy history was not exposed as an unassigned read-only conversation');
+    }
+    const legacyConversation = getChatConversation(legacyConversationId);
+    if (!legacyConversation.readOnly || legacyConversation.messages[0]?.id !== 'legacy-message') {
+      throw new Error('legacy unassigned conversation could not be read');
+    }
+    for (const mutateLegacy of [
+      () => activateChatConversation(legacyConversationId),
+      () => appendChatMessage(legacyConversationId, { id: 'forbidden', text: 'must not write', role: 'user', timestamp: Date.now() }),
+      () => renameChatConversation(legacyConversationId, 'must not rename'),
+      () => deleteChatConversation(legacyConversationId),
+    ]) {
+      let rejected = false;
+      try { mutateLegacy(); } catch { rejected = true; }
+      if (!rejected) throw new Error('legacy read-only history accepted a mutation');
     }
     if (buildClaudeSessionContext(first.id).text.includes('conversation-b-user')) {
       throw new Error('conversation contexts leaked into each other');
@@ -126,22 +138,12 @@ async function main() {
       throw new Error('conversation deletion failed');
     }
 
-    const betaLegacyId = 'conversation-beta-legacy';
-    const betaLegacyFile = path.join(sessionsRoot, beta.id, 'agent', 'conversations.json');
-    fs.mkdirSync(path.dirname(betaLegacyFile), { recursive: true });
-    fs.writeFileSync(betaLegacyFile, JSON.stringify({
-      version: 2, activeConversationId: betaLegacyId, conversations: [{
-        id: betaLegacyId, title: 'beta migrated', pinned: false, createdAt: legacyTimestamp, updatedAt: legacyTimestamp,
-        turnCount: 0, turns: [], messages: [{ id: 'beta-migrated-message', text: 'beta migrated', role: 'user', timestamp: 1 }],
-      }],
-    }), 'utf8');
     activateProject(beta.id);
     const betaList = listChatConversations();
     const betaConversation = getChatConversation(betaList.activeConversationId);
-    if (betaList.conversations.filter((conversation) => !conversation.readOnly).length !== 1 || betaConversation.messages[0]?.id !== 'beta-migrated-message') {
-      throw new Error('project chat migration failed or histories leaked from alpha into beta');
+    if (betaList.conversations.filter((conversation) => !conversation.readOnly).length !== 1 || betaConversation.messages.length !== 0) {
+      throw new Error('project chat histories leaked from alpha into beta');
     }
-    if (!fs.existsSync(path.join(beta.projectDir, '.catnip', 'agent', 'conversations.json')) || !fs.existsSync(betaLegacyFile)) throw new Error('project chat migration did not preserve both target and legacy source');
     appendChatMessage(betaList.activeConversationId, {
       id: 'beta-only',
       text: 'beta only',

@@ -53,33 +53,6 @@ export interface ExploreWorkSessionSnapshot {
   executionTaskId: string | null;
   executionDisposition: 'started' | 'queued' | null;
   notice: string;
-  displayStage: 'describe' | 'analyze' | 'plan' | 'execute';
-  conversation: ExploreConversationMessage[];
-  handoffArtifact: ExploreHandoffArtifact | null;
-}
-
-export interface ExploreConversationMessage {
-  id: string;
-  role: 'user' | 'assistant' | 'system';
-  kind: 'request' | 'status' | 'result' | 'plan' | 'handoff' | 'execution' | 'error';
-  text: string;
-  createdAt: string;
-  requestId?: string;
-  taskId?: string;
-}
-
-export interface ExploreHandoffArtifact {
-  version: 1;
-  projectId: string;
-  sessionId: string;
-  mode: 'idea' | 'diagnosis';
-  handoffId: string;
-  planRequestId: string;
-  digest: string;
-  relativeDir: string;
-  planMarkdown: string;
-  handoffMarkdown: string;
-  createdAt: string;
 }
 
 export interface ExploreWorkSessionRecord extends ExploreWorkSessionSummary {

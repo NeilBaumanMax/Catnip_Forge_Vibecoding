@@ -2,8 +2,6 @@
 
 初始检查日期：2026-09-07（Asia/Shanghai）。下方原始报告保留当时快照，不替代后续动态检查。当前实现状态以本节、Product Truth、HANDOFF 和真实代码为准。
 
-2026-09-10 Phase 8 增量：工程 Agent 对话与 Explore session 已改存各工程 `.catnip` 分层目录；Explore 有独立 conversation、可回看的四阶段和工程内 handoff artifact，只有第四步明确确认后才进入当前工程 Agent。相关构建、专项和布局矩阵通过；新版 Windows 包、真实双搜索、真实 Agent 改码及硬件仍未验证。
-
 ## 2026-09-10 Phase 7 完成补充
 
 - 本次交接审计开始时，本地与 `origin/idea_to_production` 均为 `c4adf87990840638c89072d6afd4d81ec67a16ae`，工作区干净；最终文档提交必须再次动态核对，不能预写自身 hash。
@@ -38,7 +36,7 @@ preload `sendMessage` → gateway `chat:send` → Orchestrator `submitTask`，�
 
 ## Skills 与官方源
 
-Phase 1 当时基线为 12 个普通标准目录；2026-09-10 用户明确移除 `1688-source-finding`、`bilibili-search-workflow`、`douyin-product-rank`、`taobao-listing` 后，当前保留 browser-guide、data-extract、espidf-hardboard、html-game-generation、page-understanding、recording-workflow、replay-workflow-tooling、search-workflow，加上官方 vendor `zhihu` 共 9 个。历史 `verify:skills` 的 12 deployed 仅是当时证据。
+基线 12 个标准目录：1688-source-finding、bilibili-search-workflow、browser-guide、data-extract、douyin-product-rank、espidf-hardboard、html-game-generation、page-understanding、recording-workflow、replay-workflow-tooling、search-workflow、taobao-listing。实际 `verify:skills` 返回 12 deployed。
 
 `skill-manager.ts` 支持 sourceEntries、support tree、树哈希、部署 manifest、同名非托管保护、CRUD。开发源 `agent/skills`；部署 `runtime/agent-workspace/.claude/skills`；打包源 `resources/agent/skills`，部署在 userData/runtime-data 下。标准 Skill 当前会 parse/serialize 后写部署文档；`description: >-` 未解析多行，是已定位兼容缺口。
 
