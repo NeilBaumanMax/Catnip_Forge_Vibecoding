@@ -220,3 +220,16 @@ final result: passed
 P0/P1/P2 are cleared for this pass.
 
 final result: passed
+
+## Fidelity pass 11 — 2026-09-11
+
+- Source: `C:\Users\20917\AppData\Local\Temp\codex-clipboard-E4v7RM.png` (958 × 405, Explore Hero with clipped Zhihu state).
+- Implementation: `electron/.tmp/explore-home-target-2048x1105.png`; focused stacked comparison: `electron/.tmp/phase15-pass11-zhihu-status-comparison.png`.
+- [P1 fixed] The connected-state card previously had an 84px minimum height, so the Hero grid had insufficient room for the title, description, status, gap, and padding. The lower part of the status appeared clipped at the entry boundary.
+- The non-actionable connected/checking state is now a 52px compact row. Its green state dot, platform label, connection result, and “重新检查” action remain fully visible.
+- Actionable install, Secret, and error states retain the 84px minimum plus their existing explanatory steps and controls.
+- Automated geometry confirms the compact card is 48–58px tall and completely contained by the Hero. The comparison confirms the entry cards begin below the full connection card with no crop.
+
+No actionable P0/P1/P2 findings remain for this change.
+
+final result: passed

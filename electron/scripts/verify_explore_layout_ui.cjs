@@ -558,6 +558,7 @@ async function main() {
     const entries = [...document.querySelectorAll('.explore-entry-card')].map((entry) => entry.getBoundingClientRect().height);
     const dashboard = document.querySelector('.explore-home-dashboard-grid')?.getBoundingClientRect();
     const panel = document.querySelector('.explore-panel')?.getBoundingClientRect();
+    const header = document.querySelector('.explore-home-header')?.getBoundingClientRect();
     const connection = document.querySelector('.explore-home-status-row .explore-connection-status')?.getBoundingClientRect();
     const controls = document.querySelector('.workspace-window-controls')?.getBoundingClientRect();
     return {
@@ -565,11 +566,12 @@ async function main() {
       entries,
       dashboardHeight: dashboard?.height || 0,
       controlsRight: controls?.right || 0,
-      connectionVisible: Boolean(connection && connection.width > 300 && connection.height >= 80),
+      connectionCompact: Boolean(connection && connection.width > 300 && connection.height >= 48 && connection.height <= 58),
+      connectionInsideHero: Boolean(connection && header && connection.top >= header.top && connection.bottom <= header.bottom + 1),
       connectionIsLeftCard: Boolean(connection && panel && connection.left <= panel.left + 30 && connection.right <= panel.left + panel.width * 0.55),
     };
   })()`);
-  if (tallTarget.entries.some((height) => height < 490) || tallTarget.dashboardHeight < 480 || tallTarget.controlsRight > 1565 || !tallTarget.connectionVisible || !tallTarget.connectionIsLeftCard) {
+  if (tallTarget.entries.some((height) => height < 490) || tallTarget.dashboardHeight < 480 || tallTarget.controlsRight > 1565 || !tallTarget.connectionCompact || !tallTarget.connectionInsideHero || !tallTarget.connectionIsLeftCard) {
     throw new Error(`tall target layout mismatch: ${JSON.stringify(tallTarget)}`);
   }
   const tallTargetScreenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });

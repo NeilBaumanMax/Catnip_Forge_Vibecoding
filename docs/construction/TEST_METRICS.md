@@ -541,3 +541,15 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 | 聚焦视觉 QA | 通过 | `phase15-pass10-chat-seam-comparison.png`；源图中的贯穿硬线已消除，插画连续且导航仍可读 |
 
 本轮专项首次通过；未修改 Agent、Explore 数据或硬件路径，未执行真实搜索、Windows 打包或实机动作。
+
+## 2026-09-11 Phase 15 第十一轮知乎状态紧凑化
+
+| 命令/检查 | 最终结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | 通过 | 样式与布局门禁改动未引入类型错误 |
+| `npm.cmd --prefix electron run build:renderer` | 通过 | 2820 modules；仅保留既有大 chunk warning |
+| `npm.cmd --prefix electron run verify:explore-ui` | 通过 | 知乎安全连接与 Explore 四阶段产品契约未回归 |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | 通过 | 已连接卡高度 48–58px、完全位于 Hero 内；8 组响应式、双滚动槽、四阶段流程和 console error 0 |
+| 聚焦视觉 QA | 通过 | `phase15-pass11-zhihu-status-comparison.png`；状态、按钮与下边界均完整可见 |
+
+本轮未执行真实知乎请求、Windows 打包、Build/Flash/Serial 或实机动作；`REAL_HARDWARE_VALIDATION_PENDING` 保留。

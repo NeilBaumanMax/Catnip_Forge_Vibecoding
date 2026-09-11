@@ -2143,8 +2143,17 @@
 
 .explore-panel:not(.explore-panel--flow) .explore-home-status-row .explore-connection-status {
   width: 100%;
-  min-height: 84px;
   background: linear-gradient(135deg, rgba(212, 229, 249, 0.88), rgba(226, 222, 246, 0.86));
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-home-status-row .explore-connection-status:not(.is-actionable) {
+  min-height: 52px;
+  padding: 7px 14px;
+  gap: 8px 11px;
+}
+
+.explore-panel:not(.explore-panel--flow) .explore-home-status-row .explore-connection-status.is-actionable {
+  min-height: 84px;
 }
 
 .explore-panel:not(.explore-panel--flow) .explore-entry-grid {

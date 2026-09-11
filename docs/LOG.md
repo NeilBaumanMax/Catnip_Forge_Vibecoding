@@ -930,6 +930,13 @@
 - Electron 类型/Main/Renderer 构建、Explore UI/entry/layout、Onboarding、8 组响应式与四阶段流程均通过；最终同视口证据为 `electron/.tmp/phase15-v3-final-comparison.png`，console error 0。
 - 未执行真实搜索、新 Windows 包、Build/Flash/Serial 或实机验证；`REAL_HARDWARE_VALIDATION_PENDING`。
 
+## 2026-09-11 — Phase 15 第十一轮知乎状态紧凑化
+
+- 用户截图确认知乎连接卡在 Explore Hero 底部显示不完整；根因是非操作态仍继承 84px 最小高度，标题、说明、状态和内边距之和超过 Hero 可用网格高度。
+- 非操作态改为 52px 紧凑行；状态点、平台名、连接结果和重新检查保留。可操作态继续使用 84px 及原有步骤，连接与 Secret 安全逻辑未变。
+- `verify:explore-layout-ui` 新增 48–58px 高度及完全位于 Hero 内的几何断言；typecheck、Renderer build、Explore UI/layout 与聚焦视觉比较均通过。
+- 未执行真实知乎请求、新 Windows 包、Build/Flash/Serial 或实机验证；`REAL_HARDWARE_VALIDATION_PENDING`。
+
 ## 2026-09-11 — Phase 15 第四轮三段式顶栏与应用图标
 
 - 顶栏 DOM 拆为三个真实容器：左侧 Catnip Forge 品牌，中部六工作区，右侧工程/设置/窗口操作；2048px 下中部框宽 1024px，三部分不再共享长边框。

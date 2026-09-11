@@ -80,3 +80,8 @@
 ## Secret 与施工门禁
 
 Secret 不进源码、Renderer、Chat、日志、URL、截图、Agent 输出或包。官方 Zhihu 首次使用仍先运行 vendor `scripts/run.* status`；安装/升级 CLI 必须按官方 Skill 取得授权。Explore 只分析，交接文件是确认前唯一允许写入工程的内容。任何“完成/成功/正常”声明必须附真实文件、Build、Flash、Serial 对应证据。
+
+## 2026-09-11 最新视觉收敛
+
+- Phase 15 第十一轮将知乎已连接/检查中状态收紧为 52px 单行卡，平台名、连接结果和重新检查完整显示；安装、Secret 与错误态保持展开高度。
+- 布局门禁确认紧凑状态卡完全落在 Explore Hero 内；聚焦证据为 `electron/.tmp/phase15-pass11-zhihu-status-comparison.png`。
