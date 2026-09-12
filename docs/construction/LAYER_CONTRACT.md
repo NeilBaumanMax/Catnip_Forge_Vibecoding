@@ -85,3 +85,11 @@
 - Agent/Worker 只消费 Main 为本次任务解析的运行配置；模型档案按工程/会话选择，运行任务不受随后默认值变化影响。
 - Zhihu 替换、验证和退出继续由 Main 编排 vendor `scripts/run.* auth` 命令；Renderer 不接触 CLI 参数或标准输入。
 - 任何协议在没有适配器与专项测试时不得标为工程 Agent 可用；失败不得静默 fallback 到另一模型。
+
+## 2026-09-13 Phase 18 Claude Code 供应商切换边界
+
+- 本节覆盖 Phase 16 的按会话模型选择：Renderer 不再为 Chat 写入 `modelProfileId`，Main 从应用级唯一活动 Claude Code 供应商为新任务签发快照。
+- Renderer 只维护名称、HTTPS Base URL、固定鉴权类型、主模型及 Haiku/Sonnet/Opus 映射和凭据状态；Secret 继续禁止跨 preload。
+- Main 原子维护活动供应商，向应用专用 Claude `settings.json` 合并非敏感字段并保留未知设置；普通配置中不得存在鉴权值。
+- Worker/Agent 只在执行冻结任务时解密对应凭据；子进程环境清除父进程全部相关 `ANTHROPIC_*` 后再注入快照值。
+- CC Switch 只作为 Claude Code 供应商行为参考，不成为新的运行时依赖或第二套配置/任务系统。

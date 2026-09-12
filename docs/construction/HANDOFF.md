@@ -1,5 +1,13 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-13 — Phase 18 Claude Code 供应商切换纠偏
+
+- 当前施工分支由用户明确为 `model-ccswitch`。本地 HEAD/恢复基线为 `e745ac38`，恢复标签 `backup/pre-phase-18-claude-provider-switch-20260913` 已建立；已 fetch 核对 `origin/model-ccswitch` 为 `1390cad1`，远端恢复标签尚未推送，记 `REMOTE_BACKUP_PENDING`。
+- 用户人工验收明确否决 Phase 16 的模型切换：现有“供应商/模型档案/用途能力/会话下拉”与真实 Claude Code CLI 运行语义不一致。
+- 当前唯一目标见 [Phase 18 文档](PHASE_18_CLAUDE_CODE_PROVIDER_SWITCH.md)：只实现类似 CC Switch Claude Code 页的供应商保存、凭据维护和一键启用；Chat 改为只读显示当前活动供应商。
+- API Key 继续只进 safeStorage 和 Claude 子进程环境；应用专用 Claude settings 只保存非敏感 Base URL 与模型角色映射。
+- `docs/tutorials/` 与 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 是既有未跟踪现场，禁止触碰或纳入提交。
+
 ## 2026-09-13 — Phase 17 Renderer 性能开工
 
 - 当前分支 `model-ccswitch` 的本地与 `origin/model-ccswitch` 已核对为 `0e83f409`；远端恢复点 `backup/pre-phase-17-20260913` 指向同一提交。

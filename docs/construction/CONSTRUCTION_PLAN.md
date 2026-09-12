@@ -105,3 +105,13 @@
 - 17c：RGB 场景图转 JPEG，透明角色图转 WebP；更新引用并做字节、构建和视觉回归。
 - 17d：Renderer 首屏 commit + 字体/关键图片 decode 后发无参数 readiness，Main 与最短 Splash 时间共同门控并提供超时兜底。
 - 17e：专项、Electron typecheck/Main/Renderer build、UI 回归、安全扫描、文档与 Git 远端核对；完整 Windows 包若未重建则明确记 `NOT VERIFIED`。
+
+## Phase 18：Claude Code CLI 供应商切换纠偏
+
+- 基线见 [Phase 18 文档](PHASE_18_CLAUDE_CODE_PROVIDER_SWITCH.md)；本地恢复点 `backup/pre-phase-18-claude-provider-switch-20260913` 指向 `e745ac38`，远端备份记 `REMOTE_BACKUP_PENDING`。
+- 18a：修正文档漂移。Phase 16 的按会话模型选择未通过用户人工验收，不再作为当前完成项。
+- 18b：把配置升级为应用级活动 Claude Code 供应商及主模型/Haiku/Sonnet/Opus 映射，保留软件助手和视觉配置兼容。
+- 18c：实现非敏感 Claude settings 合并、Main-only 凭据注入和任务快照；切换不修改运行中/已入队任务。
+- 18d：模型页收敛为添加、保存、配置凭据、启用供应商；Chat 移除模型下拉，改为当前供应商只读提示。
+- 18e：完成专项、安全扫描、Runtime/Electron 构建和真实 Electron UI 回归；未授权真实付费调用记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`。
+- 18f：精确提交并核对远端，不纳入 `docs/tutorials/` 或用户工程 `.catnip`。

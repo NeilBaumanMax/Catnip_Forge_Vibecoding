@@ -1,5 +1,19 @@
 # 测试度量与证据
 
+## 2026-09-13 — Phase 18 Claude Code 供应商切换施工基线
+
+| 检查 | 结果 |
+| --- | --- |
+| 当前分支 | PASS — 用户明确在 `model-ccswitch` 施工 |
+| 本地基线 | PASS — `e745ac38` |
+| 本地恢复点 | PASS — `backup/pre-phase-18-claude-provider-switch-20260913` |
+| 远端状态 | PASS — `git fetch origin` 后核对 `origin/model-ccswitch` 为 `1390cad1`；恢复标签未推送，记 `REMOTE_BACKUP_PENDING` |
+| 人工验收 | FAIL — Phase 16 的配置方法和按会话模型切换逻辑被用户否决 |
+| 上游核对 | PASS — CC Switch Claude Code 模式切换 Claude settings `env`，包含 Base URL、鉴权和主/Haiku/Sonnet/Opus 模型映射 |
+| 业务源码 | NOT STARTED — 完成本轮文档独立提交后再施工 |
+
+Phase 18 必测：v1→v2 配置迁移、活动供应商与 revision、固定 authField 枚举、无 Secret settings 合并、未知设置保留、任务快照与切换时序、父环境清理、旧会话选择不再生效、模型页完整配置路径、Chat 只读活动状态、typecheck/Main/Renderer/Runtime build 及安全扫描。真实付费调用未授权时记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`。
+
 ## 2026-09-12 — 固定主题 / 150% 缩放矩阵
 
 | 检查 | 结果 |

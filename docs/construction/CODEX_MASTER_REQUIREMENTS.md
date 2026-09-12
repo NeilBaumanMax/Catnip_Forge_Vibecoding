@@ -71,6 +71,14 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 - 不透明场景图可转 JPEG；透明素材只能使用保留 alpha 的 WebP/PNG。所有格式替换必须经过构建、字节比较和 UI 回归。
 - 性能施工不得改动模型/知乎协议、Explore 确认门禁、工程会话、Agent/Skill/任务系统或用户工程 `.catnip`。
 
+## Phase 18 Claude Code 供应商切换硬约束
+
+- 用户人工验收优先于 Phase 16 自动化结论：旧“按会话选择模型”不再是当前产品目标，新任务只能使用应用级当前启用的 Claude Code 供应商。
+- 供应商切换必须映射 Claude Code CLI 的 `ANTHROPIC_BASE_URL`、鉴权字段、主模型及 Haiku/Sonnet/Opus 角色模型；不得把任意 OpenAI-compatible endpoint 冒充 Claude Code compatible。
+- `settings.json` 只保存非敏感配置并保留未知字段；鉴权值只在 Main 的安全存储与 Claude 子进程环境之间流动。
+- 供应商切换只影响切换后创建的任务；运行中和已入队任务使用其非敏感快照，禁止中途改绑或静默回退。
+- 仅借鉴 CC Switch 的 Claude Code 供应商切换，不引入其其他工具、数据库或辅助模块，不复制第二套执行系统。
+
 ## 官方知乎能力选择与 Access Secret 门禁（2026-09-09 当前口径）
 
 - 官方 Skill 的完整能力不等于探索页面使用的能力。页面只开放 status、连接和固定的 `search zhihu` / `search global`；真实找灵感已调用知乎搜索，全网搜索留待排障 Demo。

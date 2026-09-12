@@ -53,6 +53,10 @@
 | D047 | 优化前端显示卡顿，发布版 CSS/JavaScript/图片继续本地交付，启动动画期间完成首屏必要预加载。 |
 | D048 | 图片允许按素材特征压缩；不透明场景可用 JPEG，透明素材必须保留透明度。 |
 | D049 | 非首屏功能按需加载；启动预热必须有超时兜底，不能以永久缓存副本换取表面性能。 |
+| D050 | 用户人工验收否决 Phase 16 的按工程/会话模型选择；当前产品改为应用级唯一 Claude Code CLI 活动供应商，Chat 只读展示。 |
+| D051 | 只借鉴 CC Switch 的 Claude Code 供应商切换语义及角色模型映射，不引入 Codex、Gemini、MCP、SQLite、代理或其他模块。 |
+| D052 | Catnip 的 Claude settings 只合并非敏感 Base URL/模型映射；API Key 保持 Main-only safeStorage，并在启动 Claude Code 子进程时按固定鉴权枚举注入。 |
+| D053 | 切换供应商影响随后创建的任务；运行中和已入队任务继续使用创建时快照，禁止中途改绑和静默 fallback。 |
 
 ## 工程决定（不改变产品行为）
 
