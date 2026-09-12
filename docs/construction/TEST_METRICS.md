@@ -691,3 +691,15 @@ Root cause: the old implementation detached/unreferenced PowerShell after its pr
 First-run verification initially misused `VIBEIDE_SMOKE_WORKBENCH_OPEN=1` only to redirect userData. That mode intentionally completes a repository smoke check and closes Main, producing an artificial splash-only 27% state. All temporary processes were terminated at bounded checkpoints. Production splash changes were reverted; user-data isolation now honors `VIBEIDE_SMOKE_APP_DATA` independently, and the corrected isolated packaged first-run passed without activating workbench auto-close behavior.
 
 Final clean package: `v2.0.0` build `7201`, 4,502,226,610 bytes. `Catnip Forge.exe` SHA-256 is `80490D0441CF9ACBDCA8E3495442046AA70CCDD4B7A40C931D7F3360ED96D368`. Release/version gates pass; source and packaged Zhihu host script hashes both equal `5F0E9F8325480E3DE0D577187A3F8A0A49583538EB52F0B291F4286126658EEF`. The targeted clean scan found no project `.catnip`, Explore history, knowledge/favorites, conversation/session state, non-empty `apikey.txt`, or real DeepSeek/Qwen key.
+## 2026-09-12 — Catnip Forge Windows 解压包
+
+| 检查 | 结果 |
+|---|---|
+| Runtime / Main / Renderer 完整构建 | PASS |
+| `node scripts/pack_win_unpacked.cjs` | PASS — 最终目录 `dist-package/Catnip Forge`，旧 `win-unpacked` 不存在 |
+| `npm.cmd run verify:release` | PASS — 4,502,227,001 字节；离线 Node/Python/ESP-IDF/Claude Code 完整；DeepSeek/Qwen Key 未入包 |
+| `npm.cmd run verify:zhihu-skill-package` | PASS — 官方知乎 Skill 15 文件与打包 filter 完整 |
+| 包内可变数据扫描 | PASS — 无历史、收藏、日志、录屏、截图和 `.catnip` |
+| 隔离用户目录 `npm.cmd run verify:first-run` | PASS — 首启窗口、品牌图、Skills、Playwright 正常，占位 Key 被拒绝 |
+
+首次完整命令失败证据保留：旧 `dist-package/win-unpacked/Catnip Forge.exe` 进程树仍占用输出目录，安全清理返回 `EPERM`。精确终止该旧包进程并增加限定输出目录的 Windows 删除重试后成功；未删除或迁移真实用户数据。

@@ -1070,3 +1070,9 @@
 - Explore 连接卡新增官方 CLI 下载/校验和等待安全窗口的明确进行中提示；Secret 仍仅进入原生 `PasswordBox`，通过 stdin 交给官方 `auth set --secret-stdin`。
 - 用户目视确认诊断窗口已弹出。全程未要求或采集真实 Secret；专项门禁、类型检查及 Main/Renderer 构建通过。
 - 27% 启动页经一次性日志最终确认为验收配置错误：`VIBEIDE_SMOKE_WORKBENCH_OPEN=1` 会在仓库 smoke 完成后主动关闭 Main，本不应用作普通首启的 userData 隔离开关。所有基于该假故障的启动页生产改动已撤回；仅将 `VIBEIDE_SMOKE_APP_DATA` 的隔离能力与工作台自动关闭行为解耦。正确模式的重打包首启验证通过，临时进程、测试 userData 与诊断脚本均已清理。
+## 2026-09-12 — Windows 包目录改为 Catnip Forge
+
+- 用户要求重新打包，并把交付目录由 `win-unpacked` 改为 `Catnip Forge`。electron-builder 仍在内部生成临时目录，定制打包脚本在骨架完成后立即重命名，再复制离线资源与盖章。
+- 首次完整命令已完成 Runtime/Main/Renderer 构建，但旧打包程序占用 `dist-package` 导致清理报 `EPERM`；精确关闭该旧包进程树、为安全限定的输出清理增加重试后，继续打包成功。
+- 发布门禁通过：总计 4,502,227,001 字节，Node v22.14.0、隔离 Python/pyserial 3.5、ESP-IDF v5.4.3、Claude Code 2.1.167；DeepSeek/Qwen Key、历史、收藏、日志、录屏、截图与 `.catnip` 均未入包。
+- 官方知乎 Skill 15 文件门禁和隔离首次启动通过；测试进程及临时用户目录已清理，未调用知乎、模型服务或硬件。

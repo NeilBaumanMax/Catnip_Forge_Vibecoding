@@ -6,7 +6,7 @@ const electronRoot = path.resolve(__dirname, '..');
 const versionInfo = JSON.parse(fs.readFileSync(path.join(electronRoot, '..', 'config', 'version.json'), 'utf-8'));
 const exePath = process.argv[2]
   ? path.resolve(process.argv[2])
-  : path.join(electronRoot, 'dist-package', 'win-unpacked', `${versionInfo.productName}.exe`);
+  : path.join(electronRoot, 'dist-package', versionInfo.productName, `${versionInfo.productName}.exe`);
 
 if (!fs.existsSync(exePath)) {
   throw new Error(`exe not found: ${exePath}`);

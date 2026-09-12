@@ -8,7 +8,7 @@ const electronRoot = path.resolve(__dirname, '..');
 const projectRoot = path.resolve(electronRoot, '..');
 const packageRoot = process.env.CATNIP_PACKAGE_ROOT
   ? path.resolve(process.env.CATNIP_PACKAGE_ROOT)
-  : path.join(electronRoot, 'dist-package', 'win-unpacked');
+  : path.join(electronRoot, 'dist-package', 'Catnip Forge');
 const resources = path.join(packageRoot, 'resources');
 const version = JSON.parse(fs.readFileSync(path.join(projectRoot, 'config', 'version.json'), 'utf-8'));
 const exe = path.join(packageRoot, `${version.productName}.exe`);

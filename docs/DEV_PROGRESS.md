@@ -352,3 +352,8 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] 在 Explore 连接卡明确展示官方 CLI 下载/校验与安全窗口等待阶段。
 - [x] 用户目视确认遮罩输入窗口弹出；TypeScript、Main/Renderer build、知乎连接专项和 Explore UI 契约通过。
 - [x] 纠正首启验收配置：userData 隔离与工作台 smoke 自动关闭解耦；撤回基于假故障产生的启动页生产改动。
+## 2026-09-12 — Windows 解压包目录更名并重新打包
+
+- [x] `pack:win` 现在将 electron-builder 的临时 `win-unpacked` 安全改名为最终交付目录 `Catnip Forge`，盖章与发布门禁同步使用新路径。
+- [x] 打包前仅允许清理 Electron 工作区内的输出目录，避免旧包中的用户配置残留；历史、收藏、日志、录屏、截图、工程 `.catnip` 与真实密钥均不进入包。
+- [x] 完整重建 Runtime/Main/Renderer，并生成 `electron/dist-package/Catnip Forge/Catnip Forge.exe`；发布结构、官方知乎 Skill 和隔离首次启动均通过。

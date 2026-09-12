@@ -148,7 +148,7 @@ async function measure(width, height, leftPercent, collapsed = false) {
 }
 
 async function main() {
-  const chromePath = findExecutable(path.join(root, 'dist-package', 'win-unpacked', 'resources', 'runtime', 'playwright'), 'chrome-headless-shell.exe');
+  const chromePath = findExecutable(path.join(root, 'dist-package', 'Catnip Forge', 'resources', 'runtime', 'playwright'), 'chrome-headless-shell.exe');
   if (!chromePath) throw new Error('packaged Playwright Chromium was not found; run pack:win first');
 
   vite = spawn(process.execPath, [path.join(root, 'node_modules', 'vite', 'bin', 'vite.js'), '--host', '127.0.0.1', '--port', String(port), '--strictPort'], {

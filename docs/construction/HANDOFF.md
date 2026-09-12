@@ -170,3 +170,8 @@ Secret 不进源码、Renderer、Chat、日志、URL、截图、Agent 输出或�
 - 用户已目视确认诊断启动时遮罩输入窗口弹出。测试没有填写、读取、记录或截图真实 Secret；正式配置仍只通过官方 `zhihu` Skill 的 `auth set --secret-stdin` 写入系统凭据库。
 - 首启验收最初为了隔离 userData 误用了 `VIBEIDE_SMOKE_WORKBENCH_OPEN=1`；该模式会完成仓库 smoke 后主动关闭 Main，因此人为制造了只剩 27% splash 的状态。失败实例均在保护门限按精确 PID 清理，生产启动页改动已全部撤回。`VIBEIDE_SMOKE_APP_DATA` 现可独立重定向测试数据；按正确模式重打包复测后，原启动页正常结束，首启弹层、品牌、Skills、Playwright 与占位 Key 拒绝均通过。
 - 最终干净成品位于 `electron/dist-package/win-unpacked`，版本 `v2.0.0` build `7201`，总计 4,502,226,610 字节；EXE SHA-256 为 `80490D0441CF9ACBDCA8E3495442046AA70CCDD4B7A40C931D7F3360ED96D368`。发布/版本/隔离首启门禁及本地数据排除扫描通过。
+## 2026-09-12 — Windows 解压包目录命名
+
+- 当前 Windows 解压包交付根目录为 `electron/dist-package/Catnip Forge`，可执行文件为其下的 `Catnip Forge.exe`；`win-unpacked` 仅是 electron-builder 构建中的瞬时目录。
+- `pack_win_unpacked.cjs` 会拒绝清理 Electron 工作区之外的输出路径，打包前清空安全限定的输出根，避免旧包可变数据污染候选包。
+- `verify:release`、打包聊天烟测及依赖 packaged Playwright 的验证默认路径已同步至新目录。

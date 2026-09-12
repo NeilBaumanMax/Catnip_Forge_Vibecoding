@@ -85,7 +85,7 @@ async function evaluate(expression) {
 
 async function main() {
   const chromePath = findExecutable(
-    path.join(root, 'dist-package', 'win-unpacked', 'resources', 'runtime', 'playwright'),
+    path.join(root, 'dist-package', 'Catnip Forge', 'resources', 'runtime', 'playwright'),
     'chrome-headless-shell.exe',
   );
   if (!chromePath) throw new Error('packaged Playwright Chromium was not found; run pack:win first');

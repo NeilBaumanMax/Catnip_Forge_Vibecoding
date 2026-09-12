@@ -7,9 +7,10 @@ const versionInfo = JSON.parse(fs.readFileSync(path.join(electronRoot, '..', 'co
 const outputRoot = process.env.CATNIP_PACKAGE_OUTPUT
   ? path.resolve(electronRoot, process.env.CATNIP_PACKAGE_OUTPUT)
   : path.join(electronRoot, 'dist-package');
-const packageRoot = path.join(outputRoot, 'win-unpacked');
+const generatedPackageRoot = path.join(outputRoot, 'win-unpacked');
+const packageRoot = path.join(outputRoot, versionInfo.productName);
 const resourcesRoot = path.join(packageRoot, 'resources');
-const exePath = path.join(outputRoot, 'win-unpacked', `${versionInfo.productName}.exe`);
+const exePath = path.join(packageRoot, `${versionInfo.productName}.exe`);
 const builder = path.join(electronRoot, 'node_modules', 'electron-builder', 'cli.js');
 const stamp = path.join(electronRoot, 'scripts', 'stamp_win_exe_version.cjs');
 const localElectronDist = path.join(electronRoot, 'node_modules', 'electron', 'dist');
@@ -47,6 +48,13 @@ if (pythonProbe.status !== 0) {
   process.exit(pythonProbe.status || 1);
 }
 
+const relativeOutputRoot = path.relative(electronRoot, outputRoot);
+if (!relativeOutputRoot || relativeOutputRoot.startsWith('..') || path.isAbsolute(relativeOutputRoot)) {
+  console.error(`[pack:win] refusing to clean output outside electron workspace: ${outputRoot}`);
+  process.exit(1);
+}
+fs.rmSync(outputRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 500 });
+
 const builderArgs = [
   builder, '--win', '--x64', '--dir',
   `--config.directories.output=${outputRoot}`,
@@ -68,6 +76,13 @@ if (result.status !== 0) {
   if (result.error) console.error(result.error);
   process.exit(result.status || 1);
 }
+
+if (!fs.existsSync(generatedPackageRoot)) {
+  console.error(`[pack:win] electron-builder output is missing: ${generatedPackageRoot}`);
+  process.exit(1);
+}
+fs.renameSync(generatedPackageRoot, packageRoot);
+console.log(`[pack:win] renamed package directory: ${path.basename(packageRoot)}`);
 
 function copyTree(source, target, excluded = () => false) {
   if (!fs.existsSync(source)) throw new Error(`[pack:win] missing resource source: ${source}`);

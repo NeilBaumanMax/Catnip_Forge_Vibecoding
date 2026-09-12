@@ -2,7 +2,7 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 
 const CDP_LIST = 'http://127.0.0.1:9230/json';
-const packageRoot = path.resolve(process.env.CATNIP_PACKAGE_ROOT || path.join(__dirname, '..', 'dist-package', 'win-unpacked'));
+const packageRoot = path.resolve(process.env.CATNIP_PACKAGE_ROOT || path.join(__dirname, '..', 'dist-package', 'Catnip Forge'));
 const expectedAppUrlPrefix = pathToFileURL(path.join(packageRoot, 'resources', 'app.asar')).href.toLowerCase();
 
 async function findTarget() {
