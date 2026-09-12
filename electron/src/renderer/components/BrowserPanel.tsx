@@ -1,13 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Boxes, Code2, Compass, Cpu, FolderOpen, GraduationCap, Minus, MonitorUp, Rocket, Settings, Settings2, Square, Workflow, Wrench, X, Zap } from 'lucide-react';
-import WorkspacePanel from './WorkspacePanel';
-import CodeEditor from './CodeEditor';
 import ExplorePanel, { type ExploreDiagnosisSeed } from './ExplorePanel';
-import ModelPanel from './ModelPanel';
 import type { BrowserTab, HardboardDevice, HardboardRuntimeState, ProjectSummary, RecordingSummary, RuntimeEvent, SerialMonitorEvent, SerialMonitorSnapshot, WorkbenchItem, WorkbenchOverview } from '../types';
-import catnipForgeIcon from '../assets/catnip-app-icon.png';
-import taskManagerEmptyGuagua from '../assets/task-manager-empty-guagua-v2.png';
+import catnipForgeIcon from '../assets/catnip-app-icon.webp';
+import taskManagerEmptyGuagua from '../assets/task-manager-empty-guagua-v2.webp';
+
+const WorkspacePanel = React.lazy(() => import('./WorkspacePanel'));
+const CodeEditor = React.lazy(() => import('./CodeEditor'));
+const ModelPanel = React.lazy(() => import('./ModelPanel'));
+
+function WorkspaceLoading({ label }: { label: string }) {
+  return <div className="workspace-loading" role="status">正在加载{label}…</div>;
+}
 
 interface Props {
   activeProject: ProjectSummary | null;
@@ -1097,7 +1102,9 @@ export default function BrowserPanel({
 
       {mode === 'repo' ? (
         <div className="tour-panel-fill" data-tour-id="panel-repo">
-          <WorkspacePanel overview={workbench} onRefresh={onRefreshWorkbench} onOpenItem={onOpenWorkbenchItem} onEditItem={handleEditWorkbenchItem} />
+          <React.Suspense fallback={<WorkspaceLoading label="仓库" />}>
+            <WorkspacePanel overview={workbench} onRefresh={onRefreshWorkbench} onOpenItem={onOpenWorkbenchItem} onEditItem={handleEditWorkbenchItem} />
+          </React.Suspense>
         </div>
       ) : null}
 
@@ -1111,7 +1118,7 @@ export default function BrowserPanel({
         />
       </div> : null}
 
-      {mode === 'models' ? <ModelPanel /> : null}
+      {mode === 'models' ? <React.Suspense fallback={<WorkspaceLoading label="模型中心" />}><ModelPanel /></React.Suspense> : null}
 
       {mode === 'monitor' ? (
         <div className="serial-monitor serial-assistant" data-tour-id="panel-monitor">
@@ -1498,12 +1505,14 @@ export default function BrowserPanel({
               <button className="nes-btn is-success editor-save-button" type="button" onClick={handleSaveEditor} disabled={!activeEditorTab || !activeEditorTab.dirty}>保存</button>
             </div>
             <div className="editor-current-path" title={activeEditorTab?.path}>{activeEditorTab?.path || '未打开文件'}</div>
-            <CodeEditor
-              filePath={activeEditorTab?.path || ''}
-              value={activeEditorTab?.text || ''}
-              fontSize={editorFontSize}
-              onChange={handleEditorTextChange}
-            />
+            <React.Suspense fallback={<WorkspaceLoading label="编辑器" />}>
+              <CodeEditor
+                filePath={activeEditorTab?.path || ''}
+                value={activeEditorTab?.text || ''}
+                fontSize={editorFontSize}
+                onChange={handleEditorTextChange}
+              />
+            </React.Suspense>
             <div className="editor-footer">
               <div className="editor-status">{activeEditorTab?.message || '还没有打开文件。'}</div>
               <div className="editor-font-controls" data-tour-id="editor-font-controls" aria-label="编辑器字体大小">

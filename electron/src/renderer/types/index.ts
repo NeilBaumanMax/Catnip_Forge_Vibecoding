@@ -294,6 +294,7 @@ export interface WindowAPI {
   minimizeWindow: () => Promise<{ ok: boolean }>;
   toggleMaximizeWindow: () => Promise<{ ok: boolean; maximized: boolean }>;
   closeWindow: () => Promise<{ ok: boolean }>;
+  notifyRendererInteractive: () => void;
   getStartupStatus: () => Promise<StartupStatus>;
   configureStartupModel: () => Promise<{ ok: boolean; cancelled: boolean; restarting: boolean; status: StartupStatus }>;
   askSoftwareAssistant: (messages: Array<Pick<SoftwareAssistantMessage, 'role' | 'content'>>) => Promise<{ ok: true; text: string }>;

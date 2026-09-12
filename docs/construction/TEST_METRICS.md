@@ -789,3 +789,22 @@ Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会�
 | 业务源码 | NOT STARTED — 文档独立 Commit/Push 后进入 17b |
 
 后续门禁：图片压缩前后字节；入口/异步 chunk 对比；Renderer readiness 的一次性与超时反例；typecheck、Main/Renderer build、Explore/模型/编辑器/布局专项；Secret/data URL/userData 缓存扫描。完整 Windows 包与人工流畅度若未执行分别记 `NOT VERIFIED`。
+
+### Phase 17 实现与回归
+
+| 命令/检查 | 结果 | 证据 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run verify:renderer-performance` | PASS | 12 个目标资源格式/alpha/引用与 2.5 MB 预算；实际 2,093,673 bytes |
+| `npm.cmd --prefix electron run build:renderer` | PASS | 2828 modules；入口 JS 347,441 bytes；CodeEditor 3,828,397 bytes、ModelPanel 10,158 bytes、WorkspacePanel 14,306 bytes 独立 chunk |
+| `npm.cmd --prefix electron run verify:renderer-performance-ui` | PASS | 开发版真实 CDP：readiness mark 恰好一次，编辑器/模型点击后加载，22 个优化图片资源、0 个目标旧 PNG |
+| `npm.cmd --prefix electron run verify:explore-ui` | PASS | Explore 产品/安全/来源/工作区静态契约保持 |
+| `npm.cmd --prefix electron run verify:explore-layout-ui` | PASS | Explore 首页、两流程、并发切换及 1280×720 / 1707×960 / 1707×1067 等布局通过，无 console error |
+| `npm.cmd --prefix electron run verify:model-center-ui` | PASS | 7 工作区、3 模型卡、2 Agent 选项与无横向溢出 |
+| `npm.cmd --prefix electron run typecheck` / `build:main` | PASS | Main/Preload/Renderer readiness 和 lazy 类型通过 |
+| `npm.cmd --prefix runtime run typecheck` | PASS | Runtime 未回归 |
+| `verify:chat-presentation` / `verify:agent-model-selection` / `verify:secure-startup` | PASS | Chat 表现、模型快照、无参数安全首启契约保持 |
+| 新 Electron 进程参数只读核对 | PASS | Renderer 不再含 `--disable-gpu-compositing`；GPU 子进程存在 |
+| 优化图人工查看与布局截图 | PASS | JPEG 未见明显色带；WebP 透明边缘和构图正常 |
+| Windows 完整重打包 | NOT VERIFIED | 本轮只构建 Main/Renderer，不以旧包充当证据 |
+
+首次失败与根因保留：性能专项的超时正则范围过窄；Explore 静态测试仍写死 Phase 16 前的 6 tabs 和旧 PNG；顶部三容器正则因第七个 tab 超出旧字符窗失败，均修正为当前真实契约。布局第一次因 Phase 16 新增 `listModels` 未在浏览器 harness 中提供而 React 卸载；Chat 在非 Electron harness 增加能力探测后通过。性能 UI 首次把“无打开文件的编辑器空态”误断言为 Monaco DOM，随后改为验证 CodeEditor 动态模块；第二次在模板字符串内正则转义错误并暴露脚本未报告 CDP exception，改成字符串检测并补异常检查；第三次只匹配生产哈希 chunk，开发 Vite 使用源码 URL，补齐两种合法路径后通过。一次受控重启命令因外层 PowerShell 提前展开 `$proc`，旧进程已精确停止但新进程未启动；随后直接 `Start-Process` 成功启动 PID 53120。安全首启专项仍输出既有测试宿主 GPU 子进程错误，但断言和退出码通过；普通开发应用启用 GPU 后实际运行正常。

@@ -4,10 +4,10 @@ import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextI
 import type { ExploreConversationMessage, ExploreHandoffArtifact, ExploreWorkSessionRecord, ExploreWorkSessionSummary, ExploreWorkStatus } from '../../common/project-session';
 import ExploreSourceList from './explore/ExploreSourceList';
 import ExploreStageNav, { type ExploreStage } from './explore/ExploreStageNav';
-import exploreIdeaGuagua from '../assets/explore-idea-guagua.png';
-import exploreDiagnosisGuagua from '../assets/explore-diagnosis-guagua.png';
-import exploreIdeaWorkspace from '../assets/explore-idea-workspace.png';
-import exploreDiagnosisWorkspace from '../assets/explore-diagnosis-workspace.png';
+import exploreIdeaGuagua from '../assets/explore-idea-guagua.webp';
+import exploreDiagnosisGuagua from '../assets/explore-diagnosis-guagua.webp';
+import exploreIdeaWorkspace from '../assets/explore-idea-workspace.jpg';
+import exploreDiagnosisWorkspace from '../assets/explore-diagnosis-workspace.jpg';
 
 type ExploreView = 'home' | 'idea' | 'diagnosis';
 

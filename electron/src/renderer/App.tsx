@@ -3,9 +3,9 @@ import ChatPanel from './components/ChatPanel';
 import BrowserPanel from './components/BrowserPanel';
 import CatnipOnboarding from './components/CatnipOnboarding';
 import MarkdownContent from './components/MarkdownContent';
-import catnipForgeIcon from './assets/catnip-app-icon.png';
-import catnipAssistantImage from './assets/catnip-assistant.png';
-import guaguaAvatarImage from './assets/guagua-avatar.png';
+import catnipForgeIcon from './assets/catnip-app-icon.webp';
+import catnipAssistantImage from './assets/catnip-assistant.webp';
+import guaguaAvatarImage from './assets/guagua-avatar.jpg';
 import githubMarkImage from './assets/github-mark.png';
 import type { AgentTaskInput, AgentTaskStatus, BrowserTab, ChatConversation, ChatConversationSummary, ChatMessage, ChatMessageKind, HardboardDevice, ProjectSessionStatus, RecordingSummary, SoftwareAssistantMessage, StartupStatus, TaskStep, TaskSubmitMode, WorkbenchOverview } from './types';
 

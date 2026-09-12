@@ -4,7 +4,7 @@ import type { AgentTaskInput, AgentTaskStatus, AttachmentReference, ChatConversa
 import type { ModelProfile, ProviderConfig } from '../../common/model-config';
 import MarkdownContent from './MarkdownContent';
 import TaskProgress from './TaskProgress';
-import catnipAgentWelcomeImage from '../assets/catnip-agent-welcome-v2.png';
+import catnipAgentWelcomeImage from '../assets/catnip-agent-welcome-v2.webp';
 
 interface Props {
   messages: ChatMessage[];
@@ -399,7 +399,9 @@ export default function ChatPanel({
 
   useEffect(() => {
     let active = true;
-    void window.electronAPI.listModels().then((result) => {
+    const api = window.electronAPI;
+    if (!api?.listModels) return () => { active = false; };
+    void api.listModels().then((result) => {
       if (!active) return;
       const providers = new Map(result.config.providers.map((item) => [item.id, item]));
       setEngineeringModels(result.config.models.flatMap((model) => {
@@ -418,7 +420,9 @@ export default function ChatPanel({
 
   useEffect(() => {
     const refresh = () => {
-      void window.electronAPI.listModels().then((result) => {
+      const api = window.electronAPI;
+      if (!api?.listModels) return;
+      void api.listModels().then((result) => {
         const providers = new Map(result.config.providers.map((item) => [item.id, item]));
         setEngineeringModels(result.config.models.flatMap((model) => {
           const provider = providers.get(model.providerId);

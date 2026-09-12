@@ -1,6 +1,6 @@
 # Phase 17：Renderer 启动与资源性能
 
-状态：2026-09-13 施工基线。用户确认评估可行后直接施工；本阶段只优化既有桌面界面的加载与显示，不改变产品功能、数据边界或硬件流程。
+状态：2026-09-13 源码实现与相关自动化回归完成。用户确认评估可行后直接施工；本阶段只优化既有桌面界面的加载与显示，不改变产品功能、数据边界或硬件流程。
 
 ## 1. 现场结论
 
@@ -57,3 +57,11 @@
 | Git | 精确暂存；文档和实现分阶段 Commit/Push；远端提交核对一致 |
 
 Windows 完整重新打包和用户肉眼流畅度属于阶段末证据；若本轮只完成源码构建，不得写成发布包或真实设备验收完成。
+
+## 5. 实施结果
+
+- 12 张主界面大图由 16,612,583 bytes 降为 2,093,673 bytes，减少 14,518,910 bytes（87.4%）。5 类 RGB 场景使用 JPEG；角色、应用图和任务空态使用带 alpha 的 WebP；构图与像素尺寸未改。
+- 生产入口 JS 从基线约 4.2 MB 降为 347,441 bytes。Monaco `CodeEditor` 为 3,828,397 bytes，仅进入编辑器时加载；`ModelPanel` 10,158 bytes、`WorkspacePanel` 14,306 bytes 也成为独立 chunk。首屏 CSS 273,791 bytes，编辑器 CSS 146,488 bytes 按需加载。
+- Splash 期间隐藏 Renderer 不受后台节流；首个 React commit 后等待字体、可见图片与 Explore 两张关键背景完成解码，最多等待 2.5 秒，再通过无参数 IPC 通知 Main。Main 另有 8 秒兜底，并继续满足既有 5 秒最短动画时长。
+- Chromium 合成不再被所有用户全局关闭；现场新进程参数确认 Renderer 不含 `--disable-gpu-compositing`。驱动异常机器可用 `CATNIP_DISABLE_GPU=1` 显式回退。
+- 完整 Windows 发布包未重新打包：`NOT VERIFIED`。本轮未调用模型、知乎、硬件或真实 Secret；`REAL_HARDWARE_VALIDATION_PENDING` 保持。

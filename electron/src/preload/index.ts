@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   minimizeWindow: () => ipcRenderer.invoke('window:minimize'),
   toggleMaximizeWindow: () => ipcRenderer.invoke('window:toggle-maximize'),
   closeWindow: () => ipcRenderer.invoke('window:close'),
+  notifyRendererInteractive: () => ipcRenderer.send('renderer:interactive'),
   getStartupStatus: () => ipcRenderer.invoke('startup:status'),
   configureStartupModel: () => ipcRenderer.invoke('startup:configure-model'),
   askSoftwareAssistant: (messages: Array<{ role: 'user' | 'assistant'; content: string }>) => ipcRenderer.invoke('software-assistant:ask', messages),

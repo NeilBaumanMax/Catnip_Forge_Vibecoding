@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import catnipAssistantImage from '../assets/catnip-assistant.png';
+import catnipAssistantImage from '../assets/catnip-assistant.webp';
 
 const STORAGE_KEY = 'vibeide.onboarding.catnipJourney';
 const VERSION = 7;

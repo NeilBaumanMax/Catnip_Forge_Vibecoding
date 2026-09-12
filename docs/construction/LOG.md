@@ -330,3 +330,9 @@
 - 代码审计发现 Skill Hub 只有固定站点 BrowserPanel 入口，没有专用站点 → 本地 Skill Manager 安装 IPC；当前文档明确列为待完成，不再把网页浏览/下载推断为本地一键安装完成。
 - 17 份变更文档通过严格 UTF-8、本地链接、版本/tab/HANDOFF 当前态与 `git diff --check`。首次 Node 联合检查因 PowerShell 引号解析未执行，修正命令后通过。
 - 本轮只修改 Markdown；保护未跟踪 `docs/Catnip_Forge_UI_Handoff/` 与工程 `.catnip/`，未构建、打包、调用模型/搜索或操作硬件。
+# 2026-09-13 Phase 17 Renderer 启动与资源性能
+
+- 核对 `model-ccswitch` 与远端 `0e83f409` 一致，创建并核对 `backup/pre-phase-17-20260913`；文档基线 `1390cad1` 已独立推送后才修改业务源码。
+- 生产版原本已使用本地 Vite 哈希资源，因此拒绝复制 JS/CSS 到 userData。实际修复为：仓库/模型/Monaco 按需 chunk，12 张大图按 alpha 转 JPEG/WebP，Splash 期间字体/关键图片 decode 和无参数 readiness 双超时门控。
+- 图片 16,612,583 → 2,093,673 bytes（-87.4%）；入口 JS 约 4.2 MB → 347,441 bytes。默认恢复 Chromium GPU 合成，保留 `CATNIP_DISABLE_GPU=1` 回退；新开发进程真实参数无 `--disable-gpu-compositing`。
+- `verify:renderer-performance`、真实开发版 CDP、Explore UI/布局、模型中心、Chat/模型/安全首启、Runtime/Electron typecheck、Main/Renderer build 最终通过。首次失败及修复详见 TEST_METRICS。未触碰用户 `.catnip`，未重打 Windows 包。

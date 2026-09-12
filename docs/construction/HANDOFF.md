@@ -6,6 +6,9 @@
 - 用户要求降低前端显示卡顿、压缩图片并利用启动动画预加载。现场确认发布版 JS/CSS 已由 Electron 从本地构建目录读取，不能用重复 userData 缓存替代解析/解码优化。
 - 施工采用非首屏分块、图片按 alpha 选 JPEG/WebP、Splash 等待首屏字体/关键图片 decode 的有界 readiness 协议；范围与验收见 [Phase 17 基线](PHASE_17_RENDERER_STARTUP_PERFORMANCE.md)。
 - `docs/tutorials/` 与 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 是用户未跟踪现场，继续不纳入提交且不得触碰。
+- 实现已完成：12 张主图 16,612,583 → 2,093,673 bytes（-87.4%）；入口 JS 约 4.2 MB → 347,441 bytes，Monaco 3,828,397 bytes 隔离为编辑器按需 chunk。
+- 启动链路现等待 Renderer 首屏 commit、字体与关键图片 decode，Renderer 2.5 秒/Main 8 秒双兜底，并保留 5 秒最短动画；GPU 合成默认启用，`CATNIP_DISABLE_GPU=1` 为显式兼容回退。
+- 性能专项、开发版真实 CDP、Explore/150% 布局、模型中心、模型选择、安全首启、Runtime/Electron typecheck 和 Main/Renderer build 已通过。完整 Windows 包未重建，记 `NOT VERIFIED`。
 
 ## 2026-09-12 — Phase 16 模型与凭证管理开工
 

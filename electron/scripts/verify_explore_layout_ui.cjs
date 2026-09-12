@@ -370,7 +370,7 @@ async function main() {
       },
       assistantActionCount,
       assistantThemeControlCount,
-      historyArtworkFillsPanel: historyStyle.backgroundImage.includes('chat-history-night-v2.png')
+      historyArtworkFillsPanel: historyStyle.backgroundImage.includes('chat-history-night-v2.jpg')
         && historyStyle.backgroundSize.includes('112%')
         && historyMainStyle.backgroundImage === 'none'
         && historyRailAlpha < 0.8,

@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronDown, Folder, FolderOpen, PackageCheck, Pencil, Plus, RefreshCw, Search, Sparkles, Trash2 } from 'lucide-react';
 import type { ManagedSkillDetail, ManagedSkillSummary, SkillManagerSnapshot, WorkbenchItem, WorkbenchOverview, WorkbenchSection } from '../types';
-import cosmicBackground from '../assets/catnip-cosmic-shell.png';
-import catnipAssistant from '../assets/catnip-assistant.png';
+import cosmicBackground from '../assets/catnip-cosmic-shell.jpg';
+import catnipAssistant from '../assets/catnip-assistant.webp';
 
 interface Props {
   overview: WorkbenchOverview | null;

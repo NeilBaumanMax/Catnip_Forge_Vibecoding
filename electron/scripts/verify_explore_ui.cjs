@@ -15,14 +15,14 @@ const rendererMain = fs.readFileSync(path.join(root, 'src', 'renderer', 'main.ts
 const mainProcess = fs.readFileSync(path.join(root, 'src', 'main', 'index.ts'), 'utf8');
 const gateway = fs.readFileSync(path.join(root, 'src', 'main', 'gateway.ts'), 'utf8');
 const preload = fs.readFileSync(path.join(root, 'src', 'preload', 'index.ts'), 'utf8');
-const ideaEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-idea-guagua.png'));
-const diagnosisEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-diagnosis-guagua.png'));
+const ideaEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-idea-guagua.webp'));
+const diagnosisEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-diagnosis-guagua.webp'));
 
 assert.match(browserPanel, /type PanelMode = [^;]*'explore'/, 'PanelMode must include explore');
 assert.match(browserPanel, /const startsInHarnessMode = !window\.electronAPI \|\| Boolean\(window\.electronAPI\.isWorkbenchSmokeTest\)/, 'browser-only harness detection is missing');
 assert.match(browserPanel, /useState<PanelMode>\(\(\) => startsInHarnessMode \? 'repo' : 'explore'\)/, 'normal desktop startup must default to Explore');
 assert.match(browserPanel, /useState\(\(\) => !startsInHarnessMode\)/, 'default desktop Explore must be mounted on startup');
-assert.equal((browserPanel.match(/data-tour-id="tab-/g) || []).length, 6, 'exactly six visible workspace tabs are required');
+assert.equal((browserPanel.match(/data-tour-id="tab-/g) || []).length, 7, 'exactly seven visible workspace tabs are required');
 assert.match(browserPanel, /data-tour-id="tab-explore"[^\r\n]*><Compass[^\r\n]*<span>探索<\/span><\/button>/, 'visible Explore tab and icon are missing');
 assert.match(browserPanel, /data-tour-id="tab-skill-hub"/, 'Neil Skill Hub tab is missing');
 assert.match(browserPanel, /http:\/\/118\.195\.247\.102\/#page-top/, 'Skill Hub URL is missing');
@@ -38,10 +38,12 @@ assert.match(app, /activateProjectSession\(selectedProjectId\)/, 'project activa
 assert.match(explorePanel, />找灵感</, 'idea entry is missing');
 assert.match(explorePanel, />解问题</, 'diagnosis entry is missing');
 assert.match(explorePanel, /本次分析 Context/, 'diagnosis context picker is missing');
-assert.match(explorePanel, /explore-idea-guagua\.png/, 'idea entry illustration is missing');
-assert.match(explorePanel, /explore-diagnosis-guagua\.png/, 'diagnosis entry illustration is missing');
-assert.equal(ideaEntryArt[25], 6, 'idea entry illustration must use real RGBA transparency');
-assert.equal(diagnosisEntryArt[25], 6, 'diagnosis entry illustration must use real RGBA transparency');
+assert.match(explorePanel, /explore-idea-guagua\.webp/, 'idea entry illustration is missing');
+assert.match(explorePanel, /explore-diagnosis-guagua\.webp/, 'diagnosis entry illustration is missing');
+assert.equal(ideaEntryArt.subarray(0, 4).toString('ascii'), 'RIFF', 'idea entry illustration must be WebP');
+assert.equal(ideaEntryArt.subarray(8, 12).toString('ascii'), 'WEBP', 'idea entry illustration must be WebP');
+assert.equal(diagnosisEntryArt.subarray(0, 4).toString('ascii'), 'RIFF', 'diagnosis entry illustration must be WebP');
+assert.equal(diagnosisEntryArt.subarray(8, 12).toString('ascii'), 'WEBP', 'diagnosis entry illustration must be WebP');
 assert.match(explorePanel, /取消勾选后，该项不会进入分析/, 'context exclusion promise is missing');
 assert.match(explorePanel, /需要先连接知乎开放平台/, 'safe connection wording is missing');
 assert.match(explorePanel, /getExploreZhihuStatus/, 'Explore must read connection status through preload');
@@ -136,8 +138,8 @@ assert.match(preload, /minimizeWindow:[\s\S]{0,120}window:minimize/, 'preload mi
 assert.match(preload, /toggleMaximizeWindow:[\s\S]{0,140}window:toggle-maximize/, 'preload maximize bridge is missing');
 assert.match(preload, /closeWindow:[\s\S]{0,120}window:close/, 'preload close bridge is missing');
 assert.match(browserPanel, /workspace-window-controls[\s\S]{0,900}minimizeWindow[\s\S]{0,400}toggleMaximizeWindow[\s\S]{0,400}closeWindow/, 'functional custom window controls are missing');
-assert.match(browserPanel, /catnip-app-icon\.png/, 'the supplied Catnip app icon must be used by the workspace brand');
-assert.match(browserPanel, /workspace-brand workspace-shell-box[\s\S]{0,700}workspace-nav-tabs workspace-shell-box[\s\S]{0,1800}workspace-shell-actions workspace-shell-box/, 'the top shell must remain split into brand, tab, and action surfaces');
+assert.match(browserPanel, /catnip-app-icon\.webp/, 'the supplied Catnip app icon must be used by the workspace brand');
+assert.match(browserPanel, /workspace-brand workspace-shell-box[\s\S]{0,700}workspace-nav-tabs workspace-shell-box[\s\S]{0,2400}workspace-shell-actions workspace-shell-box/, 'the top shell must remain split into brand, tab, and action surfaces');
 assert.match(browserPanel, /data-tour-id="tab-tasks"[\s\S]{0,300}<span>任务管理器<\/span>/, 'task manager label must be complete');
 
 console.log('explore UI contract passed: existing flows retained; evidence/conflicts/source detail/stages/container layouts/theme accessibility present');

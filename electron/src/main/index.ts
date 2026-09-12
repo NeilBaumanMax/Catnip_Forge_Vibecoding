@@ -12,8 +12,13 @@ import { startSerialMonitorBridge, stopSerialMonitorBridge } from './serial-moni
 import { startAttachmentBridge, stopAttachmentBridge } from './attachment-bridge';
 
 app.commandLine.appendSwitch('remote-debugging-port', '9230');
-app.disableHardwareAcceleration();
-app.commandLine.appendSwitch('disable-gpu-compositing');
+// Chromium's compositor materially improves the image-heavy desktop shell. Keep a
+// documented escape hatch for machines with broken GPU drivers instead of forcing
+// every production user onto software compositing.
+if (process.env.CATNIP_DISABLE_GPU === '1') {
+  app.disableHardwareAcceleration();
+  app.commandLine.appendSwitch('disable-gpu-compositing');
+}
 
 // 确保用户数据目录存在
 const userDataDir = app.getPath('userData');
@@ -30,16 +35,20 @@ let firstRunRestartScheduled = false;
 let splashProgress = { value: 8, status: '正在唤醒 Catnip Forge' };
 const SPLASH_MIN_VISIBLE_MS = 5_000;
 const SPLASH_COMPLETION_MS = 220;
+const RENDERER_INTERACTIVE_TIMEOUT_MS = 8_000;
 let splashShownAt = 0;
 let splashMainReady = false;
 let splashCompletionTimer: ReturnType<typeof setTimeout> | null = null;
 let splashCloseTimer: ReturnType<typeof setTimeout> | null = null;
+let rendererInteractiveTimer: ReturnType<typeof setTimeout> | null = null;
 
 function clearSplashTimers(): void {
   if (splashCompletionTimer) clearTimeout(splashCompletionTimer);
   if (splashCloseTimer) clearTimeout(splashCloseTimer);
+  if (rendererInteractiveTimer) clearTimeout(rendererInteractiveTimer);
   splashCompletionTimer = null;
   splashCloseTimer = null;
+  rendererInteractiveTimer = null;
 }
 
 function applySplashProgress(): void {
@@ -117,6 +126,7 @@ function revealMainWindow(): void {
     splashWindow.close();
   }
   if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.setBackgroundThrottling(true);
     mainWindow.show();
     mainWindow.focus();
   }
@@ -142,6 +152,8 @@ function scheduleSplashCompletion(): void {
 }
 
 function finishSplash(): void {
+  if (rendererInteractiveTimer) clearTimeout(rendererInteractiveTimer);
+  rendererInteractiveTimer = null;
   splashMainReady = true;
   scheduleSplashCompletion();
 }
@@ -212,6 +224,7 @@ function createWindow() {
       preload: path.join(__dirname, '..', 'preload', 'index.js'),
       nodeIntegration: false,
       contextIsolation: true,
+      backgroundThrottling: false,
     },
   });
   mainWindow.setMenuBarVisibility(false);
@@ -248,6 +261,12 @@ function createWindow() {
   ipcMain.handle('software-assistant:ask', async (_event, messages: SoftwareAssistantMessage[]) => {
     return askSoftwareAssistant(Array.isArray(messages) ? messages : []);
   });
+  ipcMain.removeAllListeners('renderer:interactive');
+  ipcMain.on('renderer:interactive', (event) => {
+    if (!mainWindow || mainWindow.isDestroyed() || event.sender !== mainWindow.webContents) return;
+    updateSplash(94, '首屏资源已就绪');
+    finishSplash();
+  });
   ipcMain.removeHandler('window:minimize');
   ipcMain.removeHandler('window:toggle-maximize');
   ipcMain.removeHandler('window:close');
@@ -280,6 +299,15 @@ function createWindow() {
   mainWindow.webContents.on('did-finish-load', () => {
     updateSplash(84, '正在载入工作台');
     resyncBrowserBounds();
+    if (splashMainReady || rendererInteractiveTimer) return;
+    rendererInteractiveTimer = setTimeout(() => {
+      rendererInteractiveTimer = null;
+      logger.warn('browser:view-event', {
+        event: 'renderer-interactive-timeout',
+        timeoutMs: RENDERER_INTERACTIVE_TIMEOUT_MS,
+      });
+      finishSplash();
+    }, RENDERER_INTERACTIVE_TIMEOUT_MS);
   });
   mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription) => {
     logger.warn('browser:view-event', { event: 'splash-main-load-failed', errorCode, errorDescription });
@@ -318,7 +346,7 @@ function createWindow() {
   });
   mainWindow.once('ready-to-show', () => {
     resyncBrowserBounds();
-    finishSplash();
+    updateSplash(90, '正在预热首屏资源');
   });
 
   mainWindow.on('closed', () => {
