@@ -1,5 +1,12 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-13 — Phase 18g 首启流程按人工反馈修订
+
+- 人工现场失败：模型页点击“配置 Key”后提示“模型安全输入窗口未显示”；IPC 已触发，WPF 显示握手未完成。
+- 当前有效流程：首启先显示预设模型配置遮罩；原生安全窗口同时填写 DeepSeek 必填与 Qwen 视觉选填；另有“使用其他模型供应商”直达模型管理。
+- 预设或自定义供应商首次启用成功后自动重启，再进入显式工作区选择；已配置用户后续冷启动直接进入工作区选择，不先闪模型页。
+- 文档先行；业务实现与新一轮真实 Electron 人工验收尚待本小项完成。Secret 仍禁止进入 Renderer、日志或普通设置。
+
 ## 2026-09-13 — Phase 18 Claude Code 供应商切换已实现，待人工验收
 
 - 当前分支为 `model-ccswitch`。Phase 18 文档基线提交为 `1aebae74`、`cf051a3b`；实现已完成本地测试，收尾提交见当前 Git 日志。
@@ -16,7 +23,7 @@
 - 用户人工验收明确否决 Phase 16 的模型切换：现有“供应商/模型档案/用途能力/会话下拉”与真实 Claude Code CLI 运行语义不一致。
 - 当前唯一目标见 [Phase 18 文档](PHASE_18_CLAUDE_CODE_PROVIDER_SWITCH.md)：只实现类似 CC Switch Claude Code 页的供应商保存、凭据维护和一键启用；Chat 改为只读显示当前活动供应商。
 - API Key 继续只进 safeStorage 和 Claude 子进程环境；应用专用 Claude settings 只保存非敏感 Base URL 与模型角色映射。
-- 首次未完成配置时自动进入模型页：预设路径只需 DeepSeek Key、Qwen 视觉 Key 选填并自动启用 DeepSeek；其他供应商路径才展开 CC Switch 风格配置。Agent、找灵感、解问题共享活动供应商。
+- 此处记录的是 18g 前的旧首启实现：当时未完成配置会自动进入模型页；该行为已由本文件顶部 18g 决定覆盖。Agent、找灵感、解问题共享活动供应商的全局语义不变。
 - `docs/tutorials/` 与 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 是既有未跟踪现场，禁止触碰或纳入提交。
 
 ## 2026-09-13 — Phase 17 Renderer 性能开工

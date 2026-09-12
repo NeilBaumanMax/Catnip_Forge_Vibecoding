@@ -38,12 +38,12 @@
 
 ### 2.1 首次进入的用户路径
 
-首次尚未完成模型配置时，软件直接进入“模型”标签页并显示两条互斥路径，而不是先展示完整高级表单：
+首次尚未完成模型配置时，软件先显示原有启动配置遮罩，而不是直接进入“模型”标签页：
 
-1. **使用预设配置**：推荐普通用户选择。Catnip 预设 DeepSeek 作为唯一 Claude Code 供应商，预设 Qwen 作为视觉任务供应商。用户只需通过原生安全窗口填写 DeepSeek API Key；Qwen API Key 明确标注“选填，不配置将无法使用图片理解”。保存后自动启用 DeepSeek，Agent、找灵感和解问题全部经同一 DeepSeek Claude Code 配置运行。
-2. **使用其他模型供应商**：面向已有 Claude Code compatible 服务的用户。选择后再呈现 CC Switch 风格的供应商字段和高级模型映射；用户保存凭据并启用，例如启用智谱清言后，后续 Agent、找灵感和解问题都使用该智谱供应商。Qwen 视觉配置仍是独立选填项，不跟随 Claude Code 供应商切换。
+1. **配置预设模型**：推荐普通用户选择。点击后由 Main 打开一个原生 Windows 安全窗口，同时填写 DeepSeek API Key（必填）与 Qwen API Key（视觉任务选填）。保存后 Main 安全存储凭据、启用 DeepSeek 并自动重启；重启后进入原有工作区选择门禁。Agent、找灵感和解问题全部经同一 DeepSeek Claude Code 配置运行。
+2. **使用其他模型供应商**：启动遮罩直接提供该选项。点击后移除遮罩并进入 CC Switch 风格的模型管理页；用户添加、保存、配置凭据并首次启用供应商后自动重启，再进入工作区选择。Qwen 视觉配置仍是独立选填项，不跟随 Claude Code 供应商切换。
 
-完成首次配置后再次进入模型页，直接显示当前活动供应商和“切换/新增供应商”维护界面；无需重复首次选择。若活动供应商凭据被清除，则模型页恢复为待完成状态，新 Agent/Explore 请求在 Main 明确拒绝，不静默回退。
+完成首次配置后的每次冷启动直接进入工作区选择，不先闪现模型页；用户进入软件后仍可主动打开模型页维护和切换供应商。日常维护切换只影响后续任务，无需强制重启。若活动供应商凭据被清除，则下一次冷启动恢复首次配置遮罩，新 Agent/Explore 请求在 Main 明确拒绝，不静默回退。
 
 ## 3. 与 CC Switch 对齐及安全差异
 
@@ -94,15 +94,15 @@ Catnip 保持同一供应商/角色映射语义，但因既有 Product Truth 禁
 
 模型页改名为“Claude Code 供应商”，界面只保留完成任务所需信息：
 
-- 首次配置选择页：优先展示“使用预设配置”，另有“使用其他模型供应商”；清楚说明影响范围和千问选填用途；
-- 预设配置页：DeepSeek API Key 必填、Qwen API Key 选填，普通表单中均不出现输入框，只触发原生安全窗口；完成后自动启用 DeepSeek；
+- 首次启动遮罩：说明 DeepSeek 必填、Qwen 视觉选填；“配置预设模型”打开双 PasswordBox 原生窗口，“使用其他模型供应商”进入模型管理页；
+- 原生预设窗口：DeepSeek 必填、Qwen 选填；Secret 只经匿名管道返回 Main；成功后启用 DeepSeek 并自动重启；
 - 左侧供应商卡：名称、当前/未启用、凭据已配置/未配置；
 - 主编辑区：名称、Base URL、鉴权字段、主模型；“高级模型映射”折叠显示 Haiku/Sonnet/Opus；
 - 明确的“保存更改”和“启用此供应商”两步，未保存或缺凭据时按钮给出直接原因；
 - 当前活动供应商置顶显示，并说明“对下一次任务生效；运行中任务不会改变”；
 - 不再展示协议复选框、用途能力、模型档案列表和 Chat 会话模型下拉。
 
-人工验收至少覆盖：全新用户自动进入模型页；预设路径只填 DeepSeek 后可完成、跳过 Qwen 后视觉能力明确不可用；自定义路径添加供应商、保存、配置凭据、启用；回到 Chat 查看当前供应商；Agent/找灵感/解问题读取同一活动供应商；切回另一供应商；重启后活动状态仍一致。
+人工验收至少覆盖：全新用户看到启动配置遮罩；预设原生窗口同时包含 DeepSeek 必填与 Qwen 选填；只填 DeepSeek 后自动重启并进入工作区选择；选择其他供应商后直接进入模型管理；首次启用自定义供应商后自动重启并进入工作区选择；已配置冷启动无模型页闪屏；Chat/Agent/两类 Explore 使用同一活动供应商。
 
 ## 7. 分层边界
 
@@ -130,7 +130,7 @@ Catnip 保持同一供应商/角色映射语义，但因既有 Product Truth 禁
 - Settings：不存在时创建；保留 `permissions`、未知顶层字段和普通 env；删除磁盘鉴权值；写入 Base URL 和四类模型；写入失败显式报错。
 - Runtime：父进程六类 `ANTHROPIC_*` 被清除；按 authField 注入唯一 Secret；不同供应商不复用进程；快照/日志无 Secret；无活动项或凭据损坏拒绝。
 - Session：旧 `modelProfileId` 可读取但新任务忽略；切换只影响切换后提交的任务；不跨工程改写历史。
-- UI：全新用户自动进入模型页；预设/其他供应商两路径；DeepSeek 必填与 Qwen 选填；1280×720、1600×1000、1707×1067、150% 缩放；键盘焦点；新增/保存/配置/启用提示；活动项和 Chat 指示一致；旧协议/用途/会话下拉不可见。
+- UI：全新用户先看到启动配置遮罩；预设双 Key 安全窗口与其他供应商分流；首次完成后重启进入工作区选择；已配置冷启动无模型页闪屏；1280×720、1600×1000、1707×1067、150% 缩放；活动项和 Chat 指示一致；旧协议/用途/会话下拉不可见。
 - 基线：`verify:model-*`、session/task queue、secure startup、Chat、Explore、Electron typecheck/Main/Renderer build、Runtime typecheck、`git diff --check`。
 
 离线测试使用虚构 URL、虚构 Key 和注入 cipher，不调用真实付费 API。只有用户明确授权并提供可用供应商后才做真实 Claude Code 请求；未执行时记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`。本 Phase 不涉及硬件，继续保留 `REAL_HARDWARE_VALIDATION_PENDING`。
@@ -164,3 +164,7 @@ Phase 18 已按本文契约完成源码闭环：
 5. 新启动语义使 `verify:secure-startup` 与 `verify:explore-ui` 的旧静态断言失败；两项更新为“首帧 Model、已配置后 Explore”的当前产品契约后通过。
 
 专项、类型、构建、性能与 Explore 回归均通过；完整命令和证据见 `TEST_METRICS.md`。本轮没有使用真实付费供应商调用，记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`；没有 Windows 完整重打包，记 `WINDOWS_PACKAGE_VALIDATION_PENDING`；没有 Build/Flash/Serial 或实机动作，继续记 `REAL_HARDWARE_VALIDATION_PENDING`。
+
+### 11.1 人工验收后的首启流程修订
+
+用户在真实软件中点击模型页“配置 Key”后，Main 返回“模型安全输入窗口未显示”。现场确认 IPC 已触发，失败发生在 Windows PowerShell/WPF 窗口显示握手；同时用户明确要求恢复更直接的首启逻辑。本节覆盖上文“首次首帧 Model”的实现记录：首启改为预设配置遮罩、双 Key 原生窗口与“其他供应商”分流；首次完成任一路径后重启并进入工作区选择。既有全局 Claude Code 供应商、任务冻结和 Secret 安全边界保持不变。

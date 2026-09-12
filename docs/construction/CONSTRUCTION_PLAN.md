@@ -116,3 +116,4 @@
 - 18d 同时实现首次自动进入模型页和双路径引导：预设 DeepSeek 必填/Qwen 视觉选填，或进入其他 Claude Code 供应商配置。
 - 18e：完成专项、安全扫描、Runtime/Electron 构建和真实 Electron UI 回归；未授权真实付费调用记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`。
 - 18f：精确提交并核对远端，不纳入 `docs/tutorials/` 或用户工程 `.catnip`。
+- 18g：根据人工验收修订首次启动：恢复预设模型遮罩；双 Key 原生安全窗口；其他供应商直达模型管理；首次成功启用后重启；已配置冷启动直接进入工作区选择。先提交文档，再实现和回归。
