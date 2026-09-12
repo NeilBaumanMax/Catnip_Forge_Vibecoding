@@ -6,6 +6,7 @@
 - 用户确认三个目标：CC Switch 类似的模型管理工作区、Agent 对话显式模型选择、知乎已连接后的 Access Secret 维护入口。
 - 施工范围和安全/测试边界见 [Phase 16 基线](PHASE_16_MODEL_CENTER_AND_CREDENTIAL_MAINTENANCE.md)。先完成并远端核对独立文档提交，随后按 16b→16g 小闭环推进。
 - `docs/tutorials/` 和 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 均为未跟踪现场，不纳入 Phase 16 文档提交；后者不得触碰。
+- 文档基线提交 `39dbfac6` 已推送并核对远端一致。16b 模型配置 Domain/Store 已实现并通过专项；下一小项是 16c Main 安全凭据 adapter 与旧 Key 非破坏迁移。
 
 ## 2026-09-12 — 固定深蓝主题与 150% 显示适配
 

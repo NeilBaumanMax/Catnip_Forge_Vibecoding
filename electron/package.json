@@ -52,7 +52,8 @@
     "verify:task-queue": "node node_modules/electron/cli.js scripts/verify_agent_task_queue.cjs",
     "verify:serial-monitor": "npm run build:main && node scripts/verify_serial_monitor_session.cjs",
     "verify:qwen-attachments": "npm run build:main && node node_modules/electron/cli.js scripts/verify_qwen_attachments.cjs",
-    "verify:data-paths": "npm run build:main && node node_modules/electron/cli.js scripts/verify_catnip_data_paths.cjs"
+    "verify:data-paths": "npm run build:main && node node_modules/electron/cli.js scripts/verify_catnip_data_paths.cjs",
+    "verify:model-config": "npm run build:main && node node_modules/electron/cli.js scripts/verify_model_config_store.cjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

@@ -119,3 +119,13 @@ Agent Composer 的模型选择器只列出启用且标记为“工程 Agent”�
 出现以下情况停止扩展并记录：需要修改官方 Zhihu 协议；需要把 Secret 送入 Renderer/Chat；工程 Agent 的目标协议没有可靠适配路径；迁移会覆盖或丢失用户配置；实现会复制 Agent/Skill/任务系统。
 
 本 Phase 不做模型市场、账号云同步、费用结算、自动抓取模型列表、OAuth 画像、Web 版或新的后端服务，也不承诺未经真实协议验证的“兼容所有模型”。
+
+## 10. 16b 实施记录
+
+状态：`COMPLETE`。
+
+- 新增共享模型配置契约，内置迁移精确保留 DeepSeek V4 Pro、DeepSeek V4 Flash 和 Qwen VL Plus 的当前用途。
+- 新增 Main `ModelConfigStore`：仅保存非敏感元数据，使用 schemaVersion、revision 乐观并发门禁和临时文件/备份原子替换。
+- 校验覆盖 HTTPS、URL 凭据/查询拒绝、协议兼容、用途默认值、唯一 ID、Secret 字段拒绝和数量/长度上限。
+- 专项覆盖默认迁移不落盘、clone 隔离、重启恢复、旧 revision 拒绝、Secret 不持久化、协议/默认值反例、上一有效 revision 备份、坏 JSON 原样保留与临时文件清理。
+- `npm.cmd --prefix electron run verify:model-config`、Electron typecheck 和 `git diff --check` 通过。Electron 进程打印 Windows `os_crypt` 与 GPU 环境警告，但退出码及专项断言为通过；本小项未调用真实凭据或远端模型。

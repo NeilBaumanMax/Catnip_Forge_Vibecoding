@@ -715,3 +715,13 @@ Final clean package: `v2.0.0` build `7201`, 4,502,226,610 bytes. `Catnip Forge.e
 | 业务源码 | NOT STARTED — 文档独立 Commit/Push 后才进入 16b |
 
 Phase 16 后续最小门禁：Store schema/迁移/损坏/并发；Secret IPC 与 bundle 扫描；模型用途兼容、会话隔离与任务快照；Zhihu 替换/验证/退出状态机；七工作区及 150% 布局；Runtime/Electron typecheck 和 Main/Renderer build。真实付费 API、真实 Diagnosis 和硬件分别标记，不由 fixture 替代。
+
+### 16b Domain / Store
+
+| 命令 | 结果 |
+| --- | --- |
+| `npm.cmd --prefix electron run typecheck` | PASS |
+| `npm.cmd --prefix electron run verify:model-config` | PASS — build:main 后覆盖默认迁移、schema、Secret 拒绝、revision、重启、备份、坏文件保留和临时文件清理 |
+| `git diff --check` | PASS |
+
+两轮 `verify:model-config` 均通过。Electron 在当前 Windows 测试环境输出 `os_crypt_win` 解密状态警告，第二轮另有 GPU 子进程环境警告；均未进入产品配置、未影响断言或退出码。本测试使用临时目录与虚构 HTTPS 地址，没有读取 Key、联网调用模型或触碰用户工程。

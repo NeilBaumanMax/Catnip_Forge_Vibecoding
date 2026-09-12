@@ -357,3 +357,11 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] `pack:win` 现在将 electron-builder 的临时 `win-unpacked` 安全改名为最终交付目录 `Catnip Forge`，盖章与发布门禁同步使用新路径。
 - [x] 打包前仅允许清理 Electron 工作区内的输出目录，避免旧包中的用户配置残留；历史、收藏、日志、录屏、截图、工程 `.catnip` 与真实密钥均不进入包。
 - [x] 完整重建 Runtime/Main/Renderer，并生成 `electron/dist-package/Catnip Forge/Catnip Forge.exe`；发布结构、官方知乎 Skill 和隔离首次启动均通过。
+
+## 2026-09-12 — Phase 16 模型中心
+
+- [x] 从 `catnip-GUAGUA` 最新远端基线创建并推送 `model-ccswitch`，建立远端恢复点。
+- [x] 独立提交并推送 Phase 16 Product Truth、决策、分层、安全和测试施工基线。
+- [x] 完成 16b 共享模型配置契约与 Main 原子 Store，保留现有 DeepSeek/Qwen 默认行为并拒绝 Secret 入配置。
+- [x] 完成 revision 并发、坏文件保留、重启/备份、协议用途和 HTTPS 负向专项。
+- [ ] 16c Main 安全凭据 adapter 与旧 Key 非破坏迁移。

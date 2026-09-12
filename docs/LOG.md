@@ -1076,3 +1076,10 @@
 - 首次完整命令已完成 Runtime/Main/Renderer 构建，但旧打包程序占用 `dist-package` 导致清理报 `EPERM`；精确关闭该旧包进程树、为安全限定的输出清理增加重试后，继续打包成功。
 - 发布门禁通过：总计 4,502,227,001 字节，Node v22.14.0、隔离 Python/pyserial 3.5、ESP-IDF v5.4.3、Claude Code 2.1.167；DeepSeek/Qwen Key、历史、收藏、日志、录屏、截图与 `.catnip` 均未入包。
 - 官方知乎 Skill 15 文件门禁和隔离首次启动通过；测试进程及临时用户目录已清理，未调用知乎、模型服务或硬件。
+
+## 2026-09-12 — Phase 16b 模型配置 Domain / Store
+
+- 在独立文档基线提交 `39dbfac6` 之后开始业务实现；未混入此前教程文件或用户工程 `.catnip`。
+- 新增非敏感 `ProviderConfig` / `ModelProfile` / defaults 契约和 Main 原子 Store。DeepSeek V4 Pro、Flash 与 Qwen VL Plus 作为升级兼容默认值，不读取或迁移真实 Key。
+- Store 使用 schemaVersion 与 revision 拒绝旧视图覆盖，写入前完整校验协议、用途、HTTPS、引用和 Secret 字段；替换时保留上一有效 revision，坏源文件不改写。
+- `verify:model-config` 两轮、Electron typecheck、Main build 与 diff check 通过。测试只使用临时目录；Windows `os_crypt`/GPU 环境警告不影响退出码，已在 TEST_METRICS 保留原始性质。
