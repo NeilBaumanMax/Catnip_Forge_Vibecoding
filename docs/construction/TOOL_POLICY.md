@@ -9,3 +9,10 @@
 - 硬件：Phase 0/1 不触板。Explore/Plan 不执行修改/Build/Flash。具体修复计划经用户确认并明确项目/target/端口后才调用既有 hardboard.*。不因“编译成功”假称运行正常；擦除/大范围删除另需具体授权。
 - 测试：使用已有 scripts，先审副作用；模拟串口明确标 mock；不得联网消耗真实模型/知乎额度来验证可离线验证的契约。日志尽量只输出计数、错误码和安全摘要。
 - 自动审批：当前默认 shell 沙箱因 Windows sandbox-bin 权限失败不能启动，使用已批准的具体 shell 升级执行。升级不是产品/硬件/安装授权；如自动审批拒绝，明确报告动作及拒绝理由，先做不受影响部分。
+
+## Phase 16 模型与凭证工具边界
+
+- 不通过 shell 参数、环境诊断输出、开发者工具或 Renderer 表单传递 Secret；安全输入只能交给受控宿主窗口并通过标准输入送达固定命令/凭据 adapter。
+- 不为发现模型而自动调用供应商远端接口，也不在自动测试中消费真实额度。连通性检查必须由用户显式触发并仅记录安全摘要。
+- 模型供应商 base URL 仅允许 HTTPS；开发测试例外必须是显式固定的 loopback fixture，不能接受带用户信息、查询 Secret 或任意协议的 URL。
+- Zhihu 只调用 vendor 已公布的 `status`、`auth set --secret-stdin`、`auth status --verify`、`auth logout`，不得绕开或重写鉴权。

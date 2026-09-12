@@ -29,6 +29,7 @@
 23. [DEVELOPMENT_WORKFLOW_CONSTRUCTION](DEVELOPMENT_WORKFLOW_CONSTRUCTION.md)：施工文档先行、编码、测试修复、回归、验收、提交、推送和远端确认的强制闭环。
 24. [PACKAGED_RUNTIME_RELIABILITY_CONSTRUCTION](PACKAGED_RUNTIME_RELIABILITY_CONSTRUCTION.md)：成品 Python、Runtime EventBus 持续订阅和 Agent 输入框光标对齐的联合可靠性修复与验收基线。
 25. [PHASE_7_PROJECT_SESSION_BASELINE](construction/PHASE_7_PROJECT_SESSION_BASELINE.md)：已实现的冷启动显式工程门禁、Agent/编辑器/Build/Flash/Serial 原子切换，以及找灵感/解问题多历史目录和验收证据。
+26. [PHASE_16_MODEL_CENTER_AND_CREDENTIAL_MAINTENANCE](construction/PHASE_16_MODEL_CENTER_AND_CREDENTIAL_MAINTENANCE.md)：模型供应商管理、Agent 会话模型选择、安全 Key 边界和知乎 Access Secret 维护的施工基线。
 
 ## 专项与历史文档
 

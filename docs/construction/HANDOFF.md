@@ -1,5 +1,12 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-12 — Phase 16 模型与凭证管理开工
+
+- 当前施工分支为 `model-ccswitch`，从 `origin/catnip-GUAGUA` 的 `f2449a19` 创建；远端恢复点 `backup/pre-model-ccswitch-20260912` 已核对为同一提交。
+- 用户确认三个目标：CC Switch 类似的模型管理工作区、Agent 对话显式模型选择、知乎已连接后的 Access Secret 维护入口。
+- 施工范围和安全/测试边界见 [Phase 16 基线](PHASE_16_MODEL_CENTER_AND_CREDENTIAL_MAINTENANCE.md)。先完成并远端核对独立文档提交，随后按 16b→16g 小闭环推进。
+- `docs/tutorials/` 和 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 均为未跟踪现场，不纳入 Phase 16 文档提交；后者不得触碰。
+
 ## 2026-09-12 — 固定深蓝主题与 150% 显示适配
 
 - Renderer 现为 dark-only：`index.html` 在首帧前声明深色，`App.tsx` 固定 `data-theme="dark"`、清除旧主题偏好且不再渲染黑白切换按钮。
@@ -60,8 +67,8 @@
 
 ## 当前 Git 与保护现场
 
-- 工作区：`E:\Agent\vibeide\vibeide`；当前施工分支：`catnip-GUAGUA`。
-- 文档审计开工时 local 与 `origin/catnip-GUAGUA` 均为 `881121f8`；Phase 14 文档提交后的 hash 必须重新动态查询。
+- 工作区：`E:\Agent\vibeide\vibeide`；当前施工分支：`model-ccswitch`。
+- Phase 16 开工基线 local、`origin/catnip-GUAGUA` 与新分支起点均为 `f2449a19`；任何后续 hash 必须动态查询。
 - 恢复点 `backup/pre-phase-14-doc-handoff-20260911` 已推送并核对为 `881121f8`。Phase 13 恢复点 `backup/pre-phase-13-20260911` 为 `2a7ae185`。
 - 未跟踪的 `docs/Catnip_Forge_UI_Handoff/` 和 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 属于用户现场。本轮没有暂存、删除或改写；接手时继续保护，不得用 `git clean`。
 - 只推 `origin`，不推 `upstream`；禁止 worktree、擅自 stash、`reset --hard`、`clean -fd`、force push 和宽泛 `git add -A`。

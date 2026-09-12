@@ -703,3 +703,15 @@ Final clean package: `v2.0.0` build `7201`, 4,502,226,610 bytes. `Catnip Forge.e
 | 隔离用户目录 `npm.cmd run verify:first-run` | PASS — 首启窗口、品牌图、Skills、Playwright 正常，占位 Key 被拒绝 |
 
 首次完整命令失败证据保留：旧 `dist-package/win-unpacked/Catnip Forge.exe` 进程树仍占用输出目录，安全清理返回 `EPERM`。精确终止该旧包进程并增加限定输出目录的 Windows 删除重试后成功；未删除或迁移真实用户数据。
+
+## 2026-09-12 — Phase 16 施工文档基线
+
+| 检查 | 预期/状态 |
+| --- | --- |
+| 分支与基线 | PASS — `model-ccswitch` 从 `origin/catnip-GUAGUA` 的 `f2449a19` 创建 |
+| 远端恢复点 | PASS — `backup/pre-model-ccswitch-20260912` 指向同一基线 |
+| Product Truth / Decision / Plan / Contract | PASS — 模型中心、会话选择、Secret 边界和知乎维护已形成施工前约束 |
+| Markdown diff 与链接检查 | PASS — UTF-8 读取、本地链接和 `git diff --check` 通过 |
+| 业务源码 | NOT STARTED — 文档独立 Commit/Push 后才进入 16b |
+
+Phase 16 后续最小门禁：Store schema/迁移/损坏/并发；Secret IPC 与 bundle 扫描；模型用途兼容、会话隔离与任务快照；Zhihu 替换/验证/退出状态机；七工作区及 150% 布局；Runtime/Electron typecheck 和 Main/Renderer build。真实付费 API、真实 Diagnosis 和硬件分别标记，不由 fixture 替代。

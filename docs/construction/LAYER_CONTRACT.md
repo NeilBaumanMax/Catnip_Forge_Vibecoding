@@ -77,3 +77,11 @@
 - 深度最多 5，源码候选最多 6，单文件真正定长读取最多 8 KiB，总计最多 32 KiB；每个传给共享 Domain 的摘要仍受 2,000 字符限制。
 - Runtime 只保留最近 24 小时且归属同一工程的 `hardboard.build.*` / `hardboard.flash.*`，最多 40 条；共享串口最多 40 条并标明未证明项目归属。
 - Runtime/串口读取失败只产生可见警告，不丢弃已取得的工程证据；Context 收集完成前诊断提交禁用，取消项继续由 Main prepare 剔除。
+
+## 2026-09-12 Phase 16 模型与凭证边界
+
+- Renderer 只持有模型配置的非敏感字段和 `configured` 状态；API Key 与 Access Secret 不得跨 preload 返回。
+- Main 是模型配置 schema、原子 Store、系统凭据引用、用途兼容校验和任务模型快照的唯一所有者。
+- Agent/Worker 只消费 Main 为本次任务解析的运行配置；模型档案按工程/会话选择，运行任务不受随后默认值变化影响。
+- Zhihu 替换、验证和退出继续由 Main 编排 vendor `scripts/run.* auth` 命令；Renderer 不接触 CLI 参数或标准输入。
+- 任何协议在没有适配器与专项测试时不得标为工程 Agent 可用；失败不得静默 fallback 到另一模型。
