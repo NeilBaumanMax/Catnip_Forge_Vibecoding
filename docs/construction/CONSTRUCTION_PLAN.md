@@ -96,3 +96,12 @@
 - 16d–16e：再完成第七工作区与 Agent 会话模型选择；任务创建时冻结模型快照，不允许静默 fallback。
 - 16f：复用官方 `zhihu` 命令补齐已连接后的替换、验证和退出。
 - 16g：完成专项、安全扫描、Runtime/Electron typecheck/build、文档与 Git 远端核对。真实付费 API、真实 Diagnosis 和硬件证据分别标记，不以离线测试替代。
+
+## Phase 17：Renderer 启动与资源性能
+
+- 基线见 [Phase 17 文档](PHASE_17_RENDERER_STARTUP_PERFORMANCE.md)；恢复点 `backup/pre-phase-17-20260913` 已远端核对为 `0e83f409`。
+- 17a：文档与压缩前 build/图片/启动时序基线；文档独立 Commit/Push 后再改源码。
+- 17b：拆分 Monaco、模型等非首屏模块，保持默认 Explore 和测试模式行为。
+- 17c：RGB 场景图转 JPEG，透明角色图转 WebP；更新引用并做字节、构建和视觉回归。
+- 17d：Renderer 首屏 commit + 字体/关键图片 decode 后发无参数 readiness，Main 与最短 Splash 时间共同门控并提供超时兜底。
+- 17e：专项、Electron typecheck/Main/Renderer build、UI 回归、安全扫描、文档与 Git 远端核对；完整 Windows 包若未重建则明确记 `NOT VERIFIED`。

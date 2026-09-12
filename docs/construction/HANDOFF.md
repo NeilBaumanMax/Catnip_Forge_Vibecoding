@@ -1,5 +1,12 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-13 — Phase 17 Renderer 性能开工
+
+- 当前分支 `model-ccswitch` 的本地与 `origin/model-ccswitch` 已核对为 `0e83f409`；远端恢复点 `backup/pre-phase-17-20260913` 指向同一提交。
+- 用户要求降低前端显示卡顿、压缩图片并利用启动动画预加载。现场确认发布版 JS/CSS 已由 Electron 从本地构建目录读取，不能用重复 userData 缓存替代解析/解码优化。
+- 施工采用非首屏分块、图片按 alpha 选 JPEG/WebP、Splash 等待首屏字体/关键图片 decode 的有界 readiness 协议；范围与验收见 [Phase 17 基线](PHASE_17_RENDERER_STARTUP_PERFORMANCE.md)。
+- `docs/tutorials/` 与 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 是用户未跟踪现场，继续不纳入提交且不得触碰。
+
 ## 2026-09-12 — Phase 16 模型与凭证管理开工
 
 - 当前施工分支为 `model-ccswitch`，从 `origin/catnip-GUAGUA` 的 `f2449a19` 创建；远端恢复点 `backup/pre-model-ccswitch-20260912` 已核对为同一提交。

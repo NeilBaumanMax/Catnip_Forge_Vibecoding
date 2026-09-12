@@ -776,3 +776,16 @@ Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会�
 | `verify:model-center-ui` | PASS | 1600×1000，7 tabs、3 DeepSeek cards、2 Agent options、无横向溢出 |
 
 首次 UI 运行实际得到 `chatModelOptions=1`，揭示 Flash 只有软件助手协议而不满足用户切换诉求；新增独立 Anthropic-compatible Agent 档案后为 2。开发 Main 必须重启才能加载 common/Main 变更，重启前的 HMR 页面仍为旧结果；重启后通过。项目选择遮罩下首次截图成功但不展示模型页；临时隐藏遮罩后的两次 CDP 截图均超时，因此不把截图作为视觉验收，几何/DOM 证据如实保留。
+
+## 2026-09-13 — Phase 17 Renderer 性能施工基线
+
+| 检查 | 结果 |
+| --- | --- |
+| 分支与远端 | PASS — `model-ccswitch`、`origin/model-ccswitch` 均为 `0e83f409` |
+| 远端恢复点 | PASS — `backup/pre-phase-17-20260913` 指向 `0e83f409` |
+| 发布资源路径 | PASS — 生产 Main 使用 `loadFile(.../renderer/index.html)`；开发模式才使用本机 Vite `http://localhost:5173` |
+| PNG 基线 | 14 张 PNG；大图约 16 MB。5 张 RGB 场景图可用 JPEG，透明角色/UI 图必须保留 alpha |
+| Renderer 构建基线 | 主 JS 约 4.2 MB、CSS 约 420 KB；Vite 报告大 chunk，`BrowserPanel` 静态导入 Monaco/Explore/Model |
+| 业务源码 | NOT STARTED — 文档独立 Commit/Push 后进入 17b |
+
+后续门禁：图片压缩前后字节；入口/异步 chunk 对比；Renderer readiness 的一次性与超时反例；typecheck、Main/Renderer build、Explore/模型/编辑器/布局专项；Secret/data URL/userData 缓存扫描。完整 Windows 包与人工流畅度若未执行分别记 `NOT VERIFIED`。

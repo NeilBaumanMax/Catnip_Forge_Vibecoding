@@ -64,6 +64,13 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 - 旧 Key 迁移必须非破坏：安全存储成功前不得删除旧来源；失败时明确报告且保留可恢复路径。
 - 知乎维护必须继续通过官方 Skill 的 status/auth 命令，不自行实现鉴权或输出 Secret。
 
+## Phase 17 Renderer 性能硬约束
+
+- 发布版 JS/CSS 继续使用 Vite 内容哈希和 Electron 本地 `loadFile`；不得复制到 userData、引入远程 CDN 或 Service Worker 作为伪缓存。
+- Splash 只预热首屏关键资源；非首屏工作区和大图按需加载。Renderer readiness IPC 不得携带业务数据或 Secret，并必须有 Main 超时兜底。
+- 不透明场景图可转 JPEG；透明素材只能使用保留 alpha 的 WebP/PNG。所有格式替换必须经过构建、字节比较和 UI 回归。
+- 性能施工不得改动模型/知乎协议、Explore 确认门禁、工程会话、Agent/Skill/任务系统或用户工程 `.catnip`。
+
 ## 官方知乎能力选择与 Access Secret 门禁（2026-09-09 当前口径）
 
 - 官方 Skill 的完整能力不等于探索页面使用的能力。页面只开放 status、连接和固定的 `search zhihu` / `search global`；真实找灵感已调用知乎搜索，全网搜索留待排障 Demo。
