@@ -364,4 +364,5 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] 独立提交并推送 Phase 16 Product Truth、决策、分层、安全和测试施工基线。
 - [x] 完成 16b 共享模型配置契约与 Main 原子 Store，保留现有 DeepSeek/Qwen 默认行为并拒绝 Secret 入配置。
 - [x] 完成 revision 并发、坏文件保留、重启/备份、协议用途和 HTTPS 负向专项。
-- [ ] 16c Main 安全凭据 adapter 与旧 Key 非破坏迁移。
+- [x] 16c1 DPAPI-backed Main 凭据 Store、加密回读门禁、旧 Key 非破坏迁移与明文残留回归。
+- [ ] 16c2 原生安全输入、首次启动与 Agent/助手/附件运行读取接入。

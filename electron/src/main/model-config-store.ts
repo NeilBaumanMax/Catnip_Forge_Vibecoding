@@ -1,7 +1,6 @@
 import fs from 'node:fs';
-import path from 'node:path';
-import { randomUUID } from 'node:crypto';
 import { getUserDataPath } from './paths';
+import { writeUtf8Atomically } from './atomic-file';
 import {
   cloneModelConfig,
   createDefaultModelConfig,
@@ -38,29 +37,7 @@ export class ModelConfigStore {
   }
 
   private write(state: ModelConfigState): void {
-    fs.mkdirSync(path.dirname(this.filePath), { recursive: true });
-    const temporary = `${this.filePath}.${process.pid}.${randomUUID()}.tmp`;
-    const backup = `${this.filePath}.bak`;
-    let handle: number | null = null;
-    let movedOriginal = false;
-    try {
-      handle = fs.openSync(temporary, 'wx');
-      fs.writeFileSync(handle, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
-      fs.fsyncSync(handle);
-      fs.closeSync(handle);
-      handle = null;
-      if (fs.existsSync(this.filePath)) {
-        if (fs.existsSync(backup)) fs.rmSync(backup, { force: true });
-        fs.renameSync(this.filePath, backup);
-        movedOriginal = true;
-      }
-      fs.renameSync(temporary, this.filePath);
-    } catch (error) {
-      if (handle != null) fs.closeSync(handle);
-      try { fs.rmSync(temporary, { force: true }); } catch { /* exact temporary file only */ }
-      if (movedOriginal && !fs.existsSync(this.filePath) && fs.existsSync(backup)) fs.renameSync(backup, this.filePath);
-      throw error;
-    }
+    writeUtf8Atomically(this.filePath, `${JSON.stringify(state, null, 2)}\n`);
   }
 }
 

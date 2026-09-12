@@ -1083,3 +1083,10 @@
 - 新增非敏感 `ProviderConfig` / `ModelProfile` / defaults 契约和 Main 原子 Store。DeepSeek V4 Pro、Flash 与 Qwen VL Plus 作为升级兼容默认值，不读取或迁移真实 Key。
 - Store 使用 schemaVersion 与 revision 拒绝旧视图覆盖，写入前完整校验协议、用途、HTTPS、引用和 Secret 字段；替换时保留上一有效 revision，坏源文件不改写。
 - `verify:model-config` 两轮、Electron typecheck、Main build 与 diff check 通过。测试只使用临时目录；Windows `os_crypt`/GPU 环境警告不影响退出码，已在 TEST_METRICS 保留原始性质。
+
+## 2026-09-12 — Phase 16c1 Main 安全凭据底座
+
+- 新增 Electron `safeStorage` cipher 和 Main-only 凭据 Store；不可加密或加密回读不一致时停止，不写明文 fallback。通用非敏感原子写抽到独立 helper，并由模型配置回归覆盖。
+- 旧 DeepSeek/Qwen 文件迁移是显式 helper：读取目标行 → 加密存储 → Main 内回读验证 → 精确清理旧行；不同安全值发生冲突时保留旧文件。
+- Review 发现初版清理复用原子 helper 会生成含明文的 `.bak`。修复为安全副本确认后的原位覆写/截断/fsync，新增全临时目录明文扫描，修复后专项通过。
+- 本提交不注册 Renderer IPC、不读取用户真实 Key、不调用远端。Windows `os_crypt`/GPU 环境警告仅记录为测试宿主信息，实际专项使用可控测试 cipher。

@@ -129,3 +129,13 @@ Agent Composer 的模型选择器只列出启用且标记为“工程 Agent”�
 - 校验覆盖 HTTPS、URL 凭据/查询拒绝、协议兼容、用途默认值、唯一 ID、Secret 字段拒绝和数量/长度上限。
 - 专项覆盖默认迁移不落盘、clone 隔离、重启恢复、旧 revision 拒绝、Secret 不持久化、协议/默认值反例、上一有效 revision 备份、坏 JSON 原样保留与临时文件清理。
 - `npm.cmd --prefix electron run verify:model-config`、Electron typecheck 和 `git diff --check` 通过。Electron 进程打印 Windows `os_crypt` 与 GPU 环境警告，但退出码及专项断言为通过；本小项未调用真实凭据或远端模型。
+
+## 11. 16c1 安全凭据底座记录
+
+状态：`COMPLETE`；16c 的安全输入与产品接入仍为 `PENDING`。
+
+- 新增 Main-only `ModelCredentialStore`，生产 cipher 使用 Electron `safeStorage`（Windows DPAPI-backed）；加密不可用或回读不一致时直接失败，不提供明文 fallback。
+- 凭据文件只含 credential id、加密 payload 和更新时间。公开 `status` 只返回是否配置与时间；明文 `get` 保持 Main 内部接口，尚未暴露 IPC。
+- 旧 Key 迁移先完成加密写入和回读验证，再原位覆写/截断旧文件中的目标行；不生成包含旧明文的 `.bak`。安全值与旧值冲突时保留旧文件并返回 `conflict`。
+- Review 首轮发现通用原子写会把旧明文留在备份文件，已改为经安全存储验证后的无备份定点清理，并加入临时目录全文件明文扫描断言。
+- `verify:model-credentials`、`verify:model-config`、Electron typecheck、Main build 与 diff check 通过。专项仅使用注入的测试 cipher 和虚构 Key，没有调用真实 DPAPI 凭据、模型服务或用户文件。

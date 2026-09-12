@@ -725,3 +725,14 @@ Phase 16 后续最小门禁：Store schema/迁移/损坏/并发；Secret IPC 与
 | `git diff --check` | PASS |
 
 两轮 `verify:model-config` 均通过。Electron 在当前 Windows 测试环境输出 `os_crypt_win` 解密状态警告，第二轮另有 GPU 子进程环境警告；均未进入产品配置、未影响断言或退出码。本测试使用临时目录与虚构 HTTPS 地址，没有读取 Key、联网调用模型或触碰用户工程。
+
+### 16c1 Main 安全凭据底座
+
+| 命令 | 结果 |
+| --- | --- |
+| `npm.cmd --prefix electron run verify:model-credentials` | PASS — 加密回读、无明文 fallback、重启、删除、旧 Key 迁移/冲突/失败保留、坏 Store 保留与目录级明文扫描 |
+| `npm.cmd --prefix electron run verify:model-config` | PASS — 原子写 helper 抽取后回归通过 |
+| `npm.cmd --prefix electron run typecheck` | PASS |
+| `git diff --check` | PASS |
+
+Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会在备份中残留明文。根因修复为“安全存储加密并回读通过后，对精确旧文件原位覆写、截断、fsync”，专项新增根目录全文件扫描。Electron 的 `os_crypt_win`/GPU 环境警告仍是当前测试宿主噪声；本专项注入测试 cipher，不把该环境警告当作真实 DPAPI 成功证据。

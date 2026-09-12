@@ -87,7 +87,8 @@
 - 施工基线见 [Phase 16 文档](PHASE_16_MODEL_CENTER_AND_CREDENTIAL_MAINTENANCE.md)。分支从 `origin/catnip-GUAGUA` 的 `f2449a19` 创建；恢复点 `backup/pre-model-ccswitch-20260912` 已远端核对。
 - 16a：文档基线，必须独立 Commit/Push 后才能修改业务源码。
 - 16b：`COMPLETE`。版本化模型配置契约、默认迁移、Main 原子 Store、revision 并发保护和离线专项已完成。
-- 16c：下一项。实现 Main 独占的系统凭据 adapter、安全输入和非破坏旧 Key 迁移。
+- 16c1：`COMPLETE`。Main-only DPAPI-backed 凭据 Store、无明文 fallback、旧 Key 非破坏迁移和专项完成。
+- 16c2：下一项。复用原生遮罩窗口接入模型 Key 配置，并替换首次启动/运行读取的普通文件路径。
 - 16d–16e：再完成第七工作区与 Agent 会话模型选择；任务创建时冻结模型快照，不允许静默 fallback。
 - 16f：复用官方 `zhihu` 命令补齐已连接后的替换、验证和退出。
 - 16g：完成专项、安全扫描、Runtime/Electron typecheck/build、文档与 Git 远端核对。真实付费 API、真实 Diagnosis 和硬件证据分别标记，不以离线测试替代。

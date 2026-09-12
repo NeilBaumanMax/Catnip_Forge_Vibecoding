@@ -7,6 +7,7 @@
 - 施工范围和安全/测试边界见 [Phase 16 基线](PHASE_16_MODEL_CENTER_AND_CREDENTIAL_MAINTENANCE.md)。先完成并远端核对独立文档提交，随后按 16b→16g 小闭环推进。
 - `docs/tutorials/` 和 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 均为未跟踪现场，不纳入 Phase 16 文档提交；后者不得触碰。
 - 文档基线提交 `39dbfac6` 已推送并核对远端一致。16b 模型配置 Domain/Store 已实现并通过专项；下一小项是 16c Main 安全凭据 adapter 与旧 Key 非破坏迁移。
+- 16b 提交 `1659b7ed` 已推送并核对远端一致。16c1 Main-only safeStorage 凭据底座与旧 Key 迁移已完成本地专项；下一步先提交推送 16c1，再做原生安全输入和首次启动/运行接入。
 
 ## 2026-09-12 — 固定深蓝主题与 150% 显示适配
 
