@@ -259,7 +259,11 @@ export default function BrowserPanel({
   onRefreshWorkbench,
   onOpenWorkbenchItem,
 }: Props) {
-  const [mode, setMode] = useState<PanelMode>(() => window.electronAPI?.isWorkbenchSmokeTest ? 'repo' : 'explore');
+  // A real desktop window always has the preload API. Browser-only UI harnesses
+  // inject it after mount, so keep Explore lazy there instead of crashing before
+  // the harness can install its bounded test bridge.
+  const startsInHarnessMode = !window.electronAPI || Boolean(window.electronAPI.isWorkbenchSmokeTest);
+  const [mode, setMode] = useState<PanelMode>(() => startsInHarnessMode ? 'repo' : 'explore');
   const [inputUrl, setInputUrl] = useState('');
   const [recordingName, setRecordingName] = useState('');
   const [selectedReplay, setSelectedReplay] = useState('');
@@ -299,7 +303,7 @@ export default function BrowserPanel({
   const [explorerContextMenu, setExplorerContextMenu] = useState<ExplorerContextMenu | null>(null);
   const [explorerDialog, setExplorerDialog] = useState<ExplorerDialog | null>(null);
   const [exploreDiagnosisSeed, setExploreDiagnosisSeed] = useState<ExploreDiagnosisSeed | null>(null);
-  const [exploreMounted, setExploreMounted] = useState(() => !window.electronAPI?.isWorkbenchSmokeTest);
+  const [exploreMounted, setExploreMounted] = useState(() => !startsInHarnessMode);
   const [editorFontSize, setEditorFontSize] = useState(() => {
     const stored = Number(window.localStorage.getItem(EDITOR_FONT_SIZE_KEY));
     return Number.isFinite(stored) && stored >= EDITOR_FONT_SIZE_MIN && stored <= EDITOR_FONT_SIZE_MAX ? stored : 13;
@@ -964,7 +968,7 @@ export default function BrowserPanel({
           <button className="active-project-switch" type="button" onClick={requestProjectChange} title={projectDir || '尚未选择工程'}>
             <span>当前工程</span><strong>{activeProject?.name || '请选择'}</strong>
           </button>
-          <button className="workspace-settings" type="button" onClick={onOpenSettings} title="外观与软件助手设置" aria-label="打开设置"><Settings aria-hidden="true" /></button>
+          <button className="workspace-settings" type="button" onClick={onOpenSettings} title="软件助手设置" aria-label="打开软件助手设置"><Settings aria-hidden="true" /></button>
           <div className="workspace-window-controls" role="group" aria-label="窗口控制">
             <button type="button" onClick={() => void window.electronAPI.minimizeWindow()} title="最小化" aria-label="最小化窗口"><Minus aria-hidden="true" /></button>
             <button type="button" onClick={() => void window.electronAPI.toggleMaximizeWindow()} title="最大化或还原" aria-label="最大化或还原窗口"><Square aria-hidden="true" /></button>

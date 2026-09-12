@@ -10,7 +10,6 @@ import githubMarkImage from './assets/github-mark.png';
 import type { AgentTaskInput, AgentTaskStatus, BrowserTab, ChatConversation, ChatConversationSummary, ChatMessage, ChatMessageKind, HardboardDevice, ProjectSessionStatus, RecordingSummary, SoftwareAssistantMessage, StartupStatus, TaskStep, TaskSubmitMode, WorkbenchOverview } from './types';
 
 const LEFT_PANEL_WIDTH_KEY = 'vibeide.ui.leftPanelWidth';
-const APPEARANCE_THEME_KEY = 'vibeide.appearance.theme';
 const APPEARANCE_POSITION_KEY = 'vibeide.appearance.position';
 const ASSISTANT_SIZE_KEY = 'vibeide.assistant.size';
 const DEFAULT_LEFT_PANEL_WIDTH = 34;
@@ -27,7 +26,6 @@ const ASSISTANT_WELCOME: SoftwareAssistantMessage = {
   role: 'assistant',
   content: '你好，我是 **Neil·Bauman\'s 学院呱呱**。遇到 Catnip Forge 的界面、编译、烧录、串口或 Skills 使用问题，都可以直接问我。',
 };
-type AppearanceTheme = 'dark' | 'light';
 type FloatingPosition = { x: number; y: number };
 
 function cleanAgentText(value: string): string {
@@ -48,25 +46,13 @@ function inferChatMessageKind(text: string, provided?: ChatMessageKind, error = 
   return 'conversation';
 }
 
-function readInitialAppearanceTheme(): AppearanceTheme {
-  try {
-    const stored = window.localStorage.getItem(APPEARANCE_THEME_KEY);
-    if (stored === 'dark' || stored === 'light') return stored;
-    const initial = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    window.localStorage.setItem(APPEARANCE_THEME_KEY, initial);
-    return initial;
-  } catch {
-    return 'dark';
-  }
+document.documentElement.dataset.theme = 'dark';
+document.documentElement.style.colorScheme = 'dark';
+try {
+  window.localStorage.removeItem('vibeide.appearance.theme');
+} catch {
+  // A fixed dark theme does not depend on storage availability.
 }
-
-function applyAppearanceTheme(theme: AppearanceTheme): void {
-  document.documentElement.dataset.theme = theme;
-  document.documentElement.style.colorScheme = theme;
-}
-
-const INITIAL_APPEARANCE_THEME = readInitialAppearanceTheme();
-applyAppearanceTheme(INITIAL_APPEARANCE_THEME);
 
 function clampAssistantSize(value: number): number {
   return Math.min(MAX_ASSISTANT_SIZE, Math.max(MIN_ASSISTANT_SIZE, value));
@@ -155,7 +141,6 @@ export default function App() {
   const [workbench, setWorkbench] = useState<WorkbenchOverview | null>(null);
   const [leftPanelWidth, setLeftPanelWidth] = useState(readLeftPanelWidth);
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false);
-  const [appearanceTheme, setAppearanceTheme] = useState<AppearanceTheme>(INITIAL_APPEARANCE_THEME);
   const [appearanceMenuOpen, setAppearanceMenuOpen] = useState(false);
   const [appearancePosition, setAppearancePosition] = useState<FloatingPosition>(readInitialAppearancePosition);
   const [assistantSize, setAssistantSize] = useState(INITIAL_ASSISTANT_SIZE);
@@ -235,15 +220,6 @@ export default function App() {
     }
     setStartupStatus((current) => current ? { ...current, ...result.status } : null);
   }, [startupApiKey, startupQwenApiKey]);
-
-  useEffect(() => {
-    applyAppearanceTheme(appearanceTheme);
-    try {
-      window.localStorage.setItem(APPEARANCE_THEME_KEY, appearanceTheme);
-    } catch {
-      // The theme still applies for this session when storage is unavailable.
-    }
-  }, [appearanceTheme]);
 
   useEffect(() => {
     if (!appearanceMenuOpen) return undefined;
@@ -1047,9 +1023,7 @@ export default function App() {
                   </button>
                 </span>
               </div>
-              <div className="software-assistant-actions" role="group" aria-label="助手与外观设置">
-                <button type="button" className={appearanceTheme === 'light' ? 'is-selected' : ''} onClick={() => setAppearanceTheme('light')} title="浅色模式" aria-label="切换到浅色模式">☀</button>
-                <button type="button" className={appearanceTheme === 'dark' ? 'is-selected' : ''} onClick={() => setAppearanceTheme('dark')} title="深色模式" aria-label="切换到深色模式">☾</button>
+              <div className="software-assistant-actions" role="group" aria-label="助手设置">
                 <button
                   type="button"
                   onClick={() => {

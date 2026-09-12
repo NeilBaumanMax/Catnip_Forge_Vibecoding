@@ -328,6 +328,11 @@ async function main() {
       Math.abs(brandRect.top - tabSurfaceRect.top),
       Math.abs(tabSurfaceRect.top - actionSurfaceRect.top),
     );
+    document.querySelector('.appearance-settings-trigger')?.click();
+    await wait(120);
+    const assistantActionCount = document.querySelectorAll('.software-assistant-actions button').length;
+    const assistantThemeControlCount = document.querySelectorAll('[aria-label="切换到浅色模式"], [aria-label="切换到深色模式"]').length;
+    document.querySelector('.software-assistant-actions button:last-child')?.click();
     return {
       quickActionCount: quickActions.length,
       suggestionCount: document.querySelectorAll('.chat-empty-suggestions button').length,
@@ -358,6 +363,13 @@ async function main() {
         && document.querySelector('.chat-submit svg')),
       submitKeepsBlueIdleState: submitStyle.backgroundImage.includes('linear-gradient')
         && Number.parseFloat(submitStyle.opacity) >= 0.7,
+      submitStyleDetails: {
+        backgroundImage: submitStyle.backgroundImage,
+        backgroundColor: submitStyle.backgroundColor,
+        opacity: submitStyle.opacity,
+      },
+      assistantActionCount,
+      assistantThemeControlCount,
       historyArtworkFillsPanel: historyStyle.backgroundImage.includes('chat-history-night-v2.png')
         && historyStyle.backgroundSize.includes('112%')
         && historyMainStyle.backgroundImage === 'none'
@@ -400,7 +412,16 @@ async function main() {
   if (!chatShell.outerFrameRemoved || chatShell.blueGlassSurfaceCount !== 2 || !chatShell.brandUnboxed) {
     throw new Error(`top shell material mismatch: ${JSON.stringify(chatShell)}`);
   }
-  if (chatShell.missing || chatShell.quickActionCount !== 4 || chatShell.suggestionCount !== 4 || chatShell.historyRailActionCount !== 4 || !chatShell.promptInjected.includes('当前工程') || chatShell.brand !== 'Catnip Forge' || !chatShell.settingsVisible || chatShell.windowControlCount !== 3 || !chatShell.topRowAligned || !chatShell.surfacesSeparated || !chatShell.taskLabelVisible || !chatShell.brandBeforeTabs || !chatShell.projectAfterTabs || !chatShell.settingsAfterProject || !chatShell.controlsAfterSettings || !chatShell.controlsInsideViewport || !chatShell.navSpansViewport || !chatShell.composerVisible || !chatShell.submitVisible || !chatShell.composerActionsInside || !chatShell.submitIsPaperPlane || !chatShell.submitKeepsBlueIdleState || !chatShell.historyArtworkFillsPanel || !chatShell.historyRailSeamRemoved) {
+  if (chatShell.missing || chatShell.quickActionCount !== 4 || chatShell.suggestionCount !== 4
+    || chatShell.historyRailActionCount !== 4 || !chatShell.promptInjected.includes('当前工程')
+    || chatShell.brand !== 'Catnip Forge' || !chatShell.settingsVisible || chatShell.windowControlCount !== 3
+    || !chatShell.topRowAligned || !chatShell.surfacesSeparated || !chatShell.taskLabelVisible
+    || !chatShell.brandBeforeTabs || !chatShell.projectAfterTabs || !chatShell.settingsAfterProject
+    || !chatShell.controlsAfterSettings || !chatShell.controlsInsideViewport || !chatShell.navSpansViewport
+    || !chatShell.composerVisible || !chatShell.submitVisible || !chatShell.composerActionsInside
+    || !chatShell.submitIsPaperPlane || !chatShell.submitKeepsBlueIdleState
+    || chatShell.assistantActionCount !== 4 || chatShell.assistantThemeControlCount !== 0
+    || !chatShell.historyArtworkFillsPanel || !chatShell.historyRailSeamRemoved) {
     throw new Error(`chat shell interaction mismatch: ${JSON.stringify(chatShell)}`);
   }
 
@@ -769,14 +790,12 @@ async function main() {
     const confirm = document.querySelector('[data-tour-id="explore-confirm-execution"]');
     const executeStage = document.querySelector('.explore-stage-nav [aria-current="step"]')?.textContent || '';
     const artifactVisible = Boolean(document.querySelector('.explore-artifact-view pre'));
-    const themes = {};
-    for (const theme of ['light', 'dark']) {
-      document.documentElement.dataset.theme = theme;
-      document.documentElement.style.colorScheme = theme;
-      await wait(30);
-      const style = getComputedStyle(document.querySelector('.explore-panel'));
-      themes[theme] = { primary: style.getPropertyValue('--explore-primary').trim(), color: style.color, background: style.backgroundColor };
-    }
+    const fixedTheme = {
+      dataset: document.documentElement.dataset.theme,
+      colorScheme: document.documentElement.style.colorScheme,
+      legacyPreference: window.localStorage.getItem('vibeide.appearance.theme'),
+      themeToggleCount: document.querySelectorAll('[aria-label="切换到浅色模式"], [aria-label="切换到深色模式"]').length,
+    };
     document.querySelector('.explore-back-button').click();
     await wait(50);
     document.querySelector('[data-tour-id="explore-diagnosis"]').click();
@@ -794,7 +813,7 @@ async function main() {
       priorResultCollapsed: !document.querySelector('.explore-prior-result')?.open,
       returnPreserved,
       workspaceSwitchPreserved,
-      themes,
+      fixedTheme,
     };
   })()`);
   if (flowResult.panelWidth < 1200 || flowResult.formColumns !== 2) throw new Error(`wide flow did not use two columns: ${JSON.stringify(flowResult)}`);
@@ -803,7 +822,67 @@ async function main() {
   if (flowResult.planSteps !== 2 || !flowResult.artifactVisible || !flowResult.confirmEnabled || !flowResult.priorResultCollapsed) throw new Error(`plan/artifact gate UI mismatch: ${JSON.stringify(flowResult)}`);
   if (!flowResult.sourceButtonHeights.length || flowResult.sourceButtonHeights.some((height) => height < 36)) throw new Error(`source actions are not prominent enough: ${JSON.stringify(flowResult.sourceButtonHeights)}`);
   if (!flowResult.returnPreserved || !flowResult.workspaceSwitchPreserved) throw new Error(`Explore work was lost during navigation: ${JSON.stringify(flowResult)}`);
-  if (!flowResult.themes.light.primary || flowResult.themes.light.primary === flowResult.themes.dark.primary) throw new Error(`theme tokens did not change: ${JSON.stringify(flowResult.themes)}`);
+  if (flowResult.fixedTheme.dataset !== 'dark' || flowResult.fixedTheme.colorScheme !== 'dark'
+    || flowResult.fixedTheme.legacyPreference !== null || flowResult.fixedTheme.themeToggleCount !== 0) {
+    throw new Error(`the product must expose only the fixed dark theme: ${JSON.stringify(flowResult.fixedTheme)}`);
+  }
+
+  const scaledDisplayLayouts = [];
+  for (const [width, height, source] of [
+    [1280, 720, '1920x1080 @ 150%'],
+    [1707, 960, '2560x1440 @ 150%'],
+    [1707, 1067, '2560x1600 @ 150%'],
+  ]) {
+    await setViewport(width, height);
+    const layout = await evaluate(`(() => {
+      const viewportWidth = window.innerWidth;
+      const nav = document.querySelector('.workspace-global-nav');
+      const boxes = [...document.querySelectorAll('.workspace-global-nav > .workspace-shell-box')];
+      const body = document.querySelector('.app-body');
+      const panel = document.querySelector('.explore-panel');
+      const chatConversation = document.querySelector('.chat-conversation');
+      const chatComposer = document.querySelector('.chat-input');
+      const chatHistoryMain = document.querySelector('.chat-history-main');
+      const flowHeader = document.querySelector('.explore-flow-header');
+      const stageNav = document.querySelector('.explore-stage-nav');
+      const windowButtons = [...document.querySelectorAll('.workspace-window-controls button')];
+      const rect = (element) => element ? element.getBoundingClientRect() : null;
+      const navRect = rect(nav);
+      const bodyRect = rect(body);
+      const panelRect = rect(panel);
+      return {
+        viewport: [window.innerWidth, window.innerHeight],
+        documentFits: document.documentElement.scrollWidth <= viewportWidth + 1,
+        navFits: Boolean(navRect && navRect.left >= -1 && navRect.right <= viewportWidth + 1),
+        boxesFit: boxes.length === 3 && boxes.every((box) => {
+          const boxRect = rect(box);
+          return boxRect && boxRect.width > 0 && boxRect.left >= -1 && boxRect.right <= viewportWidth + 1;
+        }),
+        bodyFits: Boolean(bodyRect && bodyRect.left >= -1 && bodyRect.right <= viewportWidth + 1),
+        panelFits: Boolean(panelRect && panelRect.width >= 420 && panelRect.right <= viewportWidth + 1),
+        panelScrollsVertically: Boolean(panel && panel.scrollHeight >= panel.clientHeight),
+        panelHasNoHorizontalClip: Boolean(panel && panel.scrollWidth <= panel.clientWidth + 2),
+        controlsUsable: windowButtons.length === 3 && windowButtons.every((button) => rect(button).width >= 30),
+        chatConversationUsable: Boolean(chatConversation && rect(chatConversation).width >= 260),
+        chatComposerVisible: Boolean(chatComposer && rect(chatComposer).bottom <= window.innerHeight + 1),
+        compactHistoryRail: getComputedStyle(chatHistoryMain).display === 'none',
+        stageNavInsideHeader: Boolean(flowHeader && stageNav && rect(stageNav).bottom <= rect(flowHeader).bottom + 1),
+      };
+    })()`);
+    const screenshotPath = path.join(outputDir, `scaled-${width}x${height}.png`);
+    const screenshot = await call('Page.captureScreenshot', { format: 'png', fromSurface: true });
+    fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
+    scaledDisplayLayouts.push({ source, screenshotPath, ...layout });
+  }
+  if (scaledDisplayLayouts.some((layout) => !layout.documentFits || !layout.navFits || !layout.boxesFit
+    || !layout.bodyFits || !layout.panelFits || !layout.panelHasNoHorizontalClip || !layout.controlsUsable
+    || !layout.chatConversationUsable || !layout.chatComposerVisible || !layout.stageNavInsideHeader)) {
+    throw new Error(`scaled display layout overflow: ${JSON.stringify(scaledDisplayLayouts)}`);
+  }
+  if (!scaledDisplayLayouts[0].compactHistoryRail) {
+    throw new Error(`1280x720 must collapse chat history to its icon rail: ${JSON.stringify(scaledDisplayLayouts[0])}`);
+  }
+  await setViewport(2048, 1152);
 
   const concurrentModeSwitch = await evaluate(`(async () => {
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -875,7 +954,7 @@ async function main() {
   await setViewport(1565, 1304);
   const screenshot = await call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
   fs.writeFileSync(screenshotPath, Buffer.from(screenshot.data, 'base64'));
-  console.log(JSON.stringify({ chatShell, targetNav, skillHubTopline, dashboardScroll, tallTarget, ideaWorkspace, draftLifecycle, diagnosisWorkspace, scenarios, flowResult, concurrentModeSwitch, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, skillHubScreenshotPath, exploreHomeScreenshotPath, tallTargetScreenshotPath, ideaWorkspaceScreenshotPath, diagnosisWorkspaceScreenshotPath, screenshotPath, consoleErrors }, null, 2));
+  console.log(JSON.stringify({ chatShell, targetNav, skillHubTopline, dashboardScroll, tallTarget, ideaWorkspace, draftLifecycle, diagnosisWorkspace, scenarios, flowResult, scaledDisplayLayouts, concurrentModeSwitch, entryScreenshotPath, targetScreenshotPath, shellScreenshotPath, skillHubScreenshotPath, exploreHomeScreenshotPath, tallTargetScreenshotPath, ideaWorkspaceScreenshotPath, diagnosisWorkspaceScreenshotPath, screenshotPath, consoleErrors }, null, 2));
 }
 
 main().catch((error) => {

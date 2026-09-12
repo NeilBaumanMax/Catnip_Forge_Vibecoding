@@ -53,7 +53,10 @@ async function main() {
         const composer = popover?.querySelector('.software-assistant-composer');
         const composerTextarea = composer?.querySelector('textarea');
         const sendButton = composer?.querySelector('[aria-label="发送问题"]');
-        await Promise.all([avatarImage, githubMark].map((image) => image instanceof HTMLImageElement ? image.decode().catch(() => undefined) : undefined));
+        await Promise.race([
+          Promise.all([avatarImage, githubMark].map((image) => image instanceof HTMLImageElement ? image.decode().catch(() => undefined) : undefined)),
+          new Promise((resolve) => setTimeout(resolve, 2_000)),
+        ]);
         const triggerImage = trigger?.querySelector('img');
         const rect = popover?.getBoundingClientRect();
         const triggerRect = trigger?.getBoundingClientRect();
@@ -108,7 +111,7 @@ async function main() {
     const rect = result?.rect;
     const inViewport = rect && rect.left >= 0 && rect.top >= 0
       && rect.right <= result.viewport.width && rect.bottom <= result.viewport.height;
-    if (!result?.triggerImageLoaded || !result?.avatarImageLoaded || !result?.githubMarkLoaded || !result?.fullBodyTrigger || !result?.popoverVisible || !result?.textarea || !result?.composerContained || result?.actionButtons !== 6 || !result?.onboardingButton || !result?.sizeAdjusted
+    if (!result?.triggerImageLoaded || !result?.avatarImageLoaded || !result?.githubMarkLoaded || !result?.fullBodyTrigger || !result?.popoverVisible || !result?.textarea || !result?.composerContained || result?.actionButtons !== 4 || !result?.onboardingButton || !result?.sizeAdjusted
       || result?.title !== "Neil·Bauman's 学院呱呱" || !result?.welcome?.includes('Catnip Forge')
       || !result?.authorLink?.includes('Neil Bauman') || result?.authorLink?.includes('作者') || !result?.authorLinkLabel?.includes('系统浏览器') || !inViewport) {
       throw new Error(`software assistant UI verification failed: ${JSON.stringify(result)}`);

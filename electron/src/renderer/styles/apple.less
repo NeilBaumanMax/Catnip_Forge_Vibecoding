@@ -1,6 +1,6 @@
 /* Apple-inspired desktop system: quiet hierarchy, material, and direct feedback. */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
   --ui-accent: #007aff;
   --ui-accent-hover: #087ff5;
   --ui-accent-pressed: #0068d9;
@@ -44,10 +44,6 @@
   --nes-border: var(--ui-separator);
   --chrome-top: var(--ui-toolbar);
   --chrome-bar: var(--ui-toolbar);
-}
-
-:root[data-theme="light"] {
-  color-scheme: light;
 }
 
 html,
@@ -2796,7 +2792,7 @@ select.nes-select {
   .startup-key-restarting::before { animation: none; border-color: var(--ui-accent); }
 }
 
-/* A compact, anchored appearance menu keeps theme control close at hand. */
+/* A compact, anchored software-assistant menu. */
 .appearance-settings {
   position: fixed;
   z-index: 160;
@@ -3375,120 +3371,6 @@ select.nes-select {
     border: 2px solid var(--ui-text);
   }
 }
-
-.appearance-popover-heading {
-  display: grid;
-  gap: 2px;
-  margin: 0 2px 12px;
-}
-
-.appearance-popover-heading strong {
-  font-size: 14px;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-}
-
-.appearance-popover-heading span {
-  color: var(--ui-text-tertiary);
-  font-size: 12px;
-}
-
-.appearance-theme-options {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.appearance-theme-option {
-  position: relative;
-  display: grid;
-  gap: 7px;
-  min-width: 0;
-  padding: 7px 7px 9px;
-  color: var(--ui-text-secondary);
-  text-align: left;
-  background: var(--ui-fill);
-  border: 1px solid transparent;
-  border-radius: 11px;
-  transition: transform 120ms ease, color 140ms ease, background-color 140ms ease, border-color 140ms ease;
-}
-
-.appearance-theme-option:hover {
-  color: var(--ui-text);
-  background: var(--ui-fill-hover);
-}
-
-.appearance-theme-option:active {
-  transform: scale(0.97);
-}
-
-.appearance-theme-option.is-selected {
-  color: var(--ui-text);
-  background: color-mix(in srgb, var(--ui-accent) 10%, var(--ui-fill));
-  border-color: var(--ui-accent);
-}
-
-.appearance-theme-option:focus-visible {
-  outline: 3px solid var(--ui-focus);
-  outline-offset: 1px;
-}
-
-.appearance-theme-preview {
-  position: relative;
-  display: block;
-  height: 55px;
-  overflow: hidden;
-  background: #e9eaed;
-  border: 1px solid rgba(60, 60, 67, 0.24);
-  border-radius: 7px;
-}
-
-.appearance-theme-preview::before {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 27%;
-  content: "";
-  background: #f5f5f7;
-  border-right: 1px solid rgba(60, 60, 67, 0.18);
-}
-
-.appearance-theme-preview i,
-.appearance-theme-preview b {
-  position: absolute;
-  left: 35%;
-  right: 8%;
-  display: block;
-  content: "";
-  background: #fff;
-  border-radius: 3px;
-}
-
-.appearance-theme-preview i { top: 8px; height: 9px; }
-.appearance-theme-preview b { top: 23px; bottom: 7px; }
-
-.appearance-theme-preview--dark {
-  background: #131315;
-  border-color: rgba(235, 235, 245, 0.22);
-}
-
-.appearance-theme-preview--dark::before {
-  background: #262629;
-  border-color: rgba(235, 235, 245, 0.16);
-}
-
-.appearance-theme-preview--dark i,
-.appearance-theme-preview--dark b { background: #2d2d30; }
-
-.appearance-theme-check {
-  position: absolute;
-  right: 10px;
-  bottom: 8px;
-  color: var(--ui-accent);
-  font-weight: 700;
-  opacity: 0;
-}
-
-.appearance-theme-option.is-selected .appearance-theme-check { opacity: 1; }
 
 @keyframes appearance-popover-in {
   from { opacity: 0; transform: translateY(5px) scale(0.96); }

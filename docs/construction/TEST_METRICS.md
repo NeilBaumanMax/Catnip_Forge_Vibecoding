@@ -1,5 +1,19 @@
 # 测试度量与证据
 
+## 2026-09-12 — 固定主题 / 150% 缩放矩阵
+
+| 检查 | 结果 |
+| --- | --- |
+| Electron TypeScript `typecheck` | PASS |
+| Explore 静态 UI 契约 | PASS |
+| Renderer production build | PASS — 2,824 modules；仅既有大 chunk 警告 |
+| Explore live layout UI | PASS；零 Renderer console error |
+| 1920x1080 @ 150%（`1280x720`） | PASS — 三段顶栏、Agent 紧凑历史轨道、输入框和 Explore 均无横向裁切 |
+| 2560x1440 @ 150%（`1707x960`） | PASS — shell/body/Explore/窗口控制均在视口内 |
+| 2560x1600 @ 150%（`1707x1067`） | PASS — shell/body/Explore/窗口控制均在视口内 |
+
+首次失败证据保留：浏览器夹具在 Explore 默认挂载后才注入 `listExploreKnowledge`；修复夹具边界后发现通用深色按钮覆盖禁用态纸飞机；新增几何断言又发现 `1280x720` 阶段导航向标题框外伸出约 10px；最终静态门禁仍匹配旧单行默认页表达式。前三项修复布局根因，最后一项同步为“真实桌面默认探索、浏览器夹具延迟挂载”的明确断言，完整矩阵复测通过。
+
 ## 2026-09-11 — Clean Windows package gate
 
 | Command | Result | Evidence |

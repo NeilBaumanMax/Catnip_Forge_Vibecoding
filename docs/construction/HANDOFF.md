@@ -1,5 +1,12 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-12 — 固定深蓝主题与 150% 显示适配
+
+- Renderer 现为 dark-only：`index.html` 在首帧前声明深色，`App.tsx` 固定 `data-theme="dark"`、清除旧主题偏好且不再渲染黑白切换按钮。
+- 响应式锁覆盖 `1280x720`、`1707x960`、`1707x1067`。最小视口把 Agent 历史收为 44px 轨道并缩短公共顶栏，同时保留三个顶栏框和全部窗口控制。
+- `verify_explore_layout_ui.cjs` 会截图并拦截三个目标视口的页面越界、探索横向裁切、输入框不可见、对话区过窄和阶段导航伸出标题框。
+- 用户工程中未跟踪的 `.catnip` 数据未触碰。
+
 ## 2026-09-11 — Latest clean Windows package
 
 - Rebuilt `electron/dist-package/win-unpacked` from an empty output directory at commit `69d895a7`.

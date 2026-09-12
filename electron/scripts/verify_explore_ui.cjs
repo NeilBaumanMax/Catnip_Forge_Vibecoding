@@ -19,8 +19,9 @@ const ideaEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets'
 const diagnosisEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-diagnosis-guagua.png'));
 
 assert.match(browserPanel, /type PanelMode = [^;]*'explore'/, 'PanelMode must include explore');
-assert.match(browserPanel, /useState<PanelMode>\(\(\) => window\.electronAPI\?\.isWorkbenchSmokeTest \? 'repo' : 'explore'\)/, 'normal startup must default to Explore');
-assert.match(browserPanel, /useState\(\(\) => !window\.electronAPI\?\.isWorkbenchSmokeTest\)/, 'default Explore must be mounted on startup');
+assert.match(browserPanel, /const startsInHarnessMode = !window\.electronAPI \|\| Boolean\(window\.electronAPI\.isWorkbenchSmokeTest\)/, 'browser-only harness detection is missing');
+assert.match(browserPanel, /useState<PanelMode>\(\(\) => startsInHarnessMode \? 'repo' : 'explore'\)/, 'normal desktop startup must default to Explore');
+assert.match(browserPanel, /useState\(\(\) => !startsInHarnessMode\)/, 'default desktop Explore must be mounted on startup');
 assert.equal((browserPanel.match(/data-tour-id="tab-/g) || []).length, 6, 'exactly six visible workspace tabs are required');
 assert.match(browserPanel, /data-tour-id="tab-explore"[^\r\n]*><Compass[^\r\n]*<span>探索<\/span><\/button>/, 'visible Explore tab and icon are missing');
 assert.match(browserPanel, /data-tour-id="tab-skill-hub"/, 'Neil Skill Hub tab is missing');
