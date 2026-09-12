@@ -296,7 +296,8 @@ export interface WindowAPI {
   closeWindow: () => Promise<{ ok: boolean }>;
   notifyRendererInteractive: () => void;
   getStartupStatus: () => Promise<StartupStatus>;
-  configureStartupModel: () => Promise<{ ok: boolean; cancelled: boolean; restarting: boolean; status: StartupStatus }>;
+  configureStartupModel: () => Promise<{ ok: boolean; cancelled: boolean; qwenSaved: boolean; restarting: boolean; status: StartupStatus }>;
+  restartAfterModelSetup: () => Promise<{ restarting: boolean }>;
   askSoftwareAssistant: (messages: Array<Pick<SoftwareAssistantMessage, 'role' | 'content'>>) => Promise<{ ok: true; text: string }>;
   listModels: () => Promise<ModelManagementSnapshot>;
   saveModels: (config: ModelConfigState, expectedRevision: number) => Promise<ModelManagementSnapshot>;

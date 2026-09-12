@@ -71,7 +71,10 @@ async function main() {
         const initialSelectedModelTab = document.querySelector('[data-tour-id="tab-models"]')?.getAttribute('aria-selected');
         const projectOverlay = document.querySelector('.project-picker-backdrop');
         if (projectOverlay instanceof HTMLElement) projectOverlay.style.display = 'none';
-        document.querySelector('[data-tour-id="tab-models"]')?.click();
+        const startupOverlay = document.querySelector('.startup-key-backdrop');
+        const customSetupButton = Array.from(document.querySelectorAll('.startup-key-dialog button')).find((button) => button.textContent.includes('其他模型供应商'));
+        if (customSetupButton instanceof HTMLElement) customSetupButton.click();
+        else document.querySelector('[data-tour-id="tab-models"]')?.click();
         await new Promise((resolve) => setTimeout(resolve, 500));
         const center = document.querySelector('.model-center');
         const grid = document.querySelector('.model-provider-workspace');
@@ -86,6 +89,7 @@ async function main() {
           tabs: tabs.map((item) => ({ text: item.textContent?.trim(), visible: item.getBoundingClientRect().width > 0 })),
           selectedModelTab: document.querySelector('[data-tour-id="tab-models"]')?.getAttribute('aria-selected'),
           initialSelectedModelTab,
+          startupAlternativeUsed: Boolean(startupOverlay),
           centerRect: centerRect ? { left: centerRect.left, top: centerRect.top, right: centerRect.right, bottom: centerRect.bottom } : null,
           gridRect: gridRect ? { width: gridRect.width, height: gridRect.height } : null,
           editorRect: editorRect ? { width: editorRect.width, height: editorRect.height } : null,
@@ -112,8 +116,8 @@ async function main() {
       || !inside || (!maintenanceReady && !onboardingReady) || value?.hasLegacyModelSelect || value?.bodyOverflowX > 1) {
       throw new Error(`model center UI verification failed: ${JSON.stringify(value)}`);
     }
-    if (onboardingReady && value?.initialSelectedModelTab !== 'true') {
-      throw new Error(`first-run model center was not selected automatically: ${JSON.stringify(value)}`);
+    if (value?.startupAlternativeUsed && value?.initialSelectedModelTab === 'true') {
+      throw new Error(`first-run startup must not flash the Model workspace before the user chooses it: ${JSON.stringify(value)}`);
     }
     const responsive = [];
     let screenshotCaptured = false;

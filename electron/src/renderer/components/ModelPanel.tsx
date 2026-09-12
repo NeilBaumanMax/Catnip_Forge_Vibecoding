@@ -10,7 +10,26 @@ function nextId(): string {
   return `provider-${crypto.randomUUID().slice(0, 8)}`;
 }
 
-export default function ModelPanel() {
+function createCustomProvider(): ProviderConfig {
+  const id = nextId();
+  return {
+    id,
+    name: '新的 Claude Code 供应商',
+    baseUrl: 'https://api.example.com',
+    protocols: ['anthropic-compatible'],
+    enabled: true,
+    builtIn: false,
+    credentialId: id,
+    claudeCode: { authField: 'ANTHROPIC_AUTH_TOKEN', primaryModel: 'model-id' },
+  };
+}
+
+interface Props {
+  startInCustomSetup?: boolean;
+  onReturnToStartupSetup?: () => void;
+}
+
+export default function ModelPanel({ startInCustomSetup = false, onReturnToStartupSetup }: Props) {
   const [snapshot, setSnapshot] = useState<ModelManagementSnapshot | null>(null);
   const [draft, setDraft] = useState<ModelConfigState | null>(null);
   const [providerId, setProviderId] = useState('');
@@ -23,11 +42,16 @@ export default function ModelPanel() {
     try {
       const value = await window.electronAPI.listModels();
       setSnapshot(value);
-      setDraft(cloneConfig(value.config));
-      setSetupMode(value.setupComplete ? '' : value.config.setupMode || '');
+      const existingCustom = value.config.providers.find((item) => item.claudeCode && !item.builtIn);
+      const newCustom = !value.setupComplete && startInCustomSetup && !existingCustom ? createCustomProvider() : null;
+      const nextConfig = newCustom
+        ? { ...cloneConfig(value.config), setupMode: 'custom' as const, providers: [...value.config.providers, newCustom] }
+        : cloneConfig(value.config);
+      setDraft(nextConfig);
+      setSetupMode(value.setupComplete ? '' : startInCustomSetup ? 'custom' : value.config.setupMode || '');
       const providers = value.config.providers.filter((item) => item.claudeCode);
-      setProviderId((current) => providers.some((item) => item.id === current) ? current : value.config.activeClaudeProviderId || providers[0]?.id || '');
-      setMessage(value.setupComplete ? 'Claude Code 供应商配置已同步' : '请先选择首次配置方式');
+      setProviderId((current) => newCustom?.id || existingCustom?.id || (providers.some((item) => item.id === current) ? current : value.config.activeClaudeProviderId || providers[0]?.id || ''));
+      setMessage(value.setupComplete ? 'Claude Code 供应商配置已同步' : startInCustomSetup ? '填写供应商地址和模型名称，保存后配置 API Key 并启用' : '请选择首次配置方式');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : '无法读取模型配置');
     } finally {
@@ -35,7 +59,7 @@ export default function ModelPanel() {
     }
   };
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => { void load(); }, [startInCustomSetup]);
 
   const claudeProviders = useMemo(() => draft?.providers.filter((item) => item.claudeCode) ?? [], [draft]);
   const provider = draft?.providers.find((item) => item.id === providerId) ?? null;
@@ -99,6 +123,11 @@ export default function ModelPanel() {
       setSetupMode('');
       setProviderId(targetProviderId);
       window.dispatchEvent(new Event('catnip:model-config-changed'));
+      if (firstRun) {
+        setMessage('配置完成，正在重启；重新打开后请选择工作区文件夹…');
+        await window.electronAPI.restartAfterModelSetup();
+        return;
+      }
       window.dispatchEvent(new Event('catnip:model-setup-complete'));
       setMessage(`已启用 ${value.config.providers.find((item) => item.id === targetProviderId)?.name || '供应商'}；Agent、找灵感和解问题的下一次任务都会使用它`);
     } catch (error) {
@@ -124,23 +153,14 @@ export default function ModelPanel() {
 
   const addProvider = () => {
     if (!draft) return;
-    const id = nextId();
+    const nextProvider = createCustomProvider();
     setDraft({
       ...draft,
       setupMode: 'custom',
-      providers: [...draft.providers, {
-        id,
-        name: '新的 Claude Code 供应商',
-        baseUrl: 'https://api.example.com',
-        protocols: ['anthropic-compatible'],
-        enabled: true,
-        builtIn: false,
-        credentialId: id,
-        claudeCode: { authField: 'ANTHROPIC_AUTH_TOKEN', primaryModel: 'model-id' },
-      }],
+      providers: [...draft.providers, nextProvider],
     });
     setSetupMode('custom');
-    setProviderId(id);
+    setProviderId(nextProvider.id);
     setMessage('填写 Claude Code compatible 地址和模型名，然后保存并配置 API Key');
   };
 
@@ -190,7 +210,7 @@ export default function ModelPanel() {
 
   return (
     <section className="model-center" data-tour-id="panel-models">
-      <header className="model-center-header"><div>{firstRun ? <button type="button" className="model-back-button" onClick={() => setSetupMode('')}><ChevronLeft aria-hidden="true" />重新选择</button> : null}<span className="model-center-kicker">CLAUDE CODE PROVIDERS</span><h2>Claude Code 供应商</h2><p>当前供应商统一用于 Agent、找灵感和解问题；切换对下一次任务生效。</p></div><div className="model-center-actions"><button type="button" onClick={() => void load()} disabled={busy}><RefreshCw aria-hidden="true" />重新载入</button><button className="is-primary" type="button" onClick={() => void save()} disabled={busy}><Save aria-hidden="true" />保存更改</button></div></header>
+      <header className="model-center-header"><div>{firstRun ? <button type="button" className="model-back-button" onClick={() => { setSetupMode(''); onReturnToStartupSetup?.(); }}><ChevronLeft aria-hidden="true" />返回预设配置</button> : null}<span className="model-center-kicker">CLAUDE CODE PROVIDERS</span><h2>Claude Code 供应商</h2><p>当前供应商统一用于 Agent、找灵感和解问题；切换对下一次任务生效。</p></div><div className="model-center-actions"><button type="button" onClick={() => void load()} disabled={busy}><RefreshCw aria-hidden="true" />重新载入</button><button className="is-primary" type="button" onClick={() => void save()} disabled={busy}><Save aria-hidden="true" />保存更改</button></div></header>
       <div className="model-active-provider"><Cpu aria-hidden="true" /><span><small>当前启用</small><strong>{draft.providers.find((item) => item.id === draft.activeClaudeProviderId)?.name || '未配置'}</strong><em>{draft.providers.find((item) => item.id === draft.activeClaudeProviderId)?.claudeCode?.primaryModel || ''}</em></span><p>运行中和已入队任务不会被中途切换。</p></div>
       <div className="model-center-status" role="status"><ShieldCheck aria-hidden="true" />{message}</div>
       <div className="model-provider-workspace">

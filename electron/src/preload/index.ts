@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   notifyRendererInteractive: () => ipcRenderer.send('renderer:interactive'),
   getStartupStatus: () => ipcRenderer.invoke('startup:status'),
   configureStartupModel: () => ipcRenderer.invoke('startup:configure-model'),
+  restartAfterModelSetup: () => ipcRenderer.invoke('startup:restart-after-model-setup'),
   askSoftwareAssistant: (messages: Array<{ role: 'user' | 'assistant'; content: string }>) => ipcRenderer.invoke('software-assistant:ask', messages),
   listModels: () => ipcRenderer.invoke('models:list'),
   saveModels: (config: ModelConfigState, expectedRevision: number) => ipcRenderer.invoke('models:save', config, expectedRevision),

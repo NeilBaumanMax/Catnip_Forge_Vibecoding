@@ -3,6 +3,7 @@ import ChatPanel from './components/ChatPanel';
 import BrowserPanel from './components/BrowserPanel';
 import CatnipOnboarding from './components/CatnipOnboarding';
 import MarkdownContent from './components/MarkdownContent';
+import catnipForgeIcon from './assets/catnip-app-icon.webp';
 import catnipAssistantImage from './assets/catnip-assistant.webp';
 import guaguaAvatarImage from './assets/guagua-avatar.jpg';
 import githubMarkImage from './assets/github-mark.png';
@@ -148,6 +149,10 @@ export default function App() {
   const [softwareAssistantInput, setSoftwareAssistantInput] = useState('');
   const [softwareAssistantPending, setSoftwareAssistantPending] = useState(false);
   const [startupStatus, setStartupStatus] = useState<StartupStatus | null>(null);
+  const [startupApiKeyError, setStartupApiKeyError] = useState('');
+  const [startupApiKeySaving, setStartupApiKeySaving] = useState(false);
+  const [startupApiKeyRestarting, setStartupApiKeyRestarting] = useState(false);
+  const [startupUseCustomProvider, setStartupUseCustomProvider] = useState(false);
   const [projectSession, setProjectSession] = useState<ProjectSessionStatus | null>(null);
   const [projectPickerOpen, setProjectPickerOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState('');
@@ -189,6 +194,24 @@ export default function App() {
     const refreshStartup = () => { void window.electronAPI?.getStartupStatus?.().then((status) => setStartupStatus(status)); };
     window.addEventListener('catnip:model-setup-complete', refreshStartup);
     return () => window.removeEventListener('catnip:model-setup-complete', refreshStartup);
+  }, []);
+
+  const handleStartupApiKeySave = useCallback(async () => {
+    setStartupApiKeySaving(true);
+    setStartupApiKeyError('');
+    try {
+      const result = await window.electronAPI.configureStartupModel();
+      setStartupApiKeySaving(false);
+      if (!result.ok) {
+        if (!result.cancelled) setStartupApiKeyError('安全凭据保存失败，请重试或检查 Windows 凭据加密是否可用。');
+        return;
+      }
+      if (result.restarting) { setStartupApiKeyRestarting(true); return; }
+      setStartupStatus(result.status);
+    } catch (error) {
+      setStartupApiKeySaving(false);
+      setStartupApiKeyError(error instanceof Error ? error.message : '无法打开安全输入窗口');
+    }
   }, []);
 
   useEffect(() => {
@@ -856,6 +879,8 @@ export default function App() {
         </div>
         <div className="right-panel">
           <BrowserPanel
+            startInCustomModelSetup={startupUseCustomProvider}
+            onReturnToStartupSetup={() => setStartupUseCustomProvider(false)}
             activeProject={projectSession?.activeProject || null}
             onRequestProjectChange={() => setProjectPickerOpen(true)}
             onOpenSettings={() => setAppearanceMenuOpen(true)}
@@ -880,6 +905,24 @@ export default function App() {
           />
         </div>
       </div>
+      {startupStatus?.firstRun && !startupUseCustomProvider ? (
+        <div className="startup-key-backdrop">
+          <section className="startup-key-dialog" role="dialog" aria-modal="true" aria-labelledby="startup-model-title">
+            <div className="startup-key-brand"><img src={catnipForgeIcon} alt="Catnip Forge" /><span>Catnip Forge</span></div>
+            <div className="startup-key-positioning">硬件智能开发平台 · Autonomous Hardware Development Agent</div>
+            <h2 id="startup-model-title">配置预设模型</h2>
+            <p>DeepSeek 用于 Agent、找灵感和解问题；千问用于可选的视觉任务。点击后会打开独立的 Windows 安全输入窗口。</p>
+            <p>DeepSeek API Key 必填，千问 API Key 选填；Key 不会进入本页面、聊天、日志或普通配置文件。</p>
+            {startupApiKeyError ? <div className="startup-key-error" role="alert">{startupApiKeyError}</div> : null}
+            {!startupStatus.playwrightReady ? <div className="startup-key-error" role="alert">发布包缺少浏览器运行资源，请重新获取完整压缩包。</div> : null}
+            <button type="button" autoFocus onClick={() => void handleStartupApiKeySave()} disabled={startupApiKeySaving || startupApiKeyRestarting || !startupStatus.playwrightReady}>
+              {startupApiKeyRestarting ? '配置完成，正在重启…' : startupApiKeySaving ? '正在打开安全窗口…' : '配置 DeepSeek / 千问'}
+            </button>
+            <button type="button" className="startup-key-alternative" onClick={() => setStartupUseCustomProvider(true)} disabled={startupApiKeySaving || startupApiKeyRestarting}>使用其他模型供应商</button>
+            {startupApiKeyRestarting ? <div className="startup-key-restarting" role="status">Catnip Forge 将自动重新打开，随后请选择工作区文件夹。</div> : <small>其他供应商将进入 Claude Code 供应商管理，完成启用后首次重启。</small>}
+          </section>
+        </div>
+      ) : null}
       {startupStatus && !startupStatus.firstRun && projectPickerOpen ? (
         <div className='project-picker-backdrop'>
           <section className='project-picker-dialog' role='dialog' aria-modal='true' aria-labelledby='project-picker-title'>

@@ -1,0 +1,56 @@
+﻿param([Parameter(Mandatory = $true)][string]$ReadyFile)
+
+$ErrorActionPreference = 'Stop'
+$deepSeekPointer = [IntPtr]::Zero
+$qwenPointer = [IntPtr]::Zero
+$deepSeekPlain = $null
+$qwenPlain = $null
+Add-Type -AssemblyName PresentationFramework
+Add-Type -AssemblyName PresentationCore
+Add-Type -AssemblyName WindowsBase
+
+try {
+    [xml]$xaml = @'
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Catnip Forge · 配置预设模型" Width="580" Height="500" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" WindowStyle="None" AllowsTransparency="True" Background="Transparent" Topmost="True" ShowInTaskbar="True">
+  <Border CornerRadius="20" Background="#F7F8FA" BorderBrush="#E1E2E6" BorderThickness="1"><Grid Margin="28">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <Grid x:Name="Header" Grid.Row="0"><Grid.ColumnDefinitions><ColumnDefinition Width="48"/><ColumnDefinition Width="*"/><ColumnDefinition Width="32"/></Grid.ColumnDefinitions><Border Width="42" Height="42" CornerRadius="13" Background="#5865F2"><TextBlock Text="●" Foreground="White" FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><StackPanel Grid.Column="1" Margin="14,0,12,0"><TextBlock Text="配置预设模型" Foreground="#1C1C1E" FontFamily="Microsoft YaHei UI" FontSize="20" FontWeight="SemiBold"/><TextBlock Text="凭据由 Windows 加密，只在本机 Main 进程使用" Margin="0,5,0,0" Foreground="#6E6E73" FontFamily="Microsoft YaHei UI" FontSize="12"/></StackPanel><Button x:Name="CloseButton" Grid.Column="2" Width="30" Height="30" Content="×" FontSize="18" Foreground="#6E6E73" Background="Transparent" BorderThickness="0" Cursor="Hand"/></Grid>
+    <Border Grid.Row="1" Margin="0,22,0,0" Padding="12,10" CornerRadius="10" Background="#EEF0FF"><TextBlock Text="DeepSeek 用于 Agent、找灵感和解问题；千问用于可选的视觉任务。API Key 不会进入页面、聊天或日志。" Foreground="#37408F" FontFamily="Microsoft YaHei UI" FontSize="12" TextWrapping="Wrap"/></Border>
+    <TextBlock Grid.Row="2" Margin="0,18,0,7" Text="DeepSeek API Key（必填）" Foreground="#636366" FontFamily="Microsoft YaHei UI" FontSize="12" FontWeight="SemiBold"/>
+    <Border Grid.Row="3" Height="46" CornerRadius="10" Background="White" BorderBrush="#C7C7CC" BorderThickness="1"><PasswordBox x:Name="DeepSeekInput" Padding="13,10" Foreground="#1C1C1E" Background="Transparent" BorderThickness="0" FontFamily="Segoe UI" FontSize="14"/></Border>
+    <TextBlock Grid.Row="4" Margin="0,16,0,7" Text="千问 API Key（选填，用于视觉任务）" Foreground="#636366" FontFamily="Microsoft YaHei UI" FontSize="12" FontWeight="SemiBold"/>
+    <Border Grid.Row="5" Height="46" CornerRadius="10" Background="White" BorderBrush="#C7C7CC" BorderThickness="1"><PasswordBox x:Name="QwenInput" Padding="13,10" Foreground="#1C1C1E" Background="Transparent" BorderThickness="0" FontFamily="Segoe UI" FontSize="14"/></Border>
+    <TextBlock x:Name="ValidationText" Grid.Row="6" Margin="2,8,0,0" Foreground="#D70015" FontFamily="Microsoft YaHei UI" FontSize="11" Visibility="Collapsed" Text="请输入 DeepSeek API Key。"/>
+    <StackPanel Grid.Row="7" Margin="0,20,0,0" Orientation="Horizontal" HorizontalAlignment="Right"><Button x:Name="CancelButton" Width="92" Height="40" Margin="0,0,10,0" Content="取消" IsCancel="True"/><Button x:Name="SaveButton" Width="150" Height="40" Content="保存并继续" IsDefault="True" Foreground="White" Background="#5865F2" BorderBrush="#5865F2" FontWeight="SemiBold"/></StackPanel>
+  </Grid></Border>
+</Window>
+'@
+    $reader = [System.Xml.XmlNodeReader]::new($xaml)
+    $window = [Windows.Markup.XamlReader]::Load($reader)
+    $deepSeekInput = $window.FindName('DeepSeekInput')
+    $qwenInput = $window.FindName('QwenInput')
+    $validationText = $window.FindName('ValidationText')
+    $window.FindName('SaveButton').Add_Click({ if ([string]::IsNullOrWhiteSpace($deepSeekInput.Password)) { $validationText.Visibility = [Windows.Visibility]::Visible; [void]$deepSeekInput.Focus(); return }; $window.DialogResult = $true }.GetNewClosure())
+    $window.FindName('CancelButton').Add_Click({ $window.DialogResult = $false }.GetNewClosure())
+    $window.FindName('CloseButton').Add_Click({ $window.DialogResult = $false }.GetNewClosure())
+    $window.FindName('Header').Add_MouseLeftButtonDown({ $window.DragMove() }.GetNewClosure())
+    $window.Add_ContentRendered({ [IO.File]::WriteAllText($ReadyFile, 'ready', [Text.Encoding]::UTF8); [void]$window.Activate(); [void]$deepSeekInput.Focus() }.GetNewClosure())
+    $result = $window.ShowDialog()
+    if ($result -ne $true) { $deepSeekInput.Clear(); $qwenInput.Clear(); exit 2 }
+    $deepSeekSecure = $deepSeekInput.SecurePassword.Copy()
+    $qwenSecure = $qwenInput.SecurePassword.Copy()
+    $deepSeekInput.Clear(); $qwenInput.Clear(); $window.Close()
+    $deepSeekPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($deepSeekSecure)
+    $qwenPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($qwenSecure)
+    $deepSeekPlain = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($deepSeekPointer)
+    $qwenPlain = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($qwenPointer)
+    if ([string]::IsNullOrWhiteSpace($deepSeekPlain)) { exit 3 }
+    $payload = [ordered]@{ deepSeek = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($deepSeekPlain)); qwen = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($qwenPlain)) }
+    [Console]::OutputEncoding = [Text.Encoding]::UTF8
+    [Console]::Out.Write(($payload | ConvertTo-Json -Compress))
+    exit 0
+} catch { exit 1 } finally {
+    $deepSeekPlain = $null; $qwenPlain = $null
+    if ($deepSeekPointer -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($deepSeekPointer) }
+    if ($qwenPointer -ne [IntPtr]::Zero) { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($qwenPointer) }
+}

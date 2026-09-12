@@ -30,13 +30,17 @@ async function main() {
       expression: `(() => ({
         configureType: typeof window.electronAPI.configureStartupModel,
         plaintextType: typeof window.electronAPI.saveStartupApiKey,
+        startupDialog: Boolean(document.querySelector('.startup-key-dialog')),
         passwordInputs: document.querySelectorAll('.startup-key-dialog input[type="password"]').length,
-        secureButton: Array.from(document.querySelectorAll('.startup-key-dialog button')).some((button) => button.textContent.includes('安全窗口'))
+        secureButton: Array.from(document.querySelectorAll('.startup-key-dialog button')).some((button) => button.textContent.includes('DeepSeek / 千问')),
+        customButton: Array.from(document.querySelectorAll('.startup-key-dialog button')).some((button) => button.textContent.includes('其他模型供应商')),
+        customSetupVisible: document.querySelector('.model-center-status')?.textContent.includes('供应商地址和模型名称') === true
       }))()`,
       returnByValue: true,
     });
     const value = evaluated.result?.value;
-    if (value?.configureType !== 'function' || value?.plaintextType !== 'undefined' || value?.passwordInputs !== 0 || !value?.secureButton) {
+    const firstRunRouteVisible = value?.startupDialog ? value.secureButton && value.customButton : value?.customSetupVisible;
+    if (value?.configureType !== 'function' || value?.plaintextType !== 'undefined' || value?.passwordInputs !== 0 || !firstRunRouteVisible) {
       throw new Error(`secure first-run bridge failed: ${JSON.stringify(value)}`);
     }
     console.log(JSON.stringify({ ok: true, nativePromptRequiredForRestart: true, ...value }, null, 2));

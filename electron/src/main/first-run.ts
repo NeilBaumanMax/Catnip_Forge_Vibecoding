@@ -3,8 +3,9 @@ import path from 'path';
 import { logger } from './worker/logger';
 import { getApiKeyPath, getQwenApiKeyPath, getRuntimeDir } from './paths';
 import { createModelCredentialStore, migrateLegacyCredentials, type ModelCredentialStore } from './model-credentials';
-import { promptForModelCredential } from './model-credential-prompt';
+import { promptForStartupModelCredentials } from './model-credential-prompt';
 import { createModelConfigStore } from './model-config-store';
+import { syncClaudeCodeSettings } from './claude-provider-switch';
 
 /**
  * 首次启动检查 — 确保 App 所需环境就绪。
@@ -172,11 +173,16 @@ export function migrateLegacyStartupCredentials(): void {
   }
 }
 
-export async function configureStartupDeepSeekCredential(): Promise<{ ok: boolean; cancelled: boolean; status: StartupStatus }> {
-  const result = await promptForModelCredential('DeepSeek');
-  if (result.outcome === 'cancelled') return { ok: false, cancelled: true, status: checkStartupStatus() };
-  const normalized = result.secret.trim().replace(/^DEEPSEEK_API_KEY\s*=\s*/i, '').trim();
-  if (!isUsableApiKeyContent(normalized)) throw new Error('DeepSeek API Key 格式无效');
-  createModelCredentialStore().set('deepseek', normalized);
-  return { ok: true, cancelled: false, status: checkStartupStatus() };
+export async function configureStartupPreset(): Promise<{ ok: boolean; cancelled: boolean; qwenSaved: boolean; status: StartupStatus }> {
+  const result = await promptForStartupModelCredentials();
+  if (result.outcome === 'cancelled') return { ok: false, cancelled: true, qwenSaved: false, status: checkStartupStatus() };
+  const saved = saveStartupApiKeys(result.deepSeekSecret, result.qwenSecret, createModelCredentialStore());
+  if (!saved.ok) throw new Error('DeepSeek API Key 格式无效');
+  const configStore = createModelConfigStore();
+  const config = configStore.read();
+  const provider = config.providers.find((item) => item.id === 'deepseek');
+  if (!provider?.claudeCode) throw new Error('DeepSeek 预设配置不完整');
+  syncClaudeCodeSettings(provider);
+  configStore.replace({ ...config, activeClaudeProviderId: 'deepseek', setupMode: 'preset' }, config.revision);
+  return { ok: true, cancelled: false, qwenSaved: saved.qwenSaved, status: checkStartupStatus() };
 }

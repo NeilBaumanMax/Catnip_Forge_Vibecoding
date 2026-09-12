@@ -2634,6 +2634,11 @@ select.nes-select {
   cursor: pointer;
 }
 .startup-key-dialog > button:disabled { opacity: 0.45; cursor: default; }
+.startup-key-dialog > button.startup-key-alternative {
+  color: var(--ui-accent);
+  background: transparent;
+  border: 1px solid var(--ui-separator-strong);
+}
 .startup-key-dialog small { color: var(--ui-text-tertiary); font-size: 10px; line-height: 1.5; }
 .startup-key-error { padding: 8px 10px; color: var(--ui-red); background: color-mix(in srgb, var(--ui-red) 10%, transparent); border-radius: 8px; font-size: 11px; }
 .startup-key-restarting {

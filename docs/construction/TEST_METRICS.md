@@ -858,3 +858,18 @@ Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会�
 | Windows 完整重打包 | NOT VERIFIED | 本轮只构建 Main/Renderer，不以旧包充当证据 |
 
 首次失败与根因保留：性能专项的超时正则范围过窄；Explore 静态测试仍写死 Phase 16 前的 6 tabs 和旧 PNG；顶部三容器正则因第七个 tab 超出旧字符窗失败，均修正为当前真实契约。布局第一次因 Phase 16 新增 `listModels` 未在浏览器 harness 中提供而 React 卸载；Chat 在非 Electron harness 增加能力探测后通过。性能 UI 首次把“无打开文件的编辑器空态”误断言为 Monaco DOM，随后改为验证 CodeEditor 动态模块；第二次在模板字符串内正则转义错误并暴露脚本未报告 CDP exception，改成字符串检测并补异常检查；第三次只匹配生产哈希 chunk，开发 Vite 使用源码 URL，补齐两种合法路径后通过。一次受控重启命令因外层 PowerShell 提前展开 `$proc`，旧进程已精确停止但新进程未启动；随后直接 `Start-Process` 成功启动 PID 53120。安全首启专项仍输出既有测试宿主 GPU 子进程错误，但断言和退出码通过；普通开发应用启用 GPU 后实际运行正常。
+
+## 2026-09-13 — Phase 18g 首启与安全窗口修复
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| Electron / Runtime typecheck | PASS | 首启双 Key IPC、重启 IPC 与 Renderer props 类型通过 |
+| `verify:secure-startup` | PASS | 双 Key 原生脚本、BOM、加密 Store、Renderer 无明文输入、长期维护入口断言通过 |
+| `verify:model-config` / `verify:model-credentials` / `verify:model-management` | PASS | schema、凭据、全局供应商保存/启用保持 |
+| `verify:agent-model-selection` / `verify:model-runtime` | PASS | Agent、探索与软件助手仍读取统一活动供应商快照 |
+| `verify:explore-ui` / `verify:renderer-performance` | PASS | 已配置启动直达探索、其他供应商分流及缓存资源契约通过 |
+| 双 Key / 单 Key WPF 可见性 | PASS | 两个测试进程均生成 `ContentRendered` ready 文件后按精确 PID 关闭；未输入真实 Key |
+| `verify:model-center-ui` | PASS | 首启选择其他供应商后直达维护页；1280×720、1600×1000、1707×1067 无横向溢出，显示 DeepSeek 当前状态与 Chat 指示 |
+| 开发版启动 | PASS | 5173 与 9230 监听，Electron Main/Renderer/GPU 进程存在 |
+
+首次失败保留：旧测试仍断言“首帧模型页”，按 18g 产品真相改为“启动遮罩分流、已配置直达探索”；直接用 `node` 运行 Electron 专项导致 `app` 未定义，改用 package 中 Electron runner 后通过；串联 Renderer build 的工具调用达到 30 秒输出上限，后续命令继续在后台运行，不据此声明完整 Windows 打包完成。真实 DeepSeek/Qwen/其他供应商 Key、付费请求、完整 Windows 包和硬件未验证，分别保留 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`、`WINDOWS_PACKAGE_VALIDATION_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING`。

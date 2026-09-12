@@ -15,6 +15,8 @@ function WorkspaceLoading({ label }: { label: string }) {
 }
 
 interface Props {
+  startInCustomModelSetup: boolean;
+  onReturnToStartupSetup: () => void;
   activeProject: ProjectSummary | null;
   onRequestProjectChange: () => void;
   onOpenSettings: () => void;
@@ -243,6 +245,8 @@ function eventText(event: RuntimeEvent): string {
 }
 
 export default function BrowserPanel({
+  startInCustomModelSetup,
+  onReturnToStartupSetup,
   activeProject,
   onRequestProjectChange,
   onOpenSettings,
@@ -269,19 +273,13 @@ export default function BrowserPanel({
   // inject it after mount, so keep Explore lazy there instead of crashing before
   // the harness can install its bounded test bridge.
   const startsInHarnessMode = !window.electronAPI || Boolean(window.electronAPI.isWorkbenchSmokeTest);
-  // Start a real desktop session on the model page. Configured users are moved
-  // to Explore as soon as the local snapshot arrives; first-run users never see
-  // a misleading Explore flash before their required provider setup.
-  const [mode, setMode] = useState<PanelMode>(() => startsInHarnessMode ? 'repo' : 'models');
+  // The startup overlay owns first-run routing, so configured users can render
+  // Explore immediately without flashing the lazily-loaded model workspace.
+  const [mode, setMode] = useState<PanelMode>(() => startsInHarnessMode ? 'repo' : 'explore');
 
   useEffect(() => {
-    let active = true;
-    if (startsInHarnessMode || !window.electronAPI?.listModels) return () => { active = false; };
-    void window.electronAPI.listModels().then((result) => {
-      if (active) setMode(result.setupComplete === false ? 'models' : 'explore');
-    }).catch(() => { /* ModelPanel will show the actionable load error when opened. */ });
-    return () => { active = false; };
-  }, [startsInHarnessMode]);
+    if (startInCustomModelSetup) setMode('models');
+  }, [startInCustomModelSetup]);
   const [inputUrl, setInputUrl] = useState('');
   const [recordingName, setRecordingName] = useState('');
   const [selectedReplay, setSelectedReplay] = useState('');
@@ -1130,7 +1128,7 @@ export default function BrowserPanel({
         />
       </div> : null}
 
-      {mode === 'models' ? <React.Suspense fallback={<WorkspaceLoading label="模型中心" />}><ModelPanel /></React.Suspense> : null}
+      {mode === 'models' ? <React.Suspense fallback={<WorkspaceLoading label="模型中心" />}><ModelPanel startInCustomSetup={startInCustomModelSetup} onReturnToStartupSetup={onReturnToStartupSetup} /></React.Suspense> : null}
 
       {mode === 'monitor' ? (
         <div className="serial-monitor serial-assistant" data-tour-id="panel-monitor">

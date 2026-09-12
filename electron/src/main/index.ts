@@ -5,7 +5,7 @@ import { flushBrowserStorage, openTabUrl, setupBrowserView, updateBrowserViewBou
 import { startGateway } from './gateway';
 import { logger } from './worker/logger';
 import { getChromeProfileDir, getResourcesDir, isDev } from './paths';
-import { checkStartupStatus, configureStartupDeepSeekCredential, getApiKeyPromptData } from './first-run';
+import { checkStartupStatus, configureStartupPreset, getApiKeyPromptData } from './first-run';
 import { killAgent } from './agent';
 import { askSoftwareAssistant, type SoftwareAssistantMessage } from './software-assistant';
 import { startSerialMonitorBridge, stopSerialMonitorBridge } from './serial-monitor-bridge';
@@ -254,9 +254,14 @@ function createWindow() {
   // 注册 IPC 处理器
   ipcMain.handle('startup:status', () => ({ ...checkStartupStatus(), ...getApiKeyPromptData() }));
   ipcMain.handle('startup:configure-model', async () => {
-    const result = await configureStartupDeepSeekCredential();
+    const result = await configureStartupPreset();
     if (result.ok) scheduleFirstRunRestart();
     return { ...result, restarting: result.ok };
+  });
+  ipcMain.handle('startup:restart-after-model-setup', async () => {
+    if (checkStartupStatus().firstRun) throw new Error('请先完成并启用模型供应商配置');
+    scheduleFirstRunRestart();
+    return { restarting: true };
   });
   ipcMain.handle('software-assistant:ask', async (_event, messages: SoftwareAssistantMessage[]) => {
     return askSoftwareAssistant(Array.isArray(messages) ? messages : []);
