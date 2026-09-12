@@ -21,6 +21,7 @@ import { getSerialMonitorBridgeEnv } from './serial-monitor-bridge';
 import { getAttachmentBridgeEnv } from './attachment-bridge';
 import { EXPLORE_ANALYSIS_JSON_SCHEMA } from '../common/explore';
 import type { EngineeringAgentRuntimeModel } from './agent-model-selection';
+import { createModelCredentialStore } from './model-credentials';
 
 const AGENT_DIR = getAgentDir();
 const AGENT_WORKSPACE_DIR = getAgentWorkspaceDir();
@@ -301,6 +302,12 @@ export function buildAgentMcpConfig(profile: AgentExecutionProfile): { mcpServer
 }
 
 export function readDeepSeekApiKey(): string | null {
+  try {
+    const secured = createModelCredentialStore().get('deepseek');
+    if (secured) return secured;
+  } catch {
+    return null;
+  }
   try {
     const text = fs.readFileSync(API_KEY_FILE, 'utf-8');
     for (const rawLine of text.split(/\r?\n/)) {

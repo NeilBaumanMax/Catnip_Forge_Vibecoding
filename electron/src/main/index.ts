@@ -5,7 +5,7 @@ import { flushBrowserStorage, openTabUrl, setupBrowserView, updateBrowserViewBou
 import { startGateway } from './gateway';
 import { logger } from './worker/logger';
 import { getChromeProfileDir, getResourcesDir, isDev } from './paths';
-import { checkStartupStatus, getApiKeyPromptData, saveStartupApiKeys } from './first-run';
+import { checkStartupStatus, configureStartupDeepSeekCredential, getApiKeyPromptData } from './first-run';
 import { killAgent } from './agent';
 import { askSoftwareAssistant, type SoftwareAssistantMessage } from './software-assistant';
 import { startSerialMonitorBridge, stopSerialMonitorBridge } from './serial-monitor-bridge';
@@ -240,12 +240,10 @@ function createWindow() {
 
   // 注册 IPC 处理器
   ipcMain.handle('startup:status', () => ({ ...checkStartupStatus(), ...getApiKeyPromptData() }));
-  ipcMain.handle('startup:save-apikey', async (_event, key: string, qwenKey?: string) => {
-    const saved = saveStartupApiKeys(key, qwenKey || '');
-    const ok = saved.ok;
-    const status = checkStartupStatus();
-    if (ok) scheduleFirstRunRestart();
-    return { ok, qwenSaved: saved.qwenSaved, status, restarting: ok };
+  ipcMain.handle('startup:configure-model', async () => {
+    const result = await configureStartupDeepSeekCredential();
+    if (result.ok) scheduleFirstRunRestart();
+    return { ...result, restarting: result.ok };
   });
   ipcMain.handle('software-assistant:ask', async (_event, messages: SoftwareAssistantMessage[]) => {
     return askSoftwareAssistant(Array.isArray(messages) ? messages : []);

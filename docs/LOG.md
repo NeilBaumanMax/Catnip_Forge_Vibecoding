@@ -1098,3 +1098,10 @@
 - 知乎维护复用官方 `auth set --secret-stdin`、`auth status --verify`、`auth logout`；连接成功状态保留完整维护操作条。
 - 修复两项首轮问题：消息快照归一化块放错函数；connected 替换入口被后续状态判断拒绝。修复后相关 typecheck、专项与 Renderer build 通过。
 - 未读取或记录真实 Secret，未调用真实模型/知乎请求，未打包或执行硬件动作；旧首次启动、软件助手与 Qwen Key 链路列为下一闭环。
+
+## 2026-09-12 — Phase 16c2b 安全首启与模型运行统一
+
+- 首启页面移除 Renderer 密码输入、Key state、路径展示和明文保存 IPC；无参数动作由 Main 打开原生 PasswordBox，成功写入 safeStorage 后重启。
+- Main 启动时尝试把旧 DeepSeek/Qwen 文件安全迁移到凭据 Store；失败或冲突保留来源。Agent、软件助手、视觉附件统一安全读取，后两者使用模型中心用途默认档案。
+- 新增安全首启和模型 Runtime 专项；Qwen mock、Electron/Runtime typecheck 与 Renderer build 通过。首启专项首轮切片边界错误已修复。
+- 软件助手指南旧专项的 allowlist 字符串断言漂移且错误返回 0；已对齐当前通用 HTTP/HTTPS 无凭据门禁并改为可靠失败退出，复测通过。

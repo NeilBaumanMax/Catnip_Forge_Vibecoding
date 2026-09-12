@@ -37,7 +37,8 @@ async function main() {
     const evaluated = await call(socket, 1, 'Runtime.evaluate', {
       expression: `(async () => {
         const status = await window.electronAPI.getStartupStatus();
-        const rejected = await window.electronAPI.saveStartupApiKey('sk-your-key-here');
+        const secureConfigureAvailable = typeof window.electronAPI.configureStartupModel === 'function';
+        const plaintextSaveRemoved = typeof window.electronAPI.saveStartupApiKey === 'undefined';
         const brandIcon = document.querySelector('.workspace-brand img, .chat-history-brand img');
         const brandRect = brandIcon?.getBoundingClientRect();
         const startupIcon = document.querySelector('.startup-key-brand img');
@@ -52,8 +53,10 @@ async function main() {
           firstRun: status.firstRun,
           apiKeyReady: status.apiKeyReady,
           playwrightReady: status.playwrightReady,
-          keyPath: status.keyPath,
-          placeholderRejected: rejected.ok === false,
+          keyPathRemoved: typeof status.keyPath === 'undefined',
+          passwordInputs: document.querySelectorAll('.startup-key-dialog input[type="password"]').length,
+          secureConfigureAvailable,
+          plaintextSaveRemoved,
         };
       })()`,
       awaitPromise: true,
@@ -67,7 +70,8 @@ async function main() {
     }
     const result = evaluated.result?.value;
     const ok = result?.modal && result?.skillButton && result?.firstRun && !result?.apiKeyReady
-      && result?.playwrightReady && result?.placeholderRejected && /resources[\\/]apikey\.txt$/i.test(result?.keyPath || '');
+      && result?.playwrightReady && result?.secureConfigureAvailable && result?.plaintextSaveRemoved
+      && result?.keyPathRemoved && result?.passwordInputs === 0;
     const brandIconWidth = result?.brandIconSize?.width ?? 0;
     const brandIconHeight = result?.brandIconSize?.height ?? 0;
     const brandIconSizeValid = [26, 42].some((size) => (

@@ -8,7 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   toggleMaximizeWindow: () => ipcRenderer.invoke('window:toggle-maximize'),
   closeWindow: () => ipcRenderer.invoke('window:close'),
   getStartupStatus: () => ipcRenderer.invoke('startup:status'),
-  saveStartupApiKey: (key: string, qwenKey?: string) => ipcRenderer.invoke('startup:save-apikey', key, qwenKey),
+  configureStartupModel: () => ipcRenderer.invoke('startup:configure-model'),
   askSoftwareAssistant: (messages: Array<{ role: 'user' | 'assistant'; content: string }>) => ipcRenderer.invoke('software-assistant:ask', messages),
   listModels: () => ipcRenderer.invoke('models:list'),
   saveModels: (config: ModelConfigState, expectedRevision: number) => ipcRenderer.invoke('models:save', config, expectedRevision),

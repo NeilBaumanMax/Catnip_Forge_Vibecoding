@@ -92,8 +92,6 @@ export interface StartupStatus {
   qwenApiKeyReady: boolean;
   playwrightReady: boolean;
   firstRun: boolean;
-  keyPath: string;
-  qwenKeyPath: string;
   qwenOptional?: boolean;
   message?: string;
   detail?: string;
@@ -297,7 +295,7 @@ export interface WindowAPI {
   toggleMaximizeWindow: () => Promise<{ ok: boolean; maximized: boolean }>;
   closeWindow: () => Promise<{ ok: boolean }>;
   getStartupStatus: () => Promise<StartupStatus>;
-  saveStartupApiKey: (key: string, qwenKey?: string) => Promise<{ ok: boolean; qwenSaved: boolean; restarting: boolean; status: Pick<StartupStatus, 'apiKeyReady' | 'qwenApiKeyReady' | 'playwrightReady' | 'firstRun'> }>;
+  configureStartupModel: () => Promise<{ ok: boolean; cancelled: boolean; restarting: boolean; status: StartupStatus }>;
   askSoftwareAssistant: (messages: Array<Pick<SoftwareAssistantMessage, 'role' | 'content'>>) => Promise<{ ok: true; text: string }>;
   listModels: () => Promise<ModelManagementSnapshot>;
   saveModels: (config: ModelConfigState, expectedRevision: number) => Promise<ModelManagementSnapshot>;

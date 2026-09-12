@@ -753,3 +753,16 @@ Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会�
 | `npm.cmd --prefix electron run build:renderer` | PASS | 2825 modules；仅既有大 chunk warning |
 
 首次失败保留：消息快照归一化块曾误放在 conversation 函数，触发 `TS2353/TS2552` 与 `ReferenceError: message is not defined`；修复后 typecheck/session/task-queue 通过。Review 另发现 connected 替换 Secret 被通用状态判断拒绝，修正后加专项断言。测试未输入真实模型 Key 或知乎 Access Secret，未调用付费 API，未修改官方 vendor，未执行 Build/Flash/Serial；`REAL_HARDWARE_VALIDATION_PENDING`。
+
+### 16c2b 安全首启与运行链路统一
+
+| 命令 | 结果 | 证据 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | PASS | 首启、模型 Runtime、助手和附件类型通过 |
+| `verify:secure-startup` | PASS | 无参数原生 IPC、加密 Store、Renderer 无密码 state/input/明文保存接口 |
+| `verify:model-runtime` | PASS | 软件助手/视觉默认值、安全凭据、切换生效与协议拒绝 |
+| `verify:qwen-attachments` | PASS | 隔离 userData、mock 视觉请求与模型中心默认档案 |
+| `npm.cmd --prefix runtime run typecheck` | PASS | Runtime 基线未回归 |
+| `npm.cmd --prefix electron run build:renderer` | PASS | 2825 modules；仅既有大 chunk warning |
+
+`verify:secure-startup` 首次失败：测试使用前置状态变量作为 JSX 截止点，切片为空；改用首启块之后的项目选择条件作为结束标记后通过。`verify:software-assistant-guide` 首次打印既有失败“author link is not protected by a Main-process allowlist”，原因是脚本仍断言旧 `AUTHOR_GITHUB_URL` 字面比较，而当前 gateway 已使用通用 URL 协议/无凭据校验；已更新断言并把 catch 改为可靠非零退出，复测通过。所有新专项均使用虚构 Key、测试 cipher 或本机 mock；未调用真实付费模型、知乎或硬件。

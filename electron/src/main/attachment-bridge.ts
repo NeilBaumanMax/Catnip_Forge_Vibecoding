@@ -1,7 +1,7 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import http, { type IncomingMessage, type ServerResponse } from 'node:http';
 import { app } from 'electron';
-import { readQwenApiKey } from './first-run';
+import { hydrateOpenAiCompatibleModel } from './model-runtime';
 import {
   inspectAttachment,
   readAttachmentImage,
@@ -9,16 +9,14 @@ import {
   searchAttachmentText,
 } from './attachment-store';
 
-const QWEN_BASE_URL = resolveQwenBaseUrl();
-const QWEN_MODEL = process.env.CATNIP_QWEN_VISION_MODEL || 'qwen-vl-plus';
 const MAX_BODY_BYTES = 64 * 1024;
 let server: http.Server | null = null;
 let bridgeUrl = '';
 let bridgeToken = '';
 let startPromise: Promise<void> | null = null;
 
-function resolveQwenBaseUrl(): string {
-  const raw = process.env.CATNIP_QWEN_BASE_URL || 'https://dashscope.aliyuncs.com/compatible-mode/v1';
+function resolveVisionBaseUrl(configuredBaseUrl: string): string {
+  const raw = process.env.CATNIP_QWEN_BASE_URL || configuredBaseUrl;
   const parsed = new URL(raw);
   const isLocalDevelopment = !app.isPackaged
     && parsed.protocol === 'http:'
@@ -83,7 +81,12 @@ async function dispatch(method: string, params: Record<string, unknown>): Promis
   const attachmentId = stringParam(params.attachmentId);
   switch (method) {
     case 'status':
-      return { qwenConfigured: Boolean(readQwenApiKey()), model: QWEN_MODEL };
+      try {
+        const model = hydrateOpenAiCompatibleModel('vision');
+        return { qwenConfigured: true, model: model.upstreamModel };
+      } catch {
+        return { qwenConfigured: false, model: null };
+      }
     case 'inspect':
       return inspectAttachment(conversationId, attachmentId);
     case 'read_text':
@@ -98,14 +101,15 @@ async function dispatch(method: string, params: Record<string, unknown>): Promis
 }
 
 async function analyzeImage(conversationId: string, attachmentId: string, prompt: string): Promise<unknown> {
-  const apiKey = readQwenApiKey();
-  if (!apiKey) throw new Error('尚未配置千问 Qwen API Key；DeepSeek 主 Agent 仍可读取本地提取文字');
+  const runtimeModel = hydrateOpenAiCompatibleModel('vision');
+  const baseUrl = resolveVisionBaseUrl(runtimeModel.baseUrl);
+  const modelName = process.env.CATNIP_QWEN_VISION_MODEL || runtimeModel.upstreamModel;
   const { dataUrl, manifest } = readAttachmentImage(conversationId, attachmentId);
-  const response = await fetch(`${QWEN_BASE_URL}/chat/completions`, {
+  const response = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${runtimeModel.authToken}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: QWEN_MODEL,
+      model: modelName,
       messages: [{
         role: 'user',
         content: [
@@ -130,7 +134,7 @@ async function analyzeImage(conversationId: string, attachmentId: string, prompt
   return {
     attachmentId,
     name: manifest.name,
-    model: QWEN_MODEL,
+    model: modelName,
     evidence: normalized.value,
     warning: normalized.warning,
   };

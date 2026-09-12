@@ -150,3 +150,13 @@ Agent Composer 的模型选择器只列出启用且标记为“工程 Agent”�
 - 知乎已连接状态新增“替换 Secret / 在线验证 / 退出本机登录”；分别复用官方 `auth set --secret-stdin`、`auth status --verify`、`auth logout`，退出提示明确不等于远端吊销。没有修改 vendor Skill。
 - Review 发现 connected 替换入口被后续通用状态判断拒绝，已修正合法条件并加入回归断言。
 - 会话快照首轮误放进 conversation 归一化函数，造成 `TS2353/TS2552` 与 `ReferenceError: message is not defined`；已移至 `normalizeMessage` 并复测通过。
+
+## 13. 16c2b 旧凭据链路收敛记录
+
+状态：`IMPLEMENTED_AND_VERIFIED`。
+
+- 首次启动页不再渲染密码输入框，不再通过 `startup:save-apikey` 把 DeepSeek/Qwen Key 送入 Renderer IPC；改为无参数 `startup:configure-model`，由 Main 打开原生 PasswordBox，保存成功后沿用既有安全重启流程。
+- 启动状态不再向 Renderer 返回 Key 文件路径。旧 `apikey.txt` / `qwen-apikey.txt` 仅由 Main 执行“安全写入并回读 → 精确清除旧行”的升级迁移；冲突、加密不可用或清理失败时保留旧文件并记录非敏感结果。
+- 工程 Agent、软件助手和视觉附件统一优先读取 `ModelCredentialStore`。软件助手与视觉附件同时读取模型中心相应用途默认档案、供应商 Base URL 和上游模型名；协议不兼容、供应商停用或凭据缺失时明确失败。
+- 保留旧文件读取只用于尚未成功迁移的升级兼容；一旦安全凭据存在但损坏/不可解密，不绕过错误回退旧文件。
+- 安全首启专项第一次因测试错误截取到空 JSX 区间而失败；修正为首启条件块的精确起止标记后通过。软件助手指南旧专项另暴露 Main allowlist 字符串断言已落后于当前通用安全 URL 校验，已按真实协议/无凭据门禁更新并修复失败退出码。

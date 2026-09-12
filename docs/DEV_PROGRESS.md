@@ -369,4 +369,5 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] 16d 第七个“模型”工作区、供应商/模型/用途默认值管理。
 - [x] 16e Agent 会话模型选择、持久化、任务快照与不兼容显式拒绝。
 - [x] 16f 知乎 Secret 替换、在线验证、本机退出，复用官方命令。
-- [ ] 16c2b 首次启动、软件助手与 Qwen 旧 Key 文件链路迁移。
+- [x] 16c2b 首次启动、软件助手与 Qwen 统一接入 safeStorage 与模型中心用途默认值；旧文件仅作 Main 迁移兼容。
+- [ ] 16g 完整 UI、原生窗口人工验收与 Windows 发布回归。

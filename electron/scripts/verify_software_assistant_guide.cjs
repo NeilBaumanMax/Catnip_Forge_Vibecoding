@@ -23,7 +23,7 @@ async function main() {
   assert(productGuide.includes('Neil 的 skill 小站') && productGuide.includes('网页内容不会自动加入 Agent Context'), 'guide does not explain the Skill Hub boundary');
   assert(appSource.includes('software-assistant-author-link') && appSource.includes('https://github.com/NeilBaumanMax'), 'assistant author link is missing');
   assert(preloadSource.includes("ipcRenderer.invoke('app:open-external', url)"), 'author link IPC is not exposed through preload');
-  assert(gatewaySource.includes("url !== AUTHOR_GITHUB_URL") && gatewaySource.includes('shell.openExternal(AUTHOR_GITHUB_URL)'), 'author link is not protected by a Main-process allowlist');
+  assert(gatewaySource.includes("!['https:', 'http:'].includes(target.protocol)") && gatewaySource.includes('target.username || target.password') && gatewaySource.includes('shell.openExternal(target.toString())'), 'external link IPC must allow only credential-free HTTP/HTTPS URLs');
   const { buildSoftwareAssistantSystemPrompt } = require('../dist/main/software-assistant');
   const tempRoot = fs.mkdtempSync(path.join(app.getPath('temp'), 'catnip-guide-'));
   const guidePath = path.join(tempRoot, 'CATNIP_FORGE_USER_GUIDE.md');
@@ -57,6 +57,5 @@ async function main() {
 
 main().catch((error) => {
   console.error(error);
-  app.quit();
-  process.exitCode = 1;
+  app.exit(1);
 });

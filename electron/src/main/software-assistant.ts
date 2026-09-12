@@ -1,15 +1,13 @@
 import * as fs from 'fs';
-import { readDeepSeekApiKey } from './agent';
 import { getSoftwareAssistantGuidePath } from './paths';
 import { logger } from './worker/logger';
+import { hydrateOpenAiCompatibleModel } from './model-runtime';
 
 export interface SoftwareAssistantMessage {
   role: 'user' | 'assistant';
   content: string;
 }
 
-const ENDPOINT = 'https://api.deepseek.com/chat/completions';
-const MODEL = 'deepseek-v4-flash';
 const MAX_MESSAGES = 12;
 const MAX_MESSAGE_CHARS = 2000;
 const MAX_GUIDE_CHARS = 60_000;
@@ -64,8 +62,7 @@ function normalizeMessages(messages: SoftwareAssistantMessage[]): SoftwareAssist
 }
 
 export async function askSoftwareAssistant(messages: SoftwareAssistantMessage[]): Promise<{ ok: true; text: string }> {
-  const apiKey = readDeepSeekApiKey();
-  if (!apiKey) throw new Error('尚未配置 DeepSeek API Key');
+  const runtimeModel = hydrateOpenAiCompatibleModel('software-assistant');
 
   const normalized = normalizeMessages(messages);
   if (!normalized.length || normalized[normalized.length - 1].role !== 'user') {
@@ -77,19 +74,20 @@ export async function askSoftwareAssistant(messages: SoftwareAssistantMessage[])
   const systemPrompt = await buildSoftwareAssistantSystemPrompt();
   logger.info('software-assistant:request', {
     messages: normalized.length,
-    model: MODEL,
+    model: runtimeModel.upstreamModel,
+    profileId: runtimeModel.profileId,
     guideChars: systemPrompt.length,
   });
 
   try {
-    const response = await fetch(ENDPOINT, {
+    const response = await fetch(`${runtimeModel.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${runtimeModel.authToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: runtimeModel.upstreamModel,
         messages: [{ role: 'system', content: systemPrompt }, ...normalized],
         thinking: { type: 'disabled' },
         max_tokens: 700,
@@ -104,7 +102,7 @@ export async function askSoftwareAssistant(messages: SoftwareAssistantMessage[])
     }
     const text = data.choices?.[0]?.message?.content?.trim();
     if (!text) throw new Error('DeepSeek 没有返回可显示的回答');
-    logger.info('software-assistant:response', { chars: text.length, model: MODEL });
+    logger.info('software-assistant:response', { chars: text.length, model: runtimeModel.upstreamModel, profileId: runtimeModel.profileId });
     return { ok: true, text };
   } catch (error) {
     const message = error instanceof Error && error.name === 'AbortError'

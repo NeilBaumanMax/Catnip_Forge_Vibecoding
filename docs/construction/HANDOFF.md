@@ -8,7 +8,8 @@
 - `docs/tutorials/` 和 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 均为未跟踪现场，不纳入 Phase 16 文档提交；后者不得触碰。
 - 文档基线提交 `39dbfac6` 已推送并核对远端一致。16b 模型配置 Domain/Store 已实现并通过专项；下一小项是 16c Main 安全凭据 adapter 与旧 Key 非破坏迁移。
 - 16b 提交 `1659b7ed`、16c1 提交 `e4c4a485` 已推送。16c2–16f 已完成模型原生安全输入、模型工作区、Agent 会话模型选择/任务快照和知乎凭证维护，并通过专项与 Renderer build；提交号须在本轮提交后动态补记。
-- 尚待闭环：首次启动页、软件助手与 Qwen 仍使用旧 Key 文件链路；真实付费模型、真实知乎在线验证、Windows 发布包和硬件均未在本轮执行。
+- 16c2b 已收敛首次启动、软件助手与 Qwen：Renderer 明文输入/IPC 和 Key 路径已移除，三类运行链路优先读 safeStorage 与模型中心用途默认值；旧文件只作 Main 迁移兼容。
+- 尚待闭环：原生安全窗口人工可用性、完整 UI/Windows 发布包回归；真实付费模型、真实知乎在线验证和硬件均未在本轮执行。
 
 ## 2026-09-12 — 固定深蓝主题与 150% 显示适配
 

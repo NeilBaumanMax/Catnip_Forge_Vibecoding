@@ -149,8 +149,6 @@ export default function App() {
   const [softwareAssistantInput, setSoftwareAssistantInput] = useState('');
   const [softwareAssistantPending, setSoftwareAssistantPending] = useState(false);
   const [startupStatus, setStartupStatus] = useState<StartupStatus | null>(null);
-  const [startupApiKey, setStartupApiKey] = useState('');
-  const [startupQwenApiKey, setStartupQwenApiKey] = useState('');
   const [startupApiKeyError, setStartupApiKeyError] = useState('');
   const [startupApiKeySaving, setStartupApiKeySaving] = useState(false);
   const [startupApiKeyRestarting, setStartupApiKeyRestarting] = useState(false);
@@ -191,35 +189,26 @@ export default function App() {
     });
   }, []);
 
-  const handleStartupApiKeySave = useCallback(async (event: React.FormEvent) => {
-    event.preventDefault();
-    const key = startupApiKey.trim();
-    if (key.length <= 12 || key.includes('sk-your-key-here')) {
-      setStartupApiKeyError('请输入有效的 DeepSeek API Key');
-      return;
-    }
+  const handleStartupApiKeySave = useCallback(async () => {
     setStartupApiKeySaving(true);
-    const qwenKey = startupQwenApiKey.trim();
-    if (qwenKey && (qwenKey.length <= 12 || qwenKey.includes('your-key-here'))) {
-      setStartupApiKeyError('千问 API Key 格式无效；也可以留空稍后配置');
-      setStartupApiKeySaving(false);
-      return;
-    }
-    const result = await window.electronAPI?.saveStartupApiKey?.(key, qwenKey);
-    setStartupApiKeySaving(false);
-    if (!result?.ok) {
-      setStartupApiKeyError('保存失败。请确认解压目录具有写入权限，或手工创建 resources\\apikey.txt。');
-      return;
-    }
-    setStartupApiKey('');
-    setStartupQwenApiKey('');
     setStartupApiKeyError('');
-    if (result.restarting) {
-      setStartupApiKeyRestarting(true);
-      return;
+    try {
+      const result = await window.electronAPI.configureStartupModel();
+      setStartupApiKeySaving(false);
+      if (!result.ok) {
+        if (!result.cancelled) setStartupApiKeyError('安全凭据保存失败，请重试或检查 Windows 凭据加密是否可用。');
+        return;
+      }
+      if (result.restarting) {
+        setStartupApiKeyRestarting(true);
+        return;
+      }
+      setStartupStatus(result.status);
+    } catch (error) {
+      setStartupApiKeySaving(false);
+      setStartupApiKeyError(error instanceof Error ? error.message : '无法打开安全输入窗口');
     }
-    setStartupStatus((current) => current ? { ...current, ...result.status } : null);
-  }, [startupApiKey, startupQwenApiKey]);
+  }, []);
 
   useEffect(() => {
     if (!appearanceMenuOpen) return undefined;
@@ -923,52 +912,25 @@ export default function App() {
       </div>
       {startupStatus?.firstRun ? (
         <div className="startup-key-backdrop">
-          <form className="startup-key-dialog" onSubmit={handleStartupApiKeySave}>
+          <section className="startup-key-dialog" role="dialog" aria-modal="true" aria-labelledby="startup-model-title">
             <div className="startup-key-brand">
               <img src={catnipForgeIcon} alt="Catnip Forge" />
               <span>Catnip Forge · v1.0.0</span>
             </div>
             <div className="startup-key-positioning">Catnip 硬件智能开发平台 · Autonomous Hardware Development Agent</div>
-            <h2>配置开发与视觉服务</h2>
-            <p>DeepSeek 是主开发 Agent，必须配置。千问只用于图片和文档视觉解析，可以留空；密钥不会进入对话记录。</p>
-            <label>
-              <span>DeepSeek API Key · 必填</span>
-              <input
-                autoFocus
-                type="password"
-                autoComplete="off"
-                spellCheck={false}
-                disabled={startupApiKeyRestarting}
-                value={startupApiKey}
-                placeholder="粘贴 DeepSeek API Key"
-                onChange={(event) => { setStartupApiKey(event.target.value); setStartupApiKeyError(''); }}
-              />
-            </label>
-            <code title={startupStatus.keyPath}>{startupStatus.keyPath}</code>
-            <label>
-              <span>千问 Qwen API Key · 选填</span>
-              <input
-                type="password"
-                autoComplete="off"
-                spellCheck={false}
-                disabled={startupApiKeyRestarting}
-                value={startupQwenApiKey}
-                placeholder="用于识图和扫描件，可留空"
-                onChange={(event) => { setStartupQwenApiKey(event.target.value); setStartupApiKeyError(''); }}
-              />
-            </label>
-            <code title={startupStatus.qwenKeyPath}>{startupStatus.qwenKeyPath}</code>
+            <h2 id="startup-model-title">安全配置 DeepSeek</h2>
+            <p>主开发 Agent 需要 DeepSeek 凭据。点击后会打开独立的 Windows 安全输入窗口，Key 不会进入本页面、聊天、日志或普通配置文件。</p>
             {startupApiKeyError ? <div className="startup-key-error" role="alert">{startupApiKeyError}</div> : null}
             {!startupStatus.playwrightReady ? <div className="startup-key-error" role="alert">发布包缺少浏览器运行资源，请重新获取完整压缩包。</div> : null}
-            <button type="submit" disabled={startupApiKeySaving || startupApiKeyRestarting || !startupStatus.playwrightReady || startupApiKey.trim().length <= 12}>
-              {startupApiKeyRestarting ? '配置完成，正在重启…' : startupApiKeySaving ? '正在保存…' : '保存并开始使用'}
+            <button type="button" autoFocus onClick={() => void handleStartupApiKeySave()} disabled={startupApiKeySaving || startupApiKeyRestarting || !startupStatus.playwrightReady}>
+              {startupApiKeyRestarting ? '配置完成，正在重启…' : startupApiKeySaving ? '正在打开安全窗口…' : '打开安全窗口并配置'}
             </button>
             {startupApiKeyRestarting ? (
               <div className="startup-key-restarting" role="status">Catnip Forge 将自动重新打开，之后即可直接使用 Agent。</div>
             ) : (
-              <small>也可以关闭软件，将 `apikey.txt.example` 复制为 `apikey.txt` 后填写密钥。</small>
+              <small>Qwen 等可选供应商可在进入软件后的“模型”工作区中配置。</small>
             )}
-          </form>
+          </section>
         </div>
       ) : null}
       {startupStatus && !startupStatus.firstRun && projectPickerOpen ? (

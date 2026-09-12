@@ -6,11 +6,13 @@ const path = require('node:path');
 const { app } = require('electron');
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'catnip-qwen-attachments-'));
+app.setPath('userData', path.join(tempRoot, 'user-data'));
 process.env.CATNIP_ATTACHMENT_ROOT = path.join(tempRoot, 'attachments');
 process.env.CATNIP_QWEN_API_KEY_PATH = path.join(tempRoot, 'qwen-apikey.txt');
 process.env.CATNIP_DEEPSEEK_API_KEY_PATH = path.join(tempRoot, 'deepseek-apikey.txt');
 
 async function main() {
+  await app.whenReady();
   const mock = await startQwenMock();
   process.env.CATNIP_QWEN_BASE_URL = mock.baseUrl;
 

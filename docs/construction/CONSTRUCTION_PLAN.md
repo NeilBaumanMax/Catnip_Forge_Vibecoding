@@ -88,11 +88,11 @@
 - 16a：文档基线，必须独立 Commit/Push 后才能修改业务源码。
 - 16b：`COMPLETE`。版本化模型配置契约、默认迁移、Main 原子 Store、revision 并发保护和离线专项已完成。
 - 16c1：`COMPLETE`。Main-only DPAPI-backed 凭据 Store、无明文 fallback、旧 Key 非破坏迁移和专项完成。
-- 16c2：`PARTIAL COMPLETE`。模型 Key 已通过 Main 控制的 WPF PasswordBox 接入 safeStorage；Agent 新任务优先使用安全凭据，旧 DeepSeek 文件仅作升级兼容。首次启动页与软件助手/Qwen 的旧文件路径迁移仍待后续闭环。
+- 16c2：`COMPLETE`。模型 Key 与首次启动均通过 Main 控制的 WPF PasswordBox 接入 safeStorage；Agent、软件助手与 Qwen 统一优先使用安全凭据，旧文件只作迁移兼容且不再暴露给 Renderer。
 - 16d：`IMPLEMENTED`。第七个“模型”工作区与供应商/模型/默认用途管理已完成并通过类型、专项和 Renderer build。
 - 16e：`IMPLEMENTED`。Agent 会话模型选择、按工程会话持久化、任务快照与运行时凭据注入已完成；不兼容协议和缺凭据显式拒绝。
 - 16f：`IMPLEMENTED`。知乎替换、在线验证和本机退出复用官方命令，专项通过；未使用真实 Access Secret 联网验证。
-- 下一项：完成首次启动、软件助手与 Qwen 的安全凭据迁移，再做 Phase 16 全量 UI/发布回归与人工可用性验收。
+- 下一项：做 Phase 16 全量 UI/发布回归与原生窗口人工可用性验收；真实付费 API 与真实知乎在线验证必须另获用户授权。
 - 16d–16e：再完成第七工作区与 Agent 会话模型选择；任务创建时冻结模型快照，不允许静默 fallback。
 - 16f：复用官方 `zhihu` 命令补齐已连接后的替换、验证和退出。
 - 16g：完成专项、安全扫描、Runtime/Electron typecheck/build、文档与 Git 远端核对。真实付费 API、真实 Diagnosis 和硬件证据分别标记，不以离线测试替代。
