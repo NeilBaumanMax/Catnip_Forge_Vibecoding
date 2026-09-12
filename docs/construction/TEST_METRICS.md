@@ -1,5 +1,29 @@
 # 测试度量与证据
 
+## 2026-09-13 — Phase 18 Claude Code 供应商切换
+
+| 命令 / 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | PASS | schema v2、IPC、Main/Preload/Renderer 与全局供应商快照类型通过 |
+| `npm.cmd --prefix runtime run typecheck` | PASS | Runtime 基线未回归 |
+| `verify:model-config` | PASS | v1→v2、活动供应商、角色映射、非法 authField/活动项拒绝 |
+| `verify:model-management` | PASS | activate IPC、预设/自定义模式、凭据门禁、settings 合并与 Secret/备份清理 |
+| `verify:agent-model-selection` | PASS | DeepSeek 与自定义智谱快照、父环境清理、鉴权字段及四类模型变量注入、无会话选择 |
+| `verify:secure-startup` | PASS | 首帧 Model、两条配置路径、原生安全凭据、Renderer 无 Secret 输入状态 |
+| `verify:session` / `verify:task-queue` | PASS | 历史字段只读兼容；新任务冻结全局活动供应商 |
+| `verify:model-runtime` / `verify:qwen-attachments` | PASS | 软件助手/千问视觉默认能力和协议门禁保持 |
+| `verify:chat-presentation` / `verify:software-assistant-guide` | PASS | Chat 表现及软件助手回归通过 |
+| `verify:explore-ui` / `verify:explore-layout-ui` | PASS | Explore 双入口、来源/门禁/交接、并发切换及缩放布局保持；console error 0 |
+| `verify:renderer-performance` / `verify:renderer-performance-ui` | PASS | 12 个目标资源共 2,093,673 bytes；readiness 一次，Model/Editor lazy chunk 均加载，无目标旧 PNG |
+| `verify:model-center-ui`（隔离首次启动） | PASS | 首次模型标签初始即选中；两条选择路径；1280×720、1600×1000、1707×1067 无横向溢出；独立 `PrintWindow` 生成 1600×1000 截图 |
+| `verify:model-center-ui`（正常本地配置） | PASS | 1 个 Claude 供应商、DeepSeek 活动条、凭据卡、Chat 指示一致；三种尺寸通过 |
+| `npm.cmd --prefix electron run build:renderer` | PASS | 2828 modules；仅保留既有大 chunk warning |
+| `git diff --check` | PASS | 无 whitespace error，仅 Git 的 LF→CRLF 工作区提示 |
+
+失败—修复链：新增 activate 路由和活动供应商不变量使两条旧管理断言先后失败；Explore 旧宽度正则误命中模型 CSS；隔离首次启动发现 Model 标签在异步加载前未选中；启动语义调整后两个旧静态断言漂移；CDP 截图存在间歇性超时；首次视觉检查还发现软件助手遮挡“其他供应商”入口。上述问题均做根因修复并复测：业务 DOM/布局断言不依赖截图，截图使用有界 CDP/screencast 尝试，最终首次引导用目标 Electron 窗口句柄 `PrintWindow` 留证；未配置阶段的软件助手已隐藏。
+
+测试仅使用虚构 URL、虚构 Key、注入 cipher 或本地 mock，没有输出或调用真实 Secret/付费模型。`LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`、`WINDOWS_PACKAGE_VALIDATION_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING` 保留。
+
 ## 2026-09-13 — Phase 18 Claude Code 供应商切换施工基线
 
 | 检查 | 结果 |

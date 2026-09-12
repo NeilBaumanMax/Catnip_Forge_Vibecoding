@@ -18,6 +18,8 @@ async function main() {
   const root = path.join(__dirname, '..', '..');
   const preload = fs.readFileSync(path.join(root, 'electron', 'src', 'preload', 'index.ts'), 'utf8');
   const renderer = fs.readFileSync(path.join(root, 'electron', 'src', 'renderer', 'App.tsx'), 'utf8');
+  const browserPanel = fs.readFileSync(path.join(root, 'electron', 'src', 'renderer', 'components', 'BrowserPanel.tsx'), 'utf8');
+  const modelPanel = fs.readFileSync(path.join(root, 'electron', 'src', 'renderer', 'components', 'ModelPanel.tsx'), 'utf8');
   const mainIndex = fs.readFileSync(path.join(root, 'electron', 'src', 'main', 'index.ts'), 'utf8');
   const { ModelCredentialStore } = require('../dist/main/model-credentials.js');
   const { saveStartupApiKeys } = require('../dist/main/first-run.js');
@@ -34,14 +36,18 @@ async function main() {
   assert.doesNotMatch(preload, /saveStartupApiKey|startup:save-apikey/);
   assert.match(mainIndex, /ipcMain\.handle\('startup:configure-model', async \(\) =>/);
   assert.doesNotMatch(mainIndex, /startup:save-apikey/);
-  const dialogStart = renderer.indexOf('{startupStatus?.firstRun');
-  const dialogEnd = renderer.indexOf('{startupStatus && !startupStatus.firstRun', dialogStart);
-  const dialog = renderer.slice(dialogStart, dialogEnd);
-  assert.doesNotMatch(dialog, /type="password"|startupApiKey\}|startupQwenApiKey/);
-  assert.match(dialog, /打开安全窗口并配置/);
+  assert.doesNotMatch(renderer, /startup-key-dialog|打开安全窗口并配置/, 'first run must enter the Model workspace instead of blocking on the old modal');
+  assert.match(renderer, /startupStatus && !startupStatus\.firstRun \? <div[\s\S]{0,180}className=\{`appearance-settings/, 'unconfigured first run must hide the unavailable floating assistant');
+  assert.match(browserPanel, /startsInHarnessMode \? 'repo' : 'models'/);
+  assert.match(browserPanel, /setMode\(result\.setupComplete === false \? 'models' : 'explore'\)/);
+  assert.match(modelPanel, /使用预设模型配置/);
+  assert.match(modelPanel, /使用其他模型供应商/);
+  assert.match(modelPanel, /DeepSeek API Key/);
+  assert.match(modelPanel, /千问 API Key/);
+  assert.doesNotMatch(modelPanel, /type="password"/);
   const firstRunSource = fs.readFileSync(path.join(root, 'electron', 'src', 'main', 'first-run.ts'), 'utf8');
   assert.match(firstRunSource, /if \(!isUsableApiKeyContent\(normalized\)\) throw new Error\('DeepSeek API Key 格式无效'\)/);
-  console.log('secure startup verification passed: native no-argument IPC, encrypted store, no Renderer secret state');
+  console.log('secure startup verification passed: Model workspace onboarding, native secure prompts, encrypted store, no Renderer secret state');
   app.quit();
 }
 

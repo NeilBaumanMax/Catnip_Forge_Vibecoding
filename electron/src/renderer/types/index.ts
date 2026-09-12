@@ -1,5 +1,5 @@
 import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreAnalysisStartResult, ExploreContextGatherRequest, ExploreContextGatherResult, ExploreExecutionConfirmRequest, ExploreExecutionStartResult, ExplorePlanStartResult, ExploreRequest, ExploreRequestPreparation, ExploreZhihuConnectionLaunchResult, ExploreZhihuConnectionStatus, ExploreZhihuMaintenanceResult, ExploreZhihuSetupResult, HandoffContext, KnowledgeCard, SaveKnowledgeCardInput } from '../../common/explore';
-import type { ModelConfigState, ModelManagementSnapshot } from '../../common/model-config';
+import type { ModelConfigState, ModelManagementSnapshot, ModelSetupMode } from '../../common/model-config';
 import type { ExploreHandoffArtifact, ExploreWorkSessionRecord, ExploreWorkSessionSummary, ProjectSessionStatus, ProjectSummary } from '../../common/project-session';
 
 export type { ExploreWorkSessionRecord, ExploreWorkSessionSummary, ProjectSessionStatus, ProjectSummary } from '../../common/project-session';
@@ -302,6 +302,7 @@ export interface WindowAPI {
   saveModels: (config: ModelConfigState, expectedRevision: number) => Promise<ModelManagementSnapshot>;
   configureModelCredential: (providerId: string) => Promise<{ outcome: 'submitted' | 'cancelled'; snapshot: ModelManagementSnapshot }>;
   deleteModelCredential: (providerId: string) => Promise<ModelManagementSnapshot>;
+  activateClaudeProvider: (providerId: string, expectedRevision: number, setupMode?: ModelSetupMode) => Promise<ModelManagementSnapshot>;
   getProjectSessionStatus: () => Promise<ProjectSessionStatus>;
   activateProjectSession: (projectId: string) => Promise<ProjectSessionStatus & { ok: true }>;
   createProjectSession: (name: string) => Promise<ProjectSessionStatus & { ok: true; createdProject: ProjectSummary }>;
@@ -314,7 +315,6 @@ export interface WindowAPI {
   deleteChatConversation: (id: string) => Promise<{ activeConversationId: string; conversations: ChatConversationSummary[] }>;
   renameChatConversation: (id: string, title: string) => Promise<{ activeConversationId: string; conversations: ChatConversationSummary[] }>;
   setChatConversationPinned: (id: string, pinned: boolean) => Promise<{ activeConversationId: string; conversations: ChatConversationSummary[] }>;
-  setChatConversationModel: (id: string, modelProfileId: string) => Promise<{ activeConversationId: string; conversations: ChatConversationSummary[] }>;
   onTaskComplete: (cb: (result: { code: number | null; taskId?: string | null }) => void) => void;
   onTaskProgress: (cb: (result: { steps: TaskStep[]; taskId?: string | null }) => void) => void;
   onTaskStatus: (cb: (result: AgentTaskStatus) => void) => void;

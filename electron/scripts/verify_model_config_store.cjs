@@ -15,6 +15,9 @@ async function main() {
     const store = new ModelConfigStore(file);
     const defaults = store.read();
     assert.equal(defaults.revision, 0);
+    assert.equal(defaults.schemaVersion, 2);
+    assert.equal(defaults.activeClaudeProviderId, 'deepseek');
+    assert.equal(defaults.providers.find((item) => item.id === 'deepseek').claudeCode.haikuModel, 'deepseek-v4-flash');
     assert.equal(defaults.defaults['engineering-agent'], 'deepseek-v4-pro');
     assert.equal(defaults.defaults['software-assistant'], 'deepseek-v4-flash');
     assert.equal(defaults.defaults.vision, 'qwen-vl-plus');
@@ -33,6 +36,7 @@ async function main() {
       enabled: true,
       builtIn: false,
       credentialId: 'custom-anthropic',
+      claudeCode: { authField: 'ANTHROPIC_API_KEY', primaryModel: 'custom-pro-2026' },
     });
     first.models.push({
       id: 'custom-pro',
@@ -49,6 +53,17 @@ async function main() {
     assert.deepEqual(normalizeModelConfig(saved), saved, 'persisted state must round-trip through schema validation');
     assert.equal(new ModelConfigStore(file).read().models.at(-1).id, 'custom-pro', 'config must survive restart');
     assert(!fs.readFileSync(file, 'utf8').match(/apiKey|accessSecret|Bearer/i), 'persisted config must contain no Secret fields');
+
+    const versionOne = structuredClone(saved);
+    versionOne.schemaVersion = 1;
+    delete versionOne.activeClaudeProviderId;
+    delete versionOne.setupMode;
+    for (const provider of versionOne.providers) delete provider.claudeCode;
+    const migrated = normalizeModelConfig(versionOne);
+    assert.equal(migrated.schemaVersion, 2);
+    assert.equal(migrated.activeClaudeProviderId, 'deepseek');
+    assert.equal(migrated.setupMode, 'preset');
+    assert.equal(migrated.providers.find((item) => item.id === 'deepseek').claudeCode.primaryModel, 'deepseek-v4-pro');
 
     const legacyWithoutFlashAgent = structuredClone(saved);
     legacyWithoutFlashAgent.models = legacyWithoutFlashAgent.models.filter((item) => item.id !== 'deepseek-v4-flash-agent');
@@ -70,6 +85,12 @@ async function main() {
     const incompatible = structuredClone(saved);
     incompatible.models.at(-1).protocol = 'openai-compatible';
     assert.throws(() => normalizeModelConfig(incompatible), /unsupported provider protocol/);
+    const invalidAuthField = structuredClone(saved);
+    invalidAuthField.providers[0].claudeCode.authField = 'CUSTOM_TOKEN';
+    assert.throws(() => normalizeModelConfig(invalidAuthField), /authField is invalid/);
+    const invalidActive = structuredClone(saved);
+    invalidActive.activeClaudeProviderId = 'qwen';
+    assert.throws(() => normalizeModelConfig(invalidActive), /Claude Code compatible/);
     const danglingDefault = structuredClone(saved);
     danglingDefault.defaults['engineering-agent'] = 'missing-model';
     assert.throws(() => normalizeModelConfig(danglingDefault), /enabled compatible model/);

@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import { getApiKeyPath } from './paths';
 import { createModelConfigStore } from './model-config-store';
 import { createModelCredentialStore } from './model-credentials';
+import type { ClaudeCodeAuthField } from '../common/model-config';
+import { buildClaudeCodeSettingsEnv } from './claude-provider-switch';
 
 export interface EngineeringAgentModelSnapshot {
   profileId: string;
@@ -11,6 +13,10 @@ export interface EngineeringAgentModelSnapshot {
   protocol: 'anthropic-compatible';
   baseUrl: string;
   credentialId: string;
+  authField: ClaudeCodeAuthField;
+  haikuModel: string;
+  sonnetModel: string;
+  opusModel: string;
 }
 
 export interface EngineeringAgentRuntimeModel extends EngineeringAgentModelSnapshot {
@@ -32,26 +38,23 @@ function readLegacyDeepSeekKey(): string | null {
   return null;
 }
 
-export function snapshotEngineeringAgentModel(profileId?: string | null): EngineeringAgentModelSnapshot {
+export function snapshotEngineeringAgentModel(): EngineeringAgentModelSnapshot {
   const config = createModelConfigStore().read();
-  const selectedId = profileId || config.defaults['engineering-agent'];
-  const model = config.models.find((item) => item.id === selectedId);
-  if (!model || !model.enabled || !model.capabilities.includes('engineering-agent')) throw new Error('所选工程 Agent 模型不存在、已停用或用途不兼容');
-  if (model.protocol !== 'anthropic-compatible') throw new Error('所选模型尚未完成工程 Agent 协议适配');
-  const provider = config.providers.find((item) => item.id === model.providerId);
-  if (!provider || !provider.enabled || !provider.protocols.includes('anthropic-compatible')) throw new Error('所选模型的供应商不可用或协议不兼容');
-  const normalizedBaseUrl = provider.baseUrl.replace(/\/+$/, '');
-  const baseUrl = provider.id === 'deepseek' && !normalizedBaseUrl.endsWith('/anthropic')
-    ? `${normalizedBaseUrl}/anthropic`
-    : normalizedBaseUrl;
+  const provider = config.providers.find((item) => item.id === config.activeClaudeProviderId);
+  if (!provider?.claudeCode) throw new Error('当前 Claude Code 供应商不存在或配置不完整');
+  const env = buildClaudeCodeSettingsEnv(provider);
   return {
-    profileId: model.id,
+    profileId: provider.id,
     providerId: provider.id,
     providerName: provider.name,
-    upstreamModel: model.upstreamModel,
+    upstreamModel: env.ANTHROPIC_MODEL,
     protocol: 'anthropic-compatible',
-    baseUrl,
+    baseUrl: env.ANTHROPIC_BASE_URL,
     credentialId: provider.credentialId,
+    authField: provider.claudeCode.authField,
+    haikuModel: env.ANTHROPIC_DEFAULT_HAIKU_MODEL,
+    sonnetModel: env.ANTHROPIC_DEFAULT_SONNET_MODEL,
+    opusModel: env.ANTHROPIC_DEFAULT_OPUS_MODEL,
   };
 }
 

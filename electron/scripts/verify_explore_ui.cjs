@@ -20,7 +20,8 @@ const diagnosisEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'as
 
 assert.match(browserPanel, /type PanelMode = [^;]*'explore'/, 'PanelMode must include explore');
 assert.match(browserPanel, /const startsInHarnessMode = !window\.electronAPI \|\| Boolean\(window\.electronAPI\.isWorkbenchSmokeTest\)/, 'browser-only harness detection is missing');
-assert.match(browserPanel, /useState<PanelMode>\(\(\) => startsInHarnessMode \? 'repo' : 'explore'\)/, 'normal desktop startup must default to Explore');
+assert.match(browserPanel, /useState<PanelMode>\(\(\) => startsInHarnessMode \? 'repo' : 'models'\)/, 'normal desktop startup must expose model setup before routing');
+assert.match(browserPanel, /setMode\(result\.setupComplete === false \? 'models' : 'explore'\)/, 'configured desktop startup must route from Model setup to Explore');
 assert.match(browserPanel, /useState\(\(\) => !startsInHarnessMode\)/, 'default desktop Explore must be mounted on startup');
 assert.equal((browserPanel.match(/data-tour-id="tab-/g) || []).length, 7, 'exactly seven visible workspace tabs are required');
 assert.match(browserPanel, /data-tour-id="tab-explore"[^\r\n]*><Compass[^\r\n]*<span>探索<\/span><\/button>/, 'visible Explore tab and icon are missing');

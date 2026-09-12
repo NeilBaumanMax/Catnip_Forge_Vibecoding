@@ -4,6 +4,7 @@ import { logger } from './worker/logger';
 import { getApiKeyPath, getQwenApiKeyPath, getRuntimeDir } from './paths';
 import { createModelCredentialStore, migrateLegacyCredentials, type ModelCredentialStore } from './model-credentials';
 import { promptForModelCredential } from './model-credential-prompt';
+import { createModelConfigStore } from './model-config-store';
 
 /**
  * 首次启动检查 — 确保 App 所需环境就绪。
@@ -27,7 +28,7 @@ export function checkStartupStatus(): StartupStatus {
   const apiKeyReady = checkApiKey();
   const qwenApiKeyReady = checkQwenApiKey();
   const playwrightReady = checkPlaywright();
-  const firstRun = !apiKeyReady;
+  const firstRun = !checkModelSetupComplete();
 
   if (firstRun) {
     logger.info('first-run:detected', { apiKeyReady, playwrightReady });
@@ -64,6 +65,19 @@ function checkQwenApiKey(): boolean {
     return false;
   }
   return Boolean(readLegacyKey(getQwenApiKeyPath(), 'QWEN_API_KEY'));
+}
+
+function checkModelSetupComplete(): boolean {
+  try {
+    const config = createModelConfigStore().read();
+    if (!config.setupMode) return false;
+    const provider = config.providers.find((item) => item.id === config.activeClaudeProviderId);
+    const modeMatches = (config.setupMode === 'preset' && provider?.id === 'deepseek')
+      || (config.setupMode === 'custom' && provider?.builtIn === false);
+    return Boolean(modeMatches && provider?.claudeCode && createModelCredentialStore().get(provider.credentialId));
+  } catch {
+    return false;
+  }
 }
 
 function readNamedKey(content: string, name: string): string {

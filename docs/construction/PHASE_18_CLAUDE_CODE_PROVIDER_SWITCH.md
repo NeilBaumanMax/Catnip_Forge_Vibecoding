@@ -140,3 +140,27 @@ Catnip 保持同一供应商/角色映射语义，但因既有 Product Truth 禁
 不引入 CC Switch 的 SQLite、系统托盘、代理、测速、用量统计、导入导出、Codex、Gemini、MCP、提示词管理或云同步；不直接运行或嵌入 cc-switch 应用；不修改官方 Zhihu vendor；不新增第二套 Agent/Skill/任务系统。
 
 若必须把 Secret 写入 Renderer 或普通 `settings.json`、必须改造 Claude Code 上游协议、迁移会覆盖用户配置、或无法证明某 endpoint 是 Claude Code compatible，则停止扩展并明确报告。
+
+## 11. 2026-09-13 实施记录
+
+Phase 18 已按本文契约完成源码闭环：
+
+- 配置 schema 升级到 v2，新增应用级 `activeClaudeProviderId`、`setupMode` 与 Claude Code 主模型/Haiku/Sonnet/Opus 映射；v1 配置会保留原供应商和模型并迁移活动项。
+- 首次真实桌面渲染从“模型”页开始。空用户目录实测首帧 `aria-selected=true`，不会先闪现“探索”；已配置用户读取本地快照后进入“探索”。
+- 预设路径只要求 DeepSeek Key，Qwen Key 明确为视觉任务选填项；完成后自动启用 DeepSeek。其他供应商路径可维护 Claude Code compatible Base URL、鉴权字段和角色模型映射。
+- 首次配置完成前隐藏尚不可用的软件助手，避免可拖动吉祥物遮挡两条模型配置入口；配置完成后恢复原有助手。
+- Main 在启用时校验 revision、协议、凭据和首次配置模式，并将非敏感字段合并到应用专用 `CLAUDE_CONFIG_DIR/settings.json`；磁盘中的两种鉴权字段及其 `.bak` 残留会被清除。
+- Agent、找灵感、解问题均在提交任务时读取同一个活动供应商并冻结快照；Chat 只读显示活动供应商，不再提供会话级模型下拉框。切换只影响之后提交的任务。
+- Claude 子进程启动前清除父进程可能继承的六类 `ANTHROPIC_*` 供应商变量，再按活动供应商选择 `AUTH_TOKEN` 或 `API_KEY` 注入 Secret 和四类模型变量；未配置时明确拒绝启动。
+
+真实 Electron 验收覆盖未配置首次启动和既有 DeepSeek 配置两种现场。模型页在 1280×720、1600×1000、1707×1067 下均无横向溢出；维护页显示 `DeepSeek · deepseek-v4-pro`，Chat 指示与活动项一致。首次引导与维护页截图分别为 `electron/.tmp/phase18-claude-provider-onboarding.png`、`electron/.tmp/phase18-claude-provider-center.png`。隔离验收目录在核对绝对路径后删除，仅包含虚构测试数据，无法恢复。
+
+首次失败与根因均保留：
+
+1. `verify:model-management` 最初未注册新增 activate 路由，补齐 IPC 后通过；旧“删除内置供应商”断言随后被更早触发的“不可删除活动供应商”不变量命中，按当前安全契约修正断言。
+2. `verify:explore-ui` 的旧宽度正则误把模型页 `width:min(...)` 当作 Explore 固定宽度，改写等价 CSS 后通过。
+3. 隔离 UI 首次发现模型标签在异步快照返回前为未选中，根因是桌面默认先设为 Explore；现改为真实桌面首帧 Model、配置快照完成后再路由。
+4. CDP 首次启动截图存在间歇性超时；验收脚本补充 `Page.enable`、监听器清理、screencast fallback 和有界非致命分支。DOM/布局断言始终独立执行，最终首次引导使用目标 Electron 窗口句柄的 `PrintWindow` 生成 1600×1000 证据，维护页 CDP 截图保留。
+5. 新启动语义使 `verify:secure-startup` 与 `verify:explore-ui` 的旧静态断言失败；两项更新为“首帧 Model、已配置后 Explore”的当前产品契约后通过。
+
+专项、类型、构建、性能与 Explore 回归均通过；完整命令和证据见 `TEST_METRICS.md`。本轮没有使用真实付费供应商调用，记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`；没有 Windows 完整重打包，记 `WINDOWS_PACKAGE_VALIDATION_PENDING`；没有 Build/Flash/Serial 或实机动作，继续记 `REAL_HARDWARE_VALIDATION_PENDING`。

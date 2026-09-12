@@ -7,11 +7,14 @@ import {
 import { createModelConfigStore, type ModelConfigStore } from './model-config-store';
 import { createModelCredentialStore, type ModelCredentialStore } from './model-credentials';
 import { promptForModelCredential, type ModelCredentialPromptResult } from './model-credential-prompt';
+import { syncClaudeCodeSettings } from './claude-provider-switch';
+import type { ModelSetupMode } from '../common/model-config';
 
 export interface ModelManagementDependencies {
   configStore: ModelConfigStore;
   credentialStore: ModelCredentialStore;
   prompt: (providerName: string) => Promise<ModelCredentialPromptResult>;
+  syncClaudeSettings: (provider: ModelConfigState['providers'][number]) => void;
 }
 
 function protectBuiltIns(value: unknown, current: ModelConfigState): ModelConfigState {
@@ -41,18 +44,27 @@ export function createModelManagementHandlers(dependencies?: Partial<ModelManage
   const configStore = dependencies?.configStore ?? createModelConfigStore();
   const credentialStore = dependencies?.credentialStore ?? createModelCredentialStore();
   const prompt = dependencies?.prompt ?? promptForModelCredential;
+  const syncClaudeSettings = dependencies?.syncClaudeSettings ?? syncClaudeCodeSettings;
   let promptInFlight: Promise<{ outcome: string; snapshot: ModelManagementSnapshot }> | null = null;
 
   const snapshot = (): ModelManagementSnapshot => {
     const config = configStore.read();
     const byCredentialId = new Map(credentialStore.status(config.providers.map((item) => item.credentialId))
       .map((item) => [item.credentialId, item]));
+    const credentials = config.providers.map((provider) => {
+      const status = byCredentialId.get(provider.credentialId);
+      return { providerId: provider.id, configured: status?.configured === true, updatedAt: status?.updatedAt };
+    });
+    const activeProvider = config.providers.find((item) => item.id === config.activeClaudeProviderId);
+    const activeCredentialReady = credentials.find((item) => item.providerId === config.activeClaudeProviderId)?.configured === true;
+    const setupComplete = activeCredentialReady && (
+      (config.setupMode === 'preset' && config.activeClaudeProviderId === 'deepseek')
+      || (config.setupMode === 'custom' && activeProvider?.builtIn === false)
+    );
     return {
       config,
-      credentials: config.providers.map((provider) => {
-        const status = byCredentialId.get(provider.credentialId);
-        return { providerId: provider.id, configured: status?.configured === true, updatedAt: status?.updatedAt };
-      }),
+      credentials,
+      setupComplete,
     };
   };
 
@@ -88,6 +100,24 @@ export function createModelManagementHandlers(dependencies?: Partial<ModelManage
       credentialStore.delete(provider.credentialId);
       return snapshot();
     },
+    activateClaudeProvider: (providerId: string, expectedRevision: number, setupMode?: ModelSetupMode): ModelManagementSnapshot => {
+      const current = configStore.read();
+      if (current.revision !== expectedRevision) throw new Error('模型配置已变化，请重新载入后再启用');
+      const provider = current.providers.find((item) => item.id === providerId);
+      if (!provider || !provider.enabled || !provider.protocols.includes('anthropic-compatible') || !provider.claudeCode) {
+        throw new Error('该供应商尚未完成 Claude Code 配置');
+      }
+      const status = credentialStore.status([provider.credentialId])[0];
+      if (!status?.configured) throw new Error(`请先配置 ${provider.name} 的 API Key`);
+      const normalizedMode = setupMode ?? current.setupMode ?? (provider.builtIn ? 'preset' : 'custom');
+      if (normalizedMode !== 'preset' && normalizedMode !== 'custom') throw new Error('首次配置方式无效');
+      if ((normalizedMode === 'preset' && provider.id !== 'deepseek') || (normalizedMode === 'custom' && provider.builtIn)) {
+        throw new Error('供应商与首次配置方式不匹配');
+      }
+      syncClaudeSettings(provider);
+      configStore.replace({ ...current, activeClaudeProviderId: provider.id, setupMode: normalizedMode }, expectedRevision);
+      return snapshot();
+    },
   };
 }
 
@@ -99,4 +129,5 @@ export function registerModelManagementIpc(
   registrar.handle('models:save', async (_event, value, expectedRevision: number) => handlers.save(value, expectedRevision));
   registrar.handle('models:credential:configure', async (_event, providerId: string) => handlers.configureCredential(providerId));
   registrar.handle('models:credential:delete', async (_event, providerId: string) => handlers.deleteCredential(providerId));
+  registrar.handle('models:claude-provider:activate', async (_event, providerId: string, expectedRevision: number, setupMode?: ModelSetupMode) => handlers.activateClaudeProvider(providerId, expectedRevision, setupMode));
 }

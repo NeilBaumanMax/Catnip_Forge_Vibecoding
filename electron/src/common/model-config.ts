@@ -1,8 +1,18 @@
-export const MODEL_CONFIG_SCHEMA_VERSION = 1 as const;
+export const MODEL_CONFIG_SCHEMA_VERSION = 2 as const;
 
 export type ModelProtocol = 'anthropic-compatible' | 'openai-compatible';
 export type ModelCapability = 'engineering-agent' | 'software-assistant' | 'vision';
 export type ModelDefaultUse = ModelCapability;
+export type ClaudeCodeAuthField = 'ANTHROPIC_AUTH_TOKEN' | 'ANTHROPIC_API_KEY';
+export type ModelSetupMode = 'preset' | 'custom';
+
+export interface ClaudeCodeProviderConfig {
+  authField: ClaudeCodeAuthField;
+  primaryModel: string;
+  haikuModel?: string;
+  sonnetModel?: string;
+  opusModel?: string;
+}
 
 export interface ProviderConfig {
   id: string;
@@ -12,6 +22,7 @@ export interface ProviderConfig {
   enabled: boolean;
   builtIn: boolean;
   credentialId: string;
+  claudeCode?: ClaudeCodeProviderConfig;
 }
 
 export interface ModelProfile {
@@ -28,6 +39,8 @@ export interface ModelProfile {
 export interface ModelConfigState {
   schemaVersion: typeof MODEL_CONFIG_SCHEMA_VERSION;
   revision: number;
+  setupMode?: ModelSetupMode;
+  activeClaudeProviderId: string;
   providers: ProviderConfig[];
   models: ModelProfile[];
   defaults: Partial<Record<ModelDefaultUse, string>>;
@@ -42,11 +55,13 @@ export interface ProviderCredentialStatus {
 export interface ModelManagementSnapshot {
   config: ModelConfigState;
   credentials: ProviderCredentialStatus[];
+  setupComplete: boolean;
 }
 
 const ID_PATTERN = /^[a-z0-9][a-z0-9._-]{0,63}$/;
 const PROTOCOLS = new Set<ModelProtocol>(['anthropic-compatible', 'openai-compatible']);
 const CAPABILITIES = new Set<ModelCapability>(['engineering-agent', 'software-assistant', 'vision']);
+const CLAUDE_AUTH_FIELDS = new Set<ClaudeCodeAuthField>(['ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_API_KEY']);
 const SENSITIVE_KEY = /^(?:api[-_]?key|access[-_]?secret|secret|token|authorization|password)$/i;
 
 function record(value: unknown, label: string): Record<string, unknown> {
@@ -103,6 +118,26 @@ function rejectSensitiveFields(value: Record<string, unknown>, label: string): v
   }
 }
 
+function optionalText(value: unknown, label: string, max: number): string | undefined {
+  if (value == null || value === '') return undefined;
+  return text(value, label, max);
+}
+
+function normalizeClaudeCode(value: unknown, label: string): ClaudeCodeProviderConfig | undefined {
+  if (value == null) return undefined;
+  const input = record(value, label);
+  rejectSensitiveFields(input, label);
+  const authField = text(input.authField, `${label}.authField`, 40) as ClaudeCodeAuthField;
+  if (!CLAUDE_AUTH_FIELDS.has(authField)) throw new Error(`${label}.authField is invalid`);
+  return {
+    authField,
+    primaryModel: text(input.primaryModel, `${label}.primaryModel`, 200),
+    haikuModel: optionalText(input.haikuModel, `${label}.haikuModel`, 200),
+    sonnetModel: optionalText(input.sonnetModel, `${label}.sonnetModel`, 200),
+    opusModel: optionalText(input.opusModel, `${label}.opusModel`, 200),
+  };
+}
+
 function normalizeProvider(value: unknown, index: number): ProviderConfig {
   const input = record(value, `providers[${index}]`);
   rejectSensitiveFields(input, `providers[${index}]`);
@@ -114,6 +149,7 @@ function normalizeProvider(value: unknown, index: number): ProviderConfig {
     enabled: boolean(input.enabled, `providers[${index}].enabled`),
     builtIn: boolean(input.builtIn, `providers[${index}].builtIn`),
     credentialId: id(input.credentialId, `providers[${index}].credentialId`),
+    claudeCode: normalizeClaudeCode(input.claudeCode, `providers[${index}].claudeCode`),
   };
 }
 
@@ -138,6 +174,7 @@ export function createDefaultModelConfig(): ModelConfigState {
   return {
     schemaVersion: MODEL_CONFIG_SCHEMA_VERSION,
     revision: 0,
+    activeClaudeProviderId: 'deepseek',
     providers: [
       {
         id: 'deepseek',
@@ -147,6 +184,13 @@ export function createDefaultModelConfig(): ModelConfigState {
         enabled: true,
         builtIn: true,
         credentialId: 'deepseek',
+        claudeCode: {
+          authField: 'ANTHROPIC_AUTH_TOKEN',
+          primaryModel: 'deepseek-v4-pro',
+          haikuModel: 'deepseek-v4-flash',
+          sonnetModel: 'deepseek-v4-pro',
+          opusModel: 'deepseek-v4-pro',
+        },
       },
       {
         id: 'qwen',
@@ -211,14 +255,44 @@ export function createDefaultModelConfig(): ModelConfigState {
 export function upgradeModelConfig(value: ModelConfigState): ModelConfigState {
   const upgraded = cloneModelConfig(value);
   const defaults = createDefaultModelConfig();
+  for (const builtIn of defaults.providers.filter((item) => item.builtIn)) {
+    const existing = upgraded.providers.find((item) => item.id === builtIn.id);
+    if (existing && !existing.claudeCode && builtIn.claudeCode) existing.claudeCode = { ...builtIn.claudeCode };
+  }
   for (const builtIn of defaults.models.filter((item) => item.builtIn)) {
     if (!upgraded.models.some((item) => item.id === builtIn.id)) upgraded.models.push({ ...builtIn, capabilities: [...builtIn.capabilities] });
   }
   return normalizeModelConfig(upgraded);
 }
 
+function migrateLegacyConfig(input: Record<string, unknown>): Record<string, unknown> {
+  if (input.schemaVersion !== 1) return input;
+  const providers = Array.isArray(input.providers) ? structuredClone(input.providers) as Array<Record<string, unknown>> : [];
+  const models = Array.isArray(input.models) ? input.models as Array<Record<string, unknown>> : [];
+  const defaults = input.defaults && typeof input.defaults === 'object' ? input.defaults as Record<string, unknown> : {};
+  const defaultEngineeringId = typeof defaults['engineering-agent'] === 'string' ? defaults['engineering-agent'] : '';
+  const defaultEngineering = models.find((model) => model.id === defaultEngineeringId)
+    ?? models.find((model) => Array.isArray(model.capabilities) && model.capabilities.includes('engineering-agent'));
+  const activeClaudeProviderId = typeof defaultEngineering?.providerId === 'string' ? defaultEngineering.providerId : 'deepseek';
+  for (const provider of providers) {
+    const providerModels = models.filter((model) => model.providerId === provider.id
+      && Array.isArray(model.capabilities) && model.capabilities.includes('engineering-agent'));
+    if (!providerModels.length) continue;
+    const primary = providerModels.find((model) => model.id === defaultEngineeringId) ?? providerModels[0];
+    const flash = providerModels.find((model) => String(model.upstreamModel || '').toLowerCase().includes('flash'));
+    provider.claudeCode = {
+      authField: provider.id === 'deepseek' ? 'ANTHROPIC_AUTH_TOKEN' : 'ANTHROPIC_API_KEY',
+      primaryModel: primary.upstreamModel,
+      ...(flash?.upstreamModel ? { haikuModel: flash.upstreamModel } : {}),
+      sonnetModel: primary.upstreamModel,
+      opusModel: primary.upstreamModel,
+    };
+  }
+  return { ...input, schemaVersion: MODEL_CONFIG_SCHEMA_VERSION, setupMode: 'preset', activeClaudeProviderId, providers };
+}
+
 export function normalizeModelConfig(value: unknown): ModelConfigState {
-  const input = record(value, 'model config');
+  const input = migrateLegacyConfig(record(value, 'model config'));
   rejectSensitiveFields(input, 'model config');
   if (input.schemaVersion !== MODEL_CONFIG_SCHEMA_VERSION) throw new Error('model config schemaVersion is unsupported');
   if (!Number.isSafeInteger(input.revision) || Number(input.revision) < 0) throw new Error('model config revision is invalid');
@@ -236,6 +310,14 @@ export function normalizeModelConfig(value: unknown): ModelConfigState {
     if (!provider) throw new Error(`model ${model.id} references a missing provider`);
     if (!provider.protocols.includes(model.protocol)) throw new Error(`model ${model.id} uses an unsupported provider protocol`);
   }
+
+  const activeClaudeProviderId = id(input.activeClaudeProviderId, 'model config activeClaudeProviderId');
+  const activeClaudeProvider = providerById.get(activeClaudeProviderId);
+  if (!activeClaudeProvider || !activeClaudeProvider.enabled || !activeClaudeProvider.protocols.includes('anthropic-compatible') || !activeClaudeProvider.claudeCode) {
+    throw new Error('model config activeClaudeProviderId must reference an enabled Claude Code compatible provider');
+  }
+  const setupMode = input.setupMode == null ? undefined : text(input.setupMode, 'model config setupMode', 20) as ModelSetupMode;
+  if (setupMode && setupMode !== 'preset' && setupMode !== 'custom') throw new Error('model config setupMode is invalid');
 
   const rawDefaults = record(input.defaults, 'model config defaults');
   rejectSensitiveFields(rawDefaults, 'model config defaults');
@@ -255,6 +337,8 @@ export function normalizeModelConfig(value: unknown): ModelConfigState {
   return {
     schemaVersion: MODEL_CONFIG_SCHEMA_VERSION,
     revision: Number(input.revision),
+    setupMode,
+    activeClaudeProviderId,
     providers,
     models,
     defaults,

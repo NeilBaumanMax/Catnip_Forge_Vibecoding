@@ -1,5 +1,15 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-13 — Phase 18 Claude Code 供应商切换已实现，待人工验收
+
+- 当前分支为 `model-ccswitch`。Phase 18 文档基线提交为 `1aebae74`、`cf051a3b`；实现已完成本地测试，收尾提交见当前 Git 日志。
+- 新用户首帧直接进入“模型”：先选“使用预设模型配置”或“使用其他模型供应商”。预设只需 DeepSeek Key，Qwen 视觉 Key 选填；其他供应商采用 CC Switch Claude Code 页的核心字段。
+- 全局只有一个活动 Claude Code 供应商。Agent、找灵感、解问题在任务提交时冻结该供应商；Chat 只读显示当前项，不再允许会话级选模型。
+- Secret 只进入 safeStorage 与 Claude 子进程环境。应用专用 Claude `settings.json` 只保存 Base URL 和模型映射，并主动清理鉴权字段及备份残留。
+- 隔离首次启动和正常 DeepSeek 维护页均已在真实 Electron 验证；正常开发实例已重新启动，监听 5173/9230，留给用户人工验收。
+- 未执行真实付费请求、Windows 完整打包和硬件动作：`LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`、`WINDOWS_PACKAGE_VALIDATION_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING`。
+- 受保护现场 `docs/tutorials/`、`runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 未触碰、未暂存。
+
 ## 2026-09-13 — Phase 18 Claude Code 供应商切换纠偏
 
 - 当前施工分支由用户明确为 `model-ccswitch`。本地 HEAD/恢复基线为 `e745ac38`，恢复标签 `backup/pre-phase-18-claude-provider-switch-20260913` 已建立；已 fetch 核对 `origin/model-ccswitch` 为 `1390cad1`，远端恢复标签尚未推送，记 `REMOTE_BACKUP_PENDING`。

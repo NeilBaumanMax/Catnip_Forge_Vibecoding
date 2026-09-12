@@ -3,7 +3,6 @@ import ChatPanel from './components/ChatPanel';
 import BrowserPanel from './components/BrowserPanel';
 import CatnipOnboarding from './components/CatnipOnboarding';
 import MarkdownContent from './components/MarkdownContent';
-import catnipForgeIcon from './assets/catnip-app-icon.webp';
 import catnipAssistantImage from './assets/catnip-assistant.webp';
 import guaguaAvatarImage from './assets/guagua-avatar.jpg';
 import githubMarkImage from './assets/github-mark.png';
@@ -149,9 +148,6 @@ export default function App() {
   const [softwareAssistantInput, setSoftwareAssistantInput] = useState('');
   const [softwareAssistantPending, setSoftwareAssistantPending] = useState(false);
   const [startupStatus, setStartupStatus] = useState<StartupStatus | null>(null);
-  const [startupApiKeyError, setStartupApiKeyError] = useState('');
-  const [startupApiKeySaving, setStartupApiKeySaving] = useState(false);
-  const [startupApiKeyRestarting, setStartupApiKeyRestarting] = useState(false);
   const [projectSession, setProjectSession] = useState<ProjectSessionStatus | null>(null);
   const [projectPickerOpen, setProjectPickerOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState('');
@@ -189,25 +185,10 @@ export default function App() {
     });
   }, []);
 
-  const handleStartupApiKeySave = useCallback(async () => {
-    setStartupApiKeySaving(true);
-    setStartupApiKeyError('');
-    try {
-      const result = await window.electronAPI.configureStartupModel();
-      setStartupApiKeySaving(false);
-      if (!result.ok) {
-        if (!result.cancelled) setStartupApiKeyError('安全凭据保存失败，请重试或检查 Windows 凭据加密是否可用。');
-        return;
-      }
-      if (result.restarting) {
-        setStartupApiKeyRestarting(true);
-        return;
-      }
-      setStartupStatus(result.status);
-    } catch (error) {
-      setStartupApiKeySaving(false);
-      setStartupApiKeyError(error instanceof Error ? error.message : '无法打开安全输入窗口');
-    }
+  useEffect(() => {
+    const refreshStartup = () => { void window.electronAPI?.getStartupStatus?.().then((status) => setStartupStatus(status)); };
+    window.addEventListener('catnip:model-setup-complete', refreshStartup);
+    return () => window.removeEventListener('catnip:model-setup-complete', refreshStartup);
   }, []);
 
   useEffect(() => {
@@ -630,16 +611,6 @@ export default function App() {
     }
   }, []);
 
-  const handleSetConversationModel = useCallback(async (id: string, modelProfileId: string) => {
-    try {
-      const result = await window.electronAPI?.setChatConversationModel(id, modelProfileId);
-      if (result) setChatConversations(result.conversations);
-      setChatHistoryError('');
-    } catch (error) {
-      setChatHistoryError(error instanceof Error ? error.message : String(error));
-    }
-  }, []);
-
   const handleActivateProject = useCallback(async () => {
     if (!selectedProjectId || projectSessionSaving) return;
     setProjectSessionSaving(true);
@@ -856,7 +827,6 @@ export default function App() {
               onDeleteConversation={handleDeleteConversation}
               onRenameConversation={handleRenameConversation}
               onToggleConversationPinned={handleToggleConversationPinned}
-              onSetConversationModel={handleSetConversationModel}
             />
           </div>
         ) : null}
@@ -910,29 +880,6 @@ export default function App() {
           />
         </div>
       </div>
-      {startupStatus?.firstRun ? (
-        <div className="startup-key-backdrop">
-          <section className="startup-key-dialog" role="dialog" aria-modal="true" aria-labelledby="startup-model-title">
-            <div className="startup-key-brand">
-              <img src={catnipForgeIcon} alt="Catnip Forge" />
-              <span>Catnip Forge · v1.0.0</span>
-            </div>
-            <div className="startup-key-positioning">Catnip 硬件智能开发平台 · Autonomous Hardware Development Agent</div>
-            <h2 id="startup-model-title">安全配置 DeepSeek</h2>
-            <p>主开发 Agent 需要 DeepSeek 凭据。点击后会打开独立的 Windows 安全输入窗口，Key 不会进入本页面、聊天、日志或普通配置文件。</p>
-            {startupApiKeyError ? <div className="startup-key-error" role="alert">{startupApiKeyError}</div> : null}
-            {!startupStatus.playwrightReady ? <div className="startup-key-error" role="alert">发布包缺少浏览器运行资源，请重新获取完整压缩包。</div> : null}
-            <button type="button" autoFocus onClick={() => void handleStartupApiKeySave()} disabled={startupApiKeySaving || startupApiKeyRestarting || !startupStatus.playwrightReady}>
-              {startupApiKeyRestarting ? '配置完成，正在重启…' : startupApiKeySaving ? '正在打开安全窗口…' : '打开安全窗口并配置'}
-            </button>
-            {startupApiKeyRestarting ? (
-              <div className="startup-key-restarting" role="status">Catnip Forge 将自动重新打开，之后即可直接使用 Agent。</div>
-            ) : (
-              <small>Qwen 等可选供应商可在进入软件后的“模型”工作区中配置。</small>
-            )}
-          </section>
-        </div>
-      ) : null}
       {startupStatus && !startupStatus.firstRun && projectPickerOpen ? (
         <div className='project-picker-backdrop'>
           <section className='project-picker-dialog' role='dialog' aria-modal='true' aria-labelledby='project-picker-title'>
@@ -970,7 +917,7 @@ export default function App() {
         onEnsureAgentOpen={handleOnboardingEnsureAgentOpen}
         onEnsureAssistantOpen={handleOnboardingEnsureAssistantOpen}
       />
-      <div
+      {startupStatus && !startupStatus.firstRun ? <div
         className={`appearance-settings${appearanceDragging ? ' is-dragging' : ''}${appearancePosition.x < 382 ? ' opens-right' : ''}${appearancePosition.y < 520 ? ' opens-down' : ''}`}
         ref={appearanceSettingsRef}
         style={{ left: appearancePosition.x, top: appearancePosition.y, width: assistantSize, height: assistantSize }}
@@ -1060,7 +1007,7 @@ export default function App() {
         >
           <img src={catnipAssistantImage} alt="" aria-hidden="true" />
         </button>
-      </div>
+      </div> : null}
     </div>
   );
 }

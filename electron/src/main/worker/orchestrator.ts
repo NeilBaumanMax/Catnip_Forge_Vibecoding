@@ -243,11 +243,10 @@ export class Orchestrator {
       this.pushUI('task:progress', { steps, taskId: this.currentTaskId });
     });
 
-    logger.info('task:state', { phase: 'init', msg: 'Orchestrator created' });
-    this.ensurePersistentAgent();
+    logger.info('task:state', { phase: 'init', msg: 'Orchestrator created; Claude Code starts with the first configured task' });
   }
 
-  submitTask(task: string | AgentTaskInput, mode: TaskSubmitMode = 'auto', conversationId?: string, modelProfileId?: string): TaskSubmitResult {
+  submitTask(task: string | AgentTaskInput, mode: TaskSubmitMode = 'auto', conversationId?: string): TaskSubmitResult {
     const input = normalizeAgentTaskInput(task);
     const binding = bindActiveProject(input.text);
     const targetConversationId = conversationId || listChatConversations().activeConversationId;
@@ -258,7 +257,7 @@ export class Orchestrator {
       attachments: input.attachments,
       conversationId: targetConversationId,
       executionProfile: 'default',
-      modelSnapshot: snapshotEngineeringAgentModel(modelProfileId),
+      modelSnapshot: snapshotEngineeringAgentModel(),
     };
 
     return this.submitQueuedTask(request, mode);
@@ -356,8 +355,7 @@ export class Orchestrator {
       attachments: [],
       conversationId: this.activeEngineeringConversationId(),
       executionProfile: 'default',
-      modelSnapshot: snapshotEngineeringAgentModel(listChatConversations().conversations
-        .find((item) => item.id === this.activeEngineeringConversationId())?.modelProfileId),
+      modelSnapshot: snapshotEngineeringAgentModel(),
     };
     const result = this.submitQueuedTask(queuedTask, this.getTaskStatus().busy ? 'queue' : 'auto');
     record.usedAt = Date.now();

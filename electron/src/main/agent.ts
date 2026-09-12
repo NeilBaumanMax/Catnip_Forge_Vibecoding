@@ -6,7 +6,6 @@ import {
   getAgentDir,
   getAgentWorkspaceDir,
   getClaudeBin,
-  getApiKeyPath,
   getRuntimeDir,
   getResourcesDir,
   getRuntimeDevServerEntry,
@@ -21,12 +20,10 @@ import { getSerialMonitorBridgeEnv } from './serial-monitor-bridge';
 import { getAttachmentBridgeEnv } from './attachment-bridge';
 import { EXPLORE_ANALYSIS_JSON_SCHEMA } from '../common/explore';
 import type { EngineeringAgentRuntimeModel } from './agent-model-selection';
-import { createModelCredentialStore } from './model-credentials';
 
 const AGENT_DIR = getAgentDir();
 const AGENT_WORKSPACE_DIR = getAgentWorkspaceDir();
 const CLAUDE_BIN = getClaudeBin();
-const API_KEY_FILE = getApiKeyPath();
 
 let agentProcess: ChildProcess | null = null;
 let agentSeq = 0;
@@ -37,7 +34,9 @@ let agentModelKey: string | null = null;
 export type AgentExecutionProfile = 'default' | 'explore_analysis' | 'explore_plan';
 
 export function ensureAgentProcess(profile: AgentExecutionProfile = 'default', model?: EngineeringAgentRuntimeModel): ChildProcess {
-  const requestedModelKey = model ? `${model.profileId}\u0000${model.baseUrl}\u0000${model.upstreamModel}` : 'legacy-default';
+  const requestedModelKey = model
+    ? [model.providerId, model.baseUrl, model.authField, model.upstreamModel, model.haikuModel, model.sonnetModel, model.opusModel].join('\u0000')
+    : 'not-configured';
   if (agentProcess && !agentProcess.killed && agentProcess.exitCode == null && agentExecutionProfile === profile && agentModelKey === requestedModelKey) {
     return agentProcess;
   }
@@ -196,7 +195,7 @@ export function buildAgentLaunchArgs(
   return args;
 }
 
-function buildAgentEnv(model?: EngineeringAgentRuntimeModel): NodeJS.ProcessEnv {
+export function buildAgentEnv(model?: EngineeringAgentRuntimeModel): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...process.env };
 
   // Avoid inheriting mismatched upstream settings from the parent shell.
@@ -204,30 +203,32 @@ function buildAgentEnv(model?: EngineeringAgentRuntimeModel): NodeJS.ProcessEnv 
   delete env.ANTHROPIC_API_KEY;
   delete env.ANTHROPIC_BASE_URL;
   delete env.ANTHROPIC_MODEL;
+  delete env.ANTHROPIC_DEFAULT_HAIKU_MODEL;
+  delete env.ANTHROPIC_DEFAULT_SONNET_MODEL;
+  delete env.ANTHROPIC_DEFAULT_OPUS_MODEL;
 
   env.CDP_PORT = '9230';
   env.DISPLAY = process.env.DISPLAY || ':0';
   env.CLAUDE_CONFIG_DIR = getRuntimeDataDir('claude-config');
 
-  const apiKey = model?.authToken ?? readDeepSeekApiKey();
-  if (apiKey) {
-    env.ANTHROPIC_AUTH_TOKEN = apiKey;
-    env.ANTHROPIC_BASE_URL = model?.baseUrl ?? 'https://api.deepseek.com/anthropic';
-    env.ANTHROPIC_MODEL = model?.upstreamModel ?? process.env.ANTHROPIC_MODEL ?? 'deepseek-v4-pro';
+  if (model?.authToken) {
+    env[model.authField] = model.authToken;
+    env.ANTHROPIC_BASE_URL = model.baseUrl;
+    env.ANTHROPIC_MODEL = model.upstreamModel;
+    env.ANTHROPIC_DEFAULT_HAIKU_MODEL = model.haikuModel;
+    env.ANTHROPIC_DEFAULT_SONNET_MODEL = model.sonnetModel;
+    env.ANTHROPIC_DEFAULT_OPUS_MODEL = model.opusModel;
     logger.info('agent:spawn', {
-      authMode: model?.authSource ?? 'legacy-file',
-      profileId: model?.profileId ?? 'deepseek-v4-pro',
-      providerId: model?.providerId ?? 'deepseek',
+      authMode: model.authSource,
+      profileId: model.profileId,
+      providerId: model.providerId,
+      authField: model.authField,
       baseUrl: env.ANTHROPIC_BASE_URL,
       model: env.ANTHROPIC_MODEL,
       claudeConfigDir: env.CLAUDE_CONFIG_DIR,
     });
   } else {
-    logger.warn('agent:spawn', {
-      authMode: 'not-configured',
-      claudeConfigDir: env.CLAUDE_CONFIG_DIR,
-      msg: 'DeepSeek API key not found; agent may require interactive Claude login',
-    });
+    throw new Error('当前 Claude Code 供应商尚未配置，不能启动 Agent');
   }
 
   return env;
@@ -299,26 +300,4 @@ export function buildAgentMcpConfig(profile: AgentExecutionProfile): { mcpServer
       },
     },
   };
-}
-
-export function readDeepSeekApiKey(): string | null {
-  try {
-    const secured = createModelCredentialStore().get('deepseek');
-    if (secured) return secured;
-  } catch {
-    return null;
-  }
-  try {
-    const text = fs.readFileSync(API_KEY_FILE, 'utf-8');
-    for (const rawLine of text.split(/\r?\n/)) {
-      const line = rawLine.trim();
-      if (!line || line.startsWith('#')) continue;
-      const match = line.match(/^DEEPSEEK_API_KEY\s*=\s*(.+)$/);
-      if (match?.[1]) return match[1].trim();
-      return line;
-    }
-  } catch {
-    // Missing key file is handled by caller.
-  }
-  return null;
 }

@@ -269,7 +269,19 @@ export default function BrowserPanel({
   // inject it after mount, so keep Explore lazy there instead of crashing before
   // the harness can install its bounded test bridge.
   const startsInHarnessMode = !window.electronAPI || Boolean(window.electronAPI.isWorkbenchSmokeTest);
-  const [mode, setMode] = useState<PanelMode>(() => startsInHarnessMode ? 'repo' : 'explore');
+  // Start a real desktop session on the model page. Configured users are moved
+  // to Explore as soon as the local snapshot arrives; first-run users never see
+  // a misleading Explore flash before their required provider setup.
+  const [mode, setMode] = useState<PanelMode>(() => startsInHarnessMode ? 'repo' : 'models');
+
+  useEffect(() => {
+    let active = true;
+    if (startsInHarnessMode || !window.electronAPI?.listModels) return () => { active = false; };
+    void window.electronAPI.listModels().then((result) => {
+      if (active) setMode(result.setupComplete === false ? 'models' : 'explore');
+    }).catch(() => { /* ModelPanel will show the actionable load error when opened. */ });
+    return () => { active = false; };
+  }, [startsInHarnessMode]);
   const [inputUrl, setInputUrl] = useState('');
   const [recordingName, setRecordingName] = useState('');
   const [selectedReplay, setSelectedReplay] = useState('');

@@ -16,8 +16,10 @@ async function main() {
   const { ModelConfigStore } = require('../dist/main/model-config-store.js');
   const { ModelCredentialStore } = require('../dist/main/model-credentials.js');
   const { createModelManagementHandlers, registerModelManagementIpc } = require('../dist/main/model-management.js');
+  const { syncClaudeCodeSettings } = require('../dist/main/claude-provider-switch.js');
   const configStore = new ModelConfigStore(path.join(root, 'config.json'));
   const credentialStore = new ModelCredentialStore(path.join(root, 'credentials.json'), new TestCipher());
+  const settingsFile = path.join(root, 'claude', 'settings.json');
   const submittedSecret = ['sk', 'management', 'fixture', 'only'].join('-');
   let promptCount = 0;
   let releasePrompt;
@@ -31,12 +33,14 @@ async function main() {
       await promptGate;
       return { outcome: 'submitted', secret: submittedSecret };
     },
+    syncClaudeSettings: (provider) => syncClaudeCodeSettings(provider, settingsFile),
   });
 
   try {
     const routes = new Map();
     registerModelManagementIpc({ handle: (channel, handler) => routes.set(channel, handler) }, handlers);
     assert.deepEqual([...routes.keys()].sort(), [
+      'models:claude-provider:activate',
       'models:credential:configure',
       'models:credential:delete',
       'models:list',
@@ -45,6 +49,7 @@ async function main() {
     const initial = await routes.get('models:list')(null);
     assert.equal(initial.config.revision, 0);
     assert.equal(initial.credentials.find((item) => item.providerId === 'deepseek').configured, false);
+    assert.equal(initial.setupComplete, false);
     assert(!JSON.stringify(initial).includes('ciphertext'), 'Renderer snapshot must not contain encrypted payloads');
 
     const invalidDelete = structuredClone(initial.config);
@@ -52,7 +57,7 @@ async function main() {
     invalidDelete.models = invalidDelete.models.filter((item) => item.providerId !== 'deepseek');
     delete invalidDelete.defaults['engineering-agent'];
     delete invalidDelete.defaults['software-assistant'];
-    assert.throws(() => handlers.save(invalidDelete, 0), /内置供应商/);
+    assert.throws(() => handlers.save(invalidDelete, 0), /内置供应商|activeClaudeProviderId/);
 
     const custom = structuredClone(initial.config);
     custom.providers.push({
@@ -89,12 +94,48 @@ async function main() {
     assert(!JSON.stringify(firstResult).includes(submittedSecret), 'credential response must never echo plaintext');
     assert(!fs.readFileSync(path.join(root, 'credentials.json'), 'utf8').includes(submittedSecret));
 
+    fs.mkdirSync(path.dirname(settingsFile), { recursive: true });
+    fs.writeFileSync(settingsFile, JSON.stringify({ permissions: { allow: ['Skill'] }, env: { KEEP_ME: 'yes', ANTHROPIC_AUTH_TOKEN: submittedSecret } }), 'utf8');
+    fs.writeFileSync(`${settingsFile}.bak`, JSON.stringify({ theme: 'dark', env: { ANTHROPIC_API_KEY: submittedSecret } }), 'utf8');
+    const activated = await routes.get('models:claude-provider:activate')(null, 'deepseek', 1, 'preset');
+    assert.equal(activated.config.activeClaudeProviderId, 'deepseek');
+    assert.equal(activated.config.setupMode, 'preset');
+    assert.equal(activated.setupComplete, true);
+    const settings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
+    assert.deepEqual(settings.permissions, { allow: ['Skill'] }, 'activation must preserve unrelated Claude settings');
+    assert.equal(settings.env.KEEP_ME, 'yes');
+    assert.equal(settings.env.ANTHROPIC_BASE_URL, 'https://api.deepseek.com/anthropic');
+    assert.equal(settings.env.ANTHROPIC_MODEL, 'deepseek-v4-pro');
+    assert.equal(settings.env.ANTHROPIC_DEFAULT_HAIKU_MODEL, 'deepseek-v4-flash');
+    assert.equal('ANTHROPIC_AUTH_TOKEN' in settings.env, false, 'plaintext token must be removed from settings');
+    assert.equal(JSON.parse(fs.readFileSync(`${settingsFile}.bak`, 'utf8')).theme, 'dark');
+    assert(!fs.readFileSync(`${settingsFile}.bak`, 'utf8').includes(submittedSecret), 'existing settings backup must also be sanitized without discarding unrelated fields');
+
+    const withZhipu = structuredClone(activated.config);
+    withZhipu.providers.push({
+      id: 'zhipu', name: '智谱清言', baseUrl: 'https://open.bigmodel.cn/api/anthropic',
+      protocols: ['anthropic-compatible'], enabled: true, builtIn: false, credentialId: 'zhipu',
+      claudeCode: { authField: 'ANTHROPIC_API_KEY', primaryModel: 'glm-4.7', haikuModel: 'glm-4.5-air' },
+    });
+    const zhipuSaved = handlers.save(withZhipu, activated.config.revision);
+    credentialStore.set('zhipu', submittedSecret);
+    const zhipuActivated = handlers.activateClaudeProvider('zhipu', zhipuSaved.config.revision, 'custom');
+    assert.equal(zhipuActivated.config.activeClaudeProviderId, 'zhipu');
+    assert.equal(zhipuActivated.setupComplete, true);
+    const zhipuSettings = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
+    assert.equal(zhipuSettings.env.ANTHROPIC_BASE_URL, 'https://open.bigmodel.cn/api/anthropic');
+    assert.equal(zhipuSettings.env.ANTHROPIC_MODEL, 'glm-4.7');
+    assert.equal(zhipuSettings.env.ANTHROPIC_DEFAULT_HAIKU_MODEL, 'glm-4.5-air');
+    assert.equal('ANTHROPIC_API_KEY' in zhipuSettings.env, false);
+    assert.throws(() => handlers.activateClaudeProvider('zhipu', zhipuActivated.config.revision, 'preset'), /不匹配/);
+
     const cleared = await routes.get('models:credential:delete')(null, 'deepseek');
     assert.equal(cleared.credentials.find((item) => item.providerId === 'deepseek').configured, false);
     await assert.rejects(() => routes.get('models:credential:configure')(null, 'missing'), /不存在/);
 
     const preload = fs.readFileSync(path.join(__dirname, '..', 'src', 'preload', 'index.ts'), 'utf8');
     assert(!/configureModelCredential:\s*\([^)]*(?:key|secret|token)/i.test(preload), 'credential IPC must accept provider id only');
+    assert.match(preload, /activateClaudeProvider:\s*\(providerId: string, expectedRevision: number/);
     const host = fs.readFileSync(path.join(__dirname, '..', '..', 'agent', 'host-tools', 'configure-model-credential.ps1'), 'utf8');
     assert.match(host, /<PasswordBox x:Name="SecretInput"/);
     assert.match(host, /ZeroFreeBSTR/);

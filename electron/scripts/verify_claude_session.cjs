@@ -44,7 +44,6 @@ async function main() {
     loadClaudeSession,
     renameChatConversation,
     setChatConversationPinned,
-    setChatConversationModel,
     activateChatConversation,
   } = require('../dist/main/worker/session-store.js');
   const { activateProject, getProjectSessionStatus } = require('../dist/main/project-session.js');
@@ -104,9 +103,6 @@ async function main() {
       throw new Error('non-secret task model snapshot did not survive session persistence');
     }
     const another = createChatConversation();
-    setChatConversationModel(another.id, 'deepseek-v4-pro');
-    if (getChatConversation(another.id).modelProfileId !== 'deepseek-v4-pro') throw new Error('conversation model selection did not persist');
-    if (listChatConversations().conversations.find((item) => item.id === another.id)?.modelProfileId !== 'deepseek-v4-pro') throw new Error('conversation model selection missing from summary');
     appendChatMessage(another.id, {
       id: 'message-user-2',
       text: '历史工程 B',

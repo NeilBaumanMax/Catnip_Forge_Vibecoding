@@ -373,17 +373,6 @@ export function setChatConversationPinned(id: string, pinned: boolean): { active
   return listChatConversations();
 }
 
-export function setChatConversationModel(id: string, modelProfileId: string): { activeConversationId: string; conversations: ChatConversationSummary[] } {
-  if (!/^[a-z0-9][a-z0-9._-]{0,63}$/.test(modelProfileId)) throw new Error('模型档案 ID 无效');
-  const store = readStore();
-  const conversation = findConversation(store, id);
-  conversation.modelProfileId = modelProfileId;
-  conversation.updatedAt = nowIso();
-  writeStore(store);
-  logger.info('claude:session', { event: 'conversation-model', conversationId: id, modelProfileId });
-  return listChatConversations();
-}
-
 export function deleteChatConversation(id: string): { activeConversationId: string; conversations: ChatConversationSummary[] } {
   const store = readStore();
   if (!store.conversations.some((conversation) => conversation.id === id)) throw new Error('对话不存在或已被删除');

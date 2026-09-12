@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreContextGatherRequest, ExploreExecutionConfirmRequest, ExploreRequest, HandoffContext, SaveKnowledgeCardInput } from '../common/explore';
 import type { ExploreHandoffArtifact, ExploreWorkSessionRecord } from '../common/project-session';
-import type { ModelConfigState } from '../common/model-config';
+import type { ModelConfigState, ModelSetupMode } from '../common/model-config';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   minimizeWindow: () => ipcRenderer.invoke('window:minimize'),
@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveModels: (config: ModelConfigState, expectedRevision: number) => ipcRenderer.invoke('models:save', config, expectedRevision),
   configureModelCredential: (providerId: string) => ipcRenderer.invoke('models:credential:configure', providerId),
   deleteModelCredential: (providerId: string) => ipcRenderer.invoke('models:credential:delete', providerId),
+  activateClaudeProvider: (providerId: string, expectedRevision: number, setupMode?: ModelSetupMode) => ipcRenderer.invoke('models:claude-provider:activate', providerId, expectedRevision, setupMode),
   getProjectSessionStatus: () => ipcRenderer.invoke('project:session:status'),
   activateProjectSession: (projectId: string) => ipcRenderer.invoke('project:session:activate', projectId),
   createProjectSession: (name: string) => ipcRenderer.invoke('project:session:create', name),
@@ -30,7 +31,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteChatConversation: (id: string) => ipcRenderer.invoke('chat:conversations:delete', id),
   renameChatConversation: (id: string, title: string) => ipcRenderer.invoke('chat:conversations:rename', id, title),
   setChatConversationPinned: (id: string, pinned: boolean) => ipcRenderer.invoke('chat:conversations:pin', id, pinned),
-  setChatConversationModel: (id: string, modelProfileId: string) => ipcRenderer.invoke('chat:conversations:model', id, modelProfileId),
   onTaskComplete: (cb: (result: { code: number | null; taskId?: string | null }) => void) => {
     ipcRenderer.on('task:complete', (_event, result) => cb(result));
   },
