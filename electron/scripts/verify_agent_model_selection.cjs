@@ -20,12 +20,6 @@ async function main() {
 
     const configStore = new ModelConfigStore(path.join(root, 'models', 'config.json'));
     const config = createDefaultModelConfig();
-    config.models.push({
-      id: 'deepseek-v4-flash-agent', providerId: 'deepseek', name: 'DeepSeek V4 Flash Agent',
-      upstreamModel: 'deepseek-v4-flash', protocol: 'anthropic-compatible',
-      capabilities: ['engineering-agent'], enabled: true, builtIn: false,
-    });
-    configStore.replace(config, 0);
     const selected = snapshotEngineeringAgentModel('deepseek-v4-flash-agent');
     assert.equal(selected.upstreamModel, 'deepseek-v4-flash');
     assert.equal(selected.providerId, 'deepseek');
@@ -36,7 +30,7 @@ async function main() {
       id: 'openai-only-agent', providerId: 'deepseek', name: 'Invalid Agent', upstreamModel: 'openai-only',
       protocol: 'openai-compatible', capabilities: ['engineering-agent'], enabled: true, builtIn: false,
     });
-    configStore.replace(invalid, 1);
+    configStore.replace(invalid, 0);
     assert.throws(() => snapshotEngineeringAgentModel('openai-only-agent'), /协议适配/);
     assert.throws(() => snapshotEngineeringAgentModel('missing'), /不存在/);
 

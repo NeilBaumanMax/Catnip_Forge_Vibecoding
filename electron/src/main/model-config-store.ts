@@ -5,6 +5,7 @@ import {
   cloneModelConfig,
   createDefaultModelConfig,
   normalizeModelConfig,
+  upgradeModelConfig,
   type ModelConfigState,
 } from '../common/model-config';
 
@@ -20,7 +21,7 @@ export class ModelConfigStore {
       throw new Error(`Model config is unreadable; original file was preserved: ${String(error)}`);
     }
     try {
-      return cloneModelConfig(normalizeModelConfig(parsed));
+      return cloneModelConfig(upgradeModelConfig(normalizeModelConfig(parsed)));
     } catch (error) {
       throw new Error(`Model config is invalid; original file was preserved: ${String(error)}`);
     }

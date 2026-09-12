@@ -766,3 +766,13 @@ Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会�
 | `npm.cmd --prefix electron run build:renderer` | PASS | 2825 modules；仅既有大 chunk warning |
 
 `verify:secure-startup` 首次失败：测试使用前置状态变量作为 JSX 截止点，切片为空；改用首启块之后的项目选择条件作为结束标记后通过。`verify:software-assistant-guide` 首次打印既有失败“author link is not protected by a Main-process allowlist”，原因是脚本仍断言旧 `AUTHOR_GITHUB_URL` 字面比较，而当前 gateway 已使用通用 URL 协议/无凭据校验；已更新断言并把 catch 改为可靠非零退出，复测通过。所有新专项均使用虚构 Key、测试 cipher 或本机 mock；未调用真实付费模型、知乎或硬件。
+
+### 16g 模型中心真实 Electron 回归
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| `verify:model-config` | PASS | 新装含 Flash Agent；旧 Store 只读补齐且不改文件 |
+| `verify:agent-model-selection` | PASS | 内置 Pro/Flash 快照；修正同名 fixture 后通过 |
+| `verify:model-center-ui` | PASS | 1600×1000，7 tabs、3 DeepSeek cards、2 Agent options、无横向溢出 |
+
+首次 UI 运行实际得到 `chatModelOptions=1`，揭示 Flash 只有软件助手协议而不满足用户切换诉求；新增独立 Anthropic-compatible Agent 档案后为 2。开发 Main 必须重启才能加载 common/Main 变更，重启前的 HMR 页面仍为旧结果；重启后通过。项目选择遮罩下首次截图成功但不展示模型页；临时隐藏遮罩后的两次 CDP 截图均超时，因此不把截图作为视觉验收，几何/DOM 证据如实保留。

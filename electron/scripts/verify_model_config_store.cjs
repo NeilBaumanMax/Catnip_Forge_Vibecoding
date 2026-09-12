@@ -18,6 +18,7 @@ async function main() {
     assert.equal(defaults.defaults['engineering-agent'], 'deepseek-v4-pro');
     assert.equal(defaults.defaults['software-assistant'], 'deepseek-v4-flash');
     assert.equal(defaults.defaults.vision, 'qwen-vl-plus');
+    assert(defaults.models.some((item) => item.id === 'deepseek-v4-flash-agent' && item.protocol === 'anthropic-compatible' && item.capabilities.includes('engineering-agent')));
     assert.equal(fs.existsSync(file), false, 'read-only default migration must not create a file');
 
     defaults.providers[0].name = 'Changed outside store';
@@ -48,6 +49,14 @@ async function main() {
     assert.deepEqual(normalizeModelConfig(saved), saved, 'persisted state must round-trip through schema validation');
     assert.equal(new ModelConfigStore(file).read().models.at(-1).id, 'custom-pro', 'config must survive restart');
     assert(!fs.readFileSync(file, 'utf8').match(/apiKey|accessSecret|Bearer/i), 'persisted config must contain no Secret fields');
+
+    const legacyWithoutFlashAgent = structuredClone(saved);
+    legacyWithoutFlashAgent.models = legacyWithoutFlashAgent.models.filter((item) => item.id !== 'deepseek-v4-flash-agent');
+    fs.writeFileSync(file, `${JSON.stringify(legacyWithoutFlashAgent, null, 2)}\n`, 'utf8');
+    const upgraded = new ModelConfigStore(file).read();
+    assert(upgraded.models.some((item) => item.id === 'deepseek-v4-flash-agent'), 'existing stores must gain the built-in Flash Agent profile');
+    assert.equal(fs.readFileSync(file, 'utf8').includes('deepseek-v4-flash-agent'), false, 'read-only upgrade must not rewrite user config');
+    fs.writeFileSync(file, `${JSON.stringify(saved, null, 2)}\n`, 'utf8');
 
     assert.throws(() => store.replace(first, 0), /reload before saving/, 'stale revision must not overwrite newer config');
     const withSecret = structuredClone(saved);

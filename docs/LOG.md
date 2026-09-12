@@ -1105,3 +1105,10 @@
 - Main 启动时尝试把旧 DeepSeek/Qwen 文件安全迁移到凭据 Store；失败或冲突保留来源。Agent、软件助手、视觉附件统一安全读取，后两者使用模型中心用途默认档案。
 - 新增安全首启和模型 Runtime 专项；Qwen mock、Electron/Runtime typecheck 与 Renderer build 通过。首启专项首轮切片边界错误已修复。
 - 软件助手指南旧专项的 allowlist 字符串断言漂移且错误返回 0；已对齐当前通用 HTTP/HTTPS 无凭据门禁并改为可靠失败退出，复测通过。
+
+## 2026-09-12 — Phase 16g1 模型中心桌面回归
+
+- 真实 Electron 1600×1000 回归首次发现 Agent 只有 Pro 一项；根因是 Flash 原档案专用于 OpenAI-compatible 软件助手。
+- 新增独立 Anthropic-compatible `deepseek-v4-flash-agent` 内置档案，并为已有 Store 增加不落盘、不覆盖用户值的只读补齐。
+- 修正同名测试 fixture，重启 Main 后专项显示 7 个标签、3 个 DeepSeek 档案、2 个 Agent 选项、无横向溢出。
+- 模型页截图受项目选择遮罩和后续 CDP capture 超时影响，未宣称截图通过；保留真实几何/DOM 证据。

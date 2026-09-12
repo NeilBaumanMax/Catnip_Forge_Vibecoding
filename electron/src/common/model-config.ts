@@ -180,6 +180,16 @@ export function createDefaultModelConfig(): ModelConfigState {
         builtIn: true,
       },
       {
+        id: 'deepseek-v4-flash-agent',
+        providerId: 'deepseek',
+        name: 'DeepSeek V4 Flash（Agent）',
+        upstreamModel: 'deepseek-v4-flash',
+        protocol: 'anthropic-compatible',
+        capabilities: ['engineering-agent'],
+        enabled: true,
+        builtIn: true,
+      },
+      {
         id: 'qwen-vl-plus',
         providerId: 'qwen',
         name: 'Qwen VL Plus',
@@ -196,6 +206,15 @@ export function createDefaultModelConfig(): ModelConfigState {
       vision: 'qwen-vl-plus',
     },
   };
+}
+
+export function upgradeModelConfig(value: ModelConfigState): ModelConfigState {
+  const upgraded = cloneModelConfig(value);
+  const defaults = createDefaultModelConfig();
+  for (const builtIn of defaults.models.filter((item) => item.builtIn)) {
+    if (!upgraded.models.some((item) => item.id === builtIn.id)) upgraded.models.push({ ...builtIn, capabilities: [...builtIn.capabilities] });
+  }
+  return normalizeModelConfig(upgraded);
 }
 
 export function normalizeModelConfig(value: unknown): ModelConfigState {

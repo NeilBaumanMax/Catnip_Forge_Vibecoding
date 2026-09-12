@@ -160,3 +160,11 @@ Agent Composer 的模型选择器只列出启用且标记为“工程 Agent”�
 - 工程 Agent、软件助手和视觉附件统一优先读取 `ModelCredentialStore`。软件助手与视觉附件同时读取模型中心相应用途默认档案、供应商 Base URL 和上游模型名；协议不兼容、供应商停用或凭据缺失时明确失败。
 - 保留旧文件读取只用于尚未成功迁移的升级兼容；一旦安全凭据存在但损坏/不可解密，不绕过错误回退旧文件。
 - 安全首启专项第一次因测试错误截取到空 JSX 区间而失败；修正为首启条件块的精确起止标记后通过。软件助手指南旧专项另暴露 Main allowlist 字符串断言已落后于当前通用安全 URL 校验，已按真实协议/无凭据门禁更新并修复失败退出码。
+
+## 14. 16g 桌面 UI 回归与 Flash Agent 增量档案
+
+- 真实 Electron 1600×1000 窗口验证七个工作区标签、模型中心三栏、供应商与模型卡、凭据状态、Agent 模型下拉和横向溢出。
+- 首轮 UI 门禁发现 Agent 下拉只有 Pro：现有 `deepseek-v4-flash` 是软件助手的 OpenAI-compatible 档案，不能冒充 Claude Code Agent 兼容。新增独立内置 `deepseek-v4-flash-agent`，使用同一上游模型但明确走 Anthropic-compatible 协议。
+- 已有模型 Store 在只读加载时补齐缺失内置档案，不改写用户文件或 revision；用户下一次主动保存时才落盘。自定义模型和默认选择不被覆盖。
+- 修正 Agent 专项中与新内置 ID 同名的旧 fixture。重启开发 Main 后，模型中心显示 3 个 DeepSeek 档案，Agent 下拉显示 Pro/Flash 两项，七标签全部可见且 `bodyOverflowX=0`。
+- CDP 首次截图留下项目选择遮罩；临时隐藏遮罩后两次 `Page.captureScreenshot` 超时，但 DOM/几何持续可响应。该截图不作为模型页视觉通过证据；本轮只声明真实窗口几何与交互结构通过。

@@ -371,3 +371,4 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] 16f 知乎 Secret 替换、在线验证、本机退出，复用官方命令。
 - [x] 16c2b 首次启动、软件助手与 Qwen 统一接入 safeStorage 与模型中心用途默认值；旧文件仅作 Main 迁移兼容。
 - [ ] 16g 完整 UI、原生窗口人工验收与 Windows 发布回归。
+- [x] 16g1 真实 Electron 模型中心几何/DOM 回归；补齐 DeepSeek V4 Flash Agent 内置档案与旧 Store 增量加载。
