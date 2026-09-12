@@ -14,6 +14,8 @@ fs.writeFileSync(path.join(oldRoot, 'runtime-data', 'attachments', 'fixture', 'm
 fs.writeFileSync(path.join(oldRoot, 'DevToolsActivePort'), 'must-not-migrate');
 
 app.setPath('appData', tempRoot);
+process.env.VIBEIDE_SMOKE_APP_DATA = tempRoot;
+delete process.env.VIBEIDE_SMOKE_WORKBENCH_OPEN;
 
 try {
   const paths = require('../dist/main/user-data-path.js');
@@ -21,6 +23,7 @@ try {
   assert.equal(first.userDataPath, expectedRoot);
   assert.equal(first.legacyUserDataPath, oldRoot);
   assert.equal(first.migrated, true, JSON.stringify(first));
+  assert.notEqual(process.env.VIBEIDE_SMOKE_WORKBENCH_OPEN, '1', 'userData isolation must not enable workbench auto-close');
   assert.equal(app.getPath('userData'), expectedRoot);
   assert(fs.existsSync(path.join(expectedRoot, 'runtime-data', 'claude-session', 'session.json')));
   assert(fs.existsSync(path.join(expectedRoot, 'runtime-data', 'attachments', 'fixture', 'manifest.json')));
@@ -49,6 +52,7 @@ try {
 }
 
 app.whenReady().finally(() => {
+  delete process.env.VIBEIDE_SMOKE_APP_DATA;
   try {
     fs.rmSync(tempRoot, { recursive: true, force: true });
   } catch {

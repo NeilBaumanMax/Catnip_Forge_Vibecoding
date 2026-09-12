@@ -1053,3 +1053,11 @@
 - 用户实屏指出返回键消失、头部说明越界以及“草稿”掉出头部。根因为返回键只有 top/left 而没有定位属性、112px 头部不足，以及旧草稿 badge 的绝对坐标仍生效。
 - 返回键改为头部内 absolute/z-index 4，头部增至 132px，桌面说明单行；草稿态在 Diagnosis 专用页隐藏，非草稿状态仍可显示。
 - `verify:explore-layout-ui` 新增三个几何/计算样式断言并通过，最新 1448 × 1086 截图确认无越界。
+
+## 2026-09-12 — 知乎 Access Secret 原生窗口可靠性
+
+- 复现新电脑链路：旧版 PowerShell 使用 detached/unref，Main 只确认进程 spawn，浏览器可以正常打开而 WPF 安全窗口没有可靠的可见性确认。
+- 改为挂接原生进程；WPF 完成 `ContentRendered` 后在 Electron userData 写入一次性 ready 标记，Main 轮询确认后才向 Renderer 返回已打开。提前退出与 15 秒超时均显示具体错误。
+- Explore 连接卡新增官方 CLI 下载/校验和等待安全窗口的明确进行中提示；Secret 仍仅进入原生 `PasswordBox`，通过 stdin 交给官方 `auth set --secret-stdin`。
+- 用户目视确认诊断窗口已弹出。全程未要求或采集真实 Secret；专项门禁、类型检查及 Main/Renderer 构建通过。
+- 27% 启动页经一次性日志最终确认为验收配置错误：`VIBEIDE_SMOKE_WORKBENCH_OPEN=1` 会在仓库 smoke 完成后主动关闭 Main，本不应用作普通首启的 userData 隔离开关。所有基于该假故障的启动页生产改动已撤回；仅将 `VIBEIDE_SMOKE_APP_DATA` 的隔离能力与工作台自动关闭行为解耦。正确模式的重打包首启验证通过，临时进程、测试 userData 与诊断脚本均已清理。

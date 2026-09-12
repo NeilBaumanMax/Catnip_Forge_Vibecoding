@@ -1,6 +1,8 @@
 ﻿param(
     [Parameter(Mandatory = $true)]
-    [string]$OfficialRunScript
+    [string]$OfficialRunScript,
+    [Parameter(Mandatory = $true)]
+    [string]$ReadyFile
 )
 
 $ErrorActionPreference = 'Stop'
@@ -74,7 +76,11 @@ function Show-SecretInputDialog {
     $cancelButton.Add_Click({ $window.DialogResult = $false }.GetNewClosure())
     $closeButton.Add_Click({ $window.DialogResult = $false }.GetNewClosure())
     $header.Add_MouseLeftButtonDown({ $window.DragMove() }.GetNewClosure())
-    $window.Add_ContentRendered({ [void]$passwordBox.Focus() }.GetNewClosure())
+    $window.Add_ContentRendered({
+        [IO.File]::WriteAllText($ReadyFile, 'ready', [Text.Encoding]::UTF8)
+        [void]$window.Activate()
+        [void]$passwordBox.Focus()
+    }.GetNewClosure())
 
     $result = $window.ShowDialog()
     if ($result -ne $true) {

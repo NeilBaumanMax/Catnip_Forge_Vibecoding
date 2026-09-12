@@ -1,10 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import type { IpcMain } from 'electron';
 import { shell } from 'electron';
 import type { ExploreZhihuConnectionLaunchResult, ExploreZhihuConnectionStatus, ExploreZhihuSetupResult } from '../common/explore';
-import { getAgentDir } from './paths';
+import { getAgentDir, getUserDataPath } from './paths';
 
 interface OfficialStatusPayload {
   ok?: boolean;
@@ -17,6 +18,7 @@ interface OfficialStatusPayload {
 const MAX_OUTPUT_BYTES = 64 * 1024;
 const STATUS_TIMEOUT_MS = 30_000;
 const SETUP_TIMEOUT_MS = 180_000;
+const SECRET_DIALOG_TIMEOUT_MS = 15_000;
 export const ZHIHU_PROFILE_URL = 'https://developer.zhihu.com/profile';
 
 export function mapOfficialZhihuStatus(payload: unknown): ExploreZhihuConnectionStatus {
@@ -216,6 +218,7 @@ export function buildExploreZhihuConnectionLaunch(): {
   const agentDir = getAgentDir();
   const hostScript = path.join(agentDir, 'host-tools', 'configure-zhihu-secret.ps1');
   const officialRunScript = path.join(agentDir, 'skills', 'zhihu', 'scripts', 'run.ps1');
+  const readyFile = getUserDataPath('runtime-data', 'zhihu-dialog', `${randomUUID()}.ready`);
   return {
     command: systemPowerShell(),
     args: [
@@ -225,12 +228,12 @@ export function buildExploreZhihuConnectionLaunch(): {
       '-ExecutionPolicy', 'Bypass',
       '-File', hostScript,
       '-OfficialRunScript', officialRunScript,
+      '-ReadyFile', readyFile,
     ],
     options: {
       cwd: path.dirname(hostScript),
       env: exploreZhihuEnvironment(),
       windowsHide: true,
-      detached: true,
       stdio: 'ignore',
     },
   };
@@ -248,27 +251,55 @@ export async function beginExploreZhihuConnection(): Promise<ExploreZhihuConnect
   const launch = buildExploreZhihuConnectionLaunch();
   const fileArgumentIndex = launch.args.indexOf('-File');
   const officialArgumentIndex = launch.args.indexOf('-OfficialRunScript');
+  const readyFileArgumentIndex = launch.args.indexOf('-ReadyFile');
   const hostScript = fileArgumentIndex >= 0 ? launch.args[fileArgumentIndex + 1] : undefined;
   const officialRunScript = officialArgumentIndex >= 0 ? launch.args[officialArgumentIndex + 1] : undefined;
-  if (!hostScript || !officialRunScript || !fs.existsSync(hostScript) || !fs.existsSync(officialRunScript)) {
+  const readyFile = readyFileArgumentIndex >= 0 ? launch.args[readyFileArgumentIndex + 1] : undefined;
+  if (!hostScript || !officialRunScript || !readyFile || !fs.existsSync(hostScript) || !fs.existsSync(officialRunScript)) {
     return { ok: false, state: 'unavailable', message: '知乎开放平台安全连接组件不完整' };
   }
 
   try {
     await shell.openExternal(ZHIHU_PROFILE_URL);
+    fs.mkdirSync(path.dirname(readyFile), { recursive: true });
+    fs.rmSync(readyFile, { force: true });
     const child = spawn(launch.command, launch.args, launch.options);
     await new Promise<void>((resolve, reject) => {
-      child.once('spawn', resolve);
-      child.once('error', reject);
+      let settled = false;
+      const finish = (error?: Error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        clearInterval(readyPoll);
+        fs.rmSync(readyFile, { force: true });
+        if (error) reject(error);
+        else resolve();
+      };
+      const timer = setTimeout(() => {
+        child.kill();
+        finish(new Error('知乎开放平台安全输入窗口启动超时'));
+      }, SECRET_DIALOG_TIMEOUT_MS);
+      const readyPoll = setInterval(() => {
+        if (fs.existsSync(readyFile)) finish();
+      }, 75);
+      child.once('error', () => finish(new Error('无法启动知乎开放平台安全输入窗口')));
+      child.once('close', (code) => {
+        if (settled) return;
+        if (fs.existsSync(readyFile)) finish();
+        else finish(new Error(`知乎开放平台安全输入窗口未显示（退出码 ${code ?? 'unknown'}）`));
+      });
     });
-    child.unref();
     return {
       ok: true,
       state: 'launched',
       message: '已打开知乎个人中心和安全输入窗口。配置完成后，本页面会自动确认连接。',
     };
-  } catch {
-    return { ok: false, state: 'unavailable', message: '无法启动知乎开放平台安全连接' };
+  } catch (error) {
+    return {
+      ok: false,
+      state: 'unavailable',
+      message: error instanceof Error ? error.message : '无法启动知乎开放平台安全连接',
+    };
   }
 }
 

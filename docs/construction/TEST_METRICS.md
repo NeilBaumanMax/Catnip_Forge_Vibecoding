@@ -658,3 +658,22 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 | Live desktop CDP at 1389 × 1132 | PASS | Explore is initially selected; `完整日志` count is 0; real-time log and event-card toggles open; script returns to Explore. |
 
 Visual evidence: `electron/.tmp/phase15-pass19-task-manager-comparison.png`, reference and implementation at 1389 × 1132 without scaling. This is UI verification only; no Build/Flash/Serial or hardware action was performed, so `REAL_HARDWARE_VALIDATION_PENDING` remains unchanged.
+
+## 2026-09-12 — Zhihu Access Secret native-dialog reliability
+
+| Command / check | Result | Evidence |
+| --- | --- | --- |
+| Official `agent/skills/zhihu/scripts/run.ps1 status` | PASS | CLI `0.5.0-beta.20260826061344` is compatible; status requested a Secret. No Secret was read or printed. |
+| `npm.cmd --prefix electron run typecheck` | PASS | Main/Renderer connection-state changes compile. |
+| `npm.cmd --prefix electron run build:main` | PASS | Native prompt launch and readiness handshake compile. |
+| `npm.cmd --prefix electron run build:renderer` | PASS | 2824 modules; only the existing large-chunk warning remains. |
+| `npm.cmd --prefix electron run verify:explore-zhihu-connection` | PASS | Attached native prompt, render-ready marker, timeout/early-exit errors, stdin-only Secret handling, and Renderer isolation pass. |
+| `npm.cmd --prefix electron run verify:explore-ui` | PASS | Existing Explore flow, evidence, stages, and safety gates remain intact. |
+| User visual check | PASS | The masked Access Secret window visibly opened during the no-Secret diagnostic launch. |
+| Isolated packaged launch + `npm.cmd --prefix electron run verify:first-run` | PASS | With `VIBEIDE_SMOKE_APP_DATA` only, the original splash completed normally and Main exposed the first-run modal, branding, Skills, Playwright readiness, and placeholder-Key rejection. Test processes and data were removed. |
+
+Root cause: the old implementation detached/unreferenced PowerShell after its process spawned, so a fresh machine could open the Zhihu profile page without keeping the WPF prompt alive long enough to render. Main now waits for a user-data readiness marker written from `ContentRendered`; early exit and 15-second timeout are reported in Explore. CLI download/verification and native-window waiting are explicit UI states. No real Secret or Zhihu request was used.
+
+First-run verification initially misused `VIBEIDE_SMOKE_WORKBENCH_OPEN=1` only to redirect userData. That mode intentionally completes a repository smoke check and closes Main, producing an artificial splash-only 27% state. All temporary processes were terminated at bounded checkpoints. Production splash changes were reverted; user-data isolation now honors `VIBEIDE_SMOKE_APP_DATA` independently, and the corrected isolated packaged first-run passed without activating workbench auto-close behavior.
+
+Final clean package: `v2.0.0` build `7201`, 4,502,226,610 bytes. `Catnip Forge.exe` SHA-256 is `80490D0441CF9ACBDCA8E3495442046AA70CCDD4B7A40C931D7F3360ED96D368`. Release/version gates pass; source and packaged Zhihu host script hashes both equal `5F0E9F8325480E3DE0D577187A3F8A0A49583538EB52F0B291F4286126658EEF`. The targeted clean scan found no project `.catnip`, Explore history, knowledge/favorites, conversation/session state, non-empty `apikey.txt`, or real DeepSeek/Qwen key.

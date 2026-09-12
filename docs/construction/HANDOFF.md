@@ -154,3 +154,12 @@ Secret 不进源码、Renderer、Chat、日志、URL、截图、Agent 输出或�
 
 - 用户实屏发现返回键被标题遮住、说明文字越过头部边框、草稿状态掉到问题卡上方。现已将返回键固定为头部内的 48px 绝对定位控件，头部增至 132px，桌面说明保持单行；Diagnosis 草稿态隐藏，其他运行状态保留。
 - 布局专项新增返回键边界、标题说明边界与草稿隐藏断言，1448 × 1086 截图复核通过。
+
+## 2026-09-12 知乎 Access Secret 安全窗口修复
+
+- 新电脑出现“个人中心已打开、但没有 Secret 输入窗口”的根因，是 Main 只等待 PowerShell 进程 spawn，随后 detached/unref；WPF 尚未完成渲染时宿主可能已经退出。
+- 安全窗口现在保持挂接，并在 WPF `ContentRendered` 后通过 Electron userData 下的一次性 ready 文件确认真正可见；Main 对提前退出和 15 秒超时返回明确错误，确认后立即清理标记。
+- Explore 连接卡会分别显示“正在从知乎官方下载并校验 CLI”和“正在等待 Access Secret 安全窗口显示”，用户不再需要猜测当前阶段。
+- 用户已目视确认诊断启动时遮罩输入窗口弹出。测试没有填写、读取、记录或截图真实 Secret；正式配置仍只通过官方 `zhihu` Skill 的 `auth set --secret-stdin` 写入系统凭据库。
+- 首启验收最初为了隔离 userData 误用了 `VIBEIDE_SMOKE_WORKBENCH_OPEN=1`；该模式会完成仓库 smoke 后主动关闭 Main，因此人为制造了只剩 27% splash 的状态。失败实例均在保护门限按精确 PID 清理，生产启动页改动已全部撤回。`VIBEIDE_SMOKE_APP_DATA` 现可独立重定向测试数据；按正确模式重打包复测后，原启动页正常结束，首启弹层、品牌、Skills、Playwright 与占位 Key 拒绝均通过。
+- 最终干净成品位于 `electron/dist-package/win-unpacked`，版本 `v2.0.0` build `7201`，总计 4,502,226,610 字节；EXE SHA-256 为 `80490D0441CF9ACBDCA8E3495442046AA70CCDD4B7A40C931D7F3360ED96D368`。发布/版本/隔离首启门禁及本地数据排除扫描通过。

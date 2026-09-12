@@ -337,3 +337,11 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] Context checkbox、历史收藏、四阶段分析/计划/交接/确认门禁和状态恢复保持不变。
 - [x] TypeScript、Renderer build、Explore UI/layout、8 组响应式、完整 Diagnosis/handoff 与 1448 × 1086 同尺寸视觉 QA 通过。
 - [x] 纠正 Diagnosis 返回键遮挡、头部说明越界和草稿状态跑位，并加入对应几何回归断言。
+
+### 2026-09-12 知乎连接可靠性
+
+- [x] 修复新电脑只打开知乎个人中心、不显示 Access Secret 原生安全窗口的问题。
+- [x] 用 WPF `ContentRendered` 一次性 ready 文件替代 spawn-only 成功判定；加入提前退出与 15 秒超时反馈。
+- [x] 在 Explore 连接卡明确展示官方 CLI 下载/校验与安全窗口等待阶段。
+- [x] 用户目视确认遮罩输入窗口弹出；TypeScript、Main/Renderer build、知乎连接专项和 Explore UI 契约通过。
+- [x] 纠正首启验收配置：userData 隔离与工作台 smoke 自动关闭解耦；撤回基于假故障产生的启动页生产改动。

@@ -1167,7 +1167,13 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       <span className="explore-connection-dot" aria-hidden="true" />
       <div className="explore-connection-copy">
         <span>知乎开放平台</span>
-        <strong>{checkingConnection ? '正在检查连接…' : connection?.message || '需要先连接知乎开放平台'}</strong>
+        <strong>{checkingConnection
+          ? '正在检查连接…'
+          : installingConnection
+            ? '正在从知乎官方下载并校验 CLI…'
+            : startingConnection
+              ? '正在等待 Access Secret 安全窗口显示…'
+              : connection?.message || '需要先连接知乎开放平台'}</strong>
         {connectionNeedsAction ? (
           <p>Access Secret 只交给知乎官方连接工具，不会出现在页面、聊天或日志中。</p>
         ) : null}
@@ -1175,7 +1181,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
       <div className="explore-connection-actions">
         {connection?.state === 'needs_install' && (
           <button className="explore-primary-action" type="button" onClick={() => void installConnection()} disabled={installingConnection}>
-            {installingConnection ? '正在安装连接组件…' : '安装连接组件并继续'}
+            {installingConnection ? '正在下载并校验 CLI…' : '安装连接组件并继续'}
           </button>
         )}
         {connection?.state === 'needs_secret' && (
