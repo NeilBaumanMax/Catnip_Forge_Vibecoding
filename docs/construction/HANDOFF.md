@@ -7,7 +7,8 @@
 - 施工范围和安全/测试边界见 [Phase 16 基线](PHASE_16_MODEL_CENTER_AND_CREDENTIAL_MAINTENANCE.md)。先完成并远端核对独立文档提交，随后按 16b→16g 小闭环推进。
 - `docs/tutorials/` 和 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 均为未跟踪现场，不纳入 Phase 16 文档提交；后者不得触碰。
 - 文档基线提交 `39dbfac6` 已推送并核对远端一致。16b 模型配置 Domain/Store 已实现并通过专项；下一小项是 16c Main 安全凭据 adapter 与旧 Key 非破坏迁移。
-- 16b 提交 `1659b7ed` 已推送并核对远端一致。16c1 Main-only safeStorage 凭据底座与旧 Key 迁移已完成本地专项；下一步先提交推送 16c1，再做原生安全输入和首次启动/运行接入。
+- 16b 提交 `1659b7ed`、16c1 提交 `e4c4a485` 已推送。16c2–16f 已完成模型原生安全输入、模型工作区、Agent 会话模型选择/任务快照和知乎凭证维护，并通过专项与 Renderer build；提交号须在本轮提交后动态补记。
+- 尚待闭环：首次启动页、软件助手与 Qwen 仍使用旧 Key 文件链路；真实付费模型、真实知乎在线验证、Windows 发布包和硬件均未在本轮执行。
 
 ## 2026-09-12 — 固定深蓝主题与 150% 显示适配
 
@@ -79,7 +80,7 @@
 
 - 产品：Catnip Forge / Catnip 硬件智能开发平台 / Autonomous Hardware Development Agent。
 - 当前公开版本 `v2.0.0`，Build `7201`，npm `2.0.0-7201`，Windows PE `2.0.0.7201`。
-- 六个可见工作区：仓库、监视器、任务管理器、编辑器、探索、Neil 的 skill 小站。Skill 小站当前只负责在内置浏览器打开固定站点且不显示录制控件；代码中尚无已验证的站点 → 本地 Skill Manager 一键安装桥，不得把网页下载能力写成本地自动安装完成。
+- 七个可见工作区：仓库、监视器、任务管理器、编辑器、探索、模型、Neil 的 skill 小站。模型工作区管理本机供应商/模型元数据与安全凭据状态，不新增 Agent 或任务系统。Skill 小站当前只负责在内置浏览器打开固定站点且不显示录制控件；代码中尚无已验证的站点 → 本地 Skill Manager 一键安装桥，不得把网页下载能力写成本地自动安装完成。
 - 当前工程是仓库/编辑器、Build/Flash/Serial、任务证据、工程 Agent、Explore Context/Handoff 的唯一工程上下文；冷启动必须显式选择或创建工程。
 - 工程 Agent 数据位于 `<project>/.catnip/agent/`；Explore 多历史位于 `<project>/.catnip/explore/<mode>/<sessionId>/`；交接材料位于 `<project>/.catnip/handoffs/<sessionId>/`。
 - Explore 使用独立对话通道。找灵感/解问题每条历史保存草稿、选择、结果、来源、对话、阶段和交接状态；生成材料或确认提交后仍能恢复查看。

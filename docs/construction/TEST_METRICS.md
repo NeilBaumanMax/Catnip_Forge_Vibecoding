@@ -736,3 +736,20 @@ Phase 16 后续最小门禁：Store schema/迁移/损坏/并发；Secret IPC 与
 | `git diff --check` | PASS |
 
 Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会在备份中残留明文。根因修复为“安全存储加密并回读通过后，对精确旧文件原位覆写、截断、fsync”，专项新增根目录全文件扫描。Electron 的 `os_crypt_win`/GPU 环境警告仍是当前测试宿主噪声；本专项注入测试 cipher，不把该环境警告当作真实 DPAPI 成功证据。
+
+### 16c2–16f 模型管理、会话选择与知乎维护
+
+| 命令 | 结果 | 证据 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run typecheck` | PASS | Main/Preload/Renderer 新接口与七工作区类型通过 |
+| `verify:model-config` | PASS | schema、HTTPS、协议、默认用途、并发与损坏恢复 |
+| `verify:model-credentials` | PASS | safeStorage adapter、旧明文精确清理与无明文残留 |
+| `verify:model-management` | PASS | 内置项保护、窄 IPC、凭据槽保护、原生提示去重 |
+| `verify:agent-model-selection` | PASS | 默认/替代 DeepSeek 快照、不含 token、协议与缺失档案拒绝 |
+| `verify:session` | PASS | 会话选择及非敏感消息快照重启持久化 |
+| `verify:task-queue` | PASS | 新模型快照未破坏现有队列 |
+| `verify:explore-zhihu-status` | PASS | 官方 status-first 状态映射；现场为 `needs_secret` |
+| `verify:explore-zhihu-connection` | PASS | 原生 PasswordBox、Renderer 隔离及维护路由 |
+| `npm.cmd --prefix electron run build:renderer` | PASS | 2825 modules；仅既有大 chunk warning |
+
+首次失败保留：消息快照归一化块曾误放在 conversation 函数，触发 `TS2353/TS2552` 与 `ReferenceError: message is not defined`；修复后 typecheck/session/task-queue 通过。Review 另发现 connected 替换 Secret 被通用状态判断拒绝，修正后加专项断言。测试未输入真实模型 Key 或知乎 Access Secret，未调用付费 API，未修改官方 vendor，未执行 Build/Flash/Serial；`REAL_HARDWARE_VALIDATION_PENDING`。

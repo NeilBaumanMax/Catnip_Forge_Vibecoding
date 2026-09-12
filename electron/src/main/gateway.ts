@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { ipcMain, BrowserWindow, shell } from 'electron';
 import { getOrchestrator } from './worker';
 import { normalizeAgentTaskInput, type AgentTaskInput, type TaskSubmitMode } from './worker/orchestrator';
-import { activateChatConversation, appendChatMessage, createChatConversation, deleteChatConversation, getChatConversation, listChatConversations, renameChatConversation, setChatConversationPinned } from './worker/session-store';
+import { activateChatConversation, appendChatMessage, createChatConversation, deleteChatConversation, getChatConversation, listChatConversations, renameChatConversation, setChatConversationModel, setChatConversationPinned } from './worker/session-store';
 import { activateTab, closeTab, listTabs, openTabUrl, setBrowserTabsEmitter, setBrowserViewBoundsFromRenderer } from './browser-view';
 import { listBrowserRecordingSummaries, listBrowserRecordings, replayBrowserRecording, replayLatestBrowserRecording, startBrowserRecording, stopBrowserRecording } from './browser-recorder';
 import { createWorkbenchEntry, deleteWorkbenchEntry, getWorkbenchOverview, listWorkbenchDirectory, openWorkbenchItem, readWorkbenchFile, renameWorkbenchEntry, writeWorkbenchFile } from './workbench';
@@ -35,6 +35,8 @@ import { isExploreRequestInFlight, registerExploreAnalysisIpc } from './explore-
 import { registerExploreContextIpc } from './explore-context';
 import { registerExploreSessionIpc } from './explore-session';
 import { activateProject, assertPathInActiveProject, createProject, getProjectSessionStatus, requireActiveProject } from './project-session';
+import { registerModelManagementIpc } from './model-management';
+import { snapshotEngineeringAgentModel } from './agent-model-selection';
 
 export function startGateway(mainWindow: BrowserWindow): void {
   // Gateway 提供 pushUI 能力 — Worker 通过它推消息到 UI
@@ -94,6 +96,7 @@ export function startGateway(mainWindow: BrowserWindow): void {
   registerExploreAnalysisIpc(ipcMain, orch);
   registerExploreContextIpc(ipcMain);
   registerExploreSessionIpc(ipcMain);
+  registerModelManagementIpc(ipcMain);
 
   const assertProjectSwitchSafe = async () => {
     if (isExploreRequestInFlight()) throw new Error('Explore 正在检索来源，请等待完成后再切换工程');
@@ -131,6 +134,8 @@ export function startGateway(mainWindow: BrowserWindow): void {
     }
     if (!status.busy && targetConversationId !== store.activeConversationId) activateChatConversation(targetConversationId);
     input.attachments = validateAttachmentReferences(targetConversationId, input.attachments);
+    const conversation = getChatConversation(targetConversationId);
+    const selectedModel = snapshotEngineeringAgentModel(conversation.modelProfileId);
     const message = appendChatMessage(targetConversationId, {
       id: messageId || randomUUID(),
       text: input.text,
@@ -138,8 +143,16 @@ export function startGateway(mainWindow: BrowserWindow): void {
       timestamp: timestamp || Date.now(),
       skillRefs: input.skillRefs,
       attachments: input.attachments,
+      modelSnapshot: {
+        profileId: selectedModel.profileId,
+        providerId: selectedModel.providerId,
+        providerName: selectedModel.providerName,
+        upstreamModel: selectedModel.upstreamModel,
+        protocol: selectedModel.protocol,
+        baseUrl: selectedModel.baseUrl,
+      },
     });
-    return { ...orch.submitTask(input, mode || 'auto', targetConversationId), message };
+    return { ...orch.submitTask(input, mode || 'auto', targetConversationId, conversation.modelProfileId), message };
   });
 
   ipcMain.handle('chat:attachments:pick', async (_event, conversationId: string) => {
@@ -268,6 +281,14 @@ export function startGateway(mainWindow: BrowserWindow): void {
     }
     await shell.openExternal(target.toString());
     return { ok: true };
+  });
+
+  ipcMain.handle('chat:conversations:model', async (_event, id: string, modelProfileId: string) => {
+    requireActiveProject();
+    if (orch.getTaskStatus().busy) throw new Error('Agent 正在工作，完成或停止后才能切换模型');
+    snapshotEngineeringAgentModel(modelProfileId);
+    orch.resetAgentConversation();
+    return setChatConversationModel(id, modelProfileId);
   });
 
   ipcMain.handle('workbench:listDirectory', async (_event, targetPath: string) => {

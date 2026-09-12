@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { AddVerificationRecordInput, ExploreAnalysisResult, ExploreContextGatherRequest, ExploreExecutionConfirmRequest, ExploreRequest, HandoffContext, SaveKnowledgeCardInput } from '../common/explore';
 import type { ExploreHandoffArtifact, ExploreWorkSessionRecord } from '../common/project-session';
+import type { ModelConfigState } from '../common/model-config';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   minimizeWindow: () => ipcRenderer.invoke('window:minimize'),
@@ -9,6 +10,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getStartupStatus: () => ipcRenderer.invoke('startup:status'),
   saveStartupApiKey: (key: string, qwenKey?: string) => ipcRenderer.invoke('startup:save-apikey', key, qwenKey),
   askSoftwareAssistant: (messages: Array<{ role: 'user' | 'assistant'; content: string }>) => ipcRenderer.invoke('software-assistant:ask', messages),
+  listModels: () => ipcRenderer.invoke('models:list'),
+  saveModels: (config: ModelConfigState, expectedRevision: number) => ipcRenderer.invoke('models:save', config, expectedRevision),
+  configureModelCredential: (providerId: string) => ipcRenderer.invoke('models:credential:configure', providerId),
+  deleteModelCredential: (providerId: string) => ipcRenderer.invoke('models:credential:delete', providerId),
   getProjectSessionStatus: () => ipcRenderer.invoke('project:session:status'),
   activateProjectSession: (projectId: string) => ipcRenderer.invoke('project:session:activate', projectId),
   createProjectSession: (name: string) => ipcRenderer.invoke('project:session:create', name),
@@ -24,6 +29,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteChatConversation: (id: string) => ipcRenderer.invoke('chat:conversations:delete', id),
   renameChatConversation: (id: string, title: string) => ipcRenderer.invoke('chat:conversations:rename', id, title),
   setChatConversationPinned: (id: string, pinned: boolean) => ipcRenderer.invoke('chat:conversations:pin', id, pinned),
+  setChatConversationModel: (id: string, modelProfileId: string) => ipcRenderer.invoke('chat:conversations:model', id, modelProfileId),
   onTaskComplete: (cb: (result: { code: number | null; taskId?: string | null }) => void) => {
     ipcRenderer.on('task:complete', (_event, result) => cb(result));
   },
@@ -70,6 +76,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getExploreZhihuStatus: () => ipcRenderer.invoke('explore:zhihu:status'),
   installExploreZhihuConnection: () => ipcRenderer.invoke('explore:zhihu:install'),
   beginExploreZhihuConnection: () => ipcRenderer.invoke('explore:zhihu:connect'),
+  replaceExploreZhihuSecret: () => ipcRenderer.invoke('explore:zhihu:replace'),
+  verifyExploreZhihuSecret: () => ipcRenderer.invoke('explore:zhihu:verify'),
+  logoutExploreZhihu: () => ipcRenderer.invoke('explore:zhihu:logout'),
   gatherExploreContext: (request: ExploreContextGatherRequest) => ipcRenderer.invoke('explore:context:gather', request),
   prepareExploreRequest: (request: ExploreRequest) => ipcRenderer.invoke('explore:request:prepare', request),
   startExploreAnalysis: (request: ExploreRequest) => ipcRenderer.invoke('explore:analysis:start', request),

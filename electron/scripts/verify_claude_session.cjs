@@ -44,6 +44,7 @@ async function main() {
     loadClaudeSession,
     renameChatConversation,
     setChatConversationPinned,
+    setChatConversationModel,
     activateChatConversation,
   } = require('../dist/main/worker/session-store.js');
   const { activateProject, getProjectSessionStatus } = require('../dist/main/project-session.js');
@@ -86,12 +87,26 @@ async function main() {
       role: 'user',
       timestamp: Date.now(),
       skillRefs: [{ id: 'espidf-hardboard', name: 'ESP-IDF Hardboard Vibecoding', start: 7, end: 24 }],
+      modelSnapshot: {
+        profileId: 'deepseek-v4-pro',
+        providerId: 'deepseek',
+        providerName: 'DeepSeek',
+        upstreamModel: 'deepseek-v4-pro',
+        protocol: 'anthropic-compatible',
+        baseUrl: 'https://api.deepseek.com/anthropic',
+      },
     });
     const restoredMessage = getChatConversation(first.id).messages.find((message) => message.id === 'message-user-1');
     if (restoredMessage?.skillRefs?.[0]?.id !== 'espidf-hardboard' || restoredMessage.skillRefs[0].start !== 7) {
       throw new Error('skill reference positions did not survive session persistence');
     }
+    if (restoredMessage?.modelSnapshot?.profileId !== 'deepseek-v4-pro' || 'authToken' in restoredMessage.modelSnapshot) {
+      throw new Error('non-secret task model snapshot did not survive session persistence');
+    }
     const another = createChatConversation();
+    setChatConversationModel(another.id, 'deepseek-v4-pro');
+    if (getChatConversation(another.id).modelProfileId !== 'deepseek-v4-pro') throw new Error('conversation model selection did not persist');
+    if (listChatConversations().conversations.find((item) => item.id === another.id)?.modelProfileId !== 'deepseek-v4-pro') throw new Error('conversation model selection missing from summary');
     appendChatMessage(another.id, {
       id: 'message-user-2',
       text: '历史工程 B',

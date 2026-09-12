@@ -33,6 +33,17 @@ export interface ModelConfigState {
   defaults: Partial<Record<ModelDefaultUse, string>>;
 }
 
+export interface ProviderCredentialStatus {
+  providerId: string;
+  configured: boolean;
+  updatedAt?: string;
+}
+
+export interface ModelManagementSnapshot {
+  config: ModelConfigState;
+  credentials: ProviderCredentialStatus[];
+}
+
 const ID_PATTERN = /^[a-z0-9][a-z0-9._-]{0,63}$/;
 const PROTOCOLS = new Set<ModelProtocol>(['anthropic-compatible', 'openai-compatible']);
 const CAPABILITIES = new Set<ModelCapability>(['engineering-agent', 'software-assistant', 'vision']);

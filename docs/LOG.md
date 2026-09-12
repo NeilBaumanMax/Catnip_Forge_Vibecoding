@@ -1090,3 +1090,11 @@
 - 旧 DeepSeek/Qwen 文件迁移是显式 helper：读取目标行 → 加密存储 → Main 内回读验证 → 精确清理旧行；不同安全值发生冲突时保留旧文件。
 - Review 发现初版清理复用原子 helper 会生成含明文的 `.bak`。修复为安全副本确认后的原位覆写/截断/fsync，新增全临时目录明文扫描，修复后专项通过。
 - 本提交不注册 Renderer IPC、不读取用户真实 Key、不调用远端。Windows `os_crypt`/GPU 环境警告仅记录为测试宿主信息，实际专项使用可控测试 cipher。
+
+## 2026-09-12 — Phase 16c2–16f 模型中心、会话选择与知乎维护
+
+- 新增 Main-only 模型凭据原生输入桥、模型管理 IPC 与第七个“模型”工作区；Renderer 只收配置元数据和 `configured` 状态。
+- Agent 会话增加模型选择与任务快照，Agent 进程按 profile/base/upstream model 隔离；不兼容或无凭据时不静默 fallback。
+- 知乎维护复用官方 `auth set --secret-stdin`、`auth status --verify`、`auth logout`；连接成功状态保留完整维护操作条。
+- 修复两项首轮问题：消息快照归一化块放错函数；connected 替换入口被后续状态判断拒绝。修复后相关 typecheck、专项与 Renderer build 通过。
+- 未读取或记录真实 Secret，未调用真实模型/知乎请求，未打包或执行硬件动作；旧首次启动、软件助手与 Qwen Key 链路列为下一闭环。

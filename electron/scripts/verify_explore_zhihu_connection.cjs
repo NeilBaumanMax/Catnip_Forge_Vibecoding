@@ -66,6 +66,9 @@ async function main() {
 
   assert.match(preload, /beginExploreZhihuConnection:\s*\(\)\s*=>/);
   assert.match(preload, /installExploreZhihuConnection:\s*\(\)\s*=>/);
+  assert.match(preload, /replaceExploreZhihuSecret:\s*\(\)\s*=>\s*ipcRenderer\.invoke\('explore:zhihu:replace'\)/);
+  assert.match(preload, /verifyExploreZhihuSecret:\s*\(\)\s*=>\s*ipcRenderer\.invoke\('explore:zhihu:verify'\)/);
+  assert.match(preload, /logoutExploreZhihu:\s*\(\)\s*=>\s*ipcRenderer\.invoke\('explore:zhihu:logout'\)/);
   assert(!/beginExploreZhihuConnection:\s*\([^)]*(secret|accessSecret)/i.test(preload));
   assert(!/installExploreZhihuConnection:\s*\([^)]*(secret|accessSecret)/i.test(preload));
   assert.match(panel, /连接知乎开放平台/);
@@ -75,6 +78,16 @@ async function main() {
   assert.match(panel, /正在等待 Access Secret 安全窗口显示/, 'native prompt startup must have a visible waiting state');
   assert(!/<input[^>]+(?:secret|password)/i.test(panel));
   assert.match(mainSource, /shell\.openExternal\(ZHIHU_PROFILE_URL\)/);
+  assert.match(mainSource, /runOfficialZhihuAuth\(\['auth', 'status', '--verify'\]\)/, 'online verification must use the official status command');
+  assert.match(mainSource, /runOfficialZhihuAuth\(\['auth', 'logout'\]\)/, 'logout must use the official local credential command');
+  assert.match(mainSource, /status\.state !== 'needs_secret' && !\(allowReplacement && status\.state === 'connected'\)/, 'replacement must accept an already-connected account');
+  assert.match(mainSource, /registrar\.handle\('explore:zhihu:replace'/);
+  assert.match(mainSource, /registrar\.handle\('explore:zhihu:verify'/);
+  assert.match(mainSource, /registrar\.handle\('explore:zhihu:logout'/);
+  assert.match(panel, /replaceExploreZhihuSecret\(\)/);
+  assert.match(panel, /verifyExploreZhihuSecret\(\)/);
+  assert.match(panel, /logoutExploreZhihu\(\)/);
+  assert.match(panel, /has-maintenance/, 'connected maintenance controls must not be squeezed into the compact status pill');
   assert.match(mainSource, /fs\.existsSync\(readyFile\)/, 'Main must wait for a native-dialog readiness file');
   assert.match(mainSource, /child\.once\('close'[^]*fs\.existsSync\(readyFile\)[^]*finish\(\)/, 'a promptly cancelled but rendered prompt still counts as visible');
   assert.match(mainSource, /child\.once\('close'[^]*安全输入窗口未显示/, 'early native-dialog exit must be reported to the renderer');

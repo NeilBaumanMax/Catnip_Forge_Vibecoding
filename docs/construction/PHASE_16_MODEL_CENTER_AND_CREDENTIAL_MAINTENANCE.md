@@ -139,3 +139,14 @@ Agent Composer 的模型选择器只列出启用且标记为“工程 Agent”�
 - 旧 Key 迁移先完成加密写入和回读验证，再原位覆写/截断旧文件中的目标行；不生成包含旧明文的 `.bak`。安全值与旧值冲突时保留旧文件并返回 `conflict`。
 - Review 首轮发现通用原子写会把旧明文留在备份文件，已改为经安全存储验证后的无备份定点清理，并加入临时目录全文件明文扫描断言。
 - `verify:model-credentials`、`verify:model-config`、Electron typecheck、Main build 与 diff check 通过。专项仅使用注入的测试 cipher 和虚构 Key，没有调用真实 DPAPI 凭据、模型服务或用户文件。
+
+## 12. 16c2–16f 产品接入记录
+
+状态：`IMPLEMENTED_AND_VERIFIED`，尚未执行真实付费模型调用、真实知乎验证或发布包人工验收。
+
+- 新增第七个“模型”工作区：可维护供应商、协议、HTTPS Base URL、模型档案、用途能力、启停状态和用途默认值；内置项与凭据引用由 Main 再校验，Renderer 不能指定凭据槽或取得明文。
+- 模型凭据通过 Main 拉起的 WPF `PasswordBox` 输入；Secret 经受限 stdout 进入 Main 后立即写入 `safeStorage`，Preload 只暴露“配置/清除某供应商”的窄动作。
+- Agent Composer 增加当前会话模型选择器。选择按工程会话持久化；任务提交时冻结不含 Secret 的模型快照，运行时才由 Main 解密凭据。不兼容、不可用或缺凭据时明确失败，不静默改用其他付费模型。
+- 知乎已连接状态新增“替换 Secret / 在线验证 / 退出本机登录”；分别复用官方 `auth set --secret-stdin`、`auth status --verify`、`auth logout`，退出提示明确不等于远端吊销。没有修改 vendor Skill。
+- Review 发现 connected 替换入口被后续通用状态判断拒绝，已修正合法条件并加入回归断言。
+- 会话快照首轮误放进 conversation 归一化函数，造成 `TS2353/TS2552` 与 `ReferenceError: message is not defined`；已移至 `normalizeMessage` 并复测通过。

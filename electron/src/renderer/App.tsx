@@ -641,6 +641,16 @@ export default function App() {
     }
   }, []);
 
+  const handleSetConversationModel = useCallback(async (id: string, modelProfileId: string) => {
+    try {
+      const result = await window.electronAPI?.setChatConversationModel(id, modelProfileId);
+      if (result) setChatConversations(result.conversations);
+      setChatHistoryError('');
+    } catch (error) {
+      setChatHistoryError(error instanceof Error ? error.message : String(error));
+    }
+  }, []);
+
   const handleActivateProject = useCallback(async () => {
     if (!selectedProjectId || projectSessionSaving) return;
     setProjectSessionSaving(true);
@@ -857,6 +867,7 @@ export default function App() {
               onDeleteConversation={handleDeleteConversation}
               onRenameConversation={handleRenameConversation}
               onToggleConversationPinned={handleToggleConversationPinned}
+              onSetConversationModel={handleSetConversationModel}
             />
           </div>
         ) : null}

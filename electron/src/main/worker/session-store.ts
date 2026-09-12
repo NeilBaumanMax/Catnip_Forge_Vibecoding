@@ -35,11 +35,20 @@ export interface StoredChatMessage {
   taskId?: string | null;
   skillRefs?: Array<{ id: string; name: string; start: number; end: number }>;
   attachments?: Array<{ id: string; name: string; mimeType: string; size: number; kind: 'image' | 'pdf' | 'word' | 'powerpoint' | 'text'; textAvailable: boolean; warning?: string }>;
+  modelSnapshot?: {
+    profileId: string;
+    providerId: string;
+    providerName: string;
+    upstreamModel: string;
+    protocol: 'anthropic-compatible';
+    baseUrl: string;
+  };
 }
 
 export interface ChatConversation extends ClaudeSessionState {
   title: string;
   pinned: boolean;
+  modelProfileId?: string;
   messages: StoredChatMessage[];
 }
 
@@ -52,6 +61,7 @@ export interface ChatConversationSummary {
   updatedAt: string;
   messageCount: number;
   turnCount: number;
+  modelProfileId?: string;
   readOnly?: boolean;
 }
 
@@ -87,6 +97,7 @@ function createConversation(title = '新对话'): ChatConversation {
     id: `conversation-${randomUUID()}`,
     title,
     pinned: false,
+    modelProfileId: undefined,
     createdAt: now,
     updatedAt: now,
     turnCount: 0,
@@ -160,6 +171,19 @@ function normalizeMessage(message: StoredChatMessage): StoredChatMessage {
         warning: item.warning ? String(item.warning).slice(0, 500) : undefined,
       })).filter((item) => /^att_[a-f0-9]{32}$/.test(item.id))
       : undefined,
+    modelSnapshot: message.modelSnapshot
+      && /^[a-z0-9][a-z0-9._-]{0,63}$/.test(String(message.modelSnapshot.profileId || ''))
+      && /^[a-z0-9][a-z0-9._-]{0,63}$/.test(String(message.modelSnapshot.providerId || ''))
+      && message.modelSnapshot.protocol === 'anthropic-compatible'
+      ? {
+        profileId: message.modelSnapshot.profileId,
+        providerId: message.modelSnapshot.providerId,
+        providerName: String(message.modelSnapshot.providerName || '').slice(0, 100),
+        upstreamModel: String(message.modelSnapshot.upstreamModel || '').slice(0, 200),
+        protocol: 'anthropic-compatible',
+        baseUrl: String(message.modelSnapshot.baseUrl || '').slice(0, 500),
+      }
+      : undefined,
   };
 }
 
@@ -173,6 +197,9 @@ function normalizeConversation(conversation: ChatConversation): ChatConversation
     id: typeof conversation.id === 'string' && conversation.id ? conversation.id : `conversation-${randomUUID()}`,
     title: compactTitle(conversation.title || messages.find((message) => message.role === 'user')?.text || '新对话'),
     pinned: Boolean(conversation.pinned),
+    modelProfileId: typeof conversation.modelProfileId === 'string' && /^[a-z0-9][a-z0-9._-]{0,63}$/.test(conversation.modelProfileId)
+      ? conversation.modelProfileId
+      : undefined,
     createdAt: conversation.createdAt || now,
     updatedAt: conversation.updatedAt || now,
     turnCount: Number.isFinite(conversation.turnCount) ? conversation.turnCount : turns.length,
@@ -277,6 +304,7 @@ function summaryOf(conversation: ChatConversation): ChatConversationSummary {
     updatedAt: conversation.updatedAt,
     messageCount: conversation.messages.length,
     turnCount: conversation.turnCount,
+    modelProfileId: conversation.modelProfileId,
   };
 }
 
@@ -342,6 +370,17 @@ export function setChatConversationPinned(id: string, pinned: boolean): { active
   conversation.pinned = pinned;
   writeStore(store);
   logger.info('claude:session', { event: 'conversation-pin', conversationId: id, pinned });
+  return listChatConversations();
+}
+
+export function setChatConversationModel(id: string, modelProfileId: string): { activeConversationId: string; conversations: ChatConversationSummary[] } {
+  if (!/^[a-z0-9][a-z0-9._-]{0,63}$/.test(modelProfileId)) throw new Error('模型档案 ID 无效');
+  const store = readStore();
+  const conversation = findConversation(store, id);
+  conversation.modelProfileId = modelProfileId;
+  conversation.updatedAt = nowIso();
+  writeStore(store);
+  logger.info('claude:session', { event: 'conversation-model', conversationId: id, modelProfileId });
   return listChatConversations();
 }
 

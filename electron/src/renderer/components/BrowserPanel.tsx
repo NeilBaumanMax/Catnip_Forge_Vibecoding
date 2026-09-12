@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Boxes, Code2, Compass, FolderOpen, GraduationCap, Minus, MonitorUp, Rocket, Settings, Settings2, Square, Workflow, Wrench, X, Zap } from 'lucide-react';
+import { Boxes, Code2, Compass, Cpu, FolderOpen, GraduationCap, Minus, MonitorUp, Rocket, Settings, Settings2, Square, Workflow, Wrench, X, Zap } from 'lucide-react';
 import WorkspacePanel from './WorkspacePanel';
 import CodeEditor from './CodeEditor';
 import ExplorePanel, { type ExploreDiagnosisSeed } from './ExplorePanel';
+import ModelPanel from './ModelPanel';
 import type { BrowserTab, HardboardDevice, HardboardRuntimeState, ProjectSummary, RecordingSummary, RuntimeEvent, SerialMonitorEvent, SerialMonitorSnapshot, WorkbenchItem, WorkbenchOverview } from '../types';
 import catnipForgeIcon from '../assets/catnip-app-icon.png';
 import taskManagerEmptyGuagua from '../assets/task-manager-empty-guagua-v2.png';
@@ -32,7 +33,7 @@ interface Props {
   onOpenWorkbenchItem: (targetPath: string) => void;
 }
 
-type PanelMode = 'workbench' | 'repo' | 'monitor' | 'tasks' | 'editor' | 'explore' | 'skillHub';
+type PanelMode = 'workbench' | 'repo' | 'monitor' | 'tasks' | 'editor' | 'explore' | 'models' | 'skillHub';
 const SKILL_HUB_URL = 'http://118.195.247.102/#page-top';
 
 function formatSerialEvent(event: SerialMonitorEvent, receiveMode: 'text' | 'hex'): string {
@@ -962,6 +963,7 @@ export default function BrowserPanel({
           <button data-tour-id="tab-tasks" type="button" role="tab" aria-selected={mode === 'tasks'} className={`nes-btn${mode === 'tasks' ? ' is-primary' : ''}`} onClick={() => setMode('tasks')}><Workflow aria-hidden="true" /><span>任务管理器</span></button>
           <button data-tour-id="tab-editor" type="button" role="tab" aria-selected={mode === 'editor'} className={`nes-btn${mode === 'editor' ? ' is-primary' : ''}`} onClick={() => setMode('editor')}><Code2 aria-hidden="true" /><span>编辑器</span></button>
           <button data-tour-id="tab-explore" type="button" role="tab" aria-selected={mode === 'explore'} className={`nes-btn${mode === 'explore' ? ' is-primary' : ''}`} onClick={openExploreHome}><Compass aria-hidden="true" /><span>探索</span></button>
+          <button data-tour-id="tab-models" type="button" role="tab" aria-selected={mode === 'models'} className={`nes-btn${mode === 'models' ? ' is-primary' : ''}`} onClick={() => setMode('models')}><Cpu aria-hidden="true" /><span>模型</span></button>
           <button data-tour-id="tab-skill-hub" type="button" role="tab" aria-selected={mode === 'skillHub'} className={`nes-btn${mode === 'skillHub' ? ' is-primary' : ''}`} onClick={openSkillHub}><GraduationCap aria-hidden="true" /><span>Neil 的 skill 小站</span></button>
         </div>
         <div className="workspace-shell-actions workspace-shell-box">
@@ -1108,6 +1110,8 @@ export default function BrowserPanel({
           diagnosisSeed={exploreDiagnosisSeed}
         />
       </div> : null}
+
+      {mode === 'models' ? <ModelPanel /> : null}
 
       {mode === 'monitor' ? (
         <div className="serial-monitor serial-assistant" data-tour-id="panel-monitor">

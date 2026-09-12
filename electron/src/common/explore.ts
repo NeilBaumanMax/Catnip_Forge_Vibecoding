@@ -172,6 +172,13 @@ export interface ExploreZhihuSetupResult {
   connection: ExploreZhihuConnectionStatus;
 }
 
+export interface ExploreZhihuMaintenanceResult {
+  ok: boolean;
+  action: 'replace' | 'verify' | 'logout';
+  message: string;
+  connection: ExploreZhihuConnectionStatus;
+}
+
 export interface ExploreAnalysisStartResult {
   ok: boolean;
   taskId: string;

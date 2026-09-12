@@ -98,6 +98,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   const [checkingConnection, setCheckingConnection] = useState(false);
   const [installingConnection, setInstallingConnection] = useState(false);
   const [startingConnection, setStartingConnection] = useState(false);
+  const [maintainingConnection, setMaintainingConnection] = useState<'replace' | 'verify' | 'logout' | null>(null);
   const [analysisPending, setAnalysisPending] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<ExploreAnalysisResult | null>(null);
   const [analysisRequest, setAnalysisRequest] = useState<ExploreRequest | null>(null);
@@ -1083,6 +1084,49 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
     }
   };
 
+  const replaceConnectionSecret = async () => {
+    const watchId = ++connectionWatchId.current;
+    setMaintainingConnection('replace');
+    try {
+      const result = await window.electronAPI.replaceExploreZhihuSecret();
+      setConnection(result.connection);
+      setNotice(result.message);
+      if (result.ok) void watchConnection(watchId);
+    } catch {
+      setNotice('无法打开 Access Secret 替换窗口');
+    } finally {
+      setMaintainingConnection(null);
+    }
+  };
+
+  const verifyConnectionSecret = async () => {
+    setMaintainingConnection('verify');
+    try {
+      const result = await window.electronAPI.verifyExploreZhihuSecret();
+      setConnection(result.connection);
+      setNotice(result.message);
+    } catch {
+      setNotice('知乎 Access Secret 在线验证失败');
+    } finally {
+      setMaintainingConnection(null);
+    }
+  };
+
+  const logoutConnection = async () => {
+    if (!window.confirm('只清除本机保存的知乎 Access Secret，不会在知乎开放平台远端吊销。确定继续吗？')) return;
+    setMaintainingConnection('logout');
+    try {
+      const result = await window.electronAPI.logoutExploreZhihu();
+      setConnection(result.connection);
+      setNotice(result.message);
+      if (result.connection.state === 'needs_secret') autoConnectionPrompted.current = true;
+    } catch {
+      setNotice('知乎本机凭证清除失败');
+    } finally {
+      setMaintainingConnection(null);
+    }
+  };
+
   const renameWorkSession = async (event: React.FormEvent, session: ExploreWorkSessionSummary) => {
     event.preventDefault();
     const title = renameDraft.trim().replace(/\s+/g, ' ').slice(0, 80);
@@ -1160,7 +1204,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
   const connectionNeedsAction = connectionState === 'needs_secret' || connectionState === 'needs_install' || connectionState === 'error';
   const connectionBadge = (
     <section
-      className={`explore-connection-status explore-connection-status--${connectionState}${connectionNeedsAction ? ' is-actionable' : ''}`}
+      className={`explore-connection-status explore-connection-status--${connectionState}${connectionNeedsAction ? ' is-actionable' : ''}${connectionState === 'connected' ? ' has-maintenance' : ''}`}
       data-tour-id="explore-zhihu-connection"
       role="status"
     >
@@ -1173,6 +1217,12 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             ? '正在从知乎官方下载并校验 CLI…'
             : startingConnection
               ? '正在等待 Access Secret 安全窗口显示…'
+              : maintainingConnection === 'replace'
+                ? '正在打开 Access Secret 替换窗口…'
+                : maintainingConnection === 'verify'
+                  ? '正在在线验证 Access Secret…'
+                  : maintainingConnection === 'logout'
+                    ? '正在清除本机 Access Secret…'
               : connection?.message || '需要先连接知乎开放平台'}</strong>
         {connectionNeedsAction ? (
           <p>Access Secret 只交给知乎官方连接工具，不会出现在页面、聊天或日志中。</p>
@@ -1189,6 +1239,11 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             {startingConnection ? '正在打开安全窗口…' : '配置 Access Secret'}
           </button>
         )}
+        {connection?.state === 'connected' ? <>
+          <button className="explore-primary-action" type="button" onClick={() => void replaceConnectionSecret()} disabled={maintainingConnection !== null}>替换 Secret</button>
+          <button className="explore-secondary-action" type="button" onClick={() => void verifyConnectionSecret()} disabled={maintainingConnection !== null}>{maintainingConnection === 'verify' ? '验证中…' : '在线验证'}</button>
+          <button className="explore-secondary-action is-danger" type="button" onClick={() => void logoutConnection()} disabled={maintainingConnection !== null}>退出本机登录</button>
+        </> : null}
         <button className="explore-secondary-action" type="button" onClick={() => void refreshConnection()} disabled={checkingConnection}>
           {checkingConnection ? '检查中…' : '重新检查'}
         </button>

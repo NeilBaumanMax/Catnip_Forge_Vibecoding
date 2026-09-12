@@ -365,4 +365,8 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] 完成 16b 共享模型配置契约与 Main 原子 Store，保留现有 DeepSeek/Qwen 默认行为并拒绝 Secret 入配置。
 - [x] 完成 revision 并发、坏文件保留、重启/备份、协议用途和 HTTPS 负向专项。
 - [x] 16c1 DPAPI-backed Main 凭据 Store、加密回读门禁、旧 Key 非破坏迁移与明文残留回归。
-- [ ] 16c2 原生安全输入、首次启动与 Agent/助手/附件运行读取接入。
+- [x] 16c2a 模型原生安全输入与 Agent 运行读取接入；Renderer 不接触明文。
+- [x] 16d 第七个“模型”工作区、供应商/模型/用途默认值管理。
+- [x] 16e Agent 会话模型选择、持久化、任务快照与不兼容显式拒绝。
+- [x] 16f 知乎 Secret 替换、在线验证、本机退出，复用官方命令。
+- [ ] 16c2b 首次启动、软件助手与 Qwen 旧 Key 文件链路迁移。

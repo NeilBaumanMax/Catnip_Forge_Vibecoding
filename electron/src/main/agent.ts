@@ -20,23 +20,24 @@ import { ensureManagedSkillsDeployed } from './skill-manager';
 import { getSerialMonitorBridgeEnv } from './serial-monitor-bridge';
 import { getAttachmentBridgeEnv } from './attachment-bridge';
 import { EXPLORE_ANALYSIS_JSON_SCHEMA } from '../common/explore';
+import type { EngineeringAgentRuntimeModel } from './agent-model-selection';
 
 const AGENT_DIR = getAgentDir();
 const AGENT_WORKSPACE_DIR = getAgentWorkspaceDir();
 const CLAUDE_BIN = getClaudeBin();
 const API_KEY_FILE = getApiKeyPath();
-const DEFAULT_DEEPSEEK_BASE_URL = 'https://api.deepseek.com/anthropic';
-const DEFAULT_DEEPSEEK_MODEL = 'deepseek-v4-pro';
 
 let agentProcess: ChildProcess | null = null;
 let agentSeq = 0;
 let agentMcpConfigPath: string | null = null;
 let agentExecutionProfile: AgentExecutionProfile | null = null;
+let agentModelKey: string | null = null;
 
 export type AgentExecutionProfile = 'default' | 'explore_analysis' | 'explore_plan';
 
-export function ensureAgentProcess(profile: AgentExecutionProfile = 'default'): ChildProcess {
-  if (agentProcess && !agentProcess.killed && agentProcess.exitCode == null && agentExecutionProfile === profile) {
+export function ensureAgentProcess(profile: AgentExecutionProfile = 'default', model?: EngineeringAgentRuntimeModel): ChildProcess {
+  const requestedModelKey = model ? `${model.profileId}\u0000${model.baseUrl}\u0000${model.upstreamModel}` : 'legacy-default';
+  if (agentProcess && !agentProcess.killed && agentProcess.exitCode == null && agentExecutionProfile === profile && agentModelKey === requestedModelKey) {
     return agentProcess;
   }
   if (agentProcess && !agentProcess.killed && agentProcess.exitCode == null) killAgent();
@@ -86,7 +87,7 @@ export function ensureAgentProcess(profile: AgentExecutionProfile = 'default'): 
     seq,
   });
 
-  const env = buildAgentEnv();
+  const env = buildAgentEnv(model);
 
   agentProcess = spawn(CLAUDE_BIN, args, {
     cwd: AGENT_WORKSPACE_DIR,
@@ -94,6 +95,7 @@ export function ensureAgentProcess(profile: AgentExecutionProfile = 'default'): 
     stdio: ['pipe', 'pipe', 'pipe'],
   });
   agentExecutionProfile = profile;
+  agentModelKey = requestedModelKey;
   agentMcpConfigPath = mcpConfigPath;
 
   // 进程退出后清理临时 MCP 配置文件
@@ -109,6 +111,7 @@ export function ensureAgentProcess(profile: AgentExecutionProfile = 'default'): 
       agentProcess = null;
       agentMcpConfigPath = null;
       agentExecutionProfile = null;
+      agentModelKey = null;
     }
   });
 
@@ -117,8 +120,8 @@ export function ensureAgentProcess(profile: AgentExecutionProfile = 'default'): 
   return agentProcess;
 }
 
-export function sendAgentMessage(prompt: string, profile: AgentExecutionProfile = 'default'): void {
-  const proc = ensureAgentProcess(profile);
+export function sendAgentMessage(prompt: string, profile: AgentExecutionProfile = 'default', model?: EngineeringAgentRuntimeModel): void {
+  const proc = ensureAgentProcess(profile, model);
   if (!proc.stdin || proc.stdin.destroyed) {
     throw new Error('Agent stdin is not writable');
   }
@@ -143,6 +146,7 @@ export function killAgent(): void {
     old.kill('SIGKILL');
     agentProcess = null;
     agentExecutionProfile = null;
+    agentModelKey = null;
     agentSeq++;
   }
   if (agentMcpConfigPath) {
@@ -191,7 +195,7 @@ export function buildAgentLaunchArgs(
   return args;
 }
 
-function buildAgentEnv(): NodeJS.ProcessEnv {
+function buildAgentEnv(model?: EngineeringAgentRuntimeModel): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...process.env };
 
   // Avoid inheriting mismatched upstream settings from the parent shell.
@@ -204,22 +208,22 @@ function buildAgentEnv(): NodeJS.ProcessEnv {
   env.DISPLAY = process.env.DISPLAY || ':0';
   env.CLAUDE_CONFIG_DIR = getRuntimeDataDir('claude-config');
 
-  const apiKey = readDeepSeekApiKey();
+  const apiKey = model?.authToken ?? readDeepSeekApiKey();
   if (apiKey) {
     env.ANTHROPIC_AUTH_TOKEN = apiKey;
-    env.ANTHROPIC_BASE_URL = DEFAULT_DEEPSEEK_BASE_URL;
-    env.ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || DEFAULT_DEEPSEEK_MODEL;
+    env.ANTHROPIC_BASE_URL = model?.baseUrl ?? 'https://api.deepseek.com/anthropic';
+    env.ANTHROPIC_MODEL = model?.upstreamModel ?? process.env.ANTHROPIC_MODEL ?? 'deepseek-v4-pro';
     logger.info('agent:spawn', {
-      authMode: 'deepseek-apikey-file',
-      apiKeyFile: API_KEY_FILE,
+      authMode: model?.authSource ?? 'legacy-file',
+      profileId: model?.profileId ?? 'deepseek-v4-pro',
+      providerId: model?.providerId ?? 'deepseek',
       baseUrl: env.ANTHROPIC_BASE_URL,
       model: env.ANTHROPIC_MODEL,
       claudeConfigDir: env.CLAUDE_CONFIG_DIR,
     });
   } else {
     logger.warn('agent:spawn', {
-      authMode: 'no-apikey-file',
-      apiKeyFile: API_KEY_FILE,
+      authMode: 'not-configured',
       claudeConfigDir: env.CLAUDE_CONFIG_DIR,
       msg: 'DeepSeek API key not found; agent may require interactive Claude login',
     });

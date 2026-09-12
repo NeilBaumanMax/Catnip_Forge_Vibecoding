@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { BrainCircuit, Clock3, Code2, FolderClock, Lightbulb, List, MessageCircleMore, Paperclip, Pin, Search, Send, Sparkles, Wrench } from 'lucide-react';
+import { Bot, BrainCircuit, Clock3, Code2, FolderClock, Lightbulb, List, MessageCircleMore, Paperclip, Pin, Search, Send, Sparkles, Wrench } from 'lucide-react';
 import type { AgentTaskInput, AgentTaskStatus, AttachmentReference, ChatConversationSummary, ChatMessage, ManagedSkillSummary, SkillReference, TaskStep, TaskSubmitMode } from '../types';
+import type { ModelProfile, ProviderConfig } from '../../common/model-config';
 import MarkdownContent from './MarkdownContent';
 import TaskProgress from './TaskProgress';
 import catnipAgentWelcomeImage from '../assets/catnip-agent-welcome-v2.png';
@@ -19,6 +20,7 @@ interface Props {
   onDeleteConversation: (id: string) => void;
   onRenameConversation: (id: string, title: string) => void;
   onToggleConversationPinned: (id: string, pinned: boolean) => void;
+  onSetConversationModel: (id: string, modelProfileId: string) => void;
 }
 
 interface ExecutionGroup {
@@ -318,6 +320,7 @@ export default function ChatPanel({
   onDeleteConversation,
   onRenameConversation,
   onToggleConversationPinned,
+  onSetConversationModel,
 }: Props) {
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState<AttachmentReference[]>([]);
@@ -336,6 +339,9 @@ export default function ChatPanel({
   const [skillQuery, setSkillQuery] = useState('');
   const [skillLoadError, setSkillLoadError] = useState('');
   const [composerHeight, setComposerHeight] = useState(readComposerHeight);
+  const [engineeringModels, setEngineeringModels] = useState<Array<ModelProfile & { provider: ProviderConfig }>>([]);
+  const [modelDefaultId, setModelDefaultId] = useState('');
+  const [modelLoadError, setModelLoadError] = useState('');
   const cancelRenameRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -389,6 +395,42 @@ export default function ChatPanel({
       }
     });
     return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    void window.electronAPI.listModels().then((result) => {
+      if (!active) return;
+      const providers = new Map(result.config.providers.map((item) => [item.id, item]));
+      setEngineeringModels(result.config.models.flatMap((model) => {
+        const provider = providers.get(model.providerId);
+        return model.enabled && model.capabilities.includes('engineering-agent') && model.protocol === 'anthropic-compatible' && provider?.enabled
+          ? [{ ...model, provider }]
+          : [];
+      }));
+      setModelDefaultId(result.config.defaults['engineering-agent'] || '');
+      setModelLoadError('');
+    }).catch((error) => {
+      if (active) setModelLoadError(error instanceof Error ? error.message : '模型列表读取失败');
+    });
+    return () => { active = false; };
+  }, [activeConversationId]);
+
+  useEffect(() => {
+    const refresh = () => {
+      void window.electronAPI.listModels().then((result) => {
+        const providers = new Map(result.config.providers.map((item) => [item.id, item]));
+        setEngineeringModels(result.config.models.flatMap((model) => {
+          const provider = providers.get(model.providerId);
+          return model.enabled && model.capabilities.includes('engineering-agent') && model.protocol === 'anthropic-compatible' && provider?.enabled
+            ? [{ ...model, provider }]
+            : [];
+        }));
+        setModelDefaultId(result.config.defaults['engineering-agent'] || '');
+      }).catch(() => { /* the existing visible error remains */ });
+    };
+    window.addEventListener('catnip:model-config-changed', refresh);
+    return () => window.removeEventListener('catnip:model-config-changed', refresh);
   }, []);
 
   useEffect(() => {
@@ -497,6 +539,7 @@ export default function ChatPanel({
   const activeExecutionKey = taskStatus.activeTaskId ? `task:${taskStatus.activeTaskId}` : null;
   const activeConversation = conversations.find((conversation) => conversation.id === activeConversationId);
   const readOnlyConversation = Boolean(activeConversation?.readOnly);
+  const selectedModelId = activeConversation?.modelProfileId || modelDefaultId;
   const visibleConversations = useMemo(() => {
     const query = historyQuery.trim().toLocaleLowerCase('zh-CN');
     const recentThreshold = Date.now() - 7 * 24 * 60 * 60 * 1000;
@@ -778,6 +821,17 @@ export default function ChatPanel({
           />
         </div>
         <div className="chat-input-actions">
+          <label className="chat-model-select" title={modelLoadError || '为当前工程对话选择模型'}>
+            <Bot aria-hidden="true" />
+            <select
+              aria-label="当前 Agent 模型"
+              value={selectedModelId}
+              disabled={readOnlyConversation || taskStatus.busy || !engineeringModels.length}
+              onChange={(event) => onSetConversationModel(activeConversationId, event.target.value)}
+            >
+              {!engineeringModels.length ? <option value="">{modelLoadError || '没有可用模型'}</option> : engineeringModels.map((item) => <option key={item.id} value={item.id}>{item.provider.name} · {item.name}</option>)}
+            </select>
+          </label>
           <button
             className="chat-attachment-button nes-btn"
             data-tour-id="attachment-button"

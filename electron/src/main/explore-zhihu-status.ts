@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import type { IpcMain } from 'electron';
 import { shell } from 'electron';
-import type { ExploreZhihuConnectionLaunchResult, ExploreZhihuConnectionStatus, ExploreZhihuSetupResult } from '../common/explore';
+import type { ExploreZhihuConnectionLaunchResult, ExploreZhihuConnectionStatus, ExploreZhihuMaintenanceResult, ExploreZhihuSetupResult } from '../common/explore';
 import { getAgentDir, getUserDataPath } from './paths';
 
 interface OfficialStatusPayload {
@@ -239,12 +239,12 @@ export function buildExploreZhihuConnectionLaunch(): {
   };
 }
 
-export async function beginExploreZhihuConnection(): Promise<ExploreZhihuConnectionLaunchResult> {
+async function launchExploreZhihuConnection(allowReplacement: boolean): Promise<ExploreZhihuConnectionLaunchResult> {
   const status = await readExploreZhihuConnectionStatus();
-  if (status.state === 'connected') {
+  if (status.state === 'connected' && !allowReplacement) {
     return { ok: true, state: 'already_connected', message: '知乎开放平台已连接' };
   }
-  if (status.state !== 'needs_secret') {
+  if (status.state !== 'needs_secret' && !(allowReplacement && status.state === 'connected')) {
     return { ok: false, state: 'unavailable', message: status.message };
   }
 
@@ -303,8 +303,75 @@ export async function beginExploreZhihuConnection(): Promise<ExploreZhihuConnect
   }
 }
 
+export function beginExploreZhihuConnection(): Promise<ExploreZhihuConnectionLaunchResult> {
+  return launchExploreZhihuConnection(false);
+}
+
+async function runOfficialZhihuAuth(args: ['auth', 'status', '--verify'] | ['auth', 'logout']): Promise<void> {
+  const scriptPath = path.join(getAgentDir(), 'skills', 'zhihu', 'scripts', 'run.ps1');
+  if (!fs.existsSync(scriptPath)) throw new Error('官方知乎 Skill 不完整');
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(systemPowerShell(), ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', scriptPath, ...args], {
+      cwd: path.dirname(scriptPath),
+      env: exploreZhihuEnvironment(),
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let outputBytes = 0;
+    let settled = false;
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (error) reject(error); else resolve();
+    };
+    const timer = setTimeout(() => { child.kill(); finish(new Error('知乎凭证维护操作超时')); }, STATUS_TIMEOUT_MS);
+    child.stdout.on('data', (chunk: Buffer) => { outputBytes += chunk.length; });
+    child.stderr.on('data', (chunk: Buffer) => { outputBytes += chunk.length; });
+    child.once('error', () => finish(new Error('无法启动知乎官方凭证维护命令')));
+    child.once('close', (code) => {
+      if (outputBytes > MAX_OUTPUT_BYTES) finish(new Error('知乎凭证维护命令输出过大'));
+      else if (code !== 0) finish(new Error(args.length === 3 ? '知乎 Access Secret 在线验证失败' : '知乎本机凭证清除失败'));
+      else finish();
+    });
+  });
+}
+
+export async function replaceExploreZhihuSecret(): Promise<ExploreZhihuMaintenanceResult> {
+  const launch = await launchExploreZhihuConnection(true);
+  const connection = await readExploreZhihuConnectionStatus();
+  return { ok: launch.ok, action: 'replace', message: launch.message, connection };
+}
+
+export async function verifyExploreZhihuSecret(): Promise<ExploreZhihuMaintenanceResult> {
+  const before = await readExploreZhihuConnectionStatus();
+  if (before.state !== 'connected') return { ok: false, action: 'verify', message: before.message, connection: before };
+  try {
+    await runOfficialZhihuAuth(['auth', 'status', '--verify']);
+    const connection = await readExploreZhihuConnectionStatus();
+    return { ok: connection.state === 'connected', action: 'verify', message: connection.state === 'connected' ? '知乎 Access Secret 在线验证通过' : connection.message, connection };
+  } catch (error) {
+    return { ok: false, action: 'verify', message: error instanceof Error ? error.message : '知乎 Access Secret 在线验证失败', connection: before };
+  }
+}
+
+export async function logoutExploreZhihu(): Promise<ExploreZhihuMaintenanceResult> {
+  const before = await readExploreZhihuConnectionStatus();
+  if (before.state !== 'connected') return { ok: false, action: 'logout', message: before.message, connection: before };
+  try {
+    await runOfficialZhihuAuth(['auth', 'logout']);
+    const connection = await readExploreZhihuConnectionStatus();
+    return { ok: connection.state === 'needs_secret', action: 'logout', message: '已清除本机知乎凭证；开放平台上的 Secret 未被远端吊销', connection };
+  } catch (error) {
+    return { ok: false, action: 'logout', message: error instanceof Error ? error.message : '知乎本机凭证清除失败', connection: before };
+  }
+}
+
 export function registerExploreZhihuStatusIpc(registrar: Pick<IpcMain, 'handle'>): void {
   registrar.handle('explore:zhihu:status', async () => readExploreZhihuConnectionStatus());
   registrar.handle('explore:zhihu:install', async () => installExploreZhihuConnection());
   registrar.handle('explore:zhihu:connect', async () => beginExploreZhihuConnection());
+  registrar.handle('explore:zhihu:replace', async () => replaceExploreZhihuSecret());
+  registrar.handle('explore:zhihu:verify', async () => verifyExploreZhihuSecret());
+  registrar.handle('explore:zhihu:logout', async () => logoutExploreZhihu());
 }

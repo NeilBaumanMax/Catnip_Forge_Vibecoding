@@ -12,6 +12,12 @@ import { listManagedSkills } from '../skill-manager';
 import { buildAttachmentPromptContext, type AttachmentReference } from '../attachment-store';
 import { getActiveProject } from '../project-session';
 import {
+  hydrateEngineeringAgentModel,
+  snapshotEngineeringAgentModel,
+  type EngineeringAgentModelSnapshot,
+  type EngineeringAgentRuntimeModel,
+} from '../agent-model-selection';
+import {
   normalizeExploreExecutionConfirmRequest,
   normalizeHandoffContext,
   normalizeExploreAnalysisResult,
@@ -56,6 +62,7 @@ interface QueuedTask {
   attachments: AttachmentReference[];
   conversationId: string;
   executionProfile: AgentExecutionProfile;
+  modelSnapshot: EngineeringAgentModelSnapshot;
   exploreExpectation?: ExploreAnalysisExpectation;
 }
 
@@ -200,6 +207,8 @@ export class Orchestrator {
   private currentTaskId: string | null = null;
   private currentConversationId: string | null = null;
   private currentExecutionProfile: AgentExecutionProfile = 'default';
+  private currentModelSnapshot: EngineeringAgentModelSnapshot | null = null;
+  private currentRuntimeModel: EngineeringAgentRuntimeModel | null = null;
   private currentExploreExpectation: ExploreAnalysisExpectation | null = null;
   private currentExploreResult: ExploreAnalysisResult | null = null;
   private currentSkillRefs: SkillReference[] = [];
@@ -238,7 +247,7 @@ export class Orchestrator {
     this.ensurePersistentAgent();
   }
 
-  submitTask(task: string | AgentTaskInput, mode: TaskSubmitMode = 'auto', conversationId?: string): TaskSubmitResult {
+  submitTask(task: string | AgentTaskInput, mode: TaskSubmitMode = 'auto', conversationId?: string, modelProfileId?: string): TaskSubmitResult {
     const input = normalizeAgentTaskInput(task);
     const binding = bindActiveProject(input.text);
     const targetConversationId = conversationId || listChatConversations().activeConversationId;
@@ -249,6 +258,7 @@ export class Orchestrator {
       attachments: input.attachments,
       conversationId: targetConversationId,
       executionProfile: 'default',
+      modelSnapshot: snapshotEngineeringAgentModel(modelProfileId),
     };
 
     return this.submitQueuedTask(request, mode);
@@ -276,6 +286,7 @@ export class Orchestrator {
       attachments: [],
       conversationId: targetConversationId,
       executionProfile: 'explore_analysis',
+      modelSnapshot: snapshotEngineeringAgentModel(),
       exploreExpectation: {
         requestId: normalizedRequestId,
         mode: selectedRequest.mode,
@@ -306,6 +317,7 @@ export class Orchestrator {
       attachments: [],
       conversationId: targetConversationId,
       executionProfile: 'explore_plan',
+      modelSnapshot: snapshotEngineeringAgentModel(),
       exploreExpectation: { requestId: normalizedRequestId, mode: 'plan' },
     };
     try {
@@ -344,6 +356,8 @@ export class Orchestrator {
       attachments: [],
       conversationId: this.activeEngineeringConversationId(),
       executionProfile: 'default',
+      modelSnapshot: snapshotEngineeringAgentModel(listChatConversations().conversations
+        .find((item) => item.id === this.activeEngineeringConversationId())?.modelProfileId),
     };
     const result = this.submitQueuedTask(queuedTask, this.getTaskStatus().busy ? 'queue' : 'auto');
     record.usedAt = Date.now();
@@ -394,6 +408,8 @@ export class Orchestrator {
     this.currentTaskId = request.id;
     this.currentConversationId = request.conversationId;
     this.currentExecutionProfile = request.executionProfile;
+    this.currentModelSnapshot = request.modelSnapshot;
+    this.currentRuntimeModel = null;
     this.currentExploreExpectation = request.exploreExpectation || null;
     this.currentExploreResult = null;
     this.currentSkillRefs = request.skillRefs;
@@ -406,6 +422,7 @@ export class Orchestrator {
     this.paused = false;
     this.emitTaskStatus();
     try {
+      this.currentRuntimeModel = hydrateEngineeringAgentModel(request.modelSnapshot);
       await this.runTask(request.text);
     } catch (error) {
       if (!this.isActiveTask(request.id)) {
@@ -474,7 +491,7 @@ export class Orchestrator {
 
     this.state.advanceTo('running');
 
-    const proc = this.ensurePersistentAgent(this.currentExecutionProfile);
+    const proc = this.ensurePersistentAgent(this.currentExecutionProfile, this.currentRuntimeModel);
     this.turnInFlight = true;
     this.turnStartedAt = Date.now();
     this.lastAgentOutputAt = this.turnStartedAt;
@@ -515,12 +532,12 @@ export class Orchestrator {
       });
     }
 
-    sendAgentMessage(promptWithHistory, this.currentExecutionProfile);
+    sendAgentMessage(promptWithHistory, this.currentExecutionProfile, this.currentRuntimeModel ?? undefined);
     this.emitTaskStatus();
   }
 
-  private ensurePersistentAgent(profile: AgentExecutionProfile = 'default'): NonNullable<ReturnType<typeof getAgentProcess>> {
-    const proc = ensureAgentProcess(profile);
+  private ensurePersistentAgent(profile: AgentExecutionProfile = 'default', model?: EngineeringAgentRuntimeModel | null): NonNullable<ReturnType<typeof getAgentProcess>> {
+    const proc = ensureAgentProcess(profile, model ?? undefined);
     if (this.observedAgentPid === proc.pid) {
       return proc;
     }
@@ -1071,6 +1088,8 @@ export class Orchestrator {
     this.currentTaskId = null;
     this.currentConversationId = null;
     this.currentExecutionProfile = 'default';
+    this.currentModelSnapshot = null;
+    this.currentRuntimeModel = null;
     this.currentExploreExpectation = null;
     this.currentExploreResult = null;
     this.currentSkillRefs = [];
