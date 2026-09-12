@@ -6,6 +6,7 @@
 - 用户人工验收明确否决 Phase 16 的模型切换：现有“供应商/模型档案/用途能力/会话下拉”与真实 Claude Code CLI 运行语义不一致。
 - 当前唯一目标见 [Phase 18 文档](PHASE_18_CLAUDE_CODE_PROVIDER_SWITCH.md)：只实现类似 CC Switch Claude Code 页的供应商保存、凭据维护和一键启用；Chat 改为只读显示当前活动供应商。
 - API Key 继续只进 safeStorage 和 Claude 子进程环境；应用专用 Claude settings 只保存非敏感 Base URL 与模型角色映射。
+- 首次未完成配置时自动进入模型页：预设路径只需 DeepSeek Key、Qwen 视觉 Key 选填并自动启用 DeepSeek；其他供应商路径才展开 CC Switch 风格配置。Agent、找灵感、解问题共享活动供应商。
 - `docs/tutorials/` 与 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 是既有未跟踪现场，禁止触碰或纳入提交。
 
 ## 2026-09-13 — Phase 17 Renderer 性能开工

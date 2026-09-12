@@ -78,6 +78,7 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 - `settings.json` 只保存非敏感配置并保留未知字段；鉴权值只在 Main 的安全存储与 Claude 子进程环境之间流动。
 - 供应商切换只影响切换后创建的任务；运行中和已入队任务使用其非敏感快照，禁止中途改绑或静默回退。
 - 仅借鉴 CC Switch 的 Claude Code 供应商切换，不引入其其他工具、数据库或辅助模块，不复制第二套执行系统。
+- 首次配置必须先选预设或其他供应商；预设路径 DeepSeek 必填、Qwen 视觉选填，并自动启用 DeepSeek。Agent 与两类 Explore 请求必须共享活动 Claude Code 供应商。
 
 ## 官方知乎能力选择与 Access Secret 门禁（2026-09-09 当前口径）
 

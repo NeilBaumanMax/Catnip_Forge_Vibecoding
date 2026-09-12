@@ -113,5 +113,6 @@
 - 18b：把配置升级为应用级活动 Claude Code 供应商及主模型/Haiku/Sonnet/Opus 映射，保留软件助手和视觉配置兼容。
 - 18c：实现非敏感 Claude settings 合并、Main-only 凭据注入和任务快照；切换不修改运行中/已入队任务。
 - 18d：模型页收敛为添加、保存、配置凭据、启用供应商；Chat 移除模型下拉，改为当前供应商只读提示。
+- 18d 同时实现首次自动进入模型页和双路径引导：预设 DeepSeek 必填/Qwen 视觉选填，或进入其他 Claude Code 供应商配置。
 - 18e：完成专项、安全扫描、Runtime/Electron 构建和真实 Electron UI 回归；未授权真实付费调用记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`。
 - 18f：精确提交并核对远端，不纳入 `docs/tutorials/` 或用户工程 `.catnip`。

@@ -126,3 +126,6 @@ Catnip 自己的长期本地知识库，不使用知乎官方 Knowledge Base 作
 - Chat 不再提供按会话模型下拉，只显示当前启用的 Claude Code 供应商和主模型；切换影响随后创建的任务，运行中和已经入队的任务继续使用创建时冻结的供应商快照。
 - Base URL 和模型映射可同步到应用专用 Claude 配置；API Key 仍只保存在系统安全凭据中并由 Main 注入 CLI 进程，不写入普通 Claude settings、Renderer、Chat、日志或任务快照。
 - 首批只实现 CC Switch 中 Claude Code CLI 的供应商切换语义，不引入 Codex、Gemini、MCP、提示词、代理、用量统计、导入导出或其他 CC Switch 功能。
+- 首次尚未完成模型配置时自动进入“模型”标签页，先让用户选择“使用预设配置”或“使用其他模型供应商”，不直接暴露复杂配置表单。
+- 预设路径只要求安全填写 DeepSeek API Key；Qwen API Key 为视觉任务选填项。完成后 DeepSeek 成为统一活动供应商，Agent、找灵感和解问题均使用它；未配置 Qwen 只影响图片理解。
+- 其他供应商路径呈现 CC Switch 风格的 Claude Code 配置。用户启用某供应商（例如智谱清言）后，后续 Agent、找灵感和解问题共同切换到该供应商；Qwen 视觉配置保持独立选填。

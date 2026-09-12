@@ -12,7 +12,7 @@
 | 上游核对 | PASS — CC Switch Claude Code 模式切换 Claude settings `env`，包含 Base URL、鉴权和主/Haiku/Sonnet/Opus 模型映射 |
 | 业务源码 | NOT STARTED — 完成本轮文档独立提交后再施工 |
 
-Phase 18 必测：v1→v2 配置迁移、活动供应商与 revision、固定 authField 枚举、无 Secret settings 合并、未知设置保留、任务快照与切换时序、父环境清理、旧会话选择不再生效、模型页完整配置路径、Chat 只读活动状态、typecheck/Main/Renderer/Runtime build 及安全扫描。真实付费调用未授权时记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`。
+Phase 18 必测：v1→v2 配置迁移、首次预设/其他供应商双路径、DeepSeek 必填与 Qwen 视觉选填、活动供应商与 revision、固定 authField 枚举、无 Secret settings 合并、未知设置保留、任务快照与切换时序、父环境清理、旧会话选择不再生效、Agent/两类 Explore 共用活动供应商、Chat 只读活动状态、typecheck/Main/Renderer/Runtime build 及安全扫描。真实付费调用未授权时记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`。
 
 ## 2026-09-12 — 固定主题 / 150% 缩放矩阵
 

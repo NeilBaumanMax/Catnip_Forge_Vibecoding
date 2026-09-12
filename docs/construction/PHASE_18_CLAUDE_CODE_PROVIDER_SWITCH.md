@@ -36,6 +36,15 @@
 
 软件助手和图片理解仍可保留现有内部 OpenAI-compatible 默认配置，但不混入“Claude Code 供应商”页面，不得让用户误以为它们也是 Claude Code CLI 的切换对象。
 
+### 2.1 首次进入的用户路径
+
+首次尚未完成模型配置时，软件直接进入“模型”标签页并显示两条互斥路径，而不是先展示完整高级表单：
+
+1. **使用预设配置**：推荐普通用户选择。Catnip 预设 DeepSeek 作为唯一 Claude Code 供应商，预设 Qwen 作为视觉任务供应商。用户只需通过原生安全窗口填写 DeepSeek API Key；Qwen API Key 明确标注“选填，不配置将无法使用图片理解”。保存后自动启用 DeepSeek，Agent、找灵感和解问题全部经同一 DeepSeek Claude Code 配置运行。
+2. **使用其他模型供应商**：面向已有 Claude Code compatible 服务的用户。选择后再呈现 CC Switch 风格的供应商字段和高级模型映射；用户保存凭据并启用，例如启用智谱清言后，后续 Agent、找灵感和解问题都使用该智谱供应商。Qwen 视觉配置仍是独立选填项，不跟随 Claude Code 供应商切换。
+
+完成首次配置后再次进入模型页，直接显示当前活动供应商和“切换/新增供应商”维护界面；无需重复首次选择。若活动供应商凭据被清除，则模型页恢复为待完成状态，新 Agent/Explore 请求在 Main 明确拒绝，不静默回退。
+
 ## 3. 与 CC Switch 对齐及安全差异
 
 CC Switch 的 Claude Code 模式通过切换 Claude 配置中的 `env` 项生效，核心字段包括：
@@ -60,6 +69,7 @@ Catnip 保持同一供应商/角色映射语义，但因既有 Product Truth 禁
 现有配置升级为版本化契约，并新增：
 
 - `activeClaudeProviderId`：应用级唯一活动供应商；
+- `setupMode`：`preset` 或 `custom`，用于恢复首次配置路径；完成状态由活动供应商配置与安全凭据共同判定，不保存 Secret；
 - 供应商 `claudeCode` 配置：`authField`、`primaryModel`、可选的 `haikuModel`、`sonnetModel`、`opusModel`；
 - 只有启用、包含 `anthropic-compatible` 且 Claude Code 字段完整的供应商可以激活；激活前必须已有安全凭据；
 - DeepSeek 旧工程 Agent 默认模型迁移为 DeepSeek Claude Code 供应商的主模型，旧安全凭据引用不变；
@@ -84,13 +94,15 @@ Catnip 保持同一供应商/角色映射语义，但因既有 Product Truth 禁
 
 模型页改名为“Claude Code 供应商”，界面只保留完成任务所需信息：
 
+- 首次配置选择页：优先展示“使用预设配置”，另有“使用其他模型供应商”；清楚说明影响范围和千问选填用途；
+- 预设配置页：DeepSeek API Key 必填、Qwen API Key 选填，普通表单中均不出现输入框，只触发原生安全窗口；完成后自动启用 DeepSeek；
 - 左侧供应商卡：名称、当前/未启用、凭据已配置/未配置；
 - 主编辑区：名称、Base URL、鉴权字段、主模型；“高级模型映射”折叠显示 Haiku/Sonnet/Opus；
 - 明确的“保存更改”和“启用此供应商”两步，未保存或缺凭据时按钮给出直接原因；
 - 当前活动供应商置顶显示，并说明“对下一次任务生效；运行中任务不会改变”；
 - 不再展示协议复选框、用途能力、模型档案列表和 Chat 会话模型下拉。
 
-人工验收至少覆盖：第一次添加自定义供应商、保存、配置凭据、启用、回到 Chat 查看当前供应商、创建下一任务、切回另一供应商、重启后活动状态仍一致。
+人工验收至少覆盖：全新用户自动进入模型页；预设路径只填 DeepSeek 后可完成、跳过 Qwen 后视觉能力明确不可用；自定义路径添加供应商、保存、配置凭据、启用；回到 Chat 查看当前供应商；Agent/找灵感/解问题读取同一活动供应商；切回另一供应商；重启后活动状态仍一致。
 
 ## 7. 分层边界
 
@@ -105,7 +117,7 @@ Catnip 保持同一供应商/角色映射语义，但因既有 Product Truth 禁
 | 小项 | 修改范围 | 验收门禁 |
 | --- | --- | --- |
 | 18a 文档纠偏 | Product Truth、Decision、约束、计划、分层、接力、测试、本文 | 文档独立提交；明确 Phase 16 人工未通过和远端状态 |
-| 18b Schema/Store | `common/model-config`、Main store、迁移 | v1→v2、活动项、角色映射、非法 authField、损坏/并发/重启 |
+| 18b Schema/Store | `common/model-config`、Main store、迁移 | v1→v2、setupMode、活动项、角色映射、非法 authField、损坏/并发/重启 |
 | 18c CLI 配置与运行 | settings 合并、Agent snapshot/env、Worker/Gateway | 无 Secret 落盘；保留未知设置；任务冻结；无 fallback；全部角色变量 |
 | 18d 窄 IPC 与 UI | management/preload/types/ModelPanel/ChatPanel/styles | 添加→保存→配 Key→启用路径；Chat 只读活动状态；无旧下拉 |
 | 18e Review/测试 | 专项、安全扫描、typecheck/build、真实 Electron UI | 自动化全通过；真实付费调用与完整包状态单列 |
@@ -118,7 +130,7 @@ Catnip 保持同一供应商/角色映射语义，但因既有 Product Truth 禁
 - Settings：不存在时创建；保留 `permissions`、未知顶层字段和普通 env；删除磁盘鉴权值；写入 Base URL 和四类模型；写入失败显式报错。
 - Runtime：父进程六类 `ANTHROPIC_*` 被清除；按 authField 注入唯一 Secret；不同供应商不复用进程；快照/日志无 Secret；无活动项或凭据损坏拒绝。
 - Session：旧 `modelProfileId` 可读取但新任务忽略；切换只影响切换后提交的任务；不跨工程改写历史。
-- UI：1280×720、1600×1000、1707×1067、150% 缩放；键盘焦点；新增/保存/配置/启用提示；活动项和 Chat 指示一致；旧协议/用途/会话下拉不可见。
+- UI：全新用户自动进入模型页；预设/其他供应商两路径；DeepSeek 必填与 Qwen 选填；1280×720、1600×1000、1707×1067、150% 缩放；键盘焦点；新增/保存/配置/启用提示；活动项和 Chat 指示一致；旧协议/用途/会话下拉不可见。
 - 基线：`verify:model-*`、session/task queue、secure startup、Chat、Explore、Electron typecheck/Main/Renderer build、Runtime typecheck、`git diff --check`。
 
 离线测试使用虚构 URL、虚构 Key 和注入 cipher，不调用真实付费 API。只有用户明确授权并提供可用供应商后才做真实 Claude Code 请求；未执行时记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`。本 Phase 不涉及硬件，继续保留 `REAL_HARDWARE_VALIDATION_PENDING`。

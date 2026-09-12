@@ -57,6 +57,8 @@
 | D051 | 只借鉴 CC Switch 的 Claude Code 供应商切换语义及角色模型映射，不引入 Codex、Gemini、MCP、SQLite、代理或其他模块。 |
 | D052 | Catnip 的 Claude settings 只合并非敏感 Base URL/模型映射；API Key 保持 Main-only safeStorage，并在启动 Claude Code 子进程时按固定鉴权枚举注入。 |
 | D053 | 切换供应商影响随后创建的任务；运行中和已入队任务继续使用创建时快照，禁止中途改绑和静默 fallback。 |
+| D054 | 首次模型配置先选择预设或其他供应商；预设只要求 DeepSeek Key，Qwen Key 作为视觉任务选填，完成后自动启用 DeepSeek。 |
+| D055 | Agent、找灵感与解问题始终共享唯一活动 Claude Code 供应商；Qwen 只作为独立可选视觉供应商，不随 Claude Code 供应商切换。 |
 
 ## 工程决定（不改变产品行为）
 

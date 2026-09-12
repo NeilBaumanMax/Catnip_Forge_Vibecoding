@@ -93,3 +93,4 @@
 - Main 原子维护活动供应商，向应用专用 Claude `settings.json` 合并非敏感字段并保留未知设置；普通配置中不得存在鉴权值。
 - Worker/Agent 只在执行冻结任务时解密对应凭据；子进程环境清除父进程全部相关 `ANTHROPIC_*` 后再注入快照值。
 - CC Switch 只作为 Claude Code 供应商行为参考，不成为新的运行时依赖或第二套配置/任务系统。
+- Main 用活动供应商安全凭据状态判定首次模型配置是否完成；Renderer 只据该元数据自动进入引导。预设 Qwen 缺凭据只关闭视觉能力，不得阻止纯文本 Agent/Explore。
