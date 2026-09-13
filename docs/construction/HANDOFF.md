@@ -1,5 +1,13 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-13 — Phase 20 知乎刘看山特供版开工
+
+- 当前分支为 `liukanshan`，从 `model-ccswitch@0c7f3fbd` 创建；恢复点 `backup/pre-phase-20-liukanshan-20260913` 已建立。不得切回 `idea_to_production`。
+- 目标是在完整基础能力上把全部前端学院呱呱图片、软件助手身份、教学和无障碍称呼替换为知乎白色北极狐吉祥物刘看山；功能逻辑和安全门禁不变。
+- 新素材独立命名，不覆盖基础图片。星空背景、无角色的探索学院背景和 Catnip 猫薄荷产品标记不替换。
+- 当前只完成施工文档；图片生成、代码接线、测试和视觉验收尚未开始。远端分支/恢复点未推送，记 `REMOTE_BACKUP_PENDING`。
+- 受保护未跟踪目录 `docs/tutorials/` 与 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 未触碰、未暂存。
+
 ## 2026-09-13 — Phase 19 学院呱呱知识库与教学演示升级
 
 - 当前唯一施工分支仍为 `model-ccswitch`。教学演示已升级至 v8/35 步，首步介绍 Catnip Forge 整体项目，模型配置位于 Agent、探索等功能教学之前。
