@@ -2,6 +2,7 @@ import type { IpcMain } from 'electron';
 import {
   normalizeModelConfig,
   type ModelConfigState,
+  type ClaudeModelDiscoverySnapshot,
   type ModelManagementSnapshot,
 } from '../common/model-config';
 import { createModelConfigStore, type ModelConfigStore } from './model-config-store';
@@ -9,12 +10,14 @@ import { createModelCredentialStore, type ModelCredentialStore } from './model-c
 import { promptForModelCredential, type ModelCredentialPromptResult } from './model-credential-prompt';
 import { syncClaudeCodeSettings } from './claude-provider-switch';
 import type { ModelSetupMode } from '../common/model-config';
+import { discoverProviderModels } from './model-discovery';
 
 export interface ModelManagementDependencies {
   configStore: ModelConfigStore;
   credentialStore: ModelCredentialStore;
   prompt: (providerName: string) => Promise<ModelCredentialPromptResult>;
   syncClaudeSettings: (provider: ModelConfigState['providers'][number]) => void;
+  discoverModels: (provider: ModelConfigState['providers'][number], credential: string, revision: number) => Promise<ClaudeModelDiscoverySnapshot>;
 }
 
 function protectBuiltIns(value: unknown, current: ModelConfigState): ModelConfigState {
@@ -45,6 +48,7 @@ export function createModelManagementHandlers(dependencies?: Partial<ModelManage
   const credentialStore = dependencies?.credentialStore ?? createModelCredentialStore();
   const prompt = dependencies?.prompt ?? promptForModelCredential;
   const syncClaudeSettings = dependencies?.syncClaudeSettings ?? syncClaudeCodeSettings;
+  const discoverModels = dependencies?.discoverModels ?? discoverProviderModels;
   let promptInFlight: Promise<{ outcome: string; snapshot: ModelManagementSnapshot }> | null = null;
 
   const snapshot = (): ModelManagementSnapshot => {
@@ -100,6 +104,44 @@ export function createModelManagementHandlers(dependencies?: Partial<ModelManage
       credentialStore.delete(provider.credentialId);
       return snapshot();
     },
+    listAvailableClaudeModels: async (): Promise<ClaudeModelDiscoverySnapshot> => {
+      const config = configStore.read();
+      const provider = config.providers.find((item) => item.id === config.activeClaudeProviderId);
+      if (!provider?.claudeCode) throw new Error('当前 Claude Code 供应商不存在或配置不完整');
+      const credential = credentialStore.get(provider.credentialId);
+      if (!credential) throw new Error(`请先配置 ${provider.name} 的 API Key`);
+      return discoverModels(provider, credential, config.revision);
+    },
+    activateClaudeModel: async (modelId: string, expectedRevision: number): Promise<ModelManagementSnapshot> => {
+      const config = configStore.read();
+      if (config.revision !== expectedRevision) throw new Error('模型配置已变化，请重新打开模型列表');
+      const provider = config.providers.find((item) => item.id === config.activeClaudeProviderId);
+      if (!provider?.claudeCode) throw new Error('当前 Claude Code 供应商不存在或配置不完整');
+      const credential = credentialStore.get(provider.credentialId);
+      if (!credential) throw new Error(`请先配置 ${provider.name} 的 API Key`);
+      const discovered = await discoverModels(provider, credential, config.revision);
+      if (!discovered.models.some((item) => item.id === modelId)) throw new Error('所选模型不在当前 Key 的可用列表中');
+      const latest = configStore.read();
+      if (latest.revision !== expectedRevision || latest.activeClaudeProviderId !== provider.id) {
+        throw new Error('模型配置已变化，请重新打开模型列表');
+      }
+      const updatedProvider = {
+        ...provider,
+        claudeCode: {
+          ...provider.claudeCode,
+          primaryModel: modelId,
+          haikuModel: modelId,
+          sonnetModel: modelId,
+          opusModel: modelId,
+        },
+      };
+      syncClaudeSettings(updatedProvider);
+      configStore.replace({
+        ...latest,
+        providers: latest.providers.map((item) => item.id === provider.id ? updatedProvider : item),
+      }, expectedRevision);
+      return snapshot();
+    },
     activateClaudeProvider: (providerId: string, expectedRevision: number, setupMode?: ModelSetupMode): ModelManagementSnapshot => {
       const current = configStore.read();
       if (current.revision !== expectedRevision) throw new Error('模型配置已变化，请重新载入后再启用');
@@ -129,5 +171,7 @@ export function registerModelManagementIpc(
   registrar.handle('models:save', async (_event, value, expectedRevision: number) => handlers.save(value, expectedRevision));
   registrar.handle('models:credential:configure', async (_event, providerId: string) => handlers.configureCredential(providerId));
   registrar.handle('models:credential:delete', async (_event, providerId: string) => handlers.deleteCredential(providerId));
+  registrar.handle('models:available', async () => handlers.listAvailableClaudeModels());
+  registrar.handle('models:claude-model:activate', async (_event, modelId: string, expectedRevision: number) => handlers.activateClaudeModel(modelId, expectedRevision));
   registrar.handle('models:claude-provider:activate', async (_event, providerId: string, expectedRevision: number, setupMode?: ModelSetupMode) => handlers.activateClaudeProvider(providerId, expectedRevision, setupMode));
 }

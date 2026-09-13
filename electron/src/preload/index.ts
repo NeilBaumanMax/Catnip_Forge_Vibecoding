@@ -16,6 +16,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveModels: (config: ModelConfigState, expectedRevision: number) => ipcRenderer.invoke('models:save', config, expectedRevision),
   configureModelCredential: (providerId: string) => ipcRenderer.invoke('models:credential:configure', providerId),
   deleteModelCredential: (providerId: string) => ipcRenderer.invoke('models:credential:delete', providerId),
+  listAvailableClaudeModels: () => ipcRenderer.invoke('models:available'),
+  activateClaudeModel: (modelId: string, expectedRevision: number) => ipcRenderer.invoke('models:claude-model:activate', modelId, expectedRevision),
   activateClaudeProvider: (providerId: string, expectedRevision: number, setupMode?: ModelSetupMode) => ipcRenderer.invoke('models:claude-provider:activate', providerId, expectedRevision, setupMode),
   getProjectSessionStatus: () => ipcRenderer.invoke('project:session:status'),
   activateProjectSession: (projectId: string) => ipcRenderer.invoke('project:session:activate', projectId),

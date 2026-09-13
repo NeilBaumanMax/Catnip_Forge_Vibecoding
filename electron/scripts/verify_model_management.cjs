@@ -22,6 +22,7 @@ async function main() {
   const settingsFile = path.join(root, 'claude', 'settings.json');
   const submittedSecret = ['sk', 'management', 'fixture', 'only'].join('-');
   let promptCount = 0;
+  let discoveryCount = 0;
   let releasePrompt;
   const promptGate = new Promise((resolve) => { releasePrompt = resolve; });
   const handlers = createModelManagementHandlers({
@@ -34,12 +35,19 @@ async function main() {
       return { outcome: 'submitted', secret: submittedSecret };
     },
     syncClaudeSettings: (provider) => syncClaudeCodeSettings(provider, settingsFile),
+    discoverModels: async (provider, credential, revision) => {
+      discoveryCount += 1;
+      assert.equal(credential, submittedSecret);
+      return { providerId: provider.id, providerName: provider.name, revision, activeModel: provider.claudeCode.primaryModel, models: [{ id: 'deepseek-v4-flash', ownedBy: 'deepseek' }, { id: 'deepseek-v4-pro', ownedBy: 'deepseek' }] };
+    },
   });
 
   try {
     const routes = new Map();
     registerModelManagementIpc({ handle: (channel, handler) => routes.set(channel, handler) }, handlers);
     assert.deepEqual([...routes.keys()].sort(), [
+      'models:available',
+      'models:claude-model:activate',
       'models:claude-provider:activate',
       'models:credential:configure',
       'models:credential:delete',
@@ -111,13 +119,22 @@ async function main() {
     assert.equal(JSON.parse(fs.readFileSync(`${settingsFile}.bak`, 'utf8')).theme, 'dark');
     assert(!fs.readFileSync(`${settingsFile}.bak`, 'utf8').includes(submittedSecret), 'existing settings backup must also be sanitized without discarding unrelated fields');
 
-    const withZhipu = structuredClone(activated.config);
+    const discovered = await routes.get('models:available')(null);
+    assert.deepEqual(discovered.models.map((item) => item.id), ['deepseek-v4-flash', 'deepseek-v4-pro']);
+    assert(!JSON.stringify(discovered).includes(submittedSecret), 'model discovery must not expose the credential');
+    const modelActivated = await routes.get('models:claude-model:activate')(null, 'deepseek-v4-flash', activated.config.revision);
+    assert.equal(modelActivated.config.providers.find((item) => item.id === 'deepseek').claudeCode.primaryModel, 'deepseek-v4-flash');
+    assert.equal(JSON.parse(fs.readFileSync(settingsFile, 'utf8')).env.ANTHROPIC_DEFAULT_OPUS_MODEL, 'deepseek-v4-flash');
+    await assert.rejects(() => routes.get('models:claude-model:activate')(null, 'not-returned', modelActivated.config.revision), /可用列表/);
+    assert.equal(discoveryCount, 3);
+
+    const withZhipu = structuredClone(modelActivated.config);
     withZhipu.providers.push({
       id: 'zhipu', name: '智谱清言', baseUrl: 'https://open.bigmodel.cn/api/anthropic',
       protocols: ['anthropic-compatible'], enabled: true, builtIn: false, credentialId: 'zhipu',
       claudeCode: { authField: 'ANTHROPIC_API_KEY', primaryModel: 'glm-4.7', haikuModel: 'glm-4.5-air' },
     });
-    const zhipuSaved = handlers.save(withZhipu, activated.config.revision);
+    const zhipuSaved = handlers.save(withZhipu, modelActivated.config.revision);
     credentialStore.set('zhipu', submittedSecret);
     const zhipuActivated = handlers.activateClaudeProvider('zhipu', zhipuSaved.config.revision, 'custom');
     assert.equal(zhipuActivated.config.activeClaudeProviderId, 'zhipu');
@@ -136,6 +153,8 @@ async function main() {
     const preload = fs.readFileSync(path.join(__dirname, '..', 'src', 'preload', 'index.ts'), 'utf8');
     assert(!/configureModelCredential:\s*\([^)]*(?:key|secret|token)/i.test(preload), 'credential IPC must accept provider id only');
     assert.match(preload, /activateClaudeProvider:\s*\(providerId: string, expectedRevision: number/);
+    assert.match(preload, /listAvailableClaudeModels:\s*\(\)/);
+    assert.match(preload, /activateClaudeModel:\s*\(modelId: string, expectedRevision: number/);
     const host = fs.readFileSync(path.join(__dirname, '..', '..', 'agent', 'host-tools', 'configure-model-credential.ps1'), 'utf8');
     assert.match(host, /<PasswordBox x:Name="SecretInput"/);
     assert.match(host, /ZeroFreeBSTR/);

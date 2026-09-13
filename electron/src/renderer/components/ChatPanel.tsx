@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Bot, BrainCircuit, Clock3, Code2, FolderClock, Lightbulb, List, MessageCircleMore, Paperclip, Pin, Search, Send, Sparkles, Wrench } from 'lucide-react';
+import { Bot, BrainCircuit, Check, ChevronDown, Clock3, Code2, FolderClock, Lightbulb, List, MessageCircleMore, Paperclip, Pin, Search, Send, Sparkles, Wrench } from 'lucide-react';
 import type { AgentTaskInput, AgentTaskStatus, AttachmentReference, ChatConversationSummary, ChatMessage, ManagedSkillSummary, SkillReference, TaskStep, TaskSubmitMode } from '../types';
+import type { ClaudeModelDiscoverySnapshot } from '../../common/model-config';
 import MarkdownContent from './MarkdownContent';
 import TaskProgress from './TaskProgress';
 import catnipAgentWelcomeImage from '../assets/catnip-agent-welcome-v2.webp';
@@ -338,11 +339,15 @@ export default function ChatPanel({
   const [composerHeight, setComposerHeight] = useState(readComposerHeight);
   const [activeClaudeProvider, setActiveClaudeProvider] = useState<{ name: string; model: string; ready: boolean } | null>(null);
   const [modelLoadError, setModelLoadError] = useState('');
+  const [modelPickerOpen, setModelPickerOpen] = useState(false);
+  const [modelDiscovery, setModelDiscovery] = useState<ClaudeModelDiscoverySnapshot | null>(null);
+  const [modelSwitching, setModelSwitching] = useState(false);
   const cancelRenameRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const composerEditorRef = useRef<HTMLDivElement>(null);
   const skillPickerRef = useRef<HTMLDivElement>(null);
+  const modelPickerRef = useRef<HTMLDivElement>(null);
   const composerResizeCleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -392,6 +397,46 @@ export default function ChatPanel({
     });
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    if (!modelPickerOpen) return undefined;
+    const closePicker = (event: PointerEvent) => {
+      if (event.target instanceof Node && modelPickerRef.current?.contains(event.target)) return;
+      setModelPickerOpen(false);
+    };
+    document.addEventListener('pointerdown', closePicker);
+    return () => document.removeEventListener('pointerdown', closePicker);
+  }, [modelPickerOpen]);
+
+  const openModelPicker = async () => {
+    if (modelPickerOpen) { setModelPickerOpen(false); return; }
+    setModelPickerOpen(true);
+    setModelDiscovery(null);
+    setModelLoadError('');
+    try {
+      setModelDiscovery(await window.electronAPI.listAvailableClaudeModels());
+    } catch (error) {
+      setModelLoadError(error instanceof Error ? error.message : '无法获取当前 Key 的可用模型');
+    }
+  };
+
+  const selectClaudeModel = async (modelId: string) => {
+    if (!modelDiscovery || modelSwitching) return;
+    if (modelId === modelDiscovery.activeModel) { setModelPickerOpen(false); return; }
+    setModelSwitching(true);
+    setModelLoadError('');
+    try {
+      const result = await window.electronAPI.activateClaudeModel(modelId, modelDiscovery.revision);
+      const provider = result.config.providers.find((item) => item.id === result.config.activeClaudeProviderId);
+      setActiveClaudeProvider(provider?.claudeCode ? { name: provider.name, model: provider.claudeCode.primaryModel, ready: result.setupComplete } : null);
+      setModelPickerOpen(false);
+      window.dispatchEvent(new Event('catnip:model-config-changed'));
+    } catch (error) {
+      setModelLoadError(error instanceof Error ? error.message : '模型切换失败');
+    } finally {
+      setModelSwitching(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -808,10 +853,19 @@ export default function ChatPanel({
           />
         </div>
         <div className="chat-input-actions">
-          <div className="chat-model-select" title={modelLoadError || 'Agent、找灵感和解问题共享这个 Claude Code 供应商'}>
-            <Bot aria-hidden="true" />
-            <span aria-label="当前 Claude Code 供应商">{activeClaudeProvider ? `${activeClaudeProvider.name} · ${activeClaudeProvider.model}` : modelLoadError || '尚未配置供应商'}</span>
-            {activeClaudeProvider && !activeClaudeProvider.ready ? <em>待配置</em> : null}
+          <div className="chat-model-picker" ref={modelPickerRef}>
+            <button className="chat-model-select" type="button" title={modelLoadError || '切换当前供应商下由 API 返回的可用模型'} aria-haspopup="listbox" aria-expanded={modelPickerOpen} onClick={() => void openModelPicker()}>
+              <Bot aria-hidden="true" />
+              <span aria-label="当前 Claude Code 供应商">{activeClaudeProvider ? `${activeClaudeProvider.name} · ${activeClaudeProvider.model}` : modelLoadError || '尚未配置供应商'}</span>
+              {activeClaudeProvider && !activeClaudeProvider.ready ? <em>待配置</em> : <ChevronDown aria-hidden="true" />}
+            </button>
+            {modelPickerOpen ? <div className="chat-model-menu" role="listbox" aria-label="当前供应商可用模型">
+              <header><strong>{activeClaudeProvider?.name || '当前供应商'}</strong><small>API Key 实测可用模型</small></header>
+              {!modelDiscovery && !modelLoadError ? <div className="chat-model-menu-status">正在查询供应商…</div> : null}
+              {modelLoadError ? <div className="chat-model-menu-error">{modelLoadError}</div> : null}
+              {modelDiscovery?.models.map((model) => <button key={model.id} type="button" role="option" aria-selected={model.id === modelDiscovery.activeModel} disabled={modelSwitching} onClick={() => void selectClaudeModel(model.id)}><span><strong>{model.id}</strong>{model.ownedBy ? <small>{model.ownedBy}</small> : null}</span>{model.id === modelDiscovery.activeModel ? <Check aria-label="当前模型" /> : null}</button>)}
+              <footer>选择后对 Agent、找灵感和解问题的下一次任务生效。</footer>
+            </div> : null}
           </div>
           <button
             className="chat-attachment-button nes-btn"

@@ -877,3 +877,16 @@ Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会�
 人工首屏首次复核失败：开发目录不存在仅随发布包交付的 `runtime/playwright/chromium-1223`，Renderer 把这一无关状态显示成红色发布包错误并禁用预设 Key 按钮。修复后模型配置按钮只受“正在打开/正在重启”约束；专项增加无 Playwright 耦合和无开发版假错误断言。
 
 人工模型维护复核发现千问视觉卡只有配置/替换入口，没有清除按钮。Renderer 现复用既有 Main `models:credential:delete` 安全删除路由，配置存在时显示“清除千问 Key”并二次确认；专项增加千问定向删除入口断言。
+
+## 2026-09-13 — Phase 18h 当前供应商模型发现与切换
+
+| 检查 | 结果 | 证据 |
+| --- | --- | --- |
+| `verify:model-discovery` | PASS | 虚构 Key；验证 HTTPS `/models`、Bearer、去重/过滤、401/坏 JSON 与响应不含 Secret |
+| `verify:model-management` | PASS | 可用模型 IPC、revision、二次服务端列表校验、四角色统一映射与 settings 同步 |
+| Electron typecheck | PASS | Common/Main/Preload/Chat 发现与切换类型通过 |
+| `verify:agent-model-selection` | PASS | 后续任务仍冻结切换后的应用级供应商/模型快照 |
+| `verify:chat-presentation` | PASS | 既有消息分组和工具过程呈现未回归 |
+| `build:renderer` | PASS | 2828 modules；模型菜单进入主 Renderer chunk，既有 Monaco 大 chunk warning 不变 |
+
+首次 `verify:model-management` 失败：新增路由期望列表已调用 `.sort()`，但手写期望顺序把 `models:available` 放在 Claude 路由之后；按真实字典序修正后通过。测试未读取或调用用户真实 Key；真实 DeepSeek `/models` 只会在用户点击输入框模型控件时由 Main 发起，仍记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`，等待人工验收。

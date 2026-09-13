@@ -58,6 +58,14 @@ export interface ModelManagementSnapshot {
   setupComplete: boolean;
 }
 
+export interface ClaudeModelDiscoverySnapshot {
+  providerId: string;
+  providerName: string;
+  revision: number;
+  activeModel: string;
+  models: Array<{ id: string; ownedBy?: string }>;
+}
+
 const ID_PATTERN = /^[a-z0-9][a-z0-9._-]{0,63}$/;
 const PROTOCOLS = new Set<ModelProtocol>(['anthropic-compatible', 'openai-compatible']);
 const CAPABILITIES = new Set<ModelCapability>(['engineering-agent', 'software-assistant', 'vision']);
