@@ -56,6 +56,8 @@ async function main() {
   assert.match(modelPanel, /千问 API Key/);
   assert.match(modelPanel, /当前启用/);
   assert.match(modelPanel, /替换千问 Key/);
+  assert.match(modelPanel, /deleteCredential\('qwen', '千问'\)/);
+  assert.match(modelPanel, /清除千问 Key/);
   assert.match(modelPanel, /credential\?\.configured \? '替换' : '配置'/);
   assert.match(modelPanel, /保存更改/);
   assert.match(modelPanel, /启用此供应商/);

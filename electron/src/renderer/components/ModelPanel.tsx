@@ -137,13 +137,13 @@ export default function ModelPanel({ startInCustomSetup = false, onReturnToStart
     }
   };
 
-  const deleteCredential = async () => {
-    if (!provider || !window.confirm(`确定清除 ${provider.name} 的本机 API Key 吗？`)) return;
+  const deleteCredential = async (targetProviderId = providerId, targetName = provider?.name || '该供应商') => {
+    if (!targetProviderId || !window.confirm(`确定清除 ${targetName} 的本机 API Key 吗？`)) return;
     setBusy(true);
     try {
-      const value = await window.electronAPI.deleteModelCredential(provider.id);
+      const value = await window.electronAPI.deleteModelCredential(targetProviderId);
       setSnapshot(value);
-      setMessage('本机 API Key 已清除；该供应商不能启动新任务');
+      setMessage(`${targetName} 的本机 API Key 已清除`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'API Key 清除失败');
     } finally {
@@ -214,7 +214,7 @@ export default function ModelPanel({ startInCustomSetup = false, onReturnToStart
       <div className="model-active-provider"><Cpu aria-hidden="true" /><span><small>当前启用</small><strong>{draft.providers.find((item) => item.id === draft.activeClaudeProviderId)?.name || '未配置'}</strong><em>{draft.providers.find((item) => item.id === draft.activeClaudeProviderId)?.claudeCode?.primaryModel || ''}</em></span><p>运行中和已入队任务不会被中途切换。</p></div>
       <div className="model-center-status" role="status"><ShieldCheck aria-hidden="true" />{message}</div>
       <div className="model-provider-workspace">
-        <aside className="model-provider-list"><div className="model-section-title"><strong>供应商</strong><button type="button" onClick={addProvider}><Plus aria-label="新增 Claude Code 供应商" /></button></div>{claudeProviders.map((item) => <button type="button" key={item.id} className={item.id === providerId ? 'is-active' : ''} onClick={() => setProviderId(item.id)}><span>{item.name}{item.id === draft.activeClaudeProviderId ? <em>当前</em> : null}</span><small>{snapshot.credentials.find((entry) => entry.providerId === item.id)?.configured ? 'API Key 已配置' : 'API Key 未配置'} · {item.claudeCode?.primaryModel}</small></button>)}<div className="model-vision-addon"><span>视觉工具 · 千问</span><small>{qwenCredential?.configured ? 'API Key 已配置' : '选填，未配置时图片理解不可用'}</small><button type="button" onClick={() => void configureCredential('qwen')} disabled={busy}>{qwenCredential?.configured ? '替换千问 Key' : '配置千问 Key'}</button></div></aside>
+        <aside className="model-provider-list"><div className="model-section-title"><strong>供应商</strong><button type="button" onClick={addProvider}><Plus aria-label="新增 Claude Code 供应商" /></button></div>{claudeProviders.map((item) => <button type="button" key={item.id} className={item.id === providerId ? 'is-active' : ''} onClick={() => setProviderId(item.id)}><span>{item.name}{item.id === draft.activeClaudeProviderId ? <em>当前</em> : null}</span><small>{snapshot.credentials.find((entry) => entry.providerId === item.id)?.configured ? 'API Key 已配置' : 'API Key 未配置'} · {item.claudeCode?.primaryModel}</small></button>)}<div className="model-vision-addon"><span>视觉工具 · 千问</span><small>{qwenCredential?.configured ? 'API Key 已配置' : '选填，未配置时图片理解不可用'}</small><button type="button" onClick={() => void configureCredential('qwen')} disabled={busy}>{qwenCredential?.configured ? '替换千问 Key' : '配置千问 Key'}</button>{qwenCredential?.configured ? <button type="button" className="is-danger" onClick={() => void deleteCredential('qwen', '千问')} disabled={busy}>清除千问 Key</button> : null}</div></aside>
         <main className="model-provider-editor">
           {provider?.claudeCode ? <>
             <div className="model-editor-heading"><strong>供应商配置</strong>{!provider.builtIn ? <button type="button" onClick={deleteProvider}><Trash2 aria-hidden="true" />删除</button> : <span>预设</span>}</div>
