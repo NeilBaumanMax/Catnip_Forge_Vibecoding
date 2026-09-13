@@ -35,7 +35,7 @@ export type AgentExecutionProfile = 'default' | 'explore_analysis' | 'explore_pl
 
 export function ensureAgentProcess(profile: AgentExecutionProfile = 'default', model?: EngineeringAgentRuntimeModel): ChildProcess {
   const requestedModelKey = model
-    ? [model.providerId, model.baseUrl, model.authField, model.upstreamModel, model.haikuModel, model.sonnetModel, model.opusModel].join('\u0000')
+    ? [model.providerId, model.baseUrl, model.authField, model.upstreamModel, model.haikuModel, model.sonnetModel, model.opusModel, model.fableModel, model.subagentModel].join('\u0000')
     : 'not-configured';
   if (agentProcess && !agentProcess.killed && agentProcess.exitCode == null && agentExecutionProfile === profile && agentModelKey === requestedModelKey) {
     return agentProcess;
@@ -206,6 +206,12 @@ export function buildAgentEnv(model?: EngineeringAgentRuntimeModel): NodeJS.Proc
   delete env.ANTHROPIC_DEFAULT_HAIKU_MODEL;
   delete env.ANTHROPIC_DEFAULT_SONNET_MODEL;
   delete env.ANTHROPIC_DEFAULT_OPUS_MODEL;
+  delete env.ANTHROPIC_DEFAULT_FABLE_MODEL;
+  delete env.CLAUDE_CODE_SUBAGENT_MODEL;
+  delete env.ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME;
+  delete env.ANTHROPIC_DEFAULT_SONNET_MODEL_NAME;
+  delete env.ANTHROPIC_DEFAULT_OPUS_MODEL_NAME;
+  delete env.ANTHROPIC_DEFAULT_FABLE_MODEL_NAME;
 
   env.CDP_PORT = '9230';
   env.DISPLAY = process.env.DISPLAY || ':0';
@@ -218,6 +224,8 @@ export function buildAgentEnv(model?: EngineeringAgentRuntimeModel): NodeJS.Proc
     env.ANTHROPIC_DEFAULT_HAIKU_MODEL = model.haikuModel;
     env.ANTHROPIC_DEFAULT_SONNET_MODEL = model.sonnetModel;
     env.ANTHROPIC_DEFAULT_OPUS_MODEL = model.opusModel;
+    env.ANTHROPIC_DEFAULT_FABLE_MODEL = model.fableModel;
+    env.CLAUDE_CODE_SUBAGENT_MODEL = model.subagentModel;
     logger.info('agent:spawn', {
       authMode: model.authSource,
       profileId: model.profileId,

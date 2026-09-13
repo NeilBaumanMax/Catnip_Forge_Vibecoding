@@ -26,7 +26,7 @@ async function main() {
     config.providers.push({
       id: 'zhipu', name: '智谱清言', baseUrl: 'https://open.bigmodel.cn/api/anthropic',
       protocols: ['anthropic-compatible'], enabled: true, builtIn: false, credentialId: 'zhipu',
-      claudeCode: { authField: 'ANTHROPIC_API_KEY', primaryModel: 'glm-4.7', haikuModel: 'glm-4.5-air' },
+      claudeCode: { apiFormat: 'anthropic', isFullUrl: false, authField: 'ANTHROPIC_API_KEY', primaryModel: 'glm-4.7', haikuModel: 'glm-4.5-air' },
     });
     config.activeClaudeProviderId = 'zhipu';
     config.setupMode = 'custom';
@@ -36,6 +36,8 @@ async function main() {
     assert.equal(selected.providerId, 'zhipu');
     assert.equal(selected.haikuModel, 'glm-4.5-air');
     assert.equal(selected.sonnetModel, 'glm-4.7');
+    assert.equal(selected.fableModel, 'glm-4.7');
+    assert.equal(selected.subagentModel, 'glm-4.5-air');
     assert.equal('authToken' in selected, false);
 
     const runtime = { ...selected, authToken: 'sk-agent-runtime-fixture', authSource: 'secure-storage' };
@@ -55,6 +57,8 @@ async function main() {
     assert.equal(env.ANTHROPIC_DEFAULT_HAIKU_MODEL, selected.haikuModel);
     assert.equal(env.ANTHROPIC_DEFAULT_SONNET_MODEL, selected.sonnetModel);
     assert.equal(env.ANTHROPIC_DEFAULT_OPUS_MODEL, selected.opusModel);
+    assert.equal(env.ANTHROPIC_DEFAULT_FABLE_MODEL, selected.fableModel);
+    assert.equal(env.CLAUDE_CODE_SUBAGENT_MODEL, selected.subagentModel);
     for (const [key, value] of Object.entries(inherited)) {
       if (value == null) delete process.env[key]; else process.env[key] = value;
     }

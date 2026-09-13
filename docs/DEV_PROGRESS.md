@@ -372,3 +372,11 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 - [x] 16c2b 首次启动、软件助手与 Qwen 统一接入 safeStorage 与模型中心用途默认值；旧文件仅作 Main 迁移兼容。
 - [ ] 16g 完整 UI、原生窗口人工验收与 Windows 发布回归。
 - [x] 16g1 真实 Electron 模型中心几何/DOM 回归；补齐 DeepSeek V4 Flash Agent 内置档案与旧 Store 增量加载。
+
+### 2026-09-13 Phase 18j CC Switch Claude Provider 对齐
+
+- [x] 核对 CC Switch 当前 Claude Provider 源码，补齐 Subagent、显示名、1M、模型 URL 与候选端点语义。
+- [x] schema v3 和 v1/v2 迁移；Main-only 模型发现、脱敏预览、显式 Anthropic Messages 测试。
+- [x] 供应商页补齐官网、备注、地址、固定 API 格式、五角色映射、默认兜底、模型获取、测试与预览。
+- [x] 类型、专项、Renderer build、三档真实 Electron 布局与截图通过。
+- [ ] 用户真实 Key 在线验证与人工复验；Windows 包重打。

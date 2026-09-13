@@ -5,7 +5,7 @@ async function main() {
   const provider = {
     id: 'deepseek', name: 'DeepSeek', baseUrl: 'https://api.deepseek.com',
     protocols: ['anthropic-compatible'], enabled: true, builtIn: true, credentialId: 'deepseek',
-    claudeCode: { authField: 'ANTHROPIC_AUTH_TOKEN', primaryModel: 'deepseek-v4-pro' },
+    claudeCode: { apiFormat: 'anthropic', isFullUrl: false, authField: 'ANTHROPIC_AUTH_TOKEN', primaryModel: 'deepseek-v4-pro' },
   };
   const secret = ['sk', 'discovery', 'fixture'].join('-');
   let requested;
@@ -18,7 +18,7 @@ async function main() {
       { id: '<invalid>' },
     ] }), { status: 200, headers: { 'content-type': 'application/json' } });
   });
-  assert.equal(requested.url, 'https://api.deepseek.com/models');
+  assert.equal(requested.url, 'https://api.deepseek.com/v1/models');
   assert.equal(requested.authorization, `Bearer ${secret}`);
   assert.deepEqual(result.models.map((item) => item.id), ['deepseek-v4-flash', 'deepseek-v4-pro']);
   assert.equal(result.activeModel, 'deepseek-v4-pro');

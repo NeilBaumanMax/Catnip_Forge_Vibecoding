@@ -894,3 +894,18 @@ Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会�
 ## 2026-09-13 — Phase 18i 文档漂移与接力
 
 本闭环不修改业务源码，因此不以历史自动化结果冒充新页面验收。文档检查必须覆盖：分支固定为 `model-ccswitch`、人工验收失败、CC Switch 直连能力差距、代理/转换等非目标、Secret 边界、Git ahead/远端恢复状态和三个 pending 标记。执行 `git diff --check` 与定向关键词检查；不运行真实 Key、付费 API、Windows 打包或硬件测试。
+
+## 2026-09-13 — Phase 18j CC Switch Claude Provider 源码对齐
+
+| 命令/证据 | 结果 | 说明 |
+| --- | --- | --- |
+| `verify:model-provider-parity` | PASS | schema v3/v2 迁移、Fable/Subagent、显示名、脱敏预览、完整 URL 拒绝、Main-only Messages 测试 |
+| `verify:model-discovery` | PASS | `/v1/models`、`/models` 候选、HTTPS/鉴权/格式与去重 |
+| `verify:model-management` | PASS | preview/models/test IPC、revision、凭据隔离、五角色应用 |
+| `verify:model-config` / `verify:agent-model-selection` | PASS | schema v3 Store、Fable/Subagent 任务快照与进程环境 |
+| `verify:secure-startup` / `verify:model-runtime` | PASS | 首启双 Key、安全存储和既有运行契约未回归 |
+| `typecheck` / `build:renderer` | PASS | 2828 modules；既有 Monaco chunk warning 不变 |
+| `verify:model-center-ui` | PASS | 五映射行、测试入口、Anthropic-only；三档无横向溢出并截图 |
+| `git diff --check` | PASS | 无 whitespace error |
+
+首次失败保留：四个模型专项仍期待旧 schema、旧 URL/IPC 或使用旧 fixture，逐项更新后通过；误调用不存在的 `typecheck:renderer` 后改用项目真实 `typecheck`；首次 UI 验收因软件未启动无法连接 9230，启动后通过。没有读取或调用用户真实 Key，也没有重打包或硬件动作，三个 pending 状态保持。

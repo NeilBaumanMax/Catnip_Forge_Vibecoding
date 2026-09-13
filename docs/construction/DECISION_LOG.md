@@ -82,6 +82,12 @@
 
 ## D060 — CC Switch 对齐限于 Claude Code 直连配置（2026-09-13）
 
-- 决定：补齐供应商信息、请求地址模式、固定鉴权字段、Sonnet/Opus/Fable/Haiku 映射、默认兜底模型、模型列表、脱敏配置预览和显式验证/启用。
+- 决定：补齐供应商信息、请求地址模式、固定鉴权字段、Sonnet/Opus/Fable/Haiku/Subagent 映射、显示名、1M、默认兜底模型、模型列表、脱敏配置预览和显式验证/启用。
 - 非目标：不复制 CC Switch 的本地代理与协议转换，也不引入 Header/Body 覆盖、User-Agent 模拟、测速、计费、故障转移、路由接管、Codex、Gemini、MCP 或数据库。
 - 原因：这些能力依赖第二套网络执行/代理系统，超出 Catnip 当前 Claude Code CLI 直连范围；在未实现适配时展示选项会制造“能配置但不能运行”的假功能。
+
+## D061 — 供应商在线动作必须由 Main 按用户显式操作执行（2026-09-13）
+
+- 决定：编辑页“获取模型列表”和“测试配置”先保存 revision，再由 Main 从 safeStorage 读取该供应商 Key；模型列表尝试显式 `modelsUrl` 或 CC Switch 同类 `/v1/models`、`/models` 候选，测试只发一条 `max_tokens: 1` 的 Anthropic Messages 请求。
+- 安全：Renderer 只接收模型 ID、HTTP 状态、耗时和脱敏配置；不接收 Key 或响应正文。失败不回退到其他供应商。
+- 原因：这让用户能在启用前核对配置，同时保持凭据边界和付费调用的显式性。

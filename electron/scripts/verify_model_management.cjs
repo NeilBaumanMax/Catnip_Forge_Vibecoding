@@ -23,6 +23,7 @@ async function main() {
   const submittedSecret = ['sk', 'management', 'fixture', 'only'].join('-');
   let promptCount = 0;
   let discoveryCount = 0;
+  let providerTestCount = 0;
   let releasePrompt;
   const promptGate = new Promise((resolve) => { releasePrompt = resolve; });
   const handlers = createModelManagementHandlers({
@@ -40,6 +41,11 @@ async function main() {
       assert.equal(credential, submittedSecret);
       return { providerId: provider.id, providerName: provider.name, revision, activeModel: provider.claudeCode.primaryModel, models: [{ id: 'deepseek-v4-flash', ownedBy: 'deepseek' }, { id: 'deepseek-v4-pro', ownedBy: 'deepseek' }] };
     },
+    testProvider: async (provider, credential) => {
+      providerTestCount += 1;
+      assert.equal(credential, submittedSecret);
+      return { providerId: provider.id, ok: true, status: 200, latencyMs: 12, model: provider.claudeCode.primaryModel, message: 'ok' };
+    },
   });
 
   try {
@@ -49,6 +55,9 @@ async function main() {
       'models:available',
       'models:claude-model:activate',
       'models:claude-provider:activate',
+      'models:claude-provider:models',
+      'models:claude-provider:preview',
+      'models:claude-provider:test',
       'models:credential:configure',
       'models:credential:delete',
       'models:list',
@@ -119,20 +128,30 @@ async function main() {
     assert.equal(JSON.parse(fs.readFileSync(`${settingsFile}.bak`, 'utf8')).theme, 'dark');
     assert(!fs.readFileSync(`${settingsFile}.bak`, 'utf8').includes(submittedSecret), 'existing settings backup must also be sanitized without discarding unrelated fields');
 
+    const preview = await routes.get('models:claude-provider:preview')(null, 'deepseek');
+    assert.equal(preview.requestUrl, 'https://api.deepseek.com/anthropic/v1/messages');
+    assert.equal(preview.settings.env.ANTHROPIC_AUTH_TOKEN, '<由 Windows 安全存储注入>');
+    assert(!JSON.stringify(preview).includes(submittedSecret));
+    const tested = await routes.get('models:claude-provider:test')(null, 'deepseek', activated.config.revision);
+    assert.equal(tested.ok, true);
+    assert.equal(providerTestCount, 1);
+
     const discovered = await routes.get('models:available')(null);
     assert.deepEqual(discovered.models.map((item) => item.id), ['deepseek-v4-flash', 'deepseek-v4-pro']);
     assert(!JSON.stringify(discovered).includes(submittedSecret), 'model discovery must not expose the credential');
+    const selectedDiscovered = await routes.get('models:claude-provider:models')(null, 'deepseek', activated.config.revision);
+    assert.equal(selectedDiscovered.providerId, 'deepseek');
     const modelActivated = await routes.get('models:claude-model:activate')(null, 'deepseek-v4-flash', activated.config.revision);
     assert.equal(modelActivated.config.providers.find((item) => item.id === 'deepseek').claudeCode.primaryModel, 'deepseek-v4-flash');
     assert.equal(JSON.parse(fs.readFileSync(settingsFile, 'utf8')).env.ANTHROPIC_DEFAULT_OPUS_MODEL, 'deepseek-v4-flash');
     await assert.rejects(() => routes.get('models:claude-model:activate')(null, 'not-returned', modelActivated.config.revision), /可用列表/);
-    assert.equal(discoveryCount, 3);
+    assert.equal(discoveryCount, 4);
 
     const withZhipu = structuredClone(modelActivated.config);
     withZhipu.providers.push({
       id: 'zhipu', name: '智谱清言', baseUrl: 'https://open.bigmodel.cn/api/anthropic',
       protocols: ['anthropic-compatible'], enabled: true, builtIn: false, credentialId: 'zhipu',
-      claudeCode: { authField: 'ANTHROPIC_API_KEY', primaryModel: 'glm-4.7', haikuModel: 'glm-4.5-air' },
+      claudeCode: { apiFormat: 'anthropic', isFullUrl: false, authField: 'ANTHROPIC_API_KEY', primaryModel: 'glm-4.7', haikuModel: 'glm-4.5-air' },
     });
     const zhipuSaved = handlers.save(withZhipu, modelActivated.config.revision);
     credentialStore.set('zhipu', submittedSecret);

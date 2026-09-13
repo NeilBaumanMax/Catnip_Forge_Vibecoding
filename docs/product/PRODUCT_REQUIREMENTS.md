@@ -137,7 +137,8 @@ Catnip 自己的长期本地知识库，不使用知乎官方 Knowledge Base 作
 
 - 用户确认 `model-ccswitch` 是当前最新产品形态和后续唯一施工分支；`idea_to_production` 退出当前开发路线，不得再作为模型功能施工目标。
 - 当前 `model-ccswitch@029dd543` 的自定义供应商页面未通过人工验收。它只实现了名称、Base URL、鉴权变量、主模型与 Haiku/Sonnet/Opus 的精简表单，不能再描述成“已与 CC Switch 配置页对齐”或“人工验收通过”。
-- 自定义 Claude Code 供应商配置应采用与 CC Switch 直连模式一致的用户心智：供应商名称、官网链接、备注、请求地址及其前缀/完整 URL 语义、鉴权字段、模型角色映射（Sonnet、Opus、Fable、Haiku）、默认兜底模型、获取模型列表，以及可核对但不含 Secret 的生成配置预览。
+- 自定义 Claude Code 供应商配置采用 CC Switch Claude Code 页的用户心智：供应商名称、官网链接、备注、请求地址及前缀/完整 URL 语义、鉴权字段、模型角色映射（Sonnet、Opus、Fable、Haiku、Subagent）、角色显示名、受支持角色的 `[1m]` 标记、默认兜底模型、获取模型列表，以及可核对但不含 Secret 的生成配置预览。
+- 直连版只允许 `Anthropic Messages（原生）`。完整 URL 和其他 API 格式在界面中必须明确标为需要 CC Switch 本地路由、当前不可用，不能保存成看似可启用的配置。
 - 保存、配置/替换/清除 Key、验证配置和启用供应商必须是明确步骤。配置完整不等于在线可用；只有用户主动触发且真实响应成功后才能显示验证通过。失败不得静默回退到 DeepSeek 或其他付费供应商。
 - Catnip 首批只支持 Claude Code CLI 可直接消费的 Anthropic Messages 兼容端点。CC Switch 中依赖本地代理的 OpenAI Chat/Responses 格式转换、Header/Body 覆盖、User-Agent 模拟、测速、计费、故障转移和路由接管不属于本轮，不得做出可用假象。
 - API Key 仍只进入 Main 控制的安全输入和系统安全存储。配置预览、Renderer、日志、Chat、任务快照、截图和普通 Claude settings 均不得包含 Secret。

@@ -15,7 +15,7 @@ async function main() {
     const store = new ModelConfigStore(file);
     const defaults = store.read();
     assert.equal(defaults.revision, 0);
-    assert.equal(defaults.schemaVersion, 2);
+    assert.equal(defaults.schemaVersion, 3);
     assert.equal(defaults.activeClaudeProviderId, 'deepseek');
     assert.equal(defaults.providers.find((item) => item.id === 'deepseek').claudeCode.haikuModel, 'deepseek-v4-flash');
     assert.equal(defaults.defaults['engineering-agent'], 'deepseek-v4-pro');
@@ -36,7 +36,7 @@ async function main() {
       enabled: true,
       builtIn: false,
       credentialId: 'custom-anthropic',
-      claudeCode: { authField: 'ANTHROPIC_API_KEY', primaryModel: 'custom-pro-2026' },
+      claudeCode: { apiFormat: 'anthropic', isFullUrl: false, authField: 'ANTHROPIC_API_KEY', primaryModel: 'custom-pro-2026' },
     });
     first.models.push({
       id: 'custom-pro',
@@ -60,7 +60,7 @@ async function main() {
     delete versionOne.setupMode;
     for (const provider of versionOne.providers) delete provider.claudeCode;
     const migrated = normalizeModelConfig(versionOne);
-    assert.equal(migrated.schemaVersion, 2);
+    assert.equal(migrated.schemaVersion, 3);
     assert.equal(migrated.activeClaudeProviderId, 'deepseek');
     assert.equal(migrated.setupMode, 'preset');
     assert.equal(migrated.providers.find((item) => item.id === 'deepseek').claudeCode.primaryModel, 'deepseek-v4-pro');

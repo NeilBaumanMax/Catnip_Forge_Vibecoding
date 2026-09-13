@@ -3,14 +3,17 @@ import {
   normalizeModelConfig,
   type ModelConfigState,
   type ClaudeModelDiscoverySnapshot,
+  type ClaudeProviderPreview,
+  type ClaudeProviderTestResult,
   type ModelManagementSnapshot,
 } from '../common/model-config';
 import { createModelConfigStore, type ModelConfigStore } from './model-config-store';
 import { createModelCredentialStore, type ModelCredentialStore } from './model-credentials';
 import { promptForModelCredential, type ModelCredentialPromptResult } from './model-credential-prompt';
-import { syncClaudeCodeSettings } from './claude-provider-switch';
+import { buildClaudeProviderPreview, syncClaudeCodeSettings } from './claude-provider-switch';
 import type { ModelSetupMode } from '../common/model-config';
 import { discoverProviderModels } from './model-discovery';
+import { testClaudeProviderConnection } from './model-provider-test';
 
 export interface ModelManagementDependencies {
   configStore: ModelConfigStore;
@@ -18,6 +21,7 @@ export interface ModelManagementDependencies {
   prompt: (providerName: string) => Promise<ModelCredentialPromptResult>;
   syncClaudeSettings: (provider: ModelConfigState['providers'][number]) => void;
   discoverModels: (provider: ModelConfigState['providers'][number], credential: string, revision: number) => Promise<ClaudeModelDiscoverySnapshot>;
+  testProvider: (provider: ModelConfigState['providers'][number], credential: string) => Promise<ClaudeProviderTestResult>;
 }
 
 function protectBuiltIns(value: unknown, current: ModelConfigState): ModelConfigState {
@@ -49,6 +53,7 @@ export function createModelManagementHandlers(dependencies?: Partial<ModelManage
   const prompt = dependencies?.prompt ?? promptForModelCredential;
   const syncClaudeSettings = dependencies?.syncClaudeSettings ?? syncClaudeCodeSettings;
   const discoverModels = dependencies?.discoverModels ?? discoverProviderModels;
+  const testProvider = dependencies?.testProvider ?? testClaudeProviderConnection;
   let promptInFlight: Promise<{ outcome: string; snapshot: ModelManagementSnapshot }> | null = null;
 
   const snapshot = (): ModelManagementSnapshot => {
@@ -104,13 +109,38 @@ export function createModelManagementHandlers(dependencies?: Partial<ModelManage
       credentialStore.delete(provider.credentialId);
       return snapshot();
     },
+    previewClaudeProvider: (providerId: string): ClaudeProviderPreview => {
+      const provider = configStore.read().providers.find((item) => item.id === providerId);
+      if (!provider?.claudeCode) throw new Error('Claude Code 供应商不存在或配置不完整');
+      return buildClaudeProviderPreview(provider);
+    },
+    listClaudeProviderModels: async (providerId: string, expectedRevision: number): Promise<ClaudeModelDiscoverySnapshot> => {
+      const config = configStore.read();
+      if (config.revision !== expectedRevision) throw new Error('模型配置已变化，请保存或重新载入后再获取模型');
+      const provider = config.providers.find((item) => item.id === providerId);
+      if (!provider?.claudeCode) throw new Error('Claude Code 供应商不存在或配置不完整');
+      const credential = credentialStore.get(provider.credentialId);
+      if (!credential) throw new Error(`请先配置 ${provider.name} 的 API Key`);
+      return discoverModels(provider, credential, config.revision);
+    },
     listAvailableClaudeModels: async (): Promise<ClaudeModelDiscoverySnapshot> => {
       const config = configStore.read();
-      const provider = config.providers.find((item) => item.id === config.activeClaudeProviderId);
+      const providerId = config.activeClaudeProviderId;
+      if (!providerId) throw new Error('当前 Claude Code 供应商不存在或配置不完整');
+      const provider = config.providers.find((item) => item.id === providerId);
       if (!provider?.claudeCode) throw new Error('当前 Claude Code 供应商不存在或配置不完整');
       const credential = credentialStore.get(provider.credentialId);
       if (!credential) throw new Error(`请先配置 ${provider.name} 的 API Key`);
       return discoverModels(provider, credential, config.revision);
+    },
+    testClaudeProvider: async (providerId: string, expectedRevision: number): Promise<ClaudeProviderTestResult> => {
+      const config = configStore.read();
+      if (config.revision !== expectedRevision) throw new Error('模型配置已变化，请保存或重新载入后再测试');
+      const provider = config.providers.find((item) => item.id === providerId);
+      if (!provider?.claudeCode) throw new Error('Claude Code 供应商不存在或配置不完整');
+      const credential = credentialStore.get(provider.credentialId);
+      if (!credential) throw new Error(`请先配置 ${provider.name} 的 API Key`);
+      return testProvider(provider, credential);
     },
     activateClaudeModel: async (modelId: string, expectedRevision: number): Promise<ModelManagementSnapshot> => {
       const config = configStore.read();
@@ -133,6 +163,8 @@ export function createModelManagementHandlers(dependencies?: Partial<ModelManage
           haikuModel: modelId,
           sonnetModel: modelId,
           opusModel: modelId,
+          fableModel: modelId,
+          subagentModel: modelId,
         },
       };
       syncClaudeSettings(updatedProvider);
@@ -172,6 +204,9 @@ export function registerModelManagementIpc(
   registrar.handle('models:credential:configure', async (_event, providerId: string) => handlers.configureCredential(providerId));
   registrar.handle('models:credential:delete', async (_event, providerId: string) => handlers.deleteCredential(providerId));
   registrar.handle('models:available', async () => handlers.listAvailableClaudeModels());
+  registrar.handle('models:claude-provider:preview', async (_event, providerId: string) => handlers.previewClaudeProvider(providerId));
+  registrar.handle('models:claude-provider:models', async (_event, providerId: string, expectedRevision: number) => handlers.listClaudeProviderModels(providerId, expectedRevision));
+  registrar.handle('models:claude-provider:test', async (_event, providerId: string, expectedRevision: number) => handlers.testClaudeProvider(providerId, expectedRevision));
   registrar.handle('models:claude-model:activate', async (_event, modelId: string, expectedRevision: number) => handlers.activateClaudeModel(modelId, expectedRevision));
   registrar.handle('models:claude-provider:activate', async (_event, providerId: string, expectedRevision: number, setupMode?: ModelSetupMode) => handlers.activateClaudeProvider(providerId, expectedRevision, setupMode));
 }

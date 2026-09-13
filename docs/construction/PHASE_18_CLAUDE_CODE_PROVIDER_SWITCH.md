@@ -199,3 +199,11 @@ Phase 18 已按本文契约完成源码闭环：
 | 代理/覆盖/计费 | CC Switch 扩展能力 | 无 | 明确非目标 |
 
 下一闭环先做文档独立提交，再修改源码。实现顺序固定为 Schema/迁移 → Main 校验与脱敏预览 → 窄 IPC → Renderer → 离线专项 → Electron UI → 用户人工复验。任何需要本地代理才能工作的 API 格式都不得出现在首批可选项中。真实 Key、真实付费请求和用户人工复验均保持 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`。
+
+### 11.4 18j 源码对照后的实现结果
+
+本轮直接核对 CC Switch 当前 Claude Provider 表单与模型获取源码，纠正了旧文档只列四个角色的漂移：当前参考实现还包含 Subagent、角色显示名、受支持角色的 `[1m]` 标记、显式模型列表 URL 及 `/v1/models`、`/models` 候选。Catnip schema 升至 v3，并保留 v1→v2→v3 迁移。
+
+Main 新增编辑中供应商的模型发现、脱敏配置预览和最小 Anthropic Messages 连通性测试。Key 只由 Main 从安全存储读取；IPC 返回模型元数据、占位符预览或测试状态，不回传响应正文与 Secret。Renderer 采用名称/备注/官网、请求地址、固定 Anthropic 格式、鉴权字段、五个角色映射、默认兜底、模型列表 URL、获取模型、测试和预览的信息结构。完整 URL 与协议转换依赖 CC Switch 本地路由，本轮明确禁用。
+
+自动化与真实 Electron 三档布局已通过，截图为 `electron/.tmp/phase18-claude-provider-center.png`。本轮没有使用用户真实 Key 或发起付费调用，用户人工复验尚未完成，因此仍记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`；未重打 Windows 包，记 `WINDOWS_PACKAGE_VALIDATION_PENDING`。

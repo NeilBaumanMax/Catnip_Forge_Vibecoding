@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Check, ChevronLeft, Cpu, KeyRound, Plus, RefreshCw, Save, ShieldCheck, Trash2, WandSparkles } from 'lucide-react';
-import type { ModelConfigState, ModelManagementSnapshot, ModelSetupMode, ProviderConfig } from '../../common/model-config';
+import { Check, ChevronLeft, Cpu, Download, FlaskConical, KeyRound, Plus, RefreshCw, Save, ShieldCheck, Trash2, WandSparkles } from 'lucide-react';
+import type { ClaudeModelDiscoverySnapshot, ClaudeProviderPreview, ClaudeProviderTestResult, ModelConfigState, ModelManagementSnapshot, ModelSetupMode, ProviderConfig } from '../../common/model-config';
 
 function cloneConfig(value: ModelConfigState): ModelConfigState {
   return structuredClone(value);
@@ -20,7 +20,9 @@ function createCustomProvider(): ProviderConfig {
     enabled: true,
     builtIn: false,
     credentialId: id,
-    claudeCode: { authField: 'ANTHROPIC_AUTH_TOKEN', primaryModel: 'model-id' },
+    websiteUrl: 'https://example.com',
+    notes: '',
+    claudeCode: { apiFormat: 'anthropic', isFullUrl: false, authField: 'ANTHROPIC_AUTH_TOKEN', primaryModel: 'model-id' },
   };
 }
 
@@ -36,6 +38,9 @@ export default function ModelPanel({ startInCustomSetup = false, onReturnToStart
   const [setupMode, setSetupMode] = useState<ModelSetupMode | ''>('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('正在读取 Claude Code 配置…');
+  const [discovery, setDiscovery] = useState<ClaudeModelDiscoverySnapshot | null>(null);
+  const [preview, setPreview] = useState<ClaudeProviderPreview | null>(null);
+  const [testResult, setTestResult] = useState<ClaudeProviderTestResult | null>(null);
 
   const load = async () => {
     setBusy(true);
@@ -48,6 +53,9 @@ export default function ModelPanel({ startInCustomSetup = false, onReturnToStart
         ? { ...cloneConfig(value.config), setupMode: 'custom' as const, providers: [...value.config.providers, newCustom] }
         : cloneConfig(value.config);
       setDraft(nextConfig);
+      setDiscovery(null);
+      setPreview(null);
+      setTestResult(null);
       setSetupMode(value.setupComplete ? '' : startInCustomSetup ? 'custom' : value.config.setupMode || '');
       const providers = value.config.providers.filter((item) => item.claudeCode);
       setProviderId((current) => newCustom?.id || existingCustom?.id || (providers.some((item) => item.id === current) ? current : value.config.activeClaudeProviderId || providers[0]?.id || ''));
@@ -73,6 +81,13 @@ export default function ModelPanel({ startInCustomSetup = false, onReturnToStart
     setDraft({ ...draft, providers: draft.providers.map((item) => item.id === provider.id ? { ...item, ...patch } : item) });
   };
 
+  const updateClaude = (patch: Partial<NonNullable<ProviderConfig['claudeCode']>>) => {
+    if (!provider?.claudeCode) return;
+    updateProvider({ claudeCode: { ...provider.claudeCode, ...patch } });
+    setPreview(null);
+    setTestResult(null);
+  };
+
   const saveDraft = async (mode: ModelSetupMode | '' = setupMode): Promise<ModelManagementSnapshot | null> => {
     if (!draft || !snapshot) return null;
     const config = mode ? { ...draft, setupMode: mode } : draft;
@@ -93,6 +108,45 @@ export default function ModelPanel({ startInCustomSetup = false, onReturnToStart
     } finally {
       setBusy(false);
     }
+  };
+
+  const fetchModels = async () => {
+    if (!provider) return;
+    setBusy(true);
+    try {
+      const saved = await saveDraft();
+      if (!saved) return;
+      const result = await window.electronAPI.listClaudeProviderModels(provider.id, saved.config.revision);
+      setDiscovery(result);
+      setMessage(`已读取 ${result.models.length} 个可用模型；可从输入框候选中选择，也可继续手动填写`);
+    } catch (error) { setMessage(error instanceof Error ? error.message : '获取模型列表失败'); }
+    finally { setBusy(false); }
+  };
+
+  const refreshPreview = async () => {
+    if (!provider) return;
+    setBusy(true);
+    try {
+      const saved = await saveDraft();
+      if (!saved) return;
+      setPreview(await window.electronAPI.previewClaudeProvider(provider.id));
+      setMessage('已生成 Claude Code 配置预览；安全占位符不会包含 API Key');
+    } catch (error) { setMessage(error instanceof Error ? error.message : '生成配置预览失败'); }
+    finally { setBusy(false); }
+  };
+
+  const testConnection = async () => {
+    if (!provider) return;
+    setBusy(true);
+    setTestResult(null);
+    try {
+      const saved = await saveDraft();
+      if (!saved) return;
+      const result = await window.electronAPI.testClaudeProvider(provider.id, saved.config.revision);
+      setTestResult(result);
+      setMessage(`${result.message} · ${result.model} · HTTP ${result.status} · ${result.latencyMs}ms`);
+    } catch (error) { setMessage(error instanceof Error ? error.message : '供应商测试失败'); }
+    finally { setBusy(false); }
   };
 
   const configureCredential = async (targetProviderId = providerId) => {
@@ -161,6 +215,7 @@ export default function ModelPanel({ startInCustomSetup = false, onReturnToStart
     });
     setSetupMode('custom');
     setProviderId(nextProvider.id);
+    setDiscovery(null); setPreview(null); setTestResult(null);
     setMessage('填写 Claude Code compatible 地址和模型名，然后保存并配置 API Key');
   };
 
@@ -176,6 +231,18 @@ export default function ModelPanel({ startInCustomSetup = false, onReturnToStart
     }
     setDraft({ ...draft, providers: draft.providers.filter((item) => item.id !== provider.id), models: draft.models.filter((item) => item.providerId !== provider.id) });
     setProviderId(claudeProviders.find((item) => item.id !== provider.id)?.id || '');
+  };
+
+  const modelOptions = discovery?.providerId === providerId ? discovery.models : [];
+  const setAllRoleModels = () => {
+    if (!provider?.claudeCode) return;
+    const fallback = provider.claudeCode.primaryModel || modelOptions[0]?.id || '';
+    if (fallback) updateClaude({ haikuModel: fallback, sonnetModel: fallback, opusModel: fallback, fableModel: fallback, subagentModel: fallback });
+  };
+  const toggleLongContext = (field: 'sonnetModel' | 'opusModel' | 'fableModel' | 'subagentModel', checked: boolean) => {
+    if (!provider?.claudeCode) return;
+    const raw = String(provider.claudeCode[field] || provider.claudeCode.primaryModel).replace(/\[1m\]$/i, '');
+    updateClaude({ [field]: checked ? `${raw}[1m]` : raw });
   };
 
   if (!snapshot || !draft) return <section className="model-center" data-tour-id="panel-models"><div className="workspace-loading" role="status">{message}</div></section>;
@@ -214,16 +281,28 @@ export default function ModelPanel({ startInCustomSetup = false, onReturnToStart
       <div className="model-active-provider"><Cpu aria-hidden="true" /><span><small>当前启用</small><strong>{draft.providers.find((item) => item.id === draft.activeClaudeProviderId)?.name || '未配置'}</strong><em>{draft.providers.find((item) => item.id === draft.activeClaudeProviderId)?.claudeCode?.primaryModel || ''}</em></span><p>运行中和已入队任务不会被中途切换。</p></div>
       <div className="model-center-status" role="status"><ShieldCheck aria-hidden="true" />{message}</div>
       <div className="model-provider-workspace">
-        <aside className="model-provider-list"><div className="model-section-title"><strong>供应商</strong><button type="button" onClick={addProvider}><Plus aria-label="新增 Claude Code 供应商" /></button></div>{claudeProviders.map((item) => <button type="button" key={item.id} className={item.id === providerId ? 'is-active' : ''} onClick={() => setProviderId(item.id)}><span>{item.name}{item.id === draft.activeClaudeProviderId ? <em>当前</em> : null}</span><small>{snapshot.credentials.find((entry) => entry.providerId === item.id)?.configured ? 'API Key 已配置' : 'API Key 未配置'} · {item.claudeCode?.primaryModel}</small></button>)}<div className="model-vision-addon"><span>视觉工具 · 千问</span><small>{qwenCredential?.configured ? 'API Key 已配置' : '选填，未配置时图片理解不可用'}</small><button type="button" onClick={() => void configureCredential('qwen')} disabled={busy}>{qwenCredential?.configured ? '替换千问 Key' : '配置千问 Key'}</button>{qwenCredential?.configured ? <button type="button" className="is-danger" onClick={() => void deleteCredential('qwen', '千问')} disabled={busy}>清除千问 Key</button> : null}</div></aside>
+        <aside className="model-provider-list"><div className="model-section-title"><strong>供应商</strong><button type="button" onClick={addProvider}><Plus aria-label="新增 Claude Code 供应商" /></button></div>{claudeProviders.map((item) => <button type="button" key={item.id} className={item.id === providerId ? 'is-active' : ''} onClick={() => { setProviderId(item.id); setDiscovery(null); setPreview(null); setTestResult(null); }}><span>{item.name}{item.id === draft.activeClaudeProviderId ? <em>当前</em> : null}</span><small>{snapshot.credentials.find((entry) => entry.providerId === item.id)?.configured ? 'API Key 已配置' : 'API Key 未配置'} · {item.claudeCode?.primaryModel}</small></button>)}<div className="model-vision-addon"><span>视觉工具 · 千问</span><small>{qwenCredential?.configured ? 'API Key 已配置' : '选填，未配置时图片理解不可用'}</small><button type="button" onClick={() => void configureCredential('qwen')} disabled={busy}>{qwenCredential?.configured ? '替换千问 Key' : '配置千问 Key'}</button>{qwenCredential?.configured ? <button type="button" className="is-danger" onClick={() => void deleteCredential('qwen', '千问')} disabled={busy}>清除千问 Key</button> : null}</div></aside>
         <main className="model-provider-editor">
           {provider?.claudeCode ? <>
             <div className="model-editor-heading"><strong>供应商配置</strong>{!provider.builtIn ? <button type="button" onClick={deleteProvider}><Trash2 aria-hidden="true" />删除</button> : <span>预设</span>}</div>
-            <label>供应商名称<input value={provider.name} onChange={(event) => updateProvider({ name: event.target.value })} /></label>
-            <label>Claude Code Base URL<input value={provider.baseUrl} onChange={(event) => updateProvider({ baseUrl: event.target.value })} spellCheck={false} /></label>
-            <label>鉴权变量<select value={provider.claudeCode.authField} onChange={(event) => updateProvider({ claudeCode: { ...provider.claudeCode!, authField: event.target.value as 'ANTHROPIC_AUTH_TOKEN' | 'ANTHROPIC_API_KEY' } })}><option value="ANTHROPIC_AUTH_TOKEN">ANTHROPIC_AUTH_TOKEN（第三方常用）</option><option value="ANTHROPIC_API_KEY">ANTHROPIC_API_KEY（Anthropic 常用）</option></select></label>
-            <label>主模型<input value={provider.claudeCode.primaryModel} onChange={(event) => updateProvider({ claudeCode: { ...provider.claudeCode!, primaryModel: event.target.value } })} spellCheck={false} /></label>
-            <details className="model-advanced"><summary>高级模型映射（选填）</summary><p>留空时自动使用主模型。</p><label>Haiku 模型<input value={provider.claudeCode.haikuModel || ''} onChange={(event) => updateProvider({ claudeCode: { ...provider.claudeCode!, haikuModel: event.target.value || undefined } })} /></label><label>Sonnet 模型<input value={provider.claudeCode.sonnetModel || ''} onChange={(event) => updateProvider({ claudeCode: { ...provider.claudeCode!, sonnetModel: event.target.value || undefined } })} /></label><label>Opus 模型<input value={provider.claudeCode.opusModel || ''} onChange={(event) => updateProvider({ claudeCode: { ...provider.claudeCode!, opusModel: event.target.value || undefined } })} /></label></details>
+            <div className="model-basic-grid"><label>供应商名称<input value={provider.name} onChange={(event) => updateProvider({ name: event.target.value })} /></label><label>备注<input value={provider.notes || ''} placeholder="例如：公司专用账号" onChange={(event) => updateProvider({ notes: event.target.value || undefined })} /></label></div>
+            <label>官网链接<input value={provider.websiteUrl || ''} placeholder="https://example.com" onChange={(event) => updateProvider({ websiteUrl: event.target.value || undefined })} spellCheck={false} /></label>
+            <section className="model-request-section"><div className="model-section-title"><strong>请求地址</strong><span>完整 URL 需要 CC Switch 本地路由，Catnip 直连版暂不开放</span></div><label>Claude Code Base URL<input value={provider.baseUrl} onChange={(event) => updateProvider({ baseUrl: event.target.value })} spellCheck={false} /></label><label className="model-inline-check"><input type="checkbox" checked={false} disabled />完整 URL（当前不可用）</label></section>
+            <div className="model-basic-grid"><label>API 格式<select value={provider.claudeCode.apiFormat} disabled><option value="anthropic">Anthropic Messages（原生）</option></select></label><label>鉴权变量<select value={provider.claudeCode.authField} onChange={(event) => updateClaude({ authField: event.target.value as 'ANTHROPIC_AUTH_TOKEN' | 'ANTHROPIC_API_KEY' })}><option value="ANTHROPIC_AUTH_TOKEN">ANTHROPIC_AUTH_TOKEN（第三方常用）</option><option value="ANTHROPIC_API_KEY">ANTHROPIC_API_KEY（Anthropic 常用）</option></select></label></div>
+            <datalist id={`models-${provider.id}`}>{modelOptions.map((item) => <option key={item.id} value={item.id}>{item.ownedBy}</option>)}</datalist>
+            <section className="model-mapping-section"><div className="model-section-title"><strong>模型映射</strong><span><button type="button" onClick={setAllRoleModels}>一键设置</button><button type="button" onClick={() => void fetchModels()} disabled={busy || !credential?.configured}><Download aria-hidden="true" />获取模型列表</button></span></div><p>显示名称只影响 /model 菜单；实际请求模型决定供应商收到的 model。列表不可用时仍可手动填写。</p>
+              <div className="model-mapping-head"><span>模型角色</span><span>显示名称</span><span>实际请求模型</span><span>1M</span></div>
+              <div className="model-mapping-row"><strong>Sonnet</strong><input value={provider.claudeCode.sonnetModelName || ''} onChange={(event) => updateClaude({ sonnetModelName: event.target.value || undefined })} /><input list={`models-${provider.id}`} value={provider.claudeCode.sonnetModel || ''} onChange={(event) => updateClaude({ sonnetModel: event.target.value || undefined })} /><input type="checkbox" checked={/\[1m\]$/i.test(provider.claudeCode.sonnetModel || '')} onChange={(event) => toggleLongContext('sonnetModel', event.target.checked)} /></div>
+              <div className="model-mapping-row"><strong>Opus</strong><input value={provider.claudeCode.opusModelName || ''} onChange={(event) => updateClaude({ opusModelName: event.target.value || undefined })} /><input list={`models-${provider.id}`} value={provider.claudeCode.opusModel || ''} onChange={(event) => updateClaude({ opusModel: event.target.value || undefined })} /><input type="checkbox" checked={/\[1m\]$/i.test(provider.claudeCode.opusModel || '')} onChange={(event) => toggleLongContext('opusModel', event.target.checked)} /></div>
+              <div className="model-mapping-row"><strong>Fable</strong><input value={provider.claudeCode.fableModelName || ''} onChange={(event) => updateClaude({ fableModelName: event.target.value || undefined })} /><input list={`models-${provider.id}`} value={provider.claudeCode.fableModel || ''} onChange={(event) => updateClaude({ fableModel: event.target.value || undefined })} /><input type="checkbox" checked={/\[1m\]$/i.test(provider.claudeCode.fableModel || '')} onChange={(event) => toggleLongContext('fableModel', event.target.checked)} /></div>
+              <div className="model-mapping-row"><strong>Haiku</strong><input value={provider.claudeCode.haikuModelName || ''} onChange={(event) => updateClaude({ haikuModelName: event.target.value || undefined })} /><input list={`models-${provider.id}`} value={provider.claudeCode.haikuModel || ''} onChange={(event) => updateClaude({ haikuModel: event.target.value || undefined })} /><span>—</span></div>
+              <div className="model-mapping-row"><strong>Subagent</strong><span>跟随模型</span><input list={`models-${provider.id}`} value={provider.claudeCode.subagentModel || ''} onChange={(event) => updateClaude({ subagentModel: event.target.value || undefined })} /><input type="checkbox" checked={/\[1m\]$/i.test(provider.claudeCode.subagentModel || '')} onChange={(event) => toggleLongContext('subagentModel', event.target.checked)} /></div>
+            </section>
+            <label>默认兜底模型<input list={`models-${provider.id}`} value={provider.claudeCode.primaryModel} onChange={(event) => updateClaude({ primaryModel: event.target.value })} spellCheck={false} /></label>
+            <details className="model-advanced"><summary>高级选项</summary><p>供应商没有标准模型列表接口时，可指定完整的 HTTPS 模型列表 URL。</p><label>模型列表 URL（选填）<input value={provider.claudeCode.modelsUrl || ''} placeholder="https://api.example.com/v1/models" onChange={(event) => updateClaude({ modelsUrl: event.target.value || undefined })} spellCheck={false} /></label></details>
             <div className="model-credential-card"><KeyRound aria-hidden="true" /><span><strong>{credential?.configured ? 'API Key 已安全配置' : '尚未配置 API Key'}</strong><small>{!providerPersisted ? '先保存供应商，再配置 Key' : credential?.updatedAt ? `更新于 ${new Date(credential.updatedAt).toLocaleString()}` : 'Key 不会进入页面或普通配置'}</small></span><button type="button" onClick={() => void configureCredential()} disabled={busy || !providerPersisted}>{credential?.configured ? '替换' : '配置'}</button>{credential?.configured ? <button className="is-danger" type="button" onClick={() => void deleteCredential()} disabled={busy}>清除</button> : null}</div>
+            <div className="model-test-actions"><button type="button" onClick={() => void testConnection()} disabled={busy || !credential?.configured}><FlaskConical aria-hidden="true" />测试配置</button><button type="button" onClick={() => void refreshPreview()} disabled={busy}><RefreshCw aria-hidden="true" />配置预览</button>{testResult ? <span className="is-success"><Check aria-hidden="true" />{testResult.model} 可用</span> : null}</div>
+            {preview ? <section className="model-config-preview"><strong>将写入 Claude Code 的配置（已隐藏 Key）</strong><pre>{JSON.stringify(preview, null, 2)}</pre></section> : null}
             <div className="model-provider-actions"><button type="button" onClick={() => void save()} disabled={busy}>保存更改</button><button type="button" className="is-primary" onClick={() => void activate(provider.id, provider.builtIn ? 'preset' : 'custom')} disabled={busy || !credential?.configured}>{provider.id === draft.activeClaudeProviderId ? '重新应用到 Claude Code' : '启用此供应商'}</button></div>
           </> : <div className="model-empty">请选择或新增一个 Claude Code 供应商。</div>}
         </main>

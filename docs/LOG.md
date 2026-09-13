@@ -1112,3 +1112,10 @@
 - 新增独立 Anthropic-compatible `deepseek-v4-flash-agent` 内置档案，并为已有 Store 增加不落盘、不覆盖用户值的只读补齐。
 - 修正同名测试 fixture，重启 Main 后专项显示 7 个标签、3 个 DeepSeek 档案、2 个 Agent 选项、无横向溢出。
 - 模型页截图受项目选择遮罩和后续 CDP capture 超时影响，未宣称截图通过；保留真实几何/DOM 证据。
+
+## 2026-09-13 — Phase 18j CC Switch Claude Provider 源码对齐
+
+- 在 `model-ccswitch` 基于 `c16dd34a` 继续施工；未切换 `idea_to_production`，未触碰两个受保护未跟踪目录。
+- 按 CC Switch 当前源码补齐 schema v3、五角色/显示名/1M、模型列表候选、Main-only 测试、脱敏预览和供应商编辑 UI；禁用需要本地路由的完整 URL 与协议转换。
+- 首轮四项旧测试因 schema/路由/fixture 漂移失败，修正后全部通过；Renderer build 与真实 Electron 三档 UI/截图通过。
+- 未读取真实 Key、未调用付费服务、未打 Windows 包或操作硬件，三个 pending 状态保持。

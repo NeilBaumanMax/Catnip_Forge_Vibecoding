@@ -1,22 +1,34 @@
-export const MODEL_CONFIG_SCHEMA_VERSION = 2 as const;
+export const MODEL_CONFIG_SCHEMA_VERSION = 3 as const;
 
 export type ModelProtocol = 'anthropic-compatible' | 'openai-compatible';
 export type ModelCapability = 'engineering-agent' | 'software-assistant' | 'vision';
 export type ModelDefaultUse = ModelCapability;
 export type ClaudeCodeAuthField = 'ANTHROPIC_AUTH_TOKEN' | 'ANTHROPIC_API_KEY';
+export type ClaudeApiFormat = 'anthropic';
 export type ModelSetupMode = 'preset' | 'custom';
 
 export interface ClaudeCodeProviderConfig {
+  apiFormat: ClaudeApiFormat;
+  isFullUrl: boolean;
   authField: ClaudeCodeAuthField;
   primaryModel: string;
+  modelsUrl?: string;
   haikuModel?: string;
+  haikuModelName?: string;
   sonnetModel?: string;
+  sonnetModelName?: string;
   opusModel?: string;
+  opusModelName?: string;
+  fableModel?: string;
+  fableModelName?: string;
+  subagentModel?: string;
 }
 
 export interface ProviderConfig {
   id: string;
   name: string;
+  websiteUrl?: string;
+  notes?: string;
   baseUrl: string;
   protocols: ModelProtocol[];
   enabled: boolean;
@@ -66,10 +78,27 @@ export interface ClaudeModelDiscoverySnapshot {
   models: Array<{ id: string; ownedBy?: string }>;
 }
 
+export interface ClaudeProviderPreview {
+  providerId: string;
+  requestUrl: string;
+  modelsUrl?: string;
+  settings: { env: Record<string, string> };
+}
+
+export interface ClaudeProviderTestResult {
+  providerId: string;
+  ok: true;
+  status: number;
+  latencyMs: number;
+  model: string;
+  message: string;
+}
+
 const ID_PATTERN = /^[a-z0-9][a-z0-9._-]{0,63}$/;
 const PROTOCOLS = new Set<ModelProtocol>(['anthropic-compatible', 'openai-compatible']);
 const CAPABILITIES = new Set<ModelCapability>(['engineering-agent', 'software-assistant', 'vision']);
 const CLAUDE_AUTH_FIELDS = new Set<ClaudeCodeAuthField>(['ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_API_KEY']);
+const CLAUDE_API_FORMATS = new Set<ClaudeApiFormat>(['anthropic']);
 const SENSITIVE_KEY = /^(?:api[-_]?key|access[-_]?secret|secret|token|authorization|password)$/i;
 
 function record(value: unknown, label: string): Record<string, unknown> {
@@ -120,6 +149,11 @@ function baseUrl(value: unknown, label: string): string {
   return parsed.toString().replace(/\/$/, '');
 }
 
+function optionalHttpsUrl(value: unknown, label: string): string | undefined {
+  if (value == null || value === '') return undefined;
+  return baseUrl(value, label);
+}
+
 function rejectSensitiveFields(value: Record<string, unknown>, label: string): void {
   for (const key of Object.keys(value)) {
     if (SENSITIVE_KEY.test(key)) throw new Error(`${label} must not contain Secret material`);
@@ -137,12 +171,23 @@ function normalizeClaudeCode(value: unknown, label: string): ClaudeCodeProviderC
   rejectSensitiveFields(input, label);
   const authField = text(input.authField, `${label}.authField`, 40) as ClaudeCodeAuthField;
   if (!CLAUDE_AUTH_FIELDS.has(authField)) throw new Error(`${label}.authField is invalid`);
+  const apiFormat = text(input.apiFormat, `${label}.apiFormat`, 40) as ClaudeApiFormat;
+  if (!CLAUDE_API_FORMATS.has(apiFormat)) throw new Error(`${label}.apiFormat is invalid; Catnip currently supports Anthropic Messages direct mode only`);
   return {
+    apiFormat,
+    isFullUrl: boolean(input.isFullUrl, `${label}.isFullUrl`),
     authField,
     primaryModel: text(input.primaryModel, `${label}.primaryModel`, 200),
+    modelsUrl: optionalHttpsUrl(input.modelsUrl, `${label}.modelsUrl`),
     haikuModel: optionalText(input.haikuModel, `${label}.haikuModel`, 200),
+    haikuModelName: optionalText(input.haikuModelName, `${label}.haikuModelName`, 100),
     sonnetModel: optionalText(input.sonnetModel, `${label}.sonnetModel`, 200),
+    sonnetModelName: optionalText(input.sonnetModelName, `${label}.sonnetModelName`, 100),
     opusModel: optionalText(input.opusModel, `${label}.opusModel`, 200),
+    opusModelName: optionalText(input.opusModelName, `${label}.opusModelName`, 100),
+    fableModel: optionalText(input.fableModel, `${label}.fableModel`, 200),
+    fableModelName: optionalText(input.fableModelName, `${label}.fableModelName`, 100),
+    subagentModel: optionalText(input.subagentModel, `${label}.subagentModel`, 200),
   };
 }
 
@@ -152,6 +197,8 @@ function normalizeProvider(value: unknown, index: number): ProviderConfig {
   return {
     id: id(input.id, `providers[${index}].id`),
     name: text(input.name, `providers[${index}].name`, 100),
+    websiteUrl: optionalHttpsUrl(input.websiteUrl, `providers[${index}].websiteUrl`),
+    notes: optionalText(input.notes, `providers[${index}].notes`, 500),
     baseUrl: baseUrl(input.baseUrl, `providers[${index}].baseUrl`),
     protocols: uniqueList(input.protocols, `providers[${index}].protocols`, PROTOCOLS, 2),
     enabled: boolean(input.enabled, `providers[${index}].enabled`),
@@ -187,17 +234,27 @@ export function createDefaultModelConfig(): ModelConfigState {
       {
         id: 'deepseek',
         name: 'DeepSeek',
+        websiteUrl: 'https://www.deepseek.com',
         baseUrl: 'https://api.deepseek.com',
         protocols: ['anthropic-compatible', 'openai-compatible'],
         enabled: true,
         builtIn: true,
         credentialId: 'deepseek',
         claudeCode: {
+          apiFormat: 'anthropic',
+          isFullUrl: false,
           authField: 'ANTHROPIC_AUTH_TOKEN',
           primaryModel: 'deepseek-v4-pro',
+          modelsUrl: 'https://api.deepseek.com/models',
           haikuModel: 'deepseek-v4-flash',
+          haikuModelName: 'DeepSeek V4 Flash',
           sonnetModel: 'deepseek-v4-pro',
+          sonnetModelName: 'DeepSeek V4 Pro',
           opusModel: 'deepseek-v4-pro',
+          opusModelName: 'DeepSeek V4 Pro',
+          fableModel: 'deepseek-v4-pro',
+          fableModelName: 'DeepSeek V4 Pro',
+          subagentModel: 'deepseek-v4-flash',
         },
       },
       {
@@ -274,7 +331,8 @@ export function upgradeModelConfig(value: ModelConfigState): ModelConfigState {
 }
 
 function migrateLegacyConfig(input: Record<string, unknown>): Record<string, unknown> {
-  if (input.schemaVersion !== 1) return input;
+  let migrated = input;
+  if (migrated.schemaVersion === 1) {
   const providers = Array.isArray(input.providers) ? structuredClone(input.providers) as Array<Record<string, unknown>> : [];
   const models = Array.isArray(input.models) ? input.models as Array<Record<string, unknown>> : [];
   const defaults = input.defaults && typeof input.defaults === 'object' ? input.defaults as Record<string, unknown> : {};
@@ -289,6 +347,8 @@ function migrateLegacyConfig(input: Record<string, unknown>): Record<string, unk
     const primary = providerModels.find((model) => model.id === defaultEngineeringId) ?? providerModels[0];
     const flash = providerModels.find((model) => String(model.upstreamModel || '').toLowerCase().includes('flash'));
     provider.claudeCode = {
+      apiFormat: 'anthropic',
+      isFullUrl: false,
       authField: provider.id === 'deepseek' ? 'ANTHROPIC_AUTH_TOKEN' : 'ANTHROPIC_API_KEY',
       primaryModel: primary.upstreamModel,
       ...(flash?.upstreamModel ? { haikuModel: flash.upstreamModel } : {}),
@@ -296,7 +356,22 @@ function migrateLegacyConfig(input: Record<string, unknown>): Record<string, unk
       opusModel: primary.upstreamModel,
     };
   }
-  return { ...input, schemaVersion: MODEL_CONFIG_SCHEMA_VERSION, setupMode: 'preset', activeClaudeProviderId, providers };
+    migrated = { ...input, schemaVersion: 2, setupMode: 'preset', activeClaudeProviderId, providers };
+  }
+  if (migrated.schemaVersion === 2) {
+    const providers = Array.isArray(migrated.providers) ? structuredClone(migrated.providers) as Array<Record<string, unknown>> : [];
+    for (const provider of providers) {
+      if (!provider.claudeCode || typeof provider.claudeCode !== 'object' || Array.isArray(provider.claudeCode)) continue;
+      const claudeCode = provider.claudeCode as Record<string, unknown>;
+      const fallback = typeof claudeCode.primaryModel === 'string' ? claudeCode.primaryModel : '';
+      claudeCode.apiFormat = 'anthropic';
+      claudeCode.isFullUrl = false;
+      if (!claudeCode.fableModel) claudeCode.fableModel = claudeCode.opusModel || fallback;
+      if (!claudeCode.subagentModel) claudeCode.subagentModel = claudeCode.haikuModel || fallback;
+    }
+    migrated = { ...migrated, schemaVersion: MODEL_CONFIG_SCHEMA_VERSION, providers };
+  }
+  return migrated;
 }
 
 export function normalizeModelConfig(value: unknown): ModelConfigState {

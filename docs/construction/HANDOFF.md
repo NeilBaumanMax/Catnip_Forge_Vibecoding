@@ -1,5 +1,14 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-13 — Phase 18j CC Switch Claude Provider 对齐实现
+
+- 当前分支仍为 `model-ccswitch`；代码基于 `c16dd34a` 后的工作区施工，禁止因旧入口文字切到 `idea_to_production`。
+- 已按 CC Switch 当前 Claude Provider 源码补齐 schema v3、官网/备注、请求地址语义、固定 Anthropic 格式、Sonnet/Opus/Fable/Haiku/Subagent、显示名、`[1m]`、默认兜底、模型列表候选、脱敏预览和显式测试。
+- 模型列表与测试均由 Main 读取安全凭据；Renderer、IPC、预览、日志和任务快照不含 Secret。完整 URL/非 Anthropic 格式依赖本地路由，本轮禁用。
+- 类型、模型专项、Renderer production build、真实 Electron 1280×720/1600×1000/1707×1067 UI 已通过；截图在 `electron/.tmp/phase18-claude-provider-center.png`。
+- 尚未用真实供应商 Key 在线验证，尚未由用户人工复验，尚未重打 Windows 包：`LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`、`WINDOWS_PACKAGE_VALIDATION_PENDING`；硬件仍为 `REAL_HARDWARE_VALIDATION_PENDING`。
+- 受保护未跟踪目录 `docs/tutorials/`、`runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 未触碰。
+
 ## 2026-09-13 — 最新接力：分支定版与 CC Switch 页面验收失败
 
 - 用户最终确认：`model-ccswitch` 是当前最新产品形态和后续唯一施工分支；不再在 `idea_to_production` 开发。接手必须先动态检查，但不得再因旧文档分支描述切走。

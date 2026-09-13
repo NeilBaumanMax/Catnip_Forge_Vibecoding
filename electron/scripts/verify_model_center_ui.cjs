@@ -97,6 +97,9 @@ async function main() {
           setupChoices: document.querySelectorAll('.model-setup-choice').length,
           activeProvider: document.querySelector('.model-active-provider')?.textContent,
           credentialCard: Boolean(document.querySelector('.model-credential-card')),
+          mappingRows: document.querySelectorAll('.model-mapping-row').length,
+          hasProviderTest: Boolean(document.querySelector('.model-test-actions')),
+          apiFormat: document.querySelector('.model-basic-grid select')?.value,
           status: document.querySelector('.model-center-status')?.textContent,
           hasLegacyModelSelect: Boolean(document.querySelector('.chat-model-select select')),
           providerIndicator: providerIndicator?.textContent,
@@ -110,7 +113,8 @@ async function main() {
     const inside = value?.centerRect && value.centerRect.left >= 0 && value.centerRect.top >= 0
       && value.centerRect.right <= value.viewport.width && value.centerRect.bottom <= value.viewport.height;
     const maintenanceReady = value?.gridRect?.width >= 700 && value?.gridRect?.height >= 260 && value?.editorRect?.width >= 350
-      && value?.providers >= 1 && value?.credentialCard && value?.activeProvider;
+      && value?.providers >= 1 && value?.credentialCard && value?.activeProvider
+      && value?.mappingRows === 5 && value?.hasProviderTest && value?.apiFormat === 'anthropic';
     const onboardingReady = value?.setupChoices === 2;
     if (value?.tabs?.length !== 7 || value.tabs.some((item) => !item.visible) || value?.selectedModelTab !== 'true'
       || !inside || (!maintenanceReady && !onboardingReady) || value?.hasLegacyModelSelect || value?.bodyOverflowX > 1) {

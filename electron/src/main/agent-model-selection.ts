@@ -17,6 +17,8 @@ export interface EngineeringAgentModelSnapshot {
   haikuModel: string;
   sonnetModel: string;
   opusModel: string;
+  fableModel: string;
+  subagentModel: string;
 }
 
 export interface EngineeringAgentRuntimeModel extends EngineeringAgentModelSnapshot {
@@ -55,6 +57,8 @@ export function snapshotEngineeringAgentModel(): EngineeringAgentModelSnapshot {
     haikuModel: env.ANTHROPIC_DEFAULT_HAIKU_MODEL,
     sonnetModel: env.ANTHROPIC_DEFAULT_SONNET_MODEL,
     opusModel: env.ANTHROPIC_DEFAULT_OPUS_MODEL,
+    fableModel: env.ANTHROPIC_DEFAULT_FABLE_MODEL,
+    subagentModel: env.CLAUDE_CODE_SUBAGENT_MODEL,
   };
 }
 

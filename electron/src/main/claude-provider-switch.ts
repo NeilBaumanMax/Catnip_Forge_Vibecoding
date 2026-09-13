@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { ProviderConfig } from '../common/model-config';
+import type { ClaudeProviderPreview, ProviderConfig } from '../common/model-config';
 import { writeUtf8Atomically } from './atomic-file';
 import { getRuntimeDataDir } from './paths';
 
@@ -12,8 +12,14 @@ function object(value: unknown, label: string): Record<string, unknown> {
 }
 
 export function claudeCodeBaseUrl(provider: ProviderConfig): string {
+  if (provider.claudeCode?.isFullUrl) throw new Error('完整 URL 模式需要 CC Switch 路由代理，Catnip 当前 Claude Code 直连模式不可启用');
   const normalized = provider.baseUrl.replace(/\/+$/, '');
   return provider.id === 'deepseek' && !normalized.endsWith('/anthropic') ? `${normalized}/anthropic` : normalized;
+}
+
+export function claudeMessagesUrl(provider: ProviderConfig): string {
+  if (provider.claudeCode?.isFullUrl) return provider.baseUrl;
+  return `${claudeCodeBaseUrl(provider).replace(/\/+$/, '')}/v1/messages`;
 }
 
 export function buildClaudeCodeSettingsEnv(provider: ProviderConfig): Record<string, string> {
@@ -27,6 +33,27 @@ export function buildClaudeCodeSettingsEnv(provider: ProviderConfig): Record<str
     ANTHROPIC_DEFAULT_HAIKU_MODEL: config.haikuModel || config.primaryModel,
     ANTHROPIC_DEFAULT_SONNET_MODEL: config.sonnetModel || config.primaryModel,
     ANTHROPIC_DEFAULT_OPUS_MODEL: config.opusModel || config.primaryModel,
+    ANTHROPIC_DEFAULT_FABLE_MODEL: config.fableModel || config.primaryModel,
+    CLAUDE_CODE_SUBAGENT_MODEL: config.subagentModel || config.haikuModel || config.primaryModel,
+    ...(config.haikuModelName ? { ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME: config.haikuModelName } : {}),
+    ...(config.sonnetModelName ? { ANTHROPIC_DEFAULT_SONNET_MODEL_NAME: config.sonnetModelName } : {}),
+    ...(config.opusModelName ? { ANTHROPIC_DEFAULT_OPUS_MODEL_NAME: config.opusModelName } : {}),
+    ...(config.fableModelName ? { ANTHROPIC_DEFAULT_FABLE_MODEL_NAME: config.fableModelName } : {}),
+  };
+}
+
+export function buildClaudeProviderPreview(provider: ProviderConfig): ClaudeProviderPreview {
+  const env = buildClaudeCodeSettingsEnv(provider);
+  return {
+    providerId: provider.id,
+    requestUrl: claudeMessagesUrl(provider),
+    ...(provider.claudeCode?.modelsUrl ? { modelsUrl: provider.claudeCode.modelsUrl } : {}),
+    settings: {
+      env: {
+        ...env,
+        [provider.claudeCode!.authField]: '<由 Windows 安全存储注入>',
+      },
+    },
   };
 }
 
