@@ -7,6 +7,8 @@
 - 学院呱呱回答策略已允许模型、探索、知乎、历史、知识与 SkillHub 类问题输出完整编号步骤，最大回答提升至 1400 tokens；所有 Secret 仍只进入 Main 控制的安全窗口与 safeStorage。
 - `verify:onboarding`、`verify:onboarding-ui`、`verify:software-assistant-guide`、`verify:software-assistant-ui`、`verify:model-center-ui`、Electron typecheck、Main/Renderer build 通过。软件已按开发模式重启并监听 5173/9230，留给用户人工重播教学。
 - 已从提交 `bea37a03` 重建 `electron/dist-package/Catnip Forge`：41,929 个文件、4,487,859,299 bytes，EXE SHA-256 `362ECFC6C5B1935CE66E5283A03C93FD8722DDE442A1A56425AB015D74A48483`。发布门禁与隔离首启通过，`WINDOWS_PACKAGE_VALIDATION_PENDING` 已关闭。
+- 用户要求复核客户包隐私后发现：首次发布验收曾在成品目录产生示例工程 `.catnip/agent/conversations.json`，Runtime health 也会创建四个空运行目录。旧包已作废并重新全量构建；最终包未再启动，增强门禁检查任意 `.catnip`、对话、模型凭据、探索知识、Key 文件、日志、浏览器 Profile、录屏、附件和工作流。
+- 最终二次审计为：ForbiddenStateEntries=0、MutableDataRoots=0、LongSkTokenFileHits=0；只保留明确无效的 `apikey.txt.example`。用户本机 AppData 中的个人记录与安全凭据没有被删除，也没有被复制进包。
 - 未调用真实供应商 Key、知乎搜索、付费模型或硬件；`LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING` 保持。
 - 受保护未跟踪目录 `docs/tutorials/`、`runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 未触碰、未暂存。
 

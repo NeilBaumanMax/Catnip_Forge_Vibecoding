@@ -92,6 +92,33 @@ for (const removedId of ['1688-source-finding', 'bilibili-search-workflow', 'dou
   assert(!fs.existsSync(path.join(resources, 'agent', 'skills', removedId)), `release still contains removed skill: ${removedId}`);
 }
 assert(!fs.existsSync(path.join(resources, 'runtime', 'hardboard', 'projects', 'hello_world_esp32s3', '.catnip')), 'release must not contain project usage state');
+const forbiddenMutableRoots = [
+  'agent/logs', 'agent/screenshots', 'agent/recordings',
+  'runtime/logs', 'runtime/chrome_profile', 'runtime/recordings',
+  'runtime/workflows', 'runtime/attachments',
+  'runtime/hardboard/logs', 'runtime/hardboard/events',
+];
+for (const relative of forbiddenMutableRoots) {
+  assert(!fs.existsSync(path.join(resources, relative)), `release contains mutable user-data directory: resources/${relative}`);
+}
+const forbiddenStateNames = new Set([
+  '.env', '.catnip', 'apikey.txt', 'qwen-apikey.txt',
+  'credentials.json', 'knowledge.json', 'conversations.json',
+]);
+const leakedState = [];
+const pendingStateScan = [resources];
+while (pendingStateScan.length) {
+  const current = pendingStateScan.pop();
+  for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+    const candidate = path.join(current, entry.name);
+    if (forbiddenStateNames.has(entry.name.toLowerCase())) {
+      leakedState.push(path.relative(packageRoot, candidate));
+      continue;
+    }
+    if (entry.isDirectory()) pendingStateScan.push(candidate);
+  }
+}
+assert.deepEqual(leakedState, [], `release contains credential/history/knowledge/project state: ${leakedState.join(', ')}`);
 
 const packagedVersion = JSON.parse(fs.readFileSync(path.join(resources, 'config', 'version.json'), 'utf-8'));
 assert.deepEqual(packagedVersion, version, 'packaged version metadata drifted');
@@ -157,6 +184,32 @@ const runtimeDir = path.join(resources, 'runtime');
 const health = JSON.parse(run(path.join(runtimeDir, 'nodejs', 'node.exe'), [path.join(runtimeDir, 'dist', 'index.js'), 'health'], runtimeDir));
 assert.equal(health.ok, true);
 assert.equal(path.resolve(health.runtimeDir), path.resolve(runtimeDir));
+
+// Importing the packaged Runtime creates these empty operational directories.
+// A release verifier must leave the delivery directory as clean as it found it.
+for (const relative of [...forbiddenMutableRoots].sort((a, b) => b.length - a.length)) {
+  const candidate = path.join(resources, relative);
+  if (!fs.existsSync(candidate)) continue;
+  assert.deepEqual(fs.readdirSync(candidate), [], `runtime health wrote user data into resources/${relative}`);
+  fs.rmdirSync(candidate);
+}
+const postHealthLeaks = [];
+const postHealthScan = [resources];
+while (postHealthScan.length) {
+  const current = postHealthScan.pop();
+  for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+    const candidate = path.join(current, entry.name);
+    if (forbiddenStateNames.has(entry.name.toLowerCase())) {
+      postHealthLeaks.push(path.relative(packageRoot, candidate));
+      continue;
+    }
+    if (entry.isDirectory()) postHealthScan.push(candidate);
+  }
+}
+assert.deepEqual(postHealthLeaks, [], `runtime health left credential/history/knowledge/project state: ${postHealthLeaks.join(', ')}`);
+for (const relative of forbiddenMutableRoots) {
+  assert(!fs.existsSync(path.join(resources, relative)), `runtime health left mutable directory: resources/${relative}`);
+}
 
 const forbidden = ['C:\\Users\\HP', 'E:\\Agent\\vibeide\\vibeide'];
 for (const file of [

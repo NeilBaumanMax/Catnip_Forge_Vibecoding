@@ -10,6 +10,8 @@
 - 未读取或调用真实凭据、知乎/模型服务和硬件，也未重打发布包。
 - 随后按用户要求完整执行 `pack:win`，旧发布目录被项目受限脚本清理并重建为 `electron/dist-package/Catnip Forge`。首次 `verify:release` 因仍硬编码旧手册“第 12 节 回答边界”而失败，改为检查当前模型、探索、Skill Hub 与第 14 节安全边界后通过。
 - 首次直接执行 `verify:first-run` 未先启动成品，因该脚本只探测 9230 而失败；用独立 `VIBEIDE_SMOKE_APP_DATA` 启动新包后复测通过，测试进程与临时目录已清理。
+- 用户随后要求复核对话记录和 DeepSeek/Qwen 配置是否入包。审计发现第一次成品启动验证会让默认示例工程在成品目录生成 `.catnip/agent/conversations.json`；Runtime health 会创建 `runtime/logs`、`runtime/chrome_profile`、`runtime/hardboard/logs`、`runtime/hardboard/events` 四个空目录。虽然未发现真实 Key，但该目录不再视为可交付包。
+- `pack_win_unpacked.cjs` 和 `verify_win_unpacked_release.cjs` 现递归拒绝 `.env`、任意 `.catnip`、`credentials.json`、`knowledge.json`、`conversations.json`、真实 Key 文件及全部已知可变运行目录；release health 只允许创建并清除空目录，出现内容立即失败。全量重建且不再启动最终交付目录后二次审计三项均为 0。
 
 ## 2026-09-12 — 仅深色主题与高缩放屏幕适配
 

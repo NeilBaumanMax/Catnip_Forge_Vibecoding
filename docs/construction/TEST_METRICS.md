@@ -937,3 +937,15 @@ Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会�
 | EXE SHA-256 | PASS | `362ECFC6C5B1935CE66E5283A03C93FD8722DDE442A1A56425AB015D74A48483` |
 
 首次失败保留：`verify:release` 仍要求旧手册标题“第 12 节 回答边界”，与 Phase 19 新的第 14 节结构漂移；门禁改为同时检查当前模型、探索、Skill Hub、学院呱呱和安全边界后通过。第一次直接执行 `verify:first-run` 未先启动成品，因脚本仅连接已运行的 9230 实例而失败；随后使用独立 `VIBEIDE_SMOKE_APP_DATA` 启动成品并通过。测试进程与明确临时目录已清理；包内无 DeepSeek/Qwen Key，未调用真实模型、知乎或硬件。
+
+#### 客户包隐私复核与重建
+
+| 检查 | 最终结果 |
+| --- | --- |
+| `.env`、任意 `.catnip`、`apikey.txt`、`qwen-apikey.txt`、`credentials.json`、`knowledge.json`、`conversations.json` | 0 项 |
+| Agent/Runtime 日志、截图、录屏、浏览器 Profile、工作流、附件、Hardboard 日志/事件目录 | 0 项 |
+| 排除依赖和工具链后的长格式 `sk-[A-Za-z0-9]{20,}` 文本命中 | 0 个文件 |
+| `apikey.txt.example` | 仅保留 `DEEPSEEK_API_KEY=sk-your-key-here` 无效占位符 |
+| 增强后的 `pack:win` + `verify:release` | PASS；发布验证结束后二次隐私扫描仍为 0 |
+
+复核首次发现旧候选包在成品首启验证后生成了示例工程 `.catnip/agent/conversations.json`，因此立即作废并重建；Runtime health 另创建四个空目录。增强门禁后，任何上述文件/目录会直接使打包或发布验证失败；health 只可创建空目录并由验证器删除，写入任何内容即失败。最终交付目录未再次启动。用户本机 AppData 中的历史和 safeStorage 凭据保留在原处，未被读取、删除或复制。

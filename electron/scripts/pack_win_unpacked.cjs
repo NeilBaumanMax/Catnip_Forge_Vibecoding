@@ -139,6 +139,44 @@ for (const forbidden of ['apikey.txt', 'qwen-apikey.txt']) {
   }
 }
 
+const forbiddenMutableRoots = [
+  path.join(resourcesRoot, 'agent', 'logs'),
+  path.join(resourcesRoot, 'agent', 'screenshots'),
+  path.join(resourcesRoot, 'agent', 'recordings'),
+  path.join(resourcesRoot, 'runtime', 'logs'),
+  path.join(resourcesRoot, 'runtime', 'chrome_profile'),
+  path.join(resourcesRoot, 'runtime', 'recordings'),
+  path.join(resourcesRoot, 'runtime', 'workflows'),
+  path.join(resourcesRoot, 'runtime', 'attachments'),
+  path.join(resourcesRoot, 'runtime', 'hardboard', 'logs'),
+  path.join(resourcesRoot, 'runtime', 'hardboard', 'events'),
+];
+const forbiddenStateNames = new Set([
+  '.env', '.catnip', 'apikey.txt', 'qwen-apikey.txt',
+  'credentials.json', 'knowledge.json', 'conversations.json',
+]);
+const leakedState = [];
+for (const mutableRoot of forbiddenMutableRoots) {
+  if (fs.existsSync(mutableRoot)) leakedState.push(path.relative(packageRoot, mutableRoot));
+}
+const pendingStateScan = [resourcesRoot];
+while (pendingStateScan.length) {
+  const current = pendingStateScan.pop();
+  for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+    const candidate = path.join(current, entry.name);
+    if (forbiddenStateNames.has(entry.name.toLowerCase())) {
+      leakedState.push(path.relative(packageRoot, candidate));
+      continue;
+    }
+    if (entry.isDirectory()) pendingStateScan.push(candidate);
+  }
+}
+if (leakedState.length) {
+  console.error('[pack:win] refusing package containing credentials, conversations, knowledge, logs, browser profiles, or project state:');
+  leakedState.slice(0, 50).forEach((relative) => console.error(`  - ${relative}`));
+  process.exit(1);
+}
+
 const stampResult = spawnSync(process.execPath, [stamp, exePath], {
   cwd: electronRoot,
   stdio: 'inherit',
