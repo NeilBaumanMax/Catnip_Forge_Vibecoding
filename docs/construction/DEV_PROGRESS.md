@@ -1,14 +1,14 @@
 # 开发进度
 
-更新时间：2026-09-11。Phase 10–13 已完成并生成 v2.0.0 Windows 包；当前执行 Phase 14 文档漂移修正与接力收口。
+更新时间：2026-09-13。当前以 `model-ccswitch` 为唯一最新产品分支，执行 Phase 18i 文档漂移修正与接力收口。
 
-- 当前 Phase：Phase 14，只修文档与交接，不修改产品源码。
-- 已完成：Phase 7–9 的工程隔离/独立 Explore 交接/授权清理，以及 Phase 10–13 的 v2.0.0 UI、Skill 小站、新手引导、学院呱呱、收藏对话快照和入口插画。最新 `win-unpacked` 已通过 release/version。
-- 当前任务：把当前分支、版本、六工作区、Phase 10–13 和未验证边界同步到权威文档；保护两个未跟踪用户目录。
-- 未完成：用户成品人工复测、全新机器真实安装→Secret 配置人工验收、真实知乎＋全网排障验收、确认后真实施工与实机验证。
-- Blocker：`REAL_HARDWARE_VALIDATION_PENDING`；Access Secret 与 DeepSeek 余额阻塞均已解除。
-- 测试：Runtime/Electron typecheck/build、Project/Explore/Agent session 专项、Explore 全专项、8 场景布局、Workbench、打包版首次启动/工程选择/Chat UI、release/version 与 diff check 通过。未执行真实安装、真实 Diagnosis 或硬件；包未配置代码签名。
-- Git：Phase 13 实现 `0d27346e`、发布记录 `881121f8` 已推送到 `catnip-GUAGUA`；Phase 14 开工前恢复点已推送，最终文档提交需动态查询。
+- 当前 Phase：18i，只修文档与交接，不修改产品源码。
+- 已完成基础：应用级 Claude Code 活动供应商、安全凭据、任务快照、首启双路径、Qwen Key 清除，以及当前供应商 `/models` 发现和 Chat 应用级模型切换。
+- 人工验收：未通过。现有自定义供应商页只是精简表单，与 CC Switch 编辑供应商页的配置心智和关键字段不一致。
+- 当前任务：固定 `model-ccswitch` 分支真相，列清直连配置缺口与非目标，撤销“已对齐/已人工验收”的漂移表述，形成 18j 可执行接力。
+- 未完成：地址模式、Fable、默认兜底模型、供应商信息、脱敏配置预览、编辑页模型列表、显式配置验证、真实供应商调用、Windows 完整包和用户复验。
+- Git：文档开工时本地 `029dd543`，远端 `1390cad1`，ahead 9；本地恢复标签存在，但远端恢复仍为 `REMOTE_BACKUP_PENDING`。
+- 保护现场：`docs/tutorials/` 与用户工程 `.catnip/` 不修改、不暂存。
 
 以下按日期记录施工当时的状态与失败证据；其中“未配置”“待接入”等表述不得覆盖上方当前状态。
 ## 2026-09-07 官方 CLI 安装实测

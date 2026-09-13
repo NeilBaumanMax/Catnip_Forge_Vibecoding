@@ -1,5 +1,13 @@
 # 探索施工日志（只追加）
 
+## 2026-09-13 / Phase 18i / CC Switch 页面人工验收纠偏
+
+- 用户确认 `model-ccswitch` 是最新产品形态，不再在 `idea_to_production` 开发。中途曾因旧施工入口尝试切换分支，但没有在旧分支产生文件修改；最终动态状态恢复并固定为 `model-ccswitch@029dd543`。
+- 人工对照 CC Switch 编辑供应商页后，当前 Catnip 精简配置页验收失败。文档撤销“核心字段即已对齐”的宽泛结论，列明直连模式缺口和依赖本地代理的非目标。
+- 本小项只修改权威需求、约束、计划、决定、Phase 18、接力、状态、测试与日志，不改业务源码，不启动真实供应商调用。
+- 开工时远端为 `origin/model-ccswitch@1390cad1`，本地 ahead 9；`backup/pre-phase-18-ccswitch-parity-20260913` 仅确认本地存在，远端恢复继续记 `REMOTE_BACKUP_PENDING`。
+- 两个用户未跟踪目录保持不动：`docs/tutorials/`、`runtime/hardboard/projects/hello_world_esp32s3/.catnip/`。
+
 ## 2026-09-07 / Phase 0 / 现场与基线
 
 - 先查 Git：idea_to_production，HEAD f6e20e8e1d581a10fbd9c0e48d39bec5c4376112，工作区干净，无 upstream。两个 remote，主施工目标 origin，main 远端核对等于 baseline。

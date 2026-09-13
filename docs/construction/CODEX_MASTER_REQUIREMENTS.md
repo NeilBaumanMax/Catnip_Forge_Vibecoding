@@ -79,6 +79,9 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 - 供应商切换只影响切换后创建的任务；运行中和已入队任务使用其非敏感快照，禁止中途改绑或静默回退。
 - 仅借鉴 CC Switch 的 Claude Code 供应商切换，不引入其其他工具、数据库或辅助模块，不复制第二套执行系统。
 - 首次配置必须先选预设或其他供应商；预设路径 DeepSeek 必填、Qwen 视觉选填，并自动启用 DeepSeek。Agent 与两类 Explore 请求必须共享活动 Claude Code 供应商。
+- `model-ccswitch` 是用户确认的当前最新产品分支；不得再切换到 `idea_to_production` 施工。后者仅保留为历史分叉证据。
+- 当前精简供应商编辑页未通过人工验收。自动化通过只证明既有契约内部一致，不得据此写成 CC Switch 页面等价或人工验收通过。
+- 只对齐 CC Switch 的 Claude Code 直连供应商能力：地址语义、固定鉴权方式、Sonnet/Opus/Fable/Haiku 映射、默认兜底模型、模型列表、脱敏配置预览及显式验证/启用。不得引入其本地代理、协议转换、Header/Body 注入、测速、计费、故障转移或其他产品模块。
 
 ## 官方知乎能力选择与 Access Secret 门禁（2026-09-09 当前口径）
 

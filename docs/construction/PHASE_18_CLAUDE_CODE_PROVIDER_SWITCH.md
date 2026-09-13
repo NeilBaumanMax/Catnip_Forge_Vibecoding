@@ -178,3 +178,24 @@ Phase 18 已按本文契约完成源码闭环：
 最新人工反馈覆盖此前“Chat 只读显示模型”的限制。输入框模型控件改为应用级模型选择器：Main 用当前供应商的安全凭据请求其 HTTPS `GET /models`，只把模型 ID、当前项和错误状态返回 Renderer；选择模型时 Main 再校验它属于该供应商返回列表，并把 primary/Haiku/Sonnet/Opus 统一映射到该模型后同步 Claude Code。供应商仍只能在模型标签页切换，模型选择不是会话私有状态；运行中/已排队任务快照不变。
 
 人工首屏复核又发现开发版没有发布包内置的 Playwright 目录时，启动遮罩误报“发布包不完整”并禁用模型配置。模型凭据与浏览器资源没有依赖关系，因此 18g 收尾移除该错误门禁；Playwright 状态仍由 Main 保留给真正需要浏览器的功能与发布包完整性测试使用。
+
+### 11.3 CC Switch 配置页人工验收失败与下一闭环
+
+用户以 CC Switch 当前“编辑供应商”页面与 Catnip 页面并排验收后，明确判定 Catnip 仍不是同一套配置逻辑。该结论覆盖本文此前“类似 CC Switch 核心字段已完成”的宽泛表述，但不否定已经实现的 safeStorage、应用级活动供应商、任务快照和 Claude 子进程注入。
+
+当前差距：
+
+| 能力 | CC Switch 参考页 | Catnip `029dd543` | 当前结论 |
+| --- | --- | --- | --- |
+| 供应商信息 | 名称、官网链接、备注 | 只有名称 | 待补 |
+| 请求地址 | 请求地址并区分前缀/完整 URL | 单一 `Base URL`，语义不清 | 待补 |
+| API 格式 | 可选择 Anthropic/OpenAI 等并由代理转换 | 只有 Claude Code compatible 假设 | 首批只明确支持 Anthropic Messages 直连，不伪造转换能力 |
+| 鉴权 | 固定鉴权字段选择 | 已有 `AUTH_TOKEN` / `API_KEY` | 保留并改善说明 |
+| 模型映射 | Sonnet、Opus、Fable、Haiku | 缺 Fable | 待补 |
+| 默认兜底 | `ANTHROPIC_MODEL` 独立字段 | 主模型与角色映射概念混合 | 待拆分与迁移 |
+| 模型列表 | 用户显式获取 | Chat 当前供应商 `/models` 已实现 | 复用 Main 能力并在编辑页呈现；自定义端点失败必须允许手填 |
+| 配置核对 | 生成 JSON 与通用配置 | 无 | 只提供脱敏、只读预览，不显示 Key |
+| 测试配置 | 用户显式触发 | 无供应商页测试动作 | 待补；成功前不得标记在线可用 |
+| 代理/覆盖/计费 | CC Switch 扩展能力 | 无 | 明确非目标 |
+
+下一闭环先做文档独立提交，再修改源码。实现顺序固定为 Schema/迁移 → Main 校验与脱敏预览 → 窄 IPC → Renderer → 离线专项 → Electron UI → 用户人工复验。任何需要本地代理才能工作的 API 格式都不得出现在首批可选项中。真实 Key、真实付费请求和用户人工复验均保持 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`。

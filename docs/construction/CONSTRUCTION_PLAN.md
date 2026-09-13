@@ -117,3 +117,6 @@
 - 18e：完成专项、安全扫描、Runtime/Electron 构建和真实 Electron UI 回归；未授权真实付费调用记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`。
 - 18f：精确提交并核对远端，不纳入 `docs/tutorials/` 或用户工程 `.catnip`。
 - 18g：根据人工验收修订首次启动：恢复预设模型遮罩；双 Key 原生安全窗口；其他供应商直达模型管理；首次成功启用后重启；已配置冷启动直接进入工作区选择。先提交文档，再实现和回归。
+- 18h：`IMPLEMENTED / HUMAN ACCEPTANCE FAILED`。输入框通过 Main 请求当前供应商模型列表并切换应用级模型；离线专项与 Renderer build 通过，但真实 Key 在线发现仍待验，且不能抵消供应商编辑页人工验收失败。
+- 18i：只修正文档漂移与项目交接。确认 `model-ccswitch` 为唯一最新形态；把精简编辑页状态改为人工未通过；记录 CC Switch 直连能力差距、非目标、安全边界、Git/远端状态和待验项目。独立提交，不修改业务源码。
+- 18j：文档小闭环完成后再施工供应商页。先补 Schema/迁移与离线反例，再实现地址模式、Fable/默认兜底、脱敏配置预览、模型列表和显式验证；最后做类型、专项、Renderer build、真实 Electron 布局与用户人工复验。

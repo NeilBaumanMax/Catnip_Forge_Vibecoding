@@ -1,5 +1,16 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-13 — 最新接力：分支定版与 CC Switch 页面验收失败
+
+- 用户最终确认：`model-ccswitch` 是当前最新产品形态和后续唯一施工分支；不再在 `idea_to_production` 开发。接手必须先动态检查，但不得再因旧文档分支描述切走。
+- 本次文档开工动态状态：本地 `model-ccswitch@029dd543`，`origin/model-ccswitch@1390cad1`，本地 ahead 9；恢复标签 `backup/pre-phase-18-ccswitch-parity-20260913` 已存在，标签与 9 个本地提交均未核对为远端可恢复点，继续记 `REMOTE_BACKUP_PENDING`。
+- 用户以 CC Switch“编辑供应商”页并排验收，判定 Catnip 当前精简页不等价、未通过人工验收。缺口包括官网/备注、请求地址模式、Fable、默认兜底模型、编辑页模型列表、脱敏配置预览和显式测试配置。
+- 已有 safeStorage、应用级活动供应商、Agent/Explore 共用快照、Qwen 独立视觉 Key、DeepSeek `/models` 发现与 Chat 切换属于可复用基础；不得回滚，也不得写成完整 CC Switch 页面已经验收。
+- 只实现 Claude Code CLI 的 Anthropic Messages 直连配置。CC Switch 的本地代理、OpenAI Chat/Responses 转换、Header/Body 覆盖、User-Agent、测速、计费、故障转移、路由接管、Codex/Gemini/MCP 均不进入本闭环。
+- 当前只完成文档漂移修正；尚未修改业务源码、未重启软件、未调用真实 Key/付费 API、未重打 Windows 包。状态：`LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`、`WINDOWS_PACKAGE_VALIDATION_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING`。
+- 受保护现场 `docs/tutorials/` 与 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 保持未跟踪，禁止触碰或暂存。
+- 下一步见 Phase 18 文档 11.3 和计划 18j：文档提交后，从 Schema/迁移开始补齐直连供应商配置，再做用户人工复验。
+
 ## 2026-09-13 — Phase 18g 首启流程按人工反馈修订
 
 - 人工现场失败：模型页点击“配置 Key”后提示“模型安全输入窗口未显示”；IPC 已触发，WPF 显示握手未完成。

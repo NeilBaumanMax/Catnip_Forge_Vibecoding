@@ -890,3 +890,7 @@ Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会�
 | `build:renderer` | PASS | 2828 modules；模型菜单进入主 Renderer chunk，既有 Monaco 大 chunk warning 不变 |
 
 首次 `verify:model-management` 失败：新增路由期望列表已调用 `.sort()`，但手写期望顺序把 `models:available` 放在 Claude 路由之后；按真实字典序修正后通过。测试未读取或调用用户真实 Key；真实 DeepSeek `/models` 只会在用户点击输入框模型控件时由 Main 发起，仍记 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`，等待人工验收。
+
+## 2026-09-13 — Phase 18i 文档漂移与接力
+
+本闭环不修改业务源码，因此不以历史自动化结果冒充新页面验收。文档检查必须覆盖：分支固定为 `model-ccswitch`、人工验收失败、CC Switch 直连能力差距、代理/转换等非目标、Secret 边界、Git ahead/远端恢复状态和三个 pending 标记。执行 `git diff --check` 与定向关键词检查；不运行真实 Key、付费 API、Windows 打包或硬件测试。
