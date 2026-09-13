@@ -120,3 +120,4 @@
 - 18h：`IMPLEMENTED / HUMAN ACCEPTANCE FAILED`。输入框通过 Main 请求当前供应商模型列表并切换应用级模型；离线专项与 Renderer build 通过，但真实 Key 在线发现仍待验，且不能抵消供应商编辑页人工验收失败。
 - 18i：只修正文档漂移与项目交接。确认 `model-ccswitch` 为唯一最新形态；把精简编辑页状态改为人工未通过；记录 CC Switch 直连能力差距、非目标、安全边界、Git/远端状态和待验项目。独立提交，不修改业务源码。
 - 18j：已完成 Schema v3/迁移、官网与备注、地址语义、固定 Anthropic 格式、Sonnet/Opus/Fable/Haiku/Subagent 与显示名/1M、默认兜底、模型端点候选、Main-only 测试、脱敏预览、窄 IPC 和 Renderer；类型、专项、Renderer build、三档 Electron UI 已通过。真实 Key 在线验证、用户人工复验、Windows 重打包仍待完成。
+- Phase 19：按 [学院呱呱知识库与教学演示升级](PHASE_19_GUAGUA_GUIDE_AND_TOUR.md) 先修正文档真相，再重写软件助手手册、升级版本化教学步骤与稳定目标，最后执行助手/教程专项、类型、Renderer build 和真实教学重播。
