@@ -909,3 +909,18 @@ Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会�
 | `git diff --check` | PASS | 无 whitespace error |
 
 首次失败保留：四个模型专项仍期待旧 schema、旧 URL/IPC 或使用旧 fixture，逐项更新后通过；误调用不存在的 `typecheck:renderer` 后改用项目真实 `typecheck`；首次 UI 验收因软件未启动无法连接 9230，启动后通过。没有读取或调用用户真实 Key，也没有重打包或硬件动作，三个 pending 状态保持。
+
+## 2026-09-13 — Phase 19 学院呱呱知识库与教学演示
+
+| 命令/证据 | 结果 | 说明 |
+| --- | --- | --- |
+| `verify:software-assistant-guide` | PASS | 当前安全启动、预设/其他供应商、五角色、知乎连接、探索历史/收藏/验证、Skill Hub 边界与详细回答策略 |
+| `verify:onboarding` | PASS | v8、32 个稳定目标；项目总览第一步且模型教学早于 Agent/探索 |
+| `verify:onboarding-ui` | PASS | 完整走完 35 步并重播；模型四步、探索五步、Skill Hub 边界与折叠 Agent 跟随均通过 |
+| `typecheck` / `build:main` / `build:renderer` | PASS | Renderer 2828 modules；既有 Monaco 大 chunk warning 不变 |
+| `verify:explore-ui` | PASS | Explore 当前功能与新增教学锚点兼容 |
+| `verify:software-assistant-ui` | PASS | 真实 Electron 1600×1000；入口/头像/弹窗/欢迎语/教程按钮/缩放和视口边界通过 |
+| `verify:model-center-ui` | PASS | 真实 Electron 三档视口、五角色映射、测试入口、状态与 Agent 只读供应商提示通过 |
+| `git diff --check` | PASS | 无 whitespace error |
+
+首次失败保留：隔离 onboarding smoke 因无 preload、`startupStatus` 未建立而隐藏学院呱呱入口；修复为只在 `ONBOARDING_SMOKE_MODE` 放开入口后通过，正式行为不变。真实学院呱呱 UI 首次因新欢迎语遗漏产品名而不满足既有契约；补回“Catnip Forge”并重启后通过。测试未提交问题、未读取真实 Key、未发起知乎或付费模型请求。

@@ -155,6 +155,20 @@ async function main() {
     const welcome = title();
     click('.catnip-onboarding-card footer .is-primary');
     await wait(80);
+    const modelsPrompt = title();
+    // The Chromium-only harness has no Electron preload for model IPC. Exercise
+    // the guide's target listener without mounting the IPC-backed model panel.
+    advanceTargetWithoutAppAction('[data-tour-id="tab-models"]');
+    await wait(120);
+    const modelsPreset = title();
+    click('.catnip-onboarding-card footer .is-primary');
+    await wait(80);
+    const modelsProvider = title();
+    click('.catnip-onboarding-card footer .is-primary');
+    await wait(80);
+    const modelsMapping = title();
+    click('.catnip-onboarding-card footer .is-primary');
+    await wait(80);
     const agent = title();
     const agentTargetReady = targetReady();
     click('.catnip-onboarding-card footer .is-primary');
@@ -175,6 +189,18 @@ async function main() {
     // the guide's native target listener without mounting the IPC-backed panel.
     advanceTargetWithoutAppAction('[data-tour-id="tab-explore"]');
     await wait(180);
+    const exploreConnection = title();
+    click('.catnip-onboarding-card footer .is-primary');
+    await wait(80);
+    const exploreModes = title();
+    click('.catnip-onboarding-card footer .is-primary');
+    await wait(80);
+    const exploreHistory = title();
+    click('.catnip-onboarding-card footer .is-primary');
+    await wait(80);
+    const exploreKnowledge = title();
+    click('.catnip-onboarding-card footer .is-primary');
+    await wait(80);
     const exploreFlow = title();
     click('.catnip-onboarding-card footer .is-primary');
     await wait(80);
@@ -279,6 +305,10 @@ async function main() {
     return {
       invitationText,
       welcome,
+      modelsPrompt,
+      modelsPreset,
+      modelsProvider,
+      modelsMapping,
       agent,
       agentTargetReady,
       repositoryPrompt,
@@ -286,6 +316,10 @@ async function main() {
       repositoryResources,
       repositoryTargetReady,
       explorePrompt,
+      exploreConnection,
+      exploreModes,
+      exploreHistory,
+      exploreKnowledge,
       exploreFlow,
       skillHubPrompt,
       skillHubBoundary,
@@ -318,13 +352,21 @@ async function main() {
 
   const checks = [
     result.invitationText.includes('全程离线'),
-    result.welcome.includes('认识工作区'),
+    result.welcome.includes('Catnip Forge 把硬件创意'),
+    result.modelsPrompt.includes('点击“模型”'),
+    result.modelsPreset.includes('DeepSeek 必填'),
+    result.modelsProvider.includes('保存 → Key → 模型 → 测试 → 启用'),
+    result.modelsMapping.includes('显示名、实际模型、1M'),
     result.agent.includes('把目标告诉 Agent'),
     result.agentTargetReady,
     result.repositoryPrompt.includes('点击“仓库”'),
     result.repositorySkills.includes('专业能力'),
     result.repositoryResources.includes('硬件工程与参考代码'),
     result.explorePrompt.includes('点击“探索”'),
+    result.exploreConnection.includes('知乎连接状态'),
+    result.exploreModes.includes('两个入口'),
+    result.exploreHistory.includes('新建、恢复、重命名'),
+    result.exploreKnowledge.includes('收藏不等于自动加入'),
     result.exploreFlow.includes('描述、查看结论、确认计划、执行'),
     result.skillHubPrompt.includes('Neil 的 skill 小站'),
     result.skillHubBoundary.includes('线上发现'),
@@ -349,7 +391,7 @@ async function main() {
     result.complete.includes('One Prompt'),
     result.stored?.status === 'completed',
     result.closedAfterCompletion,
-    result.replay.includes('认识工作区'),
+    result.replay.includes('Catnip Forge 把硬件创意'),
   ];
   if (checks.some((value) => !value)) {
     throw new Error(`onboarding UI flow failed: ${JSON.stringify(result)}`);

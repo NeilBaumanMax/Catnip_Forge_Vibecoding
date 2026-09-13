@@ -1281,7 +1281,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
           </div>
         </header>
         {notice ? <div className="explore-connection-notice" role="status">{notice}</div> : null}
-        <div className="explore-entry-grid">
+        <div className="explore-entry-grid" data-tour-id="explore-entry-grid">
           <button className="explore-entry-card explore-entry-card--idea" type="button" onClick={() => enter('idea')} data-tour-id="explore-idea">
             <span className="explore-entry-illustration" aria-hidden="true"><img src={exploreIdeaGuagua} alt="" /></span>
             <span className="explore-entry-symbol explore-entry-symbol--idea" aria-hidden="true"><Lightbulb /></span>
@@ -1302,7 +1302,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
           </button>
         </div>
         <div className="explore-home-dashboard-grid">
-        <section className="explore-session-history" aria-labelledby="explore-history-title">
+        <section className="explore-session-history" data-tour-id="explore-history" aria-labelledby="explore-history-title">
           <header className="explore-section-header">
             <div className="explore-section-heading"><span className="explore-section-title-icon is-history" aria-hidden="true"><History /></span><div><span className="explore-section-kicker">PROJECT HISTORY</span><h3 id="explore-history-title">最近的探索记录</h3></div></div>
             <div className="explore-history-actions">

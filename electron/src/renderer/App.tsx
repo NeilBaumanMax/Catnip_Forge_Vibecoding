@@ -24,7 +24,7 @@ const IDLE_TASK_STATUS: AgentTaskStatus = { busy: false, paused: false, activeTa
 const ASSISTANT_WELCOME: SoftwareAssistantMessage = {
   id: 'welcome',
   role: 'assistant',
-  content: '你好，我是 **Neil·Bauman\'s 学院呱呱**。遇到 Catnip Forge 的界面、编译、烧录、串口或 Skills 使用问题，都可以直接问我。',
+  content: '你好，我是 **Neil·Bauman\'s 学院呱呱**。关于 Catnip Forge 的模型配置与切换、探索/知乎连接、Skill 小站、编译、烧录、串口或其他界面问题，都可以直接问我。',
 };
 type FloatingPosition = { x: number; y: number };
 
@@ -959,7 +959,7 @@ export default function App() {
         onEnsureAgentOpen={handleOnboardingEnsureAgentOpen}
         onEnsureAssistantOpen={handleOnboardingEnsureAssistantOpen}
       />
-      {startupStatus && !startupStatus.firstRun ? <div
+      {ONBOARDING_SMOKE_MODE || (startupStatus && !startupStatus.firstRun) ? <div
         className={`appearance-settings${appearanceDragging ? ' is-dragging' : ''}${appearancePosition.x < 382 ? ' opens-right' : ''}${appearancePosition.y < 520 ? ' opens-down' : ''}`}
         ref={appearanceSettingsRef}
         style={{ left: appearancePosition.x, top: appearancePosition.y, width: assistantSize, height: assistantSize }}

@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import catnipAssistantImage from '../assets/catnip-assistant.webp';
 
 const STORAGE_KEY = 'vibeide.onboarding.catnipJourney';
-const VERSION = 7;
+const VERSION = 8;
 const REMIND_DELAY_MS = 24 * 60 * 60 * 1000;
 const TARGET_GAP = 8;
 const CARD_WIDTH = 380;
-const CARD_HEIGHT = 290;
+const CARD_HEIGHT = 360;
 const VIEWPORT_GAP = 18;
 
 type StoredState = {
@@ -38,14 +38,47 @@ type TourStep = {
 const STEPS: TourStep[] = [
   {
     id: 'welcome',
-    eyebrow: '欢迎来到 Catnip Forge',
-    title: '跟着 Neil·Bauman\'s 学院呱呱认识工作区',
-    content: '这是一段约 5 分钟的离线导览。不会修改工程、调用模型、编译、烧录或打开串口，你可以随时退出。',
-    actionLabel: '开始认识',
+    eyebrow: '第一步 · 先认识整个项目',
+    title: 'Catnip Forge 把硬件创意带到真实运行',
+    content: '这是面向 ESP32/ESP32-S3 创客的本地硬件智能开发平台。模型为 Agent 与探索提供推理；探索先找方向、查问题；Agent 修改工程；仓库和 Skill Hub 扩展能力；编辑器、任务管理器与监视器完成代码、编译、烧录和实机证据。所有区域围绕你启动时选择的同一个工程协作。教程只讲解，不会调用模型、连接知乎、修改工程、编译、烧录或打开串口。',
+    actionLabel: '先配置模型',
+  },
+  {
+    id: 'models-tab',
+    eyebrow: '第二步 · 模型是智能能力入口',
+    title: '请点击“模型”',
+    content: '这里统一管理 Agent、找灵感和解问题之后要使用的 Claude Code 供应商。亲自点击高亮标签，查看当前供应商、模型和 Key 状态。',
+    target: '[data-tour-id="tab-models"]',
+    actionLabel: '等待点击“模型”',
+    advanceOnTargetClick: true,
+  },
+  {
+    id: 'models-preset',
+    eyebrow: '模型 · 预设配置与凭据维护',
+    title: 'DeepSeek 必填，Qwen 视觉选填',
+    content: '首次预设配置会在独立 Windows 安全窗口输入 DeepSeek Key 和可选 Qwen Key：DeepSeek 负责 Agent 与探索，Qwen 只负责主动提交的图片。Key 不进入页面、聊天、日志或预览。配置完成后仍可在这里替换或清除，Qwen 留空不影响文本任务。',
+    target: '[data-tour-id="panel-models"]',
+    actionLabel: '学习其他供应商',
+  },
+  {
+    id: 'models-provider',
+    eyebrow: '模型 · 其他 Claude Code 供应商',
+    title: '按“保存 → Key → 模型 → 测试 → 启用”操作',
+    content: '新增供应商后填写名称、Base URL、鉴权变量和默认兜底模型，先保存，再用原生安全窗口配置 Key。随后获取当前 Key 的真实模型列表，设置 Sonnet、Opus、Fable、Haiku、Subagent，测试 Messages 接口，查看脱敏预览，最后启用。当前直连版只支持原生 Anthropic Messages。',
+    target: '[data-tour-id="model-provider-editor"]',
+    actionLabel: '理解角色和生效范围',
+  },
+  {
+    id: 'models-mapping',
+    eyebrow: '模型 · 映射与任务快照',
+    title: '显示名、实际模型、1M 各不相同',
+    content: '显示名只改变 Claude Code 的 /model 菜单；实际请求模型必须是供应商接受的 ID；1M 只在供应商支持长上下文时开启。Agent 输入框可切换当前供应商实际返回的模型，但不能跨供应商。切换只影响之后提交的任务，运行中和已排队任务不会中途换模型。',
+    target: '[data-tour-id="model-mapping"]',
+    actionLabel: '认识开发 Agent',
   },
   {
     id: 'agent',
-    eyebrow: '第一站 · 开发 Agent',
+    eyebrow: '第三步 · 开发 Agent',
     title: '把目标告诉 Agent',
     content: '左侧是开发 Agent：用一句话描述目标，它会调用 Skills、修改工程并展示执行过程。同一时间只处理一个活动任务，工作中再次发送会追加要求。',
     target: '[data-tour-id="agent-workspace"]',
@@ -53,7 +86,7 @@ const STEPS: TourStep[] = [
   },
   {
     id: 'repository-tab',
-    eyebrow: '第二站 · 资源仓库',
+    eyebrow: '第四步 · 资源仓库',
     title: '请点击“仓库”',
     content: '这里集中管理 Skills、硬件工程和参考代码。亲自点击高亮按钮，学院呱呱会继续带路。',
     target: '[data-tour-id="tab-repo"]',
@@ -78,26 +111,58 @@ const STEPS: TourStep[] = [
   },
   {
     id: 'explore-tab',
-    eyebrow: '第三站 · 独立探索 Agent',
+    eyebrow: '第五步 · 独立探索工作区',
     title: '请点击“探索”',
-    content: '探索有独立于左侧开发 Agent 的对话与历史。你可以从“找灵感”或“解问题”开始，每次记录都按当前工程保存在 .catnip/explore/。',
+    content: '探索先研究、再计划，不会直接动工程。它有独立于左侧 Agent 的对话与历史，并与当前工程绑定。亲自点击高亮标签继续。',
     target: '[data-tour-id="tab-explore"]',
     actionLabel: '等待点击“探索”',
     advanceOnTargetClick: true,
   },
   {
+    id: 'explore-connection',
+    eyebrow: '探索 · 知乎官方连接',
+    title: '先看顶部的知乎连接状态',
+    content: '探索会先调用官方 Skill 的 status。缺 CLI 时由你授权下载安装；缺凭据时打开知乎个人中心生成 Access Secret，再粘贴到独立 Windows 安全窗口。已连接后可替换 Secret、在线验证或退出本机登录。Secret 不进入页面、URL、聊天、日志或收藏。',
+    target: '[data-tour-id="explore-zhihu-connection"]',
+    actionLabel: '认识两个入口',
+  },
+  {
+    id: 'explore-modes',
+    eyebrow: '探索 · 找灵感与解问题',
+    title: '两个入口解决不同阶段的问题',
+    content: '“找灵感”把模糊目标、当前工程和硬件限制变成多个有来源的可实现方向，适合还没决定做什么；“解问题”让你勾选工程、Build、串口和历史知识，并用知乎＋全网资料交叉判断根因，适合已经出现异常。两者都先分析，不直接执行。',
+    target: '[data-tour-id="explore-entry-grid"]',
+    actionLabel: '学习探索历史',
+  },
+  {
+    id: 'explore-history',
+    eyebrow: '探索 · 每个工程的多会话历史',
+    title: '新建、恢复、重命名或删除记录',
+    content: '找灵感和解问题分别保存多条会话：草稿、勾选 Context、对话、来源、结论、计划和阶段都会保留在当前工程的 .catnip/explore/。返回首页、切标签或重启后可继续；“新建灵感/新建调查”不会覆盖旧记录。删除探索历史也不会删除已收藏的知识卡。',
+    target: '[data-tour-id="explore-history"]',
+    actionLabel: '学习本地知识库',
+  },
+  {
+    id: 'explore-knowledge',
+    eyebrow: '探索 · 本地收藏与验证',
+    title: '收藏不等于自动加入 Context',
+    content: '可信来源要由你主动收藏；卡片可查看来源对话、删除或“记录验证”。解问题只会发现相关候选，必须再次勾选才会使用。验证时写明实际操作和现象，可记录任务 ID/日志，并标记有效或无效，让知识库能够长期纠错。它不是知乎官方知识库。',
+    target: '[data-tour-id="explore-saved-knowledge"]',
+    actionLabel: '理解执行门禁',
+  },
+  {
     id: 'explore-flow',
     eyebrow: '探索 · 四步确认流程',
     title: '描述、查看结论、确认计划、执行',
-    content: '四个步骤可以随时切换回看。第三步由探索 AI 在工程中生成交接材料；第四步先预览，只有你确认提交后，左侧工程 Agent 才能执行。对话和草稿会一直保留在探索历史中。',
+    content: '先描述并选择 Context，再查看带来源的结论；第三步只生成 PLAN/HANDOFF 交接材料；第四步先预览磁盘内容。只有你点击“确认提交给工程 Agent”后才允许执行。代码完成、编译成功、烧录成功和实机运行正常必须用各自的真实证据判断。',
     target: '[data-tour-id="panel-explore"]',
     actionLabel: '认识 Neil 的 skill 小站',
   },
   {
     id: 'skill-hub-tab',
-    eyebrow: '第四站 · Skill 发现',
+    eyebrow: '第六步 · 在线 Skill 发现',
     title: '请点击“Neil 的 skill 小站”',
-    content: '这里打开 Neil 的 Skill Hub，用来浏览和下载安装 Skill。亲自点击高亮标签继续。',
+    content: '这里打开在线 Skill Hub，用来了解、浏览和下载可扩展能力。它不是第二套 Agent 或云端工程。亲自点击高亮标签继续。',
     target: '[data-tour-id="tab-skill-hub"]',
     actionLabel: '等待点击 Skill 小站',
     advanceOnTargetClick: true,
@@ -106,7 +171,7 @@ const STEPS: TourStep[] = [
     id: 'skill-hub-boundary',
     eyebrow: 'Neil 的 skill 小站',
     title: '线上发现，本地管理与同步',
-    content: '小站负责发现和下载；回到“仓库”中的 Skill Manager 查看本地文件、同步部署和选择 Context。网页内容不会自动加入工程上下文。',
+    content: '小站只负责线上发现与下载；下载后回“仓库”的 Skill Manager 检查 SKILL.md、编辑并“立即同步”，再在 Agent 输入框用“＋ Skills”或 @ 主动引用。网页内容不会自动加入工程 Context，也不能任意读写本地文件或取得 Secret。',
     target: '[data-tour-id="panel-skill-hub"]',
     actionLabel: '继续认识监视器',
   },
