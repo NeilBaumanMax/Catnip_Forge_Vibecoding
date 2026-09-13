@@ -914,8 +914,7 @@ export default function App() {
             <p>DeepSeek 用于 Agent、找灵感和解问题；千问用于可选的视觉任务。点击后会打开独立的 Windows 安全输入窗口。</p>
             <p>DeepSeek API Key 必填，千问 API Key 选填；Key 不会进入本页面、聊天、日志或普通配置文件。</p>
             {startupApiKeyError ? <div className="startup-key-error" role="alert">{startupApiKeyError}</div> : null}
-            {!startupStatus.playwrightReady ? <div className="startup-key-error" role="alert">发布包缺少浏览器运行资源，请重新获取完整压缩包。</div> : null}
-            <button type="button" autoFocus onClick={() => void handleStartupApiKeySave()} disabled={startupApiKeySaving || startupApiKeyRestarting || !startupStatus.playwrightReady}>
+            <button type="button" autoFocus onClick={() => void handleStartupApiKeySave()} disabled={startupApiKeySaving || startupApiKeyRestarting}>
               {startupApiKeyRestarting ? '配置完成，正在重启…' : startupApiKeySaving ? '正在打开安全窗口…' : '配置 DeepSeek / 千问'}
             </button>
             <button type="button" className="startup-key-alternative" onClick={() => setStartupUseCustomProvider(true)} disabled={startupApiKeySaving || startupApiKeyRestarting}>使用其他模型供应商</button>

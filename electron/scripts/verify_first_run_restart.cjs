@@ -33,13 +33,15 @@ async function main() {
         startupDialog: Boolean(document.querySelector('.startup-key-dialog')),
         passwordInputs: document.querySelectorAll('.startup-key-dialog input[type="password"]').length,
         secureButton: Array.from(document.querySelectorAll('.startup-key-dialog button')).some((button) => button.textContent.includes('DeepSeek / 千问')),
+        secureButtonDisabled: Array.from(document.querySelectorAll('.startup-key-dialog button')).find((button) => button.textContent.includes('DeepSeek / 千问'))?.disabled,
         customButton: Array.from(document.querySelectorAll('.startup-key-dialog button')).some((button) => button.textContent.includes('其他模型供应商')),
+        falsePackageError: document.querySelector('.startup-key-error')?.textContent.includes('发布包缺少浏览器运行资源') === true,
         customSetupVisible: document.querySelector('.model-center-status')?.textContent.includes('供应商地址和模型名称') === true
       }))()`,
       returnByValue: true,
     });
     const value = evaluated.result?.value;
-    const firstRunRouteVisible = value?.startupDialog ? value.secureButton && value.customButton : value?.customSetupVisible;
+    const firstRunRouteVisible = value?.startupDialog ? value.secureButton && !value.secureButtonDisabled && value.customButton && !value.falsePackageError : value?.customSetupVisible;
     if (value?.configureType !== 'function' || value?.plaintextType !== 'undefined' || value?.passwordInputs !== 0 || !firstRunRouteVisible) {
       throw new Error(`secure first-run bridge failed: ${JSON.stringify(value)}`);
     }

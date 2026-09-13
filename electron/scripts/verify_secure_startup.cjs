@@ -44,6 +44,8 @@ async function main() {
   assert.match(renderer, /配置 DeepSeek \/ 千问/);
   assert.match(renderer, /使用其他模型供应商/);
   assert.doesNotMatch(renderer, /type="password"/, 'secrets must never be entered in Renderer');
+  assert.doesNotMatch(renderer, /disabled=\{startupApiKeySaving \|\| startupApiKeyRestarting \|\| !startupStatus\.playwrightReady\}/, 'model setup must not be blocked by unrelated Playwright resources');
+  assert.doesNotMatch(renderer, /发布包缺少浏览器运行资源，请重新获取完整压缩包/, 'development startup must not show a false package-integrity error');
   assert.match(renderer, /startupStatus && !startupStatus\.firstRun \? <div[\s\S]{0,180}className=\{`appearance-settings/, 'unconfigured first run must hide the unavailable floating assistant');
   assert.match(browserPanel, /startsInHarnessMode \? 'repo' : 'explore'/);
   assert.match(browserPanel, /if \(startInCustomModelSetup\) setMode\('models'\)/);

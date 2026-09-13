@@ -873,3 +873,5 @@ Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会�
 | 开发版启动 | PASS | 5173 与 9230 监听，Electron Main/Renderer/GPU 进程存在 |
 
 首次失败保留：旧测试仍断言“首帧模型页”，按 18g 产品真相改为“启动遮罩分流、已配置直达探索”；直接用 `node` 运行 Electron 专项导致 `app` 未定义，改用 package 中 Electron runner 后通过；串联 Renderer build 的工具调用达到 30 秒输出上限，后续命令继续在后台运行，不据此声明完整 Windows 打包完成。真实 DeepSeek/Qwen/其他供应商 Key、付费请求、完整 Windows 包和硬件未验证，分别保留 `LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`、`WINDOWS_PACKAGE_VALIDATION_PENDING` 与 `REAL_HARDWARE_VALIDATION_PENDING`。
+
+人工首屏首次复核失败：开发目录不存在仅随发布包交付的 `runtime/playwright/chromium-1223`，Renderer 把这一无关状态显示成红色发布包错误并禁用预设 Key 按钮。修复后模型配置按钮只受“正在打开/正在重启”约束；专项增加无 Playwright 耦合和无开发版假错误断言。
