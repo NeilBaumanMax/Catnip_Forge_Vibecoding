@@ -949,3 +949,16 @@ Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会�
 | 增强后的 `pack:win` + `verify:release` | PASS；发布验证结束后二次隐私扫描仍为 0 |
 
 复核首次发现旧候选包在成品首启验证后生成了示例工程 `.catnip/agent/conversations.json`，因此立即作废并重建；Runtime health 另创建四个空目录。增强门禁后，任何上述文件/目录会直接使打包或发布验证失败；health 只可创建空目录并由验证器删除，写入任何内容即失败。最终交付目录未再次启动。用户本机 AppData 中的历史和 safeStorage 凭据保留在原处，未被读取、删除或复制。
+
+## 2026-09-13 — Phase 20 刘看山特供版干净 Windows 包
+
+| 命令/证据 | 结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run pack:win` | PASS | 先删除旧 `dist-package`，再完整构建 Runtime/Main/Renderer、electron-builder x64、资源复制和 EXE 盖章 |
+| `npm.cmd --prefix electron run verify:release` | PASS | 41,929 文件、4,486,616,511 bytes；Node/Python/ESP-IDF/Claude Code 完整；DeepSeek/Qwen Key 均未入包 |
+| `verify:zhihu-skill-package` / `verify:version` | PASS | 官方知乎 Skill 15 文件契约完整；v2.0.0 / Build 7201 / `2.0.0.7201` |
+| 包内隐私扫描 | PASS | 0 个凭据、对话、知识、收藏、`.catnip` 或可变用户目录；0 个长格式 `sk-` Token 文件；不含用户知乎 CLI/Access Secret 存储 |
+| 隔离成品首启 | PASS | 全新 APPDATA/LOCALAPPDATA/userData 下 `firstRun=true`、`apiKeyReady=false`、Playwright ready；无页面密码框或明文 Key 接口 |
+| EXE SHA-256 | PASS | `C141D44C0E1983322D3C34F0611FE47FA6C25A7E07349ABA12635779E9064B22` |
+
+失败历史：第一次直接运行 `verify:first-run` 连接到了仍占用 9230 的已配置开发实例，返回 `firstRun=false/apiKeyReady=true`；这不是成品用户数据。停止该精确进程树后，用独立临时用户目录启动刚生成的 EXE 并复测通过。该运行候选创建了空 `resources/runtime/logs`，最终发布门禁正确拒绝它；候选已作废并第二次完整 `pack:win`，最终交付目录不再启动，发布验证后 `ForbiddenStateFiles=0`、`MutableProductRoots=0`。自定义宽泛路径扫描最初把 ESP-IDF 上游 `.github/workflows/*.yml` 误判为产品工作流；列出相对路径确认 13 项均为工具链元数据，收敛到真实产品可变目录后为 0。隔离目录内敏感状态文件为 0，测试进程和临时目录均已清理，用户真实 AppData 和安全凭据未触碰。

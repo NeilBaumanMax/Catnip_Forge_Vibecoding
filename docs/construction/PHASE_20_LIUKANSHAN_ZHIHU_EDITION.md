@@ -52,3 +52,12 @@
 - 教学仍为 35 步稳定交互流程，但第一步先讲完整产品闭环，随后依次覆盖首次模型与工程配置、Agent/顶部工作区、仓库、探索与知乎、Skill Hub、监视器、任务、编辑器、对话历史、附件/Skills 和刘看山助手。
 - 首次失败已记录并修复：资源预算超限 32,230 bytes；探索测试残留 WebP 假设；入口图棋盘格与非等比拉伸；布局测试在无助手的浏览器 Harness 中错误要求助手动作按钮。
 - 最终验证：`verify:liukanshan-edition`、`verify:renderer-performance`（1,206,594 bytes）、`verify:explore-ui`、`verify:explore-layout-ui`、`verify:software-assistant-guide`、`verify:software-assistant-ui`、`verify:onboarding`、`verify:onboarding-ui`、`verify:splash-ui`、`typecheck`、`build:main`、`build:renderer` 通过。
+
+## 干净 Windows 包（2026-09-13）
+
+- 按用户明确要求执行 `npm.cmd --prefix electron run pack:win`，旧 `electron/dist-package` 先由打包脚本在受控边界内完整删除，再从 Runtime、Main、Renderer 源码重建并生成 `electron/dist-package/Catnip Forge`。
+- `verify:release`、`verify:zhihu-skill-package`、`verify:version` 通过；成品 41,929 个文件、4,486,616,511 bytes，随包 Node v22.14.0、隔离 Python/pyserial 3.5、ESP-IDF v5.4.3、Claude Code 2.1.167 正常。
+- 发布门禁确认包内无 `.env`、任意 `.catnip`、`apikey.txt`、`qwen-apikey.txt`、`credentials.json`、`knowledge.json`、`conversations.json`、项目会话、日志、录屏、截图、浏览器 Profile、附件或用户安装的知乎 CLI；长格式 `sk-[A-Za-z0-9]{20,}` 文本命中为 0。只保留明确无效的 `apikey.txt.example` 占位符。
+- 首次直接执行 `verify:first-run` 误连仍在 9230 运行的已配置开发实例，得到 `firstRun=false`；停止该精确进程树后，以独立 `VIBEIDE_SMOKE_APP_DATA`、`APPDATA`、`LOCALAPPDATA` 且移除模型/知乎环境变量启动成品，复测得到 `firstRun=true`、`apiKeyReady=false`、安全配置入口存在且无 Renderer 密码框/明文保存接口。隔离目录中敏感状态文件为 0，测试进程和目录已删除。
+- 隔离首启会在已运行候选的 `resources/runtime/logs` 建立运行目录；最终发布复核因此拒绝该候选。候选随即作废并再次执行完整 `pack:win`，最终交付目录只做会自动清理空运行目录的静态发布验证，不再启动，复核为 `ForbiddenStateFiles=0`、`MutableProductRoots=0`。
+- 最终 EXE SHA-256：`C141D44C0E1983322D3C34F0611FE47FA6C25A7E07349ABA12635779E9064B22`。未读取、删除或复制用户真实 AppData、Windows 安全凭据、知乎 Access Secret、DeepSeek/Qwen Key 或对话历史；未调用真实模型、知乎请求或硬件。

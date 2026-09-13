@@ -1,5 +1,13 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-13 — Phase 20 刘看山特供版干净 Windows 包
+
+- 当前分支 `liukanshan@028792be` 已从零重建 `electron/dist-package/Catnip Forge`；旧发布目录先删除，未复用此前学院呱呱候选包。
+- 最终包 41,929 个文件、4,486,616,511 bytes；EXE SHA-256 `C141D44C0E1983322D3C34F0611FE47FA6C25A7E07349ABA12635779E9064B22`。`pack:win`、`verify:release`、`verify:zhihu-skill-package`、`verify:version` 和隔离无密钥首启均通过。
+- 包内无 DeepSeek/Qwen Key、知乎 Access Secret/用户 CLI、模型凭据、对话历史、Explore 知识/收藏、`.catnip`、日志、截图、录屏、浏览器 Profile、附件或工作流；只保留无效 Key 示例。用户真实 AppData 和 Windows 安全凭据未读取、未删除、未复制。
+- 首次 `verify:first-run` 误连已配置开发实例而失败；停止精确 9230 进程后，用全新隔离用户目录复测为 `firstRun=true`、`apiKeyReady=false`。运行过的候选因生成空 `resources/runtime/logs` 被门禁拒绝并作废；再次完整重建后的最终交付目录未再启动，复核 `ForbiddenStateFiles=0`、`MutableProductRoots=0`。
+- 当前发布状态：自动化干净包门禁完成；仍未配置代码签名，真实客户机器安装与人工 UI 验收待执行。
+
 ## 2026-09-13 — Phase 20 知乎刘看山特供版实现与二次视觉修正
 
 - 当前分支为 `liukanshan`，从 `model-ccswitch@0c7f3fbd` 创建；恢复点 `backup/pre-phase-20-liukanshan-20260913` 已建立。不得切回 `idea_to_production`。
@@ -8,7 +16,7 @@
 - 11 张 Renderer/Splash 素材已使用独立 `liukanshan-*` 文件名接线；Electron `assets/icon.png`、`assets/icon.ico` 也已换成刘看山，覆盖窗口、任务栏、托盘和安装包/EXE。星空与无角色背景仍不替换。
 - 软件助手、欢迎语、教学、alt/aria 与用户手册已统一称刘看山。教学升级到 v9/35 步，重写首步完整用户旅程、首次模型配置/重启/选工程、七标签与当前工程关系，并校正后续阶段编号。
 - `verify:liukanshan-edition`、Renderer 资源预算、Explore 静态/UI 布局、助手知识/UI、教学静态/UI、Splash UI、Electron typecheck、Main/Renderer build 均通过；实测截图在 `electron/.tmp/`。资源预算为 1,206,594 bytes。
-- 开发版已干净重启并保留窗口供人工验收；未打 Windows 发布包，记 `WINDOWS_PACKAGE_VALIDATION_PENDING`。远端分支/恢复点未推送，记 `REMOTE_BACKUP_PENDING`。
+- 开发版曾干净重启供人工验收；随后已完成上述 Windows 干净包自动化门禁，`WINDOWS_PACKAGE_VALIDATION_PENDING` 关闭。远端分支/恢复点未推送，记 `REMOTE_BACKUP_PENDING`。
 - 受保护未跟踪目录 `docs/tutorials/` 与 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 未触碰、未暂存。
 
 ## 2026-09-13 — Phase 19 学院呱呱知识库与教学演示升级
