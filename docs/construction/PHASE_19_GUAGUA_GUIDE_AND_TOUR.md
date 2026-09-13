@@ -55,3 +55,4 @@
 - 探索教学已覆盖知乎四种连接状态、Access Secret 维护、找灵感/解问题分工、按工程与模式保存的多会话历史、本地收藏、显式 Context 选择及有效/无效验证记录。
 - 学院呱呱对需要详细操作的问题不再强制压缩为六句话，回答上限提升到 1400 tokens；简单问题仍保持简洁。
 - 静态门禁、类型检查、Main/Renderer 构建、隔离教学 UI、真实 Electron 学院呱呱 UI 与模型中心 UI 均通过。未调用真实 Key、知乎在线搜索、付费模型、Build/Flash/Serial 或硬件。
+- 已从提交 `bea37a03` 完整重建 Windows 解压包至 `electron/dist-package/Catnip Forge`；发布完整性与隔离首启门禁通过。包内不含 DeepSeek/Qwen Key，仍未执行真实模型、知乎或硬件动作。

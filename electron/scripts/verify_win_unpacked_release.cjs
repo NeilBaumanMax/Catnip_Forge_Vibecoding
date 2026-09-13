@@ -22,7 +22,13 @@ const assistantGuidePath = path.join(resources, 'CATNIP_FORGE_USER_GUIDE.md');
 assert(fs.existsSync(assistantGuidePath), 'missing editable software assistant guide');
 const assistantGuide = fs.readFileSync(assistantGuidePath, 'utf-8');
 assert(assistantGuide.includes('# Catnip Forge 软件使用手册'), 'software assistant guide title drifted');
-assert(assistantGuide.includes('## 12. 回答边界'), 'software assistant guide is incomplete');
+assert(
+  assistantGuide.includes('## 2. 模型配置与更换——首次使用应先完成')
+    && assistantGuide.includes('## 5. 探索总览与知乎连接')
+    && assistantGuide.includes('## 10. Neil 的线上 Skill 小站')
+    && assistantGuide.includes('## 14. 回答与安全边界'),
+  'software assistant guide is incomplete',
+);
 assert(!fs.existsSync(path.join(resources, 'apikey.txt')), 'release must not contain a real apikey.txt');
 assert(!fs.existsSync(path.join(resources, 'qwen-apikey.txt')), 'release must not contain a real qwen-apikey.txt');
 const keyExample = fs.readFileSync(path.join(resources, 'apikey.txt.example'), 'utf-8');

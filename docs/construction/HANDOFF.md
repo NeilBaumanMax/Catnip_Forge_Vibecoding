@@ -6,7 +6,8 @@
 - `electron/CATNIP_FORGE_USER_GUIDE.md` 已按当前产品重写：详细覆盖预设 DeepSeek/Qwen、其他 Claude Code 供应商、模型映射/发现/测试/预览/启用、Explore 知乎连接、找灵感/解问题、会话历史、收藏/Context/验证与线上 Skill Hub 边界。
 - 学院呱呱回答策略已允许模型、探索、知乎、历史、知识与 SkillHub 类问题输出完整编号步骤，最大回答提升至 1400 tokens；所有 Secret 仍只进入 Main 控制的安全窗口与 safeStorage。
 - `verify:onboarding`、`verify:onboarding-ui`、`verify:software-assistant-guide`、`verify:software-assistant-ui`、`verify:model-center-ui`、Electron typecheck、Main/Renderer build 通过。软件已按开发模式重启并监听 5173/9230，留给用户人工重播教学。
-- 未调用真实供应商 Key、知乎搜索、付费模型或硬件；未重打 Windows 包。`LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`、`WINDOWS_PACKAGE_VALIDATION_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING` 保持。
+- 已从提交 `bea37a03` 重建 `electron/dist-package/Catnip Forge`：41,929 个文件、4,487,859,299 bytes，EXE SHA-256 `362ECFC6C5B1935CE66E5283A03C93FD8722DDE442A1A56425AB015D74A48483`。发布门禁与隔离首启通过，`WINDOWS_PACKAGE_VALIDATION_PENDING` 已关闭。
+- 未调用真实供应商 Key、知乎搜索、付费模型或硬件；`LIVE_CLAUDE_PROVIDER_VALIDATION_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING` 保持。
 - 受保护未跟踪目录 `docs/tutorials/`、`runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 未触碰、未暂存。
 
 ## 2026-09-13 — Phase 18j CC Switch Claude Provider 对齐实现

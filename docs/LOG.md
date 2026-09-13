@@ -8,6 +8,8 @@
 - 隔离教学 UI 首次因 smoke 环境没有 Electron `startupStatus` 而找不到学院呱呱入口；仅在 onboarding smoke 模式开放入口后通过，正式运行条件不变。
 - 真实学院呱呱 UI 首次因新欢迎语遗漏“Catnip Forge”触发现有契约失败；补回产品名并重启 Electron 后通过。
 - 未读取或调用真实凭据、知乎/模型服务和硬件，也未重打发布包。
+- 随后按用户要求完整执行 `pack:win`，旧发布目录被项目受限脚本清理并重建为 `electron/dist-package/Catnip Forge`。首次 `verify:release` 因仍硬编码旧手册“第 12 节 回答边界”而失败，改为检查当前模型、探索、Skill Hub 与第 14 节安全边界后通过。
+- 首次直接执行 `verify:first-run` 未先启动成品，因该脚本只探测 9230 而失败；用独立 `VIBEIDE_SMOKE_APP_DATA` 启动新包后复测通过，测试进程与临时目录已清理。
 
 ## 2026-09-12 — 仅深色主题与高缩放屏幕适配
 

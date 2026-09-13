@@ -924,3 +924,16 @@ Review 首次发现：若旧 Key 清理复用带 `.bak` 的原子 helper，会�
 | `git diff --check` | PASS | 无 whitespace error |
 
 首次失败保留：隔离 onboarding smoke 因无 preload、`startupStatus` 未建立而隐藏学院呱呱入口；修复为只在 `ONBOARDING_SMOKE_MODE` 放开入口后通过，正式行为不变。真实学院呱呱 UI 首次因新欢迎语遗漏产品名而不满足既有契约；补回“Catnip Forge”并重启后通过。测试未提交问题、未读取真实 Key、未发起知乎或付费模型请求。
+
+### Phase 19 Windows 解压包（2026-09-13）
+
+| 命令/证据 | 结果 | 说明 |
+| --- | --- | --- |
+| `npm.cmd --prefix electron run pack:win` | PASS | Runtime/Main/Renderer 全量重建；electron-builder x64；输出重命名为 `Catnip Forge` |
+| `verify:version` | PASS | v2.0.0 / Build 7201 / `2.0.0.7201` |
+| `verify:release` | PASS | 41,929 文件、4,487,859,299 bytes；Node v22.14.0、隔离 Python/pyserial 3.5、ESP-IDF v5.4.3、Claude Code 2.1.167 |
+| `verify:zhihu-skill-package` | PASS | 15 个官方文件受 builder filter 保护；真实包逐字节一致性同时由 release 门禁覆盖 |
+| 隔离启动 + `verify:first-run` | PASS | 首启模型配置、品牌、Skills、Playwright、安全原生配置入口、无页面密码框/旧明文接口 |
+| EXE SHA-256 | PASS | `362ECFC6C5B1935CE66E5283A03C93FD8722DDE442A1A56425AB015D74A48483` |
+
+首次失败保留：`verify:release` 仍要求旧手册标题“第 12 节 回答边界”，与 Phase 19 新的第 14 节结构漂移；门禁改为同时检查当前模型、探索、Skill Hub、学院呱呱和安全边界后通过。第一次直接执行 `verify:first-run` 未先启动成品，因脚本仅连接已运行的 9230 实例而失败；随后使用独立 `VIBEIDE_SMOKE_APP_DATA` 启动成品并通过。测试进程与明确临时目录已清理；包内无 DeepSeek/Qwen Key，未调用真实模型、知乎或硬件。
