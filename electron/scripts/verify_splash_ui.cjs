@@ -93,7 +93,7 @@ async function main() {
     if (
       result?.title !== 'Catnip Forge — 启动中'
       || !result?.assetsLoaded
-      || result?.assetSources?.mascot !== './splash-guagua-v2.png'
+      || result?.assetSources?.mascot !== './splash-liukanshan.png'
       || result?.assetSources?.brand !== './icon.png'
       || result?.status !== '正在验证启动界面'
       || result?.progress !== '63%'

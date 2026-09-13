@@ -1,5 +1,5 @@
 import exploreAcademyHero from './assets/explore-academy-hero.jpg';
-import chatHistoryNight from './assets/chat-history-night-v2.jpg';
+import chatHistoryNight from './assets/liukanshan-chat-history-night.jpg';
 
 const MAX_CRITICAL_PRELOAD_MS = 2_500;
 

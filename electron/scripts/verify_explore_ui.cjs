@@ -15,8 +15,8 @@ const rendererMain = fs.readFileSync(path.join(root, 'src', 'renderer', 'main.ts
 const mainProcess = fs.readFileSync(path.join(root, 'src', 'main', 'index.ts'), 'utf8');
 const gateway = fs.readFileSync(path.join(root, 'src', 'main', 'gateway.ts'), 'utf8');
 const preload = fs.readFileSync(path.join(root, 'src', 'preload', 'index.ts'), 'utf8');
-const ideaEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-idea-guagua.webp'));
-const diagnosisEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'explore-diagnosis-guagua.webp'));
+const ideaEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'liukanshan-explore-idea.png'));
+const diagnosisEntryArt = fs.readFileSync(path.join(root, 'src', 'renderer', 'assets', 'liukanshan-explore-diagnosis.png'));
 
 assert.match(browserPanel, /type PanelMode = [^;]*'explore'/, 'PanelMode must include explore');
 assert.match(browserPanel, /const startsInHarnessMode = !window\.electronAPI \|\| Boolean\(window\.electronAPI\.isWorkbenchSmokeTest\)/, 'browser-only harness detection is missing');
@@ -39,12 +39,13 @@ assert.match(app, /activateProjectSession\(selectedProjectId\)/, 'project activa
 assert.match(explorePanel, />找灵感</, 'idea entry is missing');
 assert.match(explorePanel, />解问题</, 'diagnosis entry is missing');
 assert.match(explorePanel, /本次分析 Context/, 'diagnosis context picker is missing');
-assert.match(explorePanel, /explore-idea-guagua\.webp/, 'idea entry illustration is missing');
-assert.match(explorePanel, /explore-diagnosis-guagua\.webp/, 'diagnosis entry illustration is missing');
-assert.equal(ideaEntryArt.subarray(0, 4).toString('ascii'), 'RIFF', 'idea entry illustration must be WebP');
-assert.equal(ideaEntryArt.subarray(8, 12).toString('ascii'), 'WEBP', 'idea entry illustration must be WebP');
-assert.equal(diagnosisEntryArt.subarray(0, 4).toString('ascii'), 'RIFF', 'diagnosis entry illustration must be WebP');
-assert.equal(diagnosisEntryArt.subarray(8, 12).toString('ascii'), 'WEBP', 'diagnosis entry illustration must be WebP');
+assert.match(explorePanel, /liukanshan-explore-idea\.png/, 'Liu Kanshan idea illustration is missing');
+assert.match(explorePanel, /liukanshan-explore-diagnosis\.png/, 'Liu Kanshan diagnosis illustration is missing');
+const pngSignature = [137, 80, 78, 71, 13, 10, 26, 10];
+assert.deepEqual([...ideaEntryArt.subarray(0, 8)], pngSignature, 'idea entry illustration must be PNG');
+assert.equal(ideaEntryArt[25], 6, 'idea entry illustration must retain RGBA transparency');
+assert.deepEqual([...diagnosisEntryArt.subarray(0, 8)], pngSignature, 'diagnosis entry illustration must be PNG');
+assert.equal(diagnosisEntryArt[25], 6, 'diagnosis entry illustration must retain RGBA transparency');
 assert.match(explorePanel, /取消勾选后，该项不会进入分析/, 'context exclusion promise is missing');
 assert.match(explorePanel, /需要先连接知乎开放平台/, 'safe connection wording is missing');
 assert.match(explorePanel, /getExploreZhihuStatus/, 'Explore must read connection status through preload');
@@ -139,7 +140,7 @@ assert.match(preload, /minimizeWindow:[\s\S]{0,120}window:minimize/, 'preload mi
 assert.match(preload, /toggleMaximizeWindow:[\s\S]{0,140}window:toggle-maximize/, 'preload maximize bridge is missing');
 assert.match(preload, /closeWindow:[\s\S]{0,120}window:close/, 'preload close bridge is missing');
 assert.match(browserPanel, /workspace-window-controls[\s\S]{0,900}minimizeWindow[\s\S]{0,400}toggleMaximizeWindow[\s\S]{0,400}closeWindow/, 'functional custom window controls are missing');
-assert.match(browserPanel, /catnip-app-icon\.webp/, 'the supplied Catnip app icon must be used by the workspace brand');
+assert.match(browserPanel, /liukanshan-app-icon\.png/, 'the Liu Kanshan edition icon must be used by the workspace brand');
 assert.match(browserPanel, /workspace-brand workspace-shell-box[\s\S]{0,700}workspace-nav-tabs workspace-shell-box[\s\S]{0,2400}workspace-shell-actions workspace-shell-box/, 'the top shell must remain split into brand, tab, and action surfaces');
 assert.match(browserPanel, /data-tour-id="tab-tasks"[\s\S]{0,300}<span>任务管理器<\/span>/, 'task manager label must be complete');
 

@@ -19,7 +19,7 @@
 4. 找灵感和解问题工作页两张横向研究室场景。
 5. Agent 历史侧栏纵向夜景。
 6. 启动画面透明角色。
-7. Renderer 内的蓝色方形吉祥物应用图。
+7. Renderer 内的蓝色方形吉祥物应用图，以及 Electron 窗口、任务栏、托盘和安装包/EXE 使用的 `assets/icon.png`、`assets/icon.ico`。
 
 不含角色的星空背景、探索学院背景与 Catnip 猫薄荷产品标记保持不变。
 
@@ -42,3 +42,13 @@
 - 分支：`liukanshan`，基线：`0c7f3fbd`。
 - 本地恢复点：`backup/pre-phase-20-liukanshan-20260913`。
 - 先提交本文档和 Product Truth，再生成素材、接线、测试、视觉复核和实现提交。未获得明确指令不推送远端。
+
+## 施工结果（2026-09-13）
+
+- 首轮 3D 白狐被人工否决，不作为交付素材。最终以用户提供的形象资产为唯一视觉参考，使用内置图像生成工具逐图重做为刘看山扁平手绘风。
+- 透明入口图没有直接采用生成器的棋盘格预览：素材先使用纯绿背景生成，再经色键处理为真实 RGBA；缩放时保持原始宽高比，并以透明画布补齐目标尺寸，避免横向挤压。
+- 三张场景图逐图删除笔记本上的兔耳残留标识；历史侧栏文字为“和刘看山一起，把想法变成现实！”。
+- Renderer 品牌图与 Electron `icon.png`/多尺寸 `icon.ico` 均更换，Splash 同时使用刘看山品牌图和透明角色。
+- 教学仍为 35 步稳定交互流程，但第一步先讲完整产品闭环，随后依次覆盖首次模型与工程配置、Agent/顶部工作区、仓库、探索与知乎、Skill Hub、监视器、任务、编辑器、对话历史、附件/Skills 和刘看山助手。
+- 首次失败已记录并修复：资源预算超限 32,230 bytes；探索测试残留 WebP 假设；入口图棋盘格与非等比拉伸；布局测试在无助手的浏览器 Harness 中错误要求助手动作按钮。
+- 最终验证：`verify:liukanshan-edition`、`verify:renderer-performance`（1,206,594 bytes）、`verify:explore-ui`、`verify:explore-layout-ui`、`verify:software-assistant-guide`、`verify:software-assistant-ui`、`verify:onboarding`、`verify:onboarding-ui`、`verify:splash-ui`、`typecheck`、`build:main`、`build:renderer` 通过。

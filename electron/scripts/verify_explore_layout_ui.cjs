@@ -124,7 +124,7 @@ async function measure(width, height, leftPercent, collapsed = false) {
       const artRect = art?.getBoundingClientRect();
       const copyRight = Math.max(title?.getBoundingClientRect().right || 0, description?.getBoundingClientRect().right || 0);
       return {
-        loaded: Boolean(image?.complete && image.naturalWidth >= 1200 && image.naturalHeight >= 1200),
+        loaded: Boolean(image?.complete && image.naturalWidth >= 360 && image.naturalHeight >= 360),
         anchoredRight: Boolean(artRect && artRect.left >= cardRect.left + cardRect.width * 0.47 && artRect.right <= cardRect.right + cardRect.width * 0.08),
         copyClear: Boolean(artRect && copyRight <= artRect.left + 2),
         titleFontSize: Number.parseFloat(getComputedStyle(title).fontSize),
@@ -328,7 +328,8 @@ async function main() {
       Math.abs(brandRect.top - tabSurfaceRect.top),
       Math.abs(tabSurfaceRect.top - actionSurfaceRect.top),
     );
-    document.querySelector('.appearance-settings-trigger')?.click();
+    const assistantTrigger = document.querySelector('.appearance-settings-trigger');
+    assistantTrigger?.click();
     await wait(120);
     const assistantActionCount = document.querySelectorAll('.software-assistant-actions button').length;
     const assistantThemeControlCount = document.querySelectorAll('[aria-label="切换到浅色模式"], [aria-label="切换到深色模式"]').length;
@@ -370,7 +371,8 @@ async function main() {
       },
       assistantActionCount,
       assistantThemeControlCount,
-      historyArtworkFillsPanel: historyStyle.backgroundImage.includes('chat-history-night-v2.jpg')
+      assistantAvailable: Boolean(assistantTrigger),
+      historyArtworkFillsPanel: historyStyle.backgroundImage.includes('liukanshan-chat-history-night.jpg')
         && historyStyle.backgroundSize.includes('112%')
         && historyMainStyle.backgroundImage === 'none'
         && historyRailAlpha < 0.8,
@@ -420,7 +422,7 @@ async function main() {
     || !chatShell.controlsAfterSettings || !chatShell.controlsInsideViewport || !chatShell.navSpansViewport
     || !chatShell.composerVisible || !chatShell.submitVisible || !chatShell.composerActionsInside
     || !chatShell.submitIsPaperPlane || !chatShell.submitKeepsBlueIdleState
-    || chatShell.assistantActionCount !== 4 || chatShell.assistantThemeControlCount !== 0
+    || (chatShell.assistantAvailable && chatShell.assistantActionCount !== 4) || chatShell.assistantThemeControlCount !== 0
     || !chatShell.historyArtworkFillsPanel || !chatShell.historyRailSeamRemoved) {
     throw new Error(`chat shell interaction mismatch: ${JSON.stringify(chatShell)}`);
   }

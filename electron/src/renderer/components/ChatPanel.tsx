@@ -4,7 +4,7 @@ import type { AgentTaskInput, AgentTaskStatus, AttachmentReference, ChatConversa
 import type { ClaudeModelDiscoverySnapshot } from '../../common/model-config';
 import MarkdownContent from './MarkdownContent';
 import TaskProgress from './TaskProgress';
-import catnipAgentWelcomeImage from '../assets/catnip-agent-welcome-v2.webp';
+import catnipAgentWelcomeImage from '../assets/liukanshan-agent-welcome.png';
 
 interface Props {
   messages: ChatMessage[];
@@ -720,7 +720,7 @@ export default function ChatPanel({
           <div className="chat-empty-state">
             <img src={catnipAgentWelcomeImage} alt="" aria-hidden="true" />
             <span className="chat-empty-kicker">CATNIP AGENT</span>
-            <strong>你好！我是学院呱呱</strong>
+            <strong>你好！我是刘看山</strong>
             <p>有什么想法或工程问题，一起实现吧。</p>
             <div className="chat-empty-actions" aria-label="快捷开始">
               {CHAT_ACTIONS.map(({ label, prompt, icon: Icon, tone }) => (

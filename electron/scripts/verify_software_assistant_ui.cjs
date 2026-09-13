@@ -65,8 +65,8 @@ async function main() {
         const composerRect = composer?.getBoundingClientRect();
         const textareaRect = composerTextarea?.getBoundingClientRect();
         const sendRect = sendButton?.getBoundingClientRect();
-        const growButton = popover?.querySelector('[aria-label="放大学院呱呱"]');
-        const shrinkButton = popover?.querySelector('[aria-label="缩小学院呱呱"]');
+        const growButton = popover?.querySelector('[aria-label="放大刘看山"]');
+        const shrinkButton = popover?.querySelector('[aria-label="缩小刘看山"]');
         const storedSizeBefore = localStorage.getItem('vibeide.assistant.size');
         const resizeButton = !growButton?.disabled ? growButton : shrinkButton;
         const resizeDirection = resizeButton === growButton ? 1 : -1;
@@ -112,7 +112,7 @@ async function main() {
     const inViewport = rect && rect.left >= 0 && rect.top >= 0
       && rect.right <= result.viewport.width && rect.bottom <= result.viewport.height;
     if (!result?.triggerImageLoaded || !result?.avatarImageLoaded || !result?.githubMarkLoaded || !result?.fullBodyTrigger || !result?.popoverVisible || !result?.textarea || !result?.composerContained || result?.actionButtons !== 4 || !result?.onboardingButton || !result?.sizeAdjusted
-      || result?.title !== "Neil·Bauman's 学院呱呱" || !result?.welcome?.includes('Catnip Forge')
+      || result?.title !== '刘看山' || !result?.welcome?.includes('Catnip Forge')
       || !result?.authorLink?.includes('Neil Bauman') || result?.authorLink?.includes('作者') || !result?.authorLinkLabel?.includes('系统浏览器') || !inViewport) {
       throw new Error(`software assistant UI verification failed: ${JSON.stringify(result)}`);
     }

@@ -30,8 +30,10 @@ expect(onboarding.includes("status: 'later'"), 'missing remind-later persistence
 expect(onboarding.includes("close('completed')"), 'missing completion persistence');
 expect(onboarding.includes('跳过此步'), 'missing unavailable-target escape');
 expect(app.includes('aria-label="打开新手教程"'), 'missing replay entry in Catnip assistant toolbar');
-expect(onboarding.includes('const VERSION = 8;'), 'onboarding state version was not bumped for the updated guide');
-expect(onboarding.includes("id: 'welcome'") && onboarding.includes('第一步 · 先认识整个项目') && onboarding.includes('所有区域围绕你启动时选择的同一个工程协作'), 'first tutorial step does not introduce the whole Catnip Forge project');
+expect(onboarding.includes('const VERSION = 9;'), 'onboarding state version was not bumped for the Liu Kanshan guide');
+expect(onboarding.includes("id: 'welcome'") && onboarding.includes('第一步 · 先认识整个项目') && onboarding.includes('完整流程是：先配置模型并选择工程') && onboarding.includes('顶部七个标签、左侧 Agent、当前工程和本地历史始终围绕同一个工程协作'), 'first tutorial step does not introduce the whole Catnip Forge workflow');
+expect(onboarding.includes('保存后按提示重启，再在工程选择页进入已有工程或创建新工程') && onboarding.includes('以后可在模型页查看状态、替换或清除'), 'tutorial does not explain the complete first-run and maintainable model flow');
+expect(onboarding.includes('顶部依次进入仓库、监视器、任务管理器、编辑器、探索、模型和 Skill 小站') && onboarding.includes('右上角显示当前工程'), 'tutorial does not explain the workspace shell and project scope');
 expect(onboarding.includes("id: 'models-tab'") && onboarding.includes("id: 'models-provider'") && onboarding.includes("id: 'models-mapping'"), 'missing detailed model onboarding steps');
 expect(onboarding.indexOf("id: 'models-tab'") < onboarding.indexOf("id: 'agent'"), 'model configuration must be taught before Agent and other feature steps');
 expect(onboarding.includes('Sonnet、Opus、Fable、Haiku、Subagent') && onboarding.includes('测试 Messages 接口') && onboarding.includes('运行中和已排队任务不会中途换模型'), 'model onboarding does not explain mapping, testing and task snapshot behavior');

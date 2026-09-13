@@ -1,11 +1,14 @@
 # Catnip Forge 当前施工接力
 
-## 2026-09-13 — Phase 20 知乎刘看山特供版开工
+## 2026-09-13 — Phase 20 知乎刘看山特供版实现与二次视觉修正
 
 - 当前分支为 `liukanshan`，从 `model-ccswitch@0c7f3fbd` 创建；恢复点 `backup/pre-phase-20-liukanshan-20260913` 已建立。不得切回 `idea_to_production`。
 - 目标是在完整基础能力上把全部前端学院呱呱图片、软件助手身份、教学和无障碍称呼替换为知乎白色北极狐吉祥物刘看山；功能逻辑和安全门禁不变。
-- 新素材独立命名，不覆盖基础图片。星空背景、无角色的探索学院背景和 Catnip 猫薄荷产品标记不替换。
-- 当前只完成施工文档；图片生成、代码接线、测试和视觉验收尚未开始。远端分支/恢复点未推送，记 `REMOTE_BACKUP_PENDING`。
+- 用户否决首轮通用 3D 白狐，提供“刘看山·形象设计资产”作为视觉真相；最终素材改为扁平手绘、长方形侧脸、单尖耳、小圆眼、大黑鼻、粗黑描边。探索入口首轮误烘焙棋盘格且被强制拉成正方形，已改为绿色键控生成真实 Alpha，并以等比缩放＋透明留白适配槽位。
+- 11 张 Renderer/Splash 素材已使用独立 `liukanshan-*` 文件名接线；Electron `assets/icon.png`、`assets/icon.ico` 也已换成刘看山，覆盖窗口、任务栏、托盘和安装包/EXE。星空与无角色背景仍不替换。
+- 软件助手、欢迎语、教学、alt/aria 与用户手册已统一称刘看山。教学升级到 v9/35 步，重写首步完整用户旅程、首次模型配置/重启/选工程、七标签与当前工程关系，并校正后续阶段编号。
+- `verify:liukanshan-edition`、Renderer 资源预算、Explore 静态/UI 布局、助手知识/UI、教学静态/UI、Splash UI、Electron typecheck、Main/Renderer build 均通过；实测截图在 `electron/.tmp/`。资源预算为 1,206,594 bytes。
+- 开发版已干净重启并保留窗口供人工验收；未打 Windows 发布包，记 `WINDOWS_PACKAGE_VALIDATION_PENDING`。远端分支/恢复点未推送，记 `REMOTE_BACKUP_PENDING`。
 - 受保护未跟踪目录 `docs/tutorials/` 与 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 未触碰、未暂存。
 
 ## 2026-09-13 — Phase 19 学院呱呱知识库与教学演示升级

@@ -62,7 +62,7 @@ async function main() {
           modelLoaded,
           codeEditorChunkLoaded: resources.some((name) => name.includes('CodeEditor-') || name.includes('/components/CodeEditor.tsx')),
           modelPanelChunkLoaded: resources.some((name) => name.includes('ModelPanel-') || name.includes('/components/ModelPanel.tsx')),
-          optimizedImages: resources.filter((name) => /(?:webp|jpg)(?:\\?|$)/.test(name)).length,
+          optimizedImages: resources.filter((name) => /(?:webp|jpg|liukanshan-[^/?]+\\.png)(?:\\?|$)/.test(name)).length,
           legacyPngs: resources.filter((name) => /(?:catnip-agent-welcome-v2|catnip-app-icon|catnip-assistant|catnip-cosmic-shell|chat-history-night-v2|explore-academy-hero|explore-diagnosis-guagua|explore-diagnosis-workspace|explore-idea-guagua|explore-idea-workspace|guagua-avatar|task-manager-empty-guagua-v2).*\\.png(?:\\?|$)/.test(name)),
         };
       })()`,

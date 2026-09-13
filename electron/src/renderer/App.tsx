@@ -3,9 +3,9 @@ import ChatPanel from './components/ChatPanel';
 import BrowserPanel from './components/BrowserPanel';
 import CatnipOnboarding from './components/CatnipOnboarding';
 import MarkdownContent from './components/MarkdownContent';
-import catnipForgeIcon from './assets/catnip-app-icon.webp';
-import catnipAssistantImage from './assets/catnip-assistant.webp';
-import guaguaAvatarImage from './assets/guagua-avatar.jpg';
+import catnipForgeIcon from './assets/liukanshan-app-icon.png';
+import catnipAssistantImage from './assets/liukanshan-assistant.png';
+import liukanshanAvatarImage from './assets/liukanshan-avatar.jpg';
 import githubMarkImage from './assets/github-mark.png';
 import type { AgentTaskInput, AgentTaskStatus, BrowserTab, ChatConversation, ChatConversationSummary, ChatMessage, ChatMessageKind, HardboardDevice, ProjectSessionStatus, RecordingSummary, SoftwareAssistantMessage, StartupStatus, TaskStep, TaskSubmitMode, WorkbenchOverview } from './types';
 
@@ -24,7 +24,7 @@ const IDLE_TASK_STATUS: AgentTaskStatus = { busy: false, paused: false, activeTa
 const ASSISTANT_WELCOME: SoftwareAssistantMessage = {
   id: 'welcome',
   role: 'assistant',
-  content: '你好，我是 **Neil·Bauman\'s 学院呱呱**。关于 Catnip Forge 的模型配置与切换、探索/知乎连接、Skill 小站、编译、烧录、串口或其他界面问题，都可以直接问我。',
+  content: '你好，我是 **刘看山**。关于 Catnip Forge 的模型配置与切换、探索/知乎连接、Skill 小站、编译、烧录、串口或其他界面问题，都可以直接问我。',
 };
 type FloatingPosition = { x: number; y: number };
 
@@ -965,12 +965,12 @@ export default function App() {
         style={{ left: appearancePosition.x, top: appearancePosition.y, width: assistantSize, height: assistantSize }}
       >
         {appearanceMenuOpen ? (
-          <section className="appearance-popover software-assistant-popover" role="dialog" aria-label="Neil·Bauman's 学院呱呱软件助手">
+          <section className="appearance-popover software-assistant-popover" role="dialog" aria-label="刘看山软件使用助手">
             <header className="software-assistant-header">
               <div className="software-assistant-identity">
-                <span className="software-assistant-avatar" aria-hidden="true"><img src={guaguaAvatarImage} alt="" /></span>
+                <span className="software-assistant-avatar" aria-hidden="true"><img src={liukanshanAvatarImage} alt="" /></span>
                 <span className="software-assistant-identity-copy">
-                  <strong>Neil·Bauman's 学院呱呱</strong>
+                  <strong>刘看山</strong>
                   <small>Catnip Forge 吉祥物与使用助手</small>
                   <button
                     type="button"
@@ -997,8 +997,8 @@ export default function App() {
                 >
                   ?
                 </button>
-                <button type="button" disabled={assistantSize <= MIN_ASSISTANT_SIZE} onClick={() => resizeSoftwareAssistant(-ASSISTANT_SIZE_STEP)} title="缩小学院呱呱" aria-label="缩小学院呱呱">−</button>
-                <button type="button" disabled={assistantSize >= MAX_ASSISTANT_SIZE} onClick={() => resizeSoftwareAssistant(ASSISTANT_SIZE_STEP)} title="放大学院呱呱" aria-label="放大学院呱呱">＋</button>
+                <button type="button" disabled={assistantSize <= MIN_ASSISTANT_SIZE} onClick={() => resizeSoftwareAssistant(-ASSISTANT_SIZE_STEP)} title="缩小刘看山" aria-label="缩小刘看山">−</button>
+                <button type="button" disabled={assistantSize >= MAX_ASSISTANT_SIZE} onClick={() => resizeSoftwareAssistant(ASSISTANT_SIZE_STEP)} title="放大刘看山" aria-label="放大刘看山">＋</button>
                 <button type="button" onClick={() => setAppearanceMenuOpen(false)} title="关闭助手" aria-label="关闭助手">×</button>
               </div>
             </header>
@@ -1009,7 +1009,7 @@ export default function App() {
                 </div>
               ))}
               {softwareAssistantPending ? (
-                <div className="software-assistant-typing" role="status" aria-label="学院呱呱正在回答"><i /><i /><i /></div>
+                <div className="software-assistant-typing" role="status" aria-label="刘看山正在回答"><i /><i /><i /></div>
               ) : null}
             </div>
             <form className="software-assistant-composer" onSubmit={handleSoftwareAssistantSubmit}>
@@ -1019,7 +1019,7 @@ export default function App() {
                 maxLength={2000}
                 disabled={softwareAssistantPending}
                 placeholder="问我怎么使用 Catnip Forge…"
-                aria-label="向学院呱呱提问"
+                aria-label="向刘看山提问"
                 onChange={(event) => setSoftwareAssistantInput(event.target.value)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' && !event.shiftKey) {
@@ -1037,8 +1037,8 @@ export default function App() {
           className={`appearance-settings-trigger${appearanceMenuOpen ? ' is-open' : ''}`}
           data-tour-id="assistant-trigger"
           type="button"
-          title="Neil·Bauman's 学院呱呱（可拖动）"
-          aria-label="打开 Neil·Bauman's 学院呱呱"
+          title="刘看山（可拖动）"
+          aria-label="打开刘看山软件使用助手"
           aria-haspopup="dialog"
           aria-expanded={appearanceMenuOpen}
           onPointerDown={handleAppearancePointerDown}

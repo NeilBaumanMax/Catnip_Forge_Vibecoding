@@ -16,9 +16,9 @@ async function main() {
   const appSource = fs.readFileSync(path.join(__dirname, '..', 'src', 'renderer', 'App.tsx'), 'utf8');
   const gatewaySource = fs.readFileSync(path.join(__dirname, '..', 'src', 'main', 'gateway.ts'), 'utf8');
   const preloadSource = fs.readFileSync(path.join(__dirname, '..', 'src', 'preload', 'index.ts'), 'utf8');
-  assert(productGuide.includes("Neil·Bauman's 学院呱呱"), 'guide does not identify the current mascot assistant');
+  assert(productGuide.includes('知乎特供版内置软件助手“刘看山”'), 'guide does not identify the current mascot assistant');
   assert(productGuide.includes('当前发布版为 v2.0.0'), 'guide has stale release version');
-  assert(productGuide.includes('Windows 安全存储') && productGuide.includes('不要粘贴进学院呱呱或 Agent 聊天框'), 'guide does not explain the current secure credential boundary');
+  assert(productGuide.includes('Windows 安全存储') && productGuide.includes('不要粘贴进刘看山或 Agent 聊天框'), 'guide does not explain the current secure credential boundary');
   assert(!productGuide.includes('Key 写入 `resources\\apikey.txt`'), 'guide still describes the obsolete plaintext Key flow');
   assert(['Sonnet：', 'Opus：', 'Fable：', 'Haiku：', 'Subagent：'].every((label) => productGuide.includes(label)) && productGuide.includes('测试配置') && productGuide.includes('配置预览'), 'guide does not explain detailed provider mapping and validation');
   assert(productGuide.indexOf('## 2. 模型配置与更换') < productGuide.indexOf('## 4. Agent 对话'), 'model guidance must precede feature guidance');

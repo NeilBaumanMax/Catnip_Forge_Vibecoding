@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import catnipAssistantImage from '../assets/catnip-assistant.webp';
+import catnipAssistantImage from '../assets/liukanshan-assistant.png';
 
 const STORAGE_KEY = 'vibeide.onboarding.catnipJourney';
-const VERSION = 8;
+const VERSION = 9;
 const REMIND_DELAY_MS = 24 * 60 * 60 * 1000;
 const TARGET_GAP = 8;
 const CARD_WIDTH = 380;
@@ -40,7 +40,7 @@ const STEPS: TourStep[] = [
     id: 'welcome',
     eyebrow: '第一步 · 先认识整个项目',
     title: 'Catnip Forge 把硬件创意带到真实运行',
-    content: '这是面向 ESP32/ESP32-S3 创客的本地硬件智能开发平台。模型为 Agent 与探索提供推理；探索先找方向、查问题；Agent 修改工程；仓库和 Skill Hub 扩展能力；编辑器、任务管理器与监视器完成代码、编译、烧录和实机证据。所有区域围绕你启动时选择的同一个工程协作。教程只讲解，不会调用模型、连接知乎、修改工程、编译、烧录或打开串口。',
+    content: '这是面向 ESP32/ESP32-S3 创客的本地硬件智能开发平台。完整流程是：先配置模型并选择工程；用探索找方向、查问题；再把确认后的目标交给 Agent；通过仓库与 Skill Hub 扩展能力；最后在编辑器、任务管理器和监视器中完成代码、编译、烧录与实机验证。顶部七个标签、左侧 Agent、当前工程和本地历史始终围绕同一个工程协作。教程只讲解，不会调用模型、连接知乎、修改工程、编译、烧录或打开串口。',
     actionLabel: '先配置模型',
   },
   {
@@ -56,7 +56,7 @@ const STEPS: TourStep[] = [
     id: 'models-preset',
     eyebrow: '模型 · 预设配置与凭据维护',
     title: 'DeepSeek 必填，Qwen 视觉选填',
-    content: '首次预设配置会在独立 Windows 安全窗口输入 DeepSeek Key 和可选 Qwen Key：DeepSeek 负责 Agent 与探索，Qwen 只负责主动提交的图片。Key 不进入页面、聊天、日志或预览。配置完成后仍可在这里替换或清除，Qwen 留空不影响文本任务。',
+    content: '首次启动先选择预设配置或其他供应商。预设配置会在独立 Windows 安全窗口输入 DeepSeek Key 和可选 Qwen Key：DeepSeek 负责 Agent 与探索，Qwen 只负责主动提交的图片；保存后按提示重启，再在工程选择页进入已有工程或创建新工程。Key 不进入页面、聊天、日志或预览。以后可在模型页查看状态、替换或清除，Qwen 留空不影响文本任务。',
     target: '[data-tour-id="panel-models"]',
     actionLabel: '学习其他供应商',
   },
@@ -80,7 +80,7 @@ const STEPS: TourStep[] = [
     id: 'agent',
     eyebrow: '第三步 · 开发 Agent',
     title: '把目标告诉 Agent',
-    content: '左侧是开发 Agent：用一句话描述目标，它会调用 Skills、修改工程并展示执行过程。同一时间只处理一个活动任务，工作中再次发送会追加要求。',
+    content: '顶部依次进入仓库、监视器、任务管理器、编辑器、探索、模型和 Skill 小站，右上角显示当前工程。左侧是开发 Agent：用一句话描述目标，它会调用 Skills、修改当前工程并展示执行过程；同一时间只处理一个活动任务，工作中再次发送会追加要求。顶部齿轮管理界面设置，窗口按钮只控制窗口。',
     target: '[data-tour-id="agent-workspace"]',
     actionLabel: '认识资源仓库',
   },
@@ -88,7 +88,7 @@ const STEPS: TourStep[] = [
     id: 'repository-tab',
     eyebrow: '第四步 · 资源仓库',
     title: '请点击“仓库”',
-    content: '这里集中管理 Skills、硬件工程和参考代码。亲自点击高亮按钮，学院呱呱会继续带路。',
+    content: '这里集中管理 Skills、硬件工程和参考代码。亲自点击高亮按钮，刘看山会继续带路。',
     target: '[data-tour-id="tab-repo"]',
     actionLabel: '等待点击“仓库”',
     advanceOnTargetClick: true,
@@ -177,7 +177,7 @@ const STEPS: TourStep[] = [
   },
   {
     id: 'monitor-tab',
-    eyebrow: '第五站 · 串口监视器',
+    eyebrow: '第七步 · 串口监视器',
     title: '请点击“监视器”',
     content: '界面和 Agent 共享同一个串口会话。教程只带你查看布局，不会连接任何设备。',
     target: '[data-tour-id="tab-monitor"]',
@@ -194,7 +194,7 @@ const STEPS: TourStep[] = [
   },
   {
     id: 'tasks-tab',
-    eyebrow: '第六站 · 硬件任务',
+    eyebrow: '第八步 · 硬件任务',
     title: '请点击“任务管理器”',
     content: '这里统一查看 ESP-IDF 编译、烧录、进度和诊断日志。教程不会执行任何硬件操作。',
     target: '[data-tour-id="tab-tasks"]',
@@ -227,7 +227,7 @@ const STEPS: TourStep[] = [
   },
   {
     id: 'editor-tab',
-    eyebrow: '第七站 · 工程编辑器',
+    eyebrow: '第九步 · 工程编辑器',
     title: '请点击“编辑器”',
     content: '编辑器只允许访问受控工作目录，支持文件树、多标签、语法高亮、保存和字号调整。',
     target: '[data-tour-id="tab-editor"]',
@@ -244,7 +244,7 @@ const STEPS: TourStep[] = [
   },
   {
     id: 'editor-collapse',
-    eyebrow: '工程编辑器 · 工作区',
+    eyebrow: '第九步 · 工程编辑器工作区',
     title: '需要空间时收起 Agent',
     content: '点击左右区域之间的箭头，可以收起或重新展开 Agent 对话框；旁边的分隔线还能拖动，调整对话区与编辑区的宽度。',
     target: '[data-tour-id="agent-panel-toggle"]',
@@ -252,7 +252,7 @@ const STEPS: TourStep[] = [
   },
   {
     id: 'editor-font',
-    eyebrow: '工程编辑器 · 字体',
+    eyebrow: '第九步 · 工程编辑器字体',
     title: '代码字体可以随时调节',
     content: '编辑器右下角的“− / ＋”用于减小或增大代码字号，当前像素值会显示在中间；“重置”恢复默认字号。',
     target: '[data-tour-id="editor-font-controls"]',
@@ -260,7 +260,7 @@ const STEPS: TourStep[] = [
   },
   {
     id: 'history',
-    eyebrow: 'Agent 对话 · 历史记录',
+    eyebrow: '第十步 · Agent 对话历史',
     title: '对话会自动保存',
     content: '历史对话在软件重启后仍可继续。点击某条对话右侧的“⋯”，可以重命名、置顶或删除；删除前会再次确认。',
     target: '[data-tour-id="chat-history"]',
@@ -300,23 +300,23 @@ const STEPS: TourStep[] = [
     title: '点“＋ Skills”加入专业能力',
     content: '选择器会把 @Skill 插入当前光标位置，可在一条任务中加入多个 Skill。也可以直接输入“@”搜索，退格一次可完整删除引用。',
     target: '[data-tour-id="skill-button"]',
-    actionLabel: '最后认识学院呱呱',
+    actionLabel: '最后认识刘看山',
     prepare: 'agent',
   },
   {
     id: 'assistant-trigger',
-    eyebrow: '软件助手 · 学院呱呱',
-    title: '请点击右下角的学院呱呱',
-    content: '除了开发 Agent，我也是软件使用聊天机器人。点击高亮的学院呱呱打开我的设置和问答面板。',
+    eyebrow: '第十一步 · 软件助手刘看山',
+    title: '请点击右下角的刘看山',
+    content: '除了开发 Agent，我也是软件使用聊天机器人。点击高亮的刘看山打开我的设置和问答面板。',
     target: '[data-tour-id="assistant-trigger"]',
-    actionLabel: '等待点击学院呱呱',
+    actionLabel: '等待点击刘看山',
     advanceOnTargetClick: true,
   },
   {
     id: 'assistant',
     eyebrow: '软件助手 · 随时来问我',
-    title: '不会使用软件，就问学院呱呱',
-    content: '我可以回答界面、探索、Skill 小站、编译、烧录、串口和 Skills 的使用问题。顶部可查看 Neil Bauman 的 GitHub、切换亮暗模式、重播新手教程和调节形象大小；学院呱呱本身还可以拖动。',
+    title: '不会使用软件，就问刘看山',
+    content: '我可以回答界面、探索、知乎连接、Skill 小站、模型配置、编译、烧录、串口和 Skills 的使用问题。顶部可查看项目主页、切换亮暗模式、重播新手教程和调节形象大小；刘看山本身还可以拖动。',
     target: '.software-assistant-popover',
     actionLabel: '完成新手旅程',
     prepare: 'assistant',
@@ -325,7 +325,7 @@ const STEPS: TourStep[] = [
     id: 'complete',
     eyebrow: '新手旅程完成 · Enjoy',
     title: 'One Prompt, Working Hardware',
-    content: '从一句 Prompt，到真正运行的硬件。现在把你的目标告诉 Agent，开始创造吧；遇到不会的地方，学院呱呱一直在右下角等你。',
+    content: '从一句 Prompt，到真正运行的硬件。现在把你的目标告诉 Agent，开始创造吧；遇到不会的地方，刘看山一直在右下角等你。',
     actionLabel: '开始创造',
   },
 ];
@@ -510,7 +510,7 @@ export default function CatnipOnboarding({
       <section className="catnip-onboarding-invitation" role="dialog" aria-labelledby="catnip-invitation-title">
         <img src={catnipAssistantImage} alt="" aria-hidden="true" />
         <div>
-          <span>Neil·Bauman's 学院呱呱新手旅程</span>
+          <span>刘看山新手旅程 · 知乎特供版</span>
           <h2 id="catnip-invitation-title">第一次使用 Catnip Forge？</h2>
           <p>我可以用约 5 分钟带你认识主要功能。全程离线，不会碰你的工程或硬件。</p>
           <div className="catnip-onboarding-invitation-actions">

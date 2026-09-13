@@ -4,10 +4,10 @@ import type { ExploreAnalysisResult, ExploreContextGatherResult, ExploreContextI
 import type { ExploreConversationMessage, ExploreHandoffArtifact, ExploreWorkSessionRecord, ExploreWorkSessionSummary, ExploreWorkStatus } from '../../common/project-session';
 import ExploreSourceList from './explore/ExploreSourceList';
 import ExploreStageNav, { type ExploreStage } from './explore/ExploreStageNav';
-import exploreIdeaGuagua from '../assets/explore-idea-guagua.webp';
-import exploreDiagnosisGuagua from '../assets/explore-diagnosis-guagua.webp';
-import exploreIdeaWorkspace from '../assets/explore-idea-workspace.jpg';
-import exploreDiagnosisWorkspace from '../assets/explore-diagnosis-workspace.jpg';
+import exploreIdeaGuagua from '../assets/liukanshan-explore-idea.png';
+import exploreDiagnosisGuagua from '../assets/liukanshan-explore-diagnosis.png';
+import exploreIdeaWorkspace from '../assets/liukanshan-explore-idea-workspace.jpg';
+import exploreDiagnosisWorkspace from '../assets/liukanshan-explore-diagnosis-workspace.jpg';
 
 type ExploreView = 'home' | 'idea' | 'diagnosis';
 
@@ -1758,7 +1758,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             isIdea ? (
               <div className="explore-idea-empty-shell">
                 <section className="explore-idea-visual" aria-label="知乎灵感探索说明">
-                  <img src={exploreIdeaWorkspace} alt="学院呱呱在深蓝研究工作室里使用电脑寻找灵感" />
+                  <img src={exploreIdeaWorkspace} alt="刘看山在深蓝研究工作室里使用电脑寻找灵感" />
                   <div className="explore-idea-visual-copy">
                     <span>EXPLORE ON ZHIHU</span>
                     <h3>从真实的讨论中<br />找到你的<span>灵感</span></h3>
@@ -1781,7 +1781,7 @@ export default function ExplorePanel({ projectId, currentProject, hardwareSummar
             ) : (
               <div className="explore-diagnosis-empty-shell">
                 <section className="explore-diagnosis-visual" aria-label="工程问题分析说明">
-                  <img src={exploreDiagnosisWorkspace} alt="学院呱呱在深蓝工程工作室中使用放大镜分析代码和运行状态" />
+                  <img src={exploreDiagnosisWorkspace} alt="刘看山在深蓝工程工作室中使用放大镜分析代码和运行状态" />
                   <div className="explore-diagnosis-visual-copy">
                     <span>CATNIP FORGE</span>
                     <h3>把复杂问题拆解成<br /><em>可执行的答案</em></h3>

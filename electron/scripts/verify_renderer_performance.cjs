@@ -8,18 +8,18 @@ const assetRoot = path.join(rendererRoot, 'assets');
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'utf8');
 
 const optimizedAssets = [
-  ['catnip-agent-welcome-v2.webp', true],
-  ['catnip-app-icon.webp', true],
-  ['catnip-assistant.webp', true],
+  ['liukanshan-agent-welcome.png', true],
+  ['liukanshan-app-icon.png', true],
+  ['liukanshan-assistant.png', true],
   ['catnip-cosmic-shell.jpg', false],
-  ['chat-history-night-v2.jpg', false],
+  ['liukanshan-chat-history-night.jpg', false],
   ['explore-academy-hero.jpg', false],
-  ['explore-diagnosis-guagua.webp', true],
-  ['explore-diagnosis-workspace.jpg', false],
-  ['explore-idea-guagua.webp', true],
-  ['explore-idea-workspace.jpg', false],
-  ['guagua-avatar.jpg', false],
-  ['task-manager-empty-guagua-v2.webp', true],
+  ['liukanshan-explore-diagnosis.png', true],
+  ['liukanshan-explore-diagnosis-workspace.jpg', false],
+  ['liukanshan-explore-idea.png', true],
+  ['liukanshan-explore-idea-workspace.jpg', false],
+  ['liukanshan-avatar.jpg', false],
+  ['liukanshan-task-manager-empty.png', true],
 ];
 
 let optimizedBytes = 0;
@@ -31,6 +31,9 @@ for (const [name, alphaExpected] of optimizedAssets) {
     assert.equal(contents.subarray(0, 4).toString('ascii'), 'RIFF', `${name} is not RIFF WebP`);
     assert.equal(contents.subarray(8, 12).toString('ascii'), 'WEBP', `${name} is not WebP`);
     if (alphaExpected) assert.ok(contents.includes(Buffer.from('ALPH')), `${name} lost its alpha plane`);
+  } else if (name.endsWith('.png')) {
+    assert.deepEqual([...contents.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10], `${name} is not PNG`);
+    if (alphaExpected) assert.equal(contents[25], 6, `${name} lost its RGBA color type`);
   } else {
     assert.equal(contents[0], 0xff, `${name} is not JPEG`);
     assert.equal(contents[1], 0xd8, `${name} is not JPEG`);
@@ -49,8 +52,10 @@ function collectSources(directory) {
 collectSources(rendererRoot);
 const rendererSource = sourceFiles.map((file) => fs.readFileSync(file, 'utf8')).join('\n');
 for (const [name] of optimizedAssets) {
-  const legacy = name.replace(/\.(?:webp|jpg)$/, '.png');
-  assert.ok(!rendererSource.includes(legacy), `legacy uncompressed asset is still referenced: ${legacy}`);
+  if (!name.endsWith('.png')) {
+    const legacy = name.replace(/\.(?:webp|jpg)$/, '.png');
+    assert.ok(!rendererSource.includes(legacy), `legacy uncompressed asset is still referenced: ${legacy}`);
+  }
 }
 
 const browserPanel = read('src/renderer/components/BrowserPanel.tsx');

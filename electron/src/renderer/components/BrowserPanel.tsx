@@ -3,8 +3,8 @@ import { createPortal } from 'react-dom';
 import { Boxes, Code2, Compass, Cpu, FolderOpen, GraduationCap, Minus, MonitorUp, Rocket, Settings, Settings2, Square, Workflow, Wrench, X, Zap } from 'lucide-react';
 import ExplorePanel, { type ExploreDiagnosisSeed } from './ExplorePanel';
 import type { BrowserTab, HardboardDevice, HardboardRuntimeState, ProjectSummary, RecordingSummary, RuntimeEvent, SerialMonitorEvent, SerialMonitorSnapshot, WorkbenchItem, WorkbenchOverview } from '../types';
-import catnipForgeIcon from '../assets/catnip-app-icon.webp';
-import taskManagerEmptyGuagua from '../assets/task-manager-empty-guagua-v2.webp';
+import catnipForgeIcon from '../assets/liukanshan-app-icon.png';
+import taskManagerEmptyGuagua from '../assets/liukanshan-task-manager-empty.png';
 
 const WorkspacePanel = React.lazy(() => import('./WorkspacePanel'));
 const CodeEditor = React.lazy(() => import('./CodeEditor'));
@@ -1341,7 +1341,7 @@ export default function BrowserPanel({
                   </div>
                 )) : (
                   <div className="task-history-empty">
-                    <img src={taskManagerEmptyGuagua} alt="学院呱呱等待新的编译或烧录任务" />
+                    <img src={taskManagerEmptyGuagua} alt="刘看山等待新的编译或烧录任务" />
                     <strong>暂无编译或烧录记录</strong>
                     <p>选择工程并执行 Build / Flash，结果会显示在这里。</p>
                     <div className="task-empty-steps" aria-label="开始硬件任务的三个步骤">

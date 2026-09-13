@@ -63,7 +63,8 @@
     "verify:model-runtime": "npm run build:main && node node_modules/electron/cli.js scripts/verify_model_runtime.cjs",
     "verify:model-center-ui": "node scripts/verify_model_center_ui.cjs",
     "verify:renderer-performance": "node scripts/verify_renderer_performance.cjs",
-    "verify:renderer-performance-ui": "node scripts/verify_renderer_performance_ui.cjs"
+    "verify:renderer-performance-ui": "node scripts/verify_renderer_performance_ui.cjs",
+    "verify:liukanshan-edition": "node scripts/verify_liukanshan_edition.cjs"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
