@@ -47,7 +47,8 @@
         "module": [
           "verify:project-session-ui",
           "verify:chat-presentation",
-          "verify:task-history"
+          "verify:task-history",
+          "verify:task-history-panel"
         ],
         "integration": [
           "verify:project-session",
@@ -77,6 +78,26 @@
             "TaskHistoryItem"
           ],
           "tests": [
+            "verify:task-history"
+          ]
+        },
+        "task-history-ui": {
+          "source": [
+            "electron/src/renderer/components/task-manager/TaskHistoryPanel.tsx",
+            "electron/src/renderer/styles/global.less"
+          ],
+          "read_only": [
+            "electron/src/renderer/components/BrowserPanel.tsx",
+            "electron/src/renderer/components/task-manager/task-history.ts"
+          ],
+          "find": [
+            "TaskHistoryPanel",
+            "task-history-panel",
+            "showTaskLog",
+            "analyzeFailedTask"
+          ],
+          "tests": [
+            "verify:task-history-panel",
             "verify:task-history"
           ]
         }

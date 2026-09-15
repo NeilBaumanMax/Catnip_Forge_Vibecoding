@@ -11,7 +11,7 @@ const SAFE = new Set([
   'verify:explore-session', 'verify:explore-knowledge', 'verify:explore-context',
   'verify:explore-zhihu-connection', 'verify:project-session', 'verify:data-paths',
   'verify:serial-monitor', 'verify:task-queue', 'verify:qwen-attachments', 'verify:hardboard',
-  'verify:task-history', 'verify:explore-history', 'verify:explore-knowledge-preview', 'verify:explore-analysis-results', 'verify:explore-plan-view', 'verify:explore-connection-status', 'verify:explore-output-empty-state',
+  'verify:task-history', 'verify:task-history-panel', 'verify:explore-history', 'verify:explore-knowledge-preview', 'verify:explore-analysis-results', 'verify:explore-plan-view', 'verify:explore-connection-status', 'verify:explore-output-empty-state',
 ]);
 const CORE = ['verify:explore-request', 'verify:explore-analysis-gate', 'verify:explore-search-handoff'];
 const FAST_TESTS = ['verify:version', 'verify:explore-ui'];

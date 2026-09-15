@@ -71,6 +71,17 @@ test('task history projection routes to its offline module test without a Main b
   assert(changedPlan(selected.source).steps.some(s => s.id === 'verify:task-history'));
 });
 
+test('task history UI routes to its panel regression without unrelated workspace context', () => {
+  const selected = context('desktop-shell', 'task-history-ui');
+  assert.deepEqual(selected.tests, ['verify:task-history-panel', 'verify:task-history']);
+  assert.deepEqual(route([selected.source[0]]).modules, ['desktop-shell']);
+  assert.equal(stepsFor(selected.tests).some(step => step.id === 'build:main'), false);
+  const plan = changedPlan(selected.source);
+  assert(plan.steps.some(step => step.id === 'verify:task-history-panel'));
+  assert(plan.steps.some(step => step.id === 'verify:task-history'));
+  assert(plan.requirements.some(requirement => requirement.includes('verify:project-session-ui')));
+});
+
 test('history UI routes to its component regression without building Main or launching a browser', () => {
   const selected = context('explore', 'history-ui');
   assert.deepEqual(selected.tests, ['verify:explore-history', 'verify:explore-ui']);
