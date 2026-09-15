@@ -122,4 +122,4 @@
 - 18j：已完成 Schema v3/迁移、官网与备注、地址语义、固定 Anthropic 格式、Sonnet/Opus/Fable/Haiku/Subagent 与显示名/1M、默认兜底、模型端点候选、Main-only 测试、脱敏预览、窄 IPC 和 Renderer；类型、专项、Renderer build、三档 Electron UI 已通过。真实 Key 在线验证、用户人工复验、Windows 重打包仍待完成。
 - Phase 19：按 [学院呱呱知识库与教学演示升级](PHASE_19_GUAGUA_GUIDE_AND_TOUR.md) 先修正文档真相，再重写软件助手手册、升级版本化教学步骤与稳定目标，最后执行助手/教程专项、类型、Renderer build 和真实教学重播。
 - Phase 20（实现完成，待人工验收/发布打包）：按 [知乎刘看山特供版前端](PHASE_20_LIUKANSHAN_ZHIHU_EDITION.md) 在独立 `liukanshan` 分支建立视觉与命名真相，完成刘看山资产、应用/EXE 图标、前端/助手/教学替换、透明与比例修正、专项构建和真实视觉回归。
-- Phase 21（文档基线已建立，源码未开始）：按 [电台完整移植](PHASE_21_RADIO_INTEGRATION.md) 将 `E:\Agent\vibeide\小智` 的完整前端、Python API 与原生小智能力迁入 `liukanshan`。采用一个由 Electron Main 管理的 Python PID，同时提供 loopback HTTP 与 WebSocket；新增“电台”标签页、安全配置、生命周期/打包/隐私门禁和完整 UI 回归。用户已明确授权该电台进程直接调用知乎 HTTP；Explore 官方 Skill 路径保持不变。
+- Phase 21（施工中，21b/21d 开发闭环已运行）：按 [电台完整移植](PHASE_21_RADIO_INTEGRATION.md) 将 `E:\Agent\vibeide\小智` 的完整前端、Python API 与原生小智能力迁入 `liukanshan`。源码与必要 vendor 已进入 `electron/radio/`；Electron Main 已按需启动组合 Python 服务；“电台”位于“探索”和“模型”之间，八入口单行布局和嵌入式 UI 已通过真实 Electron 检查。下一闭环是 Main safeStorage 原生凭据桥与随包 Python runtime，完成前不得把开发态当客户发布候选。用户已明确授权该电台进程直接调用知乎 HTTP；Explore 官方 Skill 路径保持不变。

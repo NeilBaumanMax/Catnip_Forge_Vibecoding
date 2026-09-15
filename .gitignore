@@ -47,6 +47,9 @@ electron/dist-package/
 electron/dist-package-fixed/
 electron/dist-package.zip
 electron/.tmp/
+electron/radio/frontend/node_modules/
+electron/radio/frontend/dist/
+electron/radio/.runtime/
 agent/node_modules/
 webui/node_modules/
 webui/dist/

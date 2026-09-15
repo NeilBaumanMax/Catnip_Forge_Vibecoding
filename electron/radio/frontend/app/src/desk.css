@@ -1,0 +1,55 @@
+body{background:#07102c url('/art/forge-spacious-desk.png') center bottom/100% auto fixed no-repeat}
+.assembly-app{background:transparent}
+.laptop-frame,.tower-frame{isolation:isolate}
+.laptop-frame::after,.tower-frame::after{content:'';position:absolute;pointer-events:none;z-index:-1;background:#05082388;filter:blur(12px);border-radius:50%;height:5%;left:10%;width:80%;bottom:2%}
+.tower-frame::after{bottom:13%;left:7%;width:87%;height:4%}
+.assembly-layout{grid-template-columns:minmax(0,1fr) 560px;gap:8px;align-items:end}
+.stage-card{height:100%;position:relative;justify-content:flex-end}
+.laptop-frame{position:absolute;bottom:60px;left:-78px;width:min(100%,calc((100dvh - 170px)*4/3));margin:0;aspect-ratio:4/3}
+.laptop-frame .stage-toolbar{position:absolute;top:68.2%;bottom:auto;left:23%;right:22%;z-index:2;gap:3px;padding:0;flex-wrap:nowrap}
+.laptop-frame .stage-toolbar button{font-size:10px;padding:5px 6px;white-space:nowrap;border-radius:4px;min-width:0}
+.stage-toolbar button{background:#e7e5df;color:#151515;border:2px solid #161616;box-shadow:0 2px 0 #555;font-weight:600}
+.stage-toolbar button[aria-pressed=true]{background:#20242c;color:#fff}
+.stage-note{position:absolute;bottom:0;left:0;right:0;color:#f4f4f4;font-weight:600;text-shadow:0 1px 2px #000}
+.tower-frame{width:min(100%,calc((100dvh - 160px)*3/4));align-self:end;margin-bottom:36px;transform:translateX(-36px)}
+@media(max-width:900px){.tower-frame{transform:none}}
+.tower-face{font-size:14px}.tower-face .tabs button{font-size:13px;padding:7px 6px}
+.tower-face .panel h2{font-size:14px}.tower-face .field{font-size:13px}
+#joint-controls input[type=range]{height:125px}
+.tower-face .field select{max-width:165px}.tower-face .color-row{font-size:13px;grid-template-columns:36px 34px minmax(0,1fr)}
+.screen-code-dialog{width:min(760px,94vw);max-height:90dvh;overflow:auto;padding:24px;background:#101725;color:#eef4ff;border:2px solid #8192b5;border-radius:16px;box-shadow:0 20px 100px #000b}
+.screen-code-dialog::backdrop{background:#02091cbf}.screen-code-dialog h2{display:inline-block;margin:0 24px 20px 0;font-size:20px}.screen-code-dialog textarea{margin-top:16px;height:44dvh;min-height:200px}.screen-code-dialog .js-actions{position:sticky;bottom:0;background:#101725;padding:10px 0}.open-code{width:100%;margin:8px 0}
+@media(min-width:1600px){.assembly-layout{grid-template-columns:minmax(0,1fr) 610px}}
+@media(min-width:901px) and (max-width:1200px){.assembly-layout{grid-template-columns:minmax(0,1fr) 430px}.laptop-frame{bottom:85px;left:-26px;width:100%}.tower-frame{margin-bottom:27px}}
+@media(max-width:900px){.assembly-layout{grid-template-columns:1fr;gap:0}.stage-card{height:auto;position:relative;padding-bottom:72px}.laptop-frame{position:relative;bottom:auto;left:auto;width:100%;margin:0}.tower-frame{width:min(100%,560px);margin:-10px auto 20px}.stage-note{color:#e4e8ef;text-shadow:0 1px 3px #000}.stage-toolbar{bottom:30px}.tower-face .tabs button{font-size:12px;padding:5px 3px}#joint-controls input[type=range]{height:90px}}
+
+/* Electron workspace: preserve the complete radio UI while fitting the two
+   illustrated work surfaces into the smaller pane instead of pinning both to
+   the bottom of a standalone browser viewport. */
+body.forge-embedded .assembly-app{max-width:none;padding:0 14px}
+body.forge-embedded{background-position:center;background-size:cover}
+body.forge-embedded header{height:62px;margin-bottom:8px}
+body.forge-embedded .assembly-layout{
+  height:calc(100dvh - 70px);
+  grid-template-columns:minmax(0,1fr) clamp(350px,34%,470px);
+  align-items:stretch;
+  gap:10px;
+}
+body.forge-embedded .stage-card{justify-content:flex-start}
+body.forge-embedded .laptop-frame{
+  position:relative;
+  inset:auto;
+  width:min(100%,calc((100dvh - 110px)*4/3));
+  margin:clamp(18px,4vh,52px) auto 0;
+}
+body.forge-embedded .tower-frame{
+  width:min(100%,calc((100dvh - 92px)*3/4));
+  align-self:start;
+  margin:clamp(18px,4vh,52px) auto 0;
+  transform:none;
+}
+body.forge-embedded .device-link small{display:none}
+@media(max-width:1100px){
+  body.forge-embedded .assembly-layout{grid-template-columns:minmax(0,1fr) 350px}
+  body.forge-embedded .device-address{display:none}
+}

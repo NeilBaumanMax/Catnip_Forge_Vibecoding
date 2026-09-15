@@ -1,6 +1,6 @@
 # Phase 21：Forge 电台完整移植
 
-状态：`PLANNED / DOCUMENTATION BASELINE COMPLETE / SOURCE NOT STARTED`
+状态：`IN PROGRESS / 21b + 21d DEVELOPMENT SLICE RUNNING`
 
 日期：2026-09-15（Asia/Shanghai）
 
@@ -186,20 +186,27 @@ electron/
 | 安全 | Renderer/URL/日志/包无 Secret；只监听 loopback；恶意 Origin/Host 拒绝 |
 | 发布 | 新电脑或隔离环境无需 pip/npm 下载即可启动 |
 
-## 7. 当前 Pending
+## 7. 当前进展与 Pending
 
-- `RADIO_SOURCE_MIGRATION_PENDING`：来源尚未复制进当前仓库。
-- `RADIO_PYTHON_RUNTIME_PENDING`：Python 3.12 兼容性与最终 runtime 方案尚未验证。
-- `RADIO_SINGLE_PID_PENDING`：组合入口尚未实现。
+- `RADIO_SOURCE_MIGRATION_IN_PROGRESS`：后端、前端、必要 vendor、许可证与资源已复制到 `electron/radio/`；没有复制来源 `.runtime`、venv、数据库或凭据。功能清单仍需逐项真实联调。
+- `RADIO_SINGLE_PID_IMPLEMENTED`：`run_radio.py` 在一个 Python 应用进程中组合 Uvicorn 与可选 Xiaozhi WebSocket；Electron Main 负责按需启动、状态、重启和精确 PID 树回收。开发态 Windows venv 的解释器重定向会显示一个 Python 启动器与其解释器子进程，发布态必须直接使用随包解释器，验收口径仍是一个后端应用进程而非两个服务命令。
+- `RADIO_UI_IMPLEMENTED`：“电台”已位于“探索”和“模型”之间，独立前端通过 loopback iframe 完整加载；新增 Electron 嵌入式响应布局和明确的“进入电台工作台/返回硬件工作台”入口。八个顶部入口保持单行，Skill 小站不再换行。
+- `RADIO_PYTHON_RUNTIME_PENDING`：开发态已用隔离 Python 3.11 venv 通过；随包 Python 3.12 尚缺完整依赖，最终 runtime 仍未验收。
+- `RADIO_NATIVE_SECRET_BRIDGE_PENDING`：来源设置页仍需改接 Main 原生安全输入与 safeStorage；在此完成前不得输入真实知乎 Secret 或把当前实现作为客户发布候选。
 - `RADIO_LIVE_MODEL_PENDING`：未配置/调用真实 OpenAI-compatible 模型。
 - `RADIO_LIVE_TTS_PENDING`：未完成真实 Edge TTS 播放验证。
 - `RADIO_LIVE_ZHIHU_PENDING`：本 Phase 尚未消费真实知乎额度。
 - `RADIO_WINDOWS_PACKAGE_PENDING`：尚未生成包含电台的干净 Windows 包。
 
-## 8. 本轮文档闭环不做
+## 8. 已取得的开发证据（2026-09-15）
 
-- 不复制来源源码或资源。
-- 不安装 Python/npm 依赖。
-- 不启动来源服务，不访问真实知乎，不调用模型或 TTS。
-- 不修改现有 Renderer/Main/Preload/打包配置。
-- 不暂存用户的 `docs/tutorials/`、工程 `.catnip/` 或任何宣传图、静态展示站和临时压缩包。
+- `npm.cmd --prefix electron run typecheck`：通过。
+- `npm.cmd --prefix electron run build:main`：通过。
+- `npm.cmd --prefix electron/radio/frontend run build`：通过；Three.js 单 chunk 大小警告保留为性能待办。
+- `python -m pytest electron/radio/backend/test_radio.py -q`：17 passed，1 条 Starlette 弃用警告。
+- 真实 Electron：5173（Renderer）、9230（CDP）、8890（Radio HTTP）分别监听；电台首页返回 HTTP 200。
+- UI 几何：仓库、监视器、任务管理器、编辑器、探索、电台、模型、Neil 的 Skill 小站八个入口 `top=18`，无换行；iframe 为 `http://127.0.0.1:8890/?embedded=1`。
+- 实际点击“进入电台工作台”后，左侧电脑展示知乎结果区，右侧主机展示工作台/人设/我的帖子/设置；本轮没有填写 Secret、没有调用真实知乎、模型或 TTS。
+- 关闭第一轮开发 IDE 后 5173/8890/9230 全部释放，再启动取得新的独立电台 PID，证明生命周期回收路径有效。
+
+本次仍不暂存用户的 `docs/tutorials/`、工程 `.catnip/`、临时截图或开发 venv。

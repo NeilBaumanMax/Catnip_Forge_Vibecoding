@@ -2809,3 +2809,83 @@ body.is-resizing-panels * {
     grid-template-columns: 1fr;
   }
 }
+.browser-panel--radio {
+  padding: 0 !important;
+  overflow: hidden;
+  background: #07163f;
+}
+
+.radio-workspace {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: #07163f;
+}
+
+.radio-workspace iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #07163f;
+}
+
+.radio-service-chip {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  border: 1px solid rgba(87, 210, 181, .45);
+  border-radius: 999px;
+  color: #d9fff3;
+  background: rgba(4, 35, 67, .86);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.radio-service-chip span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ce3b5;
+  box-shadow: 0 0 10px #4ce3b5;
+}
+
+.radio-workspace-state {
+  height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  color: #ddecff;
+  background: radial-gradient(circle at 50% 35%, #173f81 0, #07163f 58%);
+  text-align: center;
+}
+
+.radio-workspace-state > svg {
+  width: 56px;
+  height: 56px;
+  color: #65baff;
+}
+
+.radio-workspace-state h2,
+.radio-workspace-state p { margin: 0; }
+
+.radio-workspace-state p { color: #9db8df; }
+
+.radio-workspace-state button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border: 1px solid #5599ef;
+  border-radius: 8px;
+  color: white;
+  background: #1769ce;
+}

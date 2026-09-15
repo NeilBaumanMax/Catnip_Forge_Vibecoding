@@ -1,0 +1,17 @@
+奶龙机器人 · 静态部署包
+
+解压后，将本目录全部文件上传到静态网站目录即可，不需要 npm、Node.js 或后台服务。
+入口：index.html（模型对比 + 整机），assembly.html（直接进入整机装配台）。
+支持部署在网站根目录或子目录；子目录 URL 请带结尾斜杠。
+assets/、models/、faces/ 必须与 HTML 保持相对位置。
+
+请通过 HTTP/HTTPS 网站访问，不要直接双击 HTML（file:// 会限制模型加载）。
+JavaScript 屏幕使用 OffscreenCanvas、Worker 和 ImageBitmap，推荐现代桌面浏览器。
+若服务器设置 CSP，需允许 sandbox 内联脚本、blob Worker 及其动态代码编译；过严的 CSP 会禁用 JS 屏幕。
+此包不主动上传用户模型或代码。输入代码只支持页面所述 Canvas 2D 接口，不支持任意 DOM 网页脚本。
+
+models/body-clean.stl 是最新干净机身；body.stl 为旧件备份、不参与加载。
+otto-reference.glb 是官网装配参考数据；其余 STL 为完整预览所需零件。
+faces/ 包含所有内置 GIF；THIRD_PARTY_NOTICES.md 包含官网资源许可声明。
+
+注意：网页编辑框中临时输入且未写回源码的 JS 不会包含在此包中。包中包含默认眨眼示例与代码编辑器。

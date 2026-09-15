@@ -1,0 +1,31 @@
+{
+  "name": "nailong-stl-viewer",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "npm run docs:api && tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "release": "npm run build && node scripts/sync-build.mjs",
+    "test:motion": "node scripts/test-motion.mjs",
+    "start": "node server/index.mjs",
+    "test:api": "node --test scripts/test-api.mjs",
+    "docs:api": "node scripts/generate-api-docs.mjs",
+    "deploy": "wrangler deploy",
+    "dev:worker": "wrangler dev --ip 127.0.0.1 --port 8787",
+    "check:worker": "wrangler deploy --dry-run",
+    "test:worker": "FORGE_BASE=http://127.0.0.1:8787 node --test scripts/test-api.mjs scripts/test-worker.mjs"
+  },
+  "dependencies": {
+    "gifenc": "^1.0.3",
+    "gifuct-js": "^2.1.2",
+    "three": "0.184.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.184.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0",
+    "wrangler": "4.131.2"
+  }
+}

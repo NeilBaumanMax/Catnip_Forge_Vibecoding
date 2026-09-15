@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Boxes, Code2, Compass, Cpu, FolderOpen, GraduationCap, Minus, MonitorUp, Rocket, Settings, Settings2, Square, Workflow, Wrench, X, Zap } from 'lucide-react';
+import { Boxes, Code2, Compass, Cpu, FolderOpen, GraduationCap, Minus, MonitorUp, RadioTower, Rocket, Settings, Settings2, Square, Workflow, Wrench, X, Zap } from 'lucide-react';
 import ExplorePanel, { type ExploreDiagnosisSeed } from './ExplorePanel';
 import type { BrowserTab, HardboardDevice, HardboardRuntimeState, ProjectSummary, RecordingSummary, RuntimeEvent, SerialMonitorEvent, SerialMonitorSnapshot, WorkbenchItem, WorkbenchOverview } from '../types';
 import catnipForgeIcon from '../assets/liukanshan-app-icon.png';
@@ -9,6 +9,7 @@ import taskManagerEmptyGuagua from '../assets/liukanshan-task-manager-empty.png'
 const WorkspacePanel = React.lazy(() => import('./WorkspacePanel'));
 const CodeEditor = React.lazy(() => import('./CodeEditor'));
 const ModelPanel = React.lazy(() => import('./ModelPanel'));
+const RadioPanel = React.lazy(() => import('./RadioPanel'));
 
 function WorkspaceLoading({ label }: { label: string }) {
   return <div className="workspace-loading" role="status">正在加载{label}…</div>;
@@ -40,7 +41,7 @@ interface Props {
   onOpenWorkbenchItem: (targetPath: string) => void;
 }
 
-type PanelMode = 'workbench' | 'repo' | 'monitor' | 'tasks' | 'editor' | 'explore' | 'models' | 'skillHub';
+type PanelMode = 'workbench' | 'repo' | 'monitor' | 'tasks' | 'editor' | 'explore' | 'radio' | 'models' | 'skillHub';
 const SKILL_HUB_URL = 'http://118.195.247.102/#page-top';
 
 function formatSerialEvent(event: SerialMonitorEvent, receiveMode: 'text' | 'hex'): string {
@@ -978,6 +979,7 @@ export default function BrowserPanel({
           <button data-tour-id="tab-tasks" type="button" role="tab" aria-selected={mode === 'tasks'} className={`nes-btn${mode === 'tasks' ? ' is-primary' : ''}`} onClick={() => setMode('tasks')}><Workflow aria-hidden="true" /><span>任务管理器</span></button>
           <button data-tour-id="tab-editor" type="button" role="tab" aria-selected={mode === 'editor'} className={`nes-btn${mode === 'editor' ? ' is-primary' : ''}`} onClick={() => setMode('editor')}><Code2 aria-hidden="true" /><span>编辑器</span></button>
           <button data-tour-id="tab-explore" type="button" role="tab" aria-selected={mode === 'explore'} className={`nes-btn${mode === 'explore' ? ' is-primary' : ''}`} onClick={openExploreHome}><Compass aria-hidden="true" /><span>探索</span></button>
+          <button data-tour-id="tab-radio" type="button" role="tab" aria-selected={mode === 'radio'} className={`nes-btn${mode === 'radio' ? ' is-primary' : ''}`} onClick={() => setMode('radio')}><RadioTower aria-hidden="true" /><span>电台</span></button>
           <button data-tour-id="tab-models" type="button" role="tab" aria-selected={mode === 'models'} className={`nes-btn${mode === 'models' ? ' is-primary' : ''}`} onClick={() => setMode('models')}><Cpu aria-hidden="true" /><span>模型</span></button>
           <button data-tour-id="tab-skill-hub" type="button" role="tab" aria-selected={mode === 'skillHub'} className={`nes-btn${mode === 'skillHub' ? ' is-primary' : ''}`} onClick={openSkillHub}><GraduationCap aria-hidden="true" /><span>Neil 的 skill 小站</span></button>
         </div>
@@ -1127,6 +1129,8 @@ export default function BrowserPanel({
           diagnosisSeed={exploreDiagnosisSeed}
         />
       </div> : null}
+
+      {mode === 'radio' ? <React.Suspense fallback={<WorkspaceLoading label="Forge 电台" />}><RadioPanel /></React.Suspense> : null}
 
       {mode === 'models' ? <React.Suspense fallback={<WorkspaceLoading label="模型中心" />}><ModelPanel startInCustomSetup={startInCustomModelSetup} onReturnToStartupSetup={onReturnToStartupSetup} /></React.Suspense> : null}
 

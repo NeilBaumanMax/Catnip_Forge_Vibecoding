@@ -10,6 +10,7 @@ import { killAgent } from './agent';
 import { askSoftwareAssistant, type SoftwareAssistantMessage } from './software-assistant';
 import { startSerialMonitorBridge, stopSerialMonitorBridge } from './serial-monitor-bridge';
 import { startAttachmentBridge, stopAttachmentBridge } from './attachment-bridge';
+import { stopRadioProcess } from './radio-process';
 
 app.commandLine.appendSwitch('remote-debugging-port', '9230');
 // Chromium's compositor materially improves the image-heavy desktop shell. Keep a
@@ -188,6 +189,7 @@ async function shutdownApp(reason: string): Promise<void> {
     logger.warn('browser:view-event', { event: 'shutdown', reason });
     killAgent();
     await stopAttachmentBridge();
+    await stopRadioProcess();
     await stopSerialMonitorBridge();
     await flushBrowserStorage();
     clearSplashTimers();

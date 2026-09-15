@@ -26,7 +26,8 @@ type LogEvent =
   | 'browser:view-event' | 'browser:window-open' | 'browser:webcontents-created' | 'browser:window-created'
   | 'quick-task:error'
   | 'search:preflight'
-  | 'page:validate';
+  | 'page:validate'
+  | 'radio:spawn' | 'radio:stderr';
 
 interface LogEntry {
   ts: string;

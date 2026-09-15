@@ -37,6 +37,7 @@ import { registerExploreSessionIpc } from './explore-session';
 import { activateProject, assertPathInActiveProject, createProject, getProjectSessionStatus, requireActiveProject } from './project-session';
 import { registerModelManagementIpc } from './model-management';
 import { snapshotEngineeringAgentModel } from './agent-model-selection';
+import { registerRadioIpc } from './radio-process';
 
 export function startGateway(mainWindow: BrowserWindow): void {
   // Gateway 提供 pushUI 能力 — Worker 通过它推消息到 UI
@@ -97,6 +98,7 @@ export function startGateway(mainWindow: BrowserWindow): void {
   registerExploreContextIpc(ipcMain);
   registerExploreSessionIpc(ipcMain);
   registerModelManagementIpc(ipcMain);
+  registerRadioIpc(ipcMain);
 
   const assertProjectSwitchSafe = async () => {
     if (isExploreRequestInFlight()) throw new Error('Explore 正在检索来源，请等待完成后再切换工程');

@@ -290,6 +290,14 @@ export interface SerialMonitorSnapshot {
   events: SerialMonitorEvent[];
 }
 
+export interface RadioProcessSnapshot {
+  state: 'stopped' | 'starting' | 'ready' | 'error';
+  pid: number | null;
+  url: string | null;
+  message: string;
+  xiaozhiEnabled: boolean;
+}
+
 export interface WindowAPI {
   minimizeWindow: () => Promise<{ ok: boolean }>;
   toggleMaximizeWindow: () => Promise<{ ok: boolean; maximized: boolean }>;
@@ -299,6 +307,10 @@ export interface WindowAPI {
   configureStartupModel: () => Promise<{ ok: boolean; cancelled: boolean; qwenSaved: boolean; restarting: boolean; status: StartupStatus }>;
   restartAfterModelSetup: () => Promise<{ restarting: boolean }>;
   askSoftwareAssistant: (messages: Array<Pick<SoftwareAssistantMessage, 'role' | 'content'>>) => Promise<{ ok: true; text: string }>;
+  getRadioStatus: () => Promise<RadioProcessSnapshot>;
+  startRadio: () => Promise<RadioProcessSnapshot>;
+  restartRadio: () => Promise<RadioProcessSnapshot>;
+  stopRadio: () => Promise<RadioProcessSnapshot>;
   listModels: () => Promise<ModelManagementSnapshot>;
   saveModels: (config: ModelConfigState, expectedRevision: number) => Promise<ModelManagementSnapshot>;
   configureModelCredential: (providerId: string) => Promise<{ outcome: 'submitted' | 'cancelled'; snapshot: ModelManagementSnapshot }>;

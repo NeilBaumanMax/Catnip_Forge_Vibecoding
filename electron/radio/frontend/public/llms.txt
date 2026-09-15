@@ -1,0 +1,10 @@
+# Forge Robot Simulation
+
+> Browser-rendered, simulation-only robot debugging. Mouse UI and authenticated Agent HTTP API coexist.
+
+- [Agent guide](https://model.zhiforge.org/agent.md): pairing, commands, examples and safety limits.
+- [OpenAPI](https://model.zhiforge.org/openapi.json): machine-readable HTTP API contract.
+- [Capabilities](https://model.zhiforge.org/api/v1/capabilities): live command schemas.
+- [Agent skill](https://model.zhiforge.org/skills/forge-simulation/SKILL.md): reusable simulation debugging instructions.
+
+Create your own session, open its browserUrl, allow pairing, wait for connected + loaded. Never treat queued as applied. No physical robot control.

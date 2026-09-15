@@ -38,6 +38,21 @@ extraResources:
       - "!node_modules/@anthropic-ai/claude-code/**/node_modules/.cache/**"
   - from: ../runtime/dist
     to: runtime/dist
+  - from: radio/run_radio.py
+    to: radio/run_radio.py
+  - from: radio/backend
+    to: radio/backend
+  - from: radio/vendor
+    to: radio/vendor
+  - from: radio/frontend/dist
+    to: radio/frontend/dist
+  - from: radio
+    to: radio
+    filter:
+      - "README.md"
+      - "XIAOZHI_LICENSE"
+      - "backend/requirements.txt"
+      - "backend/xiaozhi-headless-requirements.txt"
   - from: ../runtime/package.json
     to: runtime/package.json
   - from: ../runtime/node_modules

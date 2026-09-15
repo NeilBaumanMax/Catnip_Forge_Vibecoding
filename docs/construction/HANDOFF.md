@@ -1,5 +1,15 @@
 # Catnip Forge 当前施工接力
 
+## 2026-09-15 — Phase 21 电台完整移植首个运行闭环
+
+- 当前分支 `liukanshan`；Phase 21 文档基线提交为 `ee232977`。来源 `E:\Agent\vibeide\小智` 的前端、后端、必要 vendor 与许可证已复制进 `electron/radio/`，来源目录保持只读，未复制 `.runtime`、venv、数据库或凭据。
+- 新“电台”标签已放在“探索”和“模型”之间。新增入口后原七列导航把 Neil’s Skill 小站挤到第二行，现已改为八列单行；真实 Electron 中八个标签 `top=18`。
+- 独立前端仍保留 3D、装配、动作、光驱、电台、知乎、人设、帖子和小智界面；新增 `?embedded=1` 工作台布局与显式“进入电台工作台/返回硬件工作台”按钮。实际点击后两侧设备均正确切换。
+- `run_radio.py` 组合 HTTP 与可选 Xiaozhi Server，Main 负责按需 spawn、窄 IPC、停止/重启与 Windows 精确 PID 树回收。开发 IDE 已重启并保持打开；当前 5173、9230、8890 正常监听，首页 HTTP 200。
+- 已通过 Electron typecheck、Main build、电台前端 build、Python `17 passed`。本轮未填写 Secret、未调用真实知乎、模型或 TTS；开发截图与 venv 均在 `electron/.tmp/`，不会提交。
+- 仍需完成：Main 原生 safeStorage 凭据桥（当前来源设置页不得输入真实 Secret）、随包 Python 依赖、动态端口/导航限制、真实小智模型/工具/TTS、学院刘看山教学、完整干净打包。保留 `RADIO_NATIVE_SECRET_BRIDGE_PENDING`、`RADIO_PYTHON_RUNTIME_PENDING`、`RADIO_LIVE_*_PENDING` 与 `RADIO_WINDOWS_PACKAGE_PENDING`。
+- 受保护未跟踪目录 `docs/tutorials/` 与 `runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 未触碰、不得暂存。
+
 ## 2026-09-13 — Phase 20 刘看山特供版干净 Windows 包
 
 - 当前分支 `liukanshan@028792be` 已从零重建 `electron/dist-package/Catnip Forge`；旧发布目录先删除，未复用此前学院呱呱候选包。
