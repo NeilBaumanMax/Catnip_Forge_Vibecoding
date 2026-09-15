@@ -1,6 +1,6 @@
 # 探索 / 官方 Zhihu Skill MVP 施工主约束
 
-Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定索引：[D001–D031](DECISION_LOG.md)。现场证据：[当前状态报告](PROJECT_STATE_REPORT.md)。用户需求优先于旧规则；历史文档不能授权额外功能。
+Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定索引：[D001–D041](DECISION_LOG.md)。当前接力：[HANDOFF](HANDOFF.md)。现场证据：[带日期状态报告](PROJECT_STATE_REPORT.md)。用户需求优先于旧规则；历史文档不能授权额外功能。当前用户指定分支为 `DWIDE`，开工动态核对 Git。
 
 ## 范围与完成定义
 
@@ -12,7 +12,7 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 
 官方 Skill 缺失；产品与代码根本冲突；必须覆盖大量用户工作；未提交修改高度冲突；需要真实 Secret；官方 CLI 安装/升级或授权需用户确认；无权限的实机操作；两方案产生明显不同产品行为；核心 API 实测无法满足需求。报告事实、冲突、影响和一个具体决定，不开始其他分支工作。
 
-权限门禁、结构化输出、多行 Skill 描述兼容与 Phase 7 工程会话均已实现并通过专项检查；最新源码 Windows 包已重建。当前外部验证缺口是用户成品复测、双搜索 Diagnosis 和真实硬件闭环。若运行验证证明核心能力根本不可行，再停止。
+权限门禁、结构化输出、多行 Skill 描述兼容、工程内会话与交接均已实现并有专项记录。最近 Windows 包验收记录为 2026-09-12，路径 `electron/dist-package/Catnip Forge`；不据此推断本机留存包与当前分支一致。Skill 小站下载安装桥仍待完成；外部验证缺口包括成品复测、新用户完整连接、双搜索 Diagnosis 和真实硬件闭环。若运行验证证明核心能力根本不可行，再停止。
 
 ## Phase 7 工程会话硬约束
 
@@ -31,7 +31,7 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 
 ## Assumption Register
 
-状态仅限 UNVERIFIED / TESTING / CONFIRMED / REJECTED / BLOCKED。下表创建于 2026-09-07，并按 2026-09-09 真实证据更新。
+状态仅限 UNVERIFIED / TESTING / CONFIRMED / REJECTED / BLOCKED。下表创建于 2026-09-07；2026-09-15 按截至 2026-09-12 的记录校正证据范围，不把历史凭据状态、软件测试或文档校正作为新的实机/联网结果。
 
 | ID | 假设内容 | 为什么仍是假设 | 错误时影响 | 验证方式 | 状态 | 验证证据 | 模块 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -40,10 +40,10 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 | A3 | 原子 JSON user-data 足以存知识卡 | 已按现有 Main user-data 路径实现并完成当前 MVP 容量/损坏场景验证 | 跨重启丢失、损坏或混入安装目录 | 原子替换、重启、语法/结构损坏保留、项目关联测试 | CONFIRMED | `explore-knowledge.ts`；`verify:explore-knowledge` 通过，坏文件不覆盖 | Local Store/Main |
 | A4 | 可从当前工程和 main/CMakeLists 收集最小相关源码 | 有界读取、路径反例与用户取消已验证；真实 Diagnosis 的相关性仍待实测 | 过量读取或漏掉关键证据 | 真实排障复核候选相关性，继续保留单工程白名单/截断测试 | TESTING | Main active project + workbench/project-files；最多 6 个候选、单文件 8 KiB、总计 32 KiB；未选项由 prepare 剔除 | Main/Context |
 | A5 | EventBus 和共享串口能稳定提供最新 Context | 同工程/时间筛选与工程切换清理已通过软件反例；共享串口的真实设备归属仍待验证 | 误用其他工程或旧运行数据 | 真机执行 taskId/projectDir/timestamp 与断线/清空场景 | TESTING | Project Session 绑定 Build/Flash，Runtime 事件按 active project 过滤；SerialMonitorSession read/wait 已通过 mock | Runtime/Main |
-| A6 | 官方CLI在Windows开发和打包版可运行 | v2.0.0 最新 Windows 包、packaged Skill、release/version 与无 Key 门禁通过；全新用户真实安装/连接尚未人工验收 | 全新用户安装或 Secret 弹窗仍可能受机器环境影响 | 在不影响当前凭据的全新 Windows 用户环境实测安装授权→Secret 弹窗→status | TESTING | Phase 13 候选 4,468,679,868 字节且不含 DeepSeek/Qwen Key；开发环境 status 与真实搜索通过 | Official Skill/Packaging |
-| A7 | 用户已配置可用Access Secret，且产品存在不经过 Renderer/Chat 的安全配置路径 | 已以官方验证、最小本人内容请求和真实知乎搜索完成端到端验收 | 路径回归可能泄露高权限 API 凭证 | 持续保留 Renderer/IPC/日志/包无 Secret 的门禁 | CONFIRMED | 独立遮蔽宿主窗口经 stdin 调官方 CLI；`auth status --verify`、最小内容请求及真实知乎搜索成功 | CLI/Main |
+| A6 | 官方CLI在Windows开发和打包版可运行 | 2026-09-12 Windows 包、官方 Skill、隔离首启与安全窗口可见性有通过记录；全新用户完整安装/连接尚未人工验收 | 全新用户安装或凭据库仍可能受机器环境影响 | 在不影响当前凭据的全新 Windows 用户环境实测安装授权→Secret 弹窗→status | TESTING | 2026-09-12 包 4,502,227,001 字节；release、官方 Skill 15 文件/filter、隔离首启通过记录；窗口等待修复通过，无真实 Secret 输入 | Official Skill/Packaging |
+| A7 | 用户可通过不经过 Renderer/Chat 的安全配置路径设置 Access Secret | 历史端到端路径已验证；这不证明当前机器仍配置有效凭据 | 路径回归可能泄露高权限 API 凭证 | 保留 Renderer/IPC/日志/包无 Secret 门禁；实际调用前以官方 status 核对当时状态 | CONFIRMED | 2026-09-09 官方验证、最小内容请求及真实搜索曾通过；2026-09-12 status 请求配置 Secret，窗口可见性测试未填写 Secret | CLI/Main |
 | A8 | 有可复现运行异常的真实板/工程可做 Demo | 发现三个工程，未连接或选择故障 | 排障不能称完整闭环 | 用户确认项目/端口后实测 Build/Flash/Serial | UNVERIFIED | hello_world_esp32s3、touch_hello、wifi_connect_fmai；无板证据 | Hardboard/Demo |
-| A9 | 延续现有 UI 能容纳探索 | 两入口、连接面板、结果卡、来源、计划、收藏和验证反馈已完成桌面验收 | 若真实 Diagnosis 信息密度超出布局，需最小调整 | 在真实排障 Demo 复核结果密度与交互 | CONFIRMED | BrowserPanel 六个可见工作区；两张入口插画覆盖 534–1802px；完整流程、UI 专项及 Renderer build 通过 | Renderer |
+| A9 | 延续现有 UI 能容纳探索 | 两入口及流程有 UI 专项和截图记录；真实 Diagnosis 信息密度与完整成品人工体验仍待复核 | 真实内容可能暴露布局或交互问题 | 在真实排障 Demo 复核结果密度与交互 | CONFIRMED | 六工作区、深蓝流程页；2026-09-12 固定深色与 1280x720 / 1707x960 / 1707x1067 布局矩阵通过记录 | Renderer |
 
 ## 风险与 Review 结论
 
@@ -55,9 +55,9 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 
 第一性原理：最短路径是把知识搜集和证据交接加入现有能力边界，不把新页面当新执行系统；先验证官方 Skill 和受限结构化任务，再加用户界面。当前计划未引入新依赖服务或未确认产品功能。
 
-## 官方知乎能力选择与 Access Secret 门禁（2026-09-09 当前口径）
+## 官方知乎能力选择与 Access Secret 门禁
 
 - 官方 Skill 的完整能力不等于探索页面使用的能力。页面只开放 status、连接和固定的 `search zhihu` / `search global`；真实找灵感已调用知乎搜索，全网搜索留待排障 Demo。
 - 热榜、直答、本人创作/关注/收藏、官方知识库、额度页和 OAuth 保持不接；Catnip 本地知识卡不等于知乎官方知识库。
 - Access Secret 是用户个人的开放平台 API 鉴权凭证并决定额度归属，不是普通偏好设置。页面只触发零参数连接动作；完整值在独立宿主遮蔽窗口中输入，经官方 CLI stdin 验证并写系统凭证库，不进入 Renderer、Chat、URL、日志、Agent 输出或仓库。
-- `auth status --verify`、最小本人内容请求和真实知乎搜索均已成功；update check unavailable 时仍不得宣称已是最新版。
+- `auth status --verify`、最小本人内容请求和真实知乎搜索在 2026-09-09 曾成功；不推断当前凭据状态，不重复调用作为文档验收。update check unavailable 时仍不得宣称已是最新版。

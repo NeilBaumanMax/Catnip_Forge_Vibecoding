@@ -1,6 +1,19 @@
-# 项目当前真实状态报告
+# 项目状态检查记录
 
-初始检查日期：2026-09-07（Asia/Shanghai）。下方原始报告保留当时快照，不替代后续动态检查。当前实现状态以本节、Product Truth、HANDOFF 和真实代码为准。
+本文件按日期保留检查快照；下方旧段落中的“当前”“尚无”“最新”仅指各次检查当时。当前施工摘要以 [HANDOFF](HANDOFF.md)、Product Truth 和真实代码/Git 为准。
+
+## 2026-09-15 DWIDE 文档校正现场
+
+- 本次开工 `DWIDE` 与本地/远端 `catnip-GUAGUA` 均为 `f2449a199b1a92fb644276403a75da116c6fb586`；远端当时尚无 DWIDE。恢复点 `backup/pre-phase-doc-sync-20260915` 已推送并核对为同一提交。
+- `config/version.json` 与 npm 元数据为 v2.0.0 / Build 7201。BrowserPanel 有六个可见工作区，正常桌面默认探索；App 固定深色主题。
+- 当前已实现官方 zhihu Skill、宿主标准目录保真部署、结构化探索、受限分析/计划、Main/Worker 确认门禁、工程内 Agent/Explore/Handoff 分层和知识 Store。原始 Phase 0 中“没有探索”“没有门禁”“未解析多行 description”等均为已处理的历史缺口。
+- 已跟踪标准 Skill 共 9 个。小站打开网页已实现；站点到本地 Skill Manager 的下载安装桥仍缺实现或验收证据。
+- 当前定制打包路径为 `electron/dist-package/Catnip Forge`；最近发布记录为 2026-09-12、4,502,227,001 字节。此处仅引用历史验收，本次不重新校验本机成品。
+- 未跟踪的 `docs/tutorials/`、`electron/radio/`、`runtime/hardboard/projects/hello_world_esp32s3/.catnip/` 保持原样，不纳入文档提交或已完成功能。
+- 历史真实找灵感已验证；`LIVE_DIAGNOSIS_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING`、新用户完整连接及人工成品验收继续保留。2026-09-12 安全窗口可见性通过不等于完成新用户鉴权流程。
+- 本轮完整范围、Review 和命令分别见 [文档校正](DWIDE_DOC_SYNC_20260915.md)、[测试记录](TEST_METRICS.md)。
+
+## 历史检查快照（以下不作为当前状态）
 
 ## 2026-09-11 Phase 14 动态补充
 

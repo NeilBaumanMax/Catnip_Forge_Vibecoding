@@ -1,5 +1,7 @@
 # 架构说明
 
+> 历史架构说明：保留早期浏览器工作台、搜索路由与会话路径的设计证据。当前产品要求以 [Product Truth](product/PRODUCT_REQUIREMENTS.md) 为准；六工作区、工程内会话、独立 Explore 通道及确认门禁见 [分层契约](construction/LAYER_CONTRACT.md) 和 [施工接力](construction/HANDOFF.md)。旧描述不覆盖当前契约。
+
 ## 一句话
 
 `Catnip Forge`（中文全称：Catnip 硬件智能开发平台；英文定位：Autonomous Hardware Development Agent）是一个 Electron 桌面硬件开发 IDE：用户在左侧对话，右侧提供 Skill/工程资源仓库、串口监视器、任务管理器、编辑器和探索；浏览器工作台后端暂时保留。任务由 Worker 编排，Agent 通过 Runtime MCP tools 控制同一个 Electron Chromium。

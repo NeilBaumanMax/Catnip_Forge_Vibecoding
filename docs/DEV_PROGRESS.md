@@ -1,5 +1,15 @@
 # 开发进度
 
+## 2026-09-15 — DWIDE 当前摘要与文档校正
+
+- 用户指定从 `catnip-GUAGUA` 的 `f2449a19` 创建 `DWIDE`；本轮只修正文档。开工基线、恢复点和范围见 [校正记录](construction/DWIDE_DOC_SYNC_20260915.md)，实时状态见 [施工接力](construction/HANDOFF.md) 与 Git。
+- 当前公开版本 v2.0.0 / Build 7201；六工作区、正常桌面默认探索、固定深蓝主题、150% 显示适配、独立探索历史/并发隔离、工程内交接及确认门禁已实现。
+- 当前定制 Windows 包交付目录为 `electron/dist-package/Catnip Forge`。最近已记录包验收为 2026-09-12、4,502,227,001 字节；本轮不重打包或复验本机留存成品。
+- 待完成：Skill 小站到本地安装桥、真实双搜索 Diagnosis、确认后的工程 Agent/实机闭环、新用户完整连接、完整人工体验/分发验收和代码签名。窗口弹出、历史联网成功与 mock 均不替代这些验收。
+- 当前接力与历史全文已分离，README/索引/施工入口/状态报告/计划/约束同步；验证结果见 [TEST_METRICS](construction/TEST_METRICS.md)。
+
+以下保留累计开发记录，各条“当前”“最新”“已通过”仅对应其原阶段。没有新证据时，不把旧分支或旧版本结果推广到 DWIDE 的探索 MVP。
+
 ## 2026-09-12 — 固定深蓝主题与 Windows 150% 缩放适配
 
 - [x] 移除软件助手中的浅色/深色切换，Renderer 在 React 挂载前固定为 Catnip 深蓝主题，并清除旧 `vibeide.appearance.theme` 偏好。
@@ -62,7 +72,7 @@
 
 ---
 
-## 当前已落地
+## 累计落地记录（保留各阶段当时状态）
 
 - [x] 2026-09-11 Phase 10–13：完成 v2.0.0 UI、工程内 Explore 历史与可编辑交接、更新后的新手引导、Neil 的 skill 小站、Neil·Bauman's 学院呱呱及作者入口、收藏来源对话快照/删除，以及找灵感/解问题场景插画；最新 Windows 包已通过版本与发布门禁。
 - [x] 2026-09-10 Phase 8：工程 Agent 对话与 Explore 多历史已物理迁入各工程 `.catnip`；Explore 使用独立对话时间线和可回看的四阶段，第三步生成分层交接材料、第四步磁盘重读并显式确认后提交当前工程 Agent；来源/收藏/计划按钮层级和尺寸已统一。自动化专项与构建通过，新版 Windows 包及真实搜索/Agent/硬件仍待验。
@@ -194,15 +204,17 @@
 
 ---
 
-## 当前架构现状
+## 当前工作区结构摘要（2026-09-15）
 
 ```text
 Electron Window
 ├── Agent 对话与任务输出
-├── 仓库页：硬件工程 / 参考代码 / Skills；Agent 工作区只保留在编辑器受控根目录
+├── 仓库页：Skills 优先，硬件工程 / 参考代码目录及同步入口
 ├── 监视器：串口监视器
 ├── 任务管理器：相对工程选择、build/flash、状态进度、按需日志和最近任务结果
 ├── 编辑器：多根文件树、Monaco 高亮、多文件标签、保存、字号和右键文件管理
+├── 探索：找灵感 / 解问题、独立多历史、Context、计划/材料与确认交接
+├── Neil 的 skill 小站：内置浏览器固定站点；本地下载安装桥待完成
 ├── 外观：固定 Catnip 深蓝主题和可拖动悬浮设置入口
 └── 工作台后端：浏览器、录制和 WebContentsView 链路保留，前端入口隐藏
 ```
@@ -213,7 +225,9 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 
 ---
 
-## 当前文档已同步
+## 历史文档同步清单
+
+当前必读顺序见 [INDEX](INDEX.md)；本清单不表示所有历史正文都已升级为当前产品要求。
 
 - [README.md](../README.md)
 - [docs/INDEX.md](INDEX.md)
@@ -229,7 +243,7 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 
 ---
 
-## 当前已知问题
+## 历史已知问题（当前待验收清单见施工接力）
 
 1. Monaco 当前随 renderer 完整打包，产物体积增加；后续应按启动性能决定是否拆分语言包或延迟加载。
 2. Claude Code CLI 的真实模型续聊效果仍需 Windows 实机上用真实 Agent 调用确认；应用级 session context 与 `verify:session` 已作为可验证兜底。
@@ -253,7 +267,9 @@ UI -> Gateway -> Worker -> Agent -> MCP -> Runtime -> Electron Chromium
 
 ---
 
-## 下一步
+## 历史后续事项
+
+当前下一步以 [施工接力](construction/HANDOFF.md) 为准；以下保留当时建议，不自动授权新任务。
 
 1. 在目标 Windows 10/11 机器上执行最终人工分发验收，重点确认 SmartScreen 提示、真实 API Key、Agent 连续对话和 USB-UART 驱动。
 2. 有真实 ESP/USB-UART 设备后验收 Agent/UI 共享串口的实际收发、断线恢复和端口占用提示，并补 packaged build/flash/serial smoke；当前无硬件模拟回归已通过。

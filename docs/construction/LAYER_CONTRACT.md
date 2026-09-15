@@ -1,6 +1,6 @@
 # Layer Contract
 
-依据当前源码核实后确定责任。知识 Store、安全连接、首次使用安装/Secret 向导、固定搜索桥、受限分析/计划、结果 UI、Handoff、有界 Context 与一次性确认执行门禁已实现；真实知乎“找灵感”和最新 Windows 包软件门禁已验收，真实知乎＋全网排障、全新用户连接和硬件仍待验收。
+2026-09-15 按当前源码核对责任：知识 Store、安全连接、安装/Secret 向导、固定搜索桥、受限分析/计划、结果 UI、工程内会话/Handoff、有界 Context 与一次性确认执行门禁已实现。真实找灵感及 2026-09-12 Windows 包有历史通过记录；真实双搜索排障、全新用户完整连接和硬件仍待验收。Skill 小站仅打开固定站点，站点到本地安装桥仍待完成。后文按日期保留契约演进；Phase 8 的工程内路径覆盖 Phase 7 的旧会话路径。
 
 | 层 | 责任与复用入口 | 禁止 |
 | --- | --- | --- |
@@ -26,7 +26,7 @@
 9. 工程切换必须同步仓库/编辑器、Agent conversations/context、Explore histories、Build/Flash/Serial 目标和事件过滤；活动/排队任务或未保存编辑不能静默改绑。
 10. Agent 与 Explore 记录必须带 Main 签发的 projectId。找灵感/解问题按 mode/sessionId 分目录保存多次历史；旧全局 Agent 对话只能进入未归属历史，不能自动注入。
 
-## 2026-09-10 Phase 7 工程会话边界
+## 2026-09-10 Phase 7 工程会话边界（路径由下节 Phase 8 更新）
 
 - `hardboard/projects` 根目录只能由 Main 的路径服务解析；Renderer 只提交工程 ID 或安全新工程名称，Main 校验 lexical path、realpath、符号链接、保留名和直接子目录边界。
 - project-sessions 位于 Main user-data，不写入安装资源或默认污染源码工程。目录索引、Agent 对话和 Explore session 文件版本化、限额、原子替换并保留损坏证据。

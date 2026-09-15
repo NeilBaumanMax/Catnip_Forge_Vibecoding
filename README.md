@@ -17,12 +17,13 @@ Electron UI -> Gateway -> Worker -> Agent -> Runtime MCP -> Electron Chromium / 
 ## 当前状态
 
 - 当前 GitHub remote：`origin`
-- 当前探索、Skill 小站与学院呱呱施工分支：`catnip-GUAGUA`；是否合入 `main` 必须以 Git 动态查询和明确合并验收为准
+- 当前施工分支：`DWIDE`（2026-09-15 从 `catnip-GUAGUA` 的 `f2449a19` 创建）；提交、远端状态及是否合入 `main` 必须以 Git 动态查询和明确合并验收为准
 - 当前公开版本：`v2.0.0`；内部构建号 `7201`，npm 包版本 `2.0.0-7201`，Windows PE 文件版本 `2.0.0.7201`
 - 当前 Windows 源码目录：`E:\Agent\vibeide\vibeide`
-- 上一版 Windows v0.1.0 unpacked 包：`E:\vibeide-0.1-win-unpacked`（历史验证对象）
+- 历史 Windows v0.1.0 unpacked 包：`E:\vibeide-0.1-win-unpacked`（仅为旧版本验证对象）
 - 历史 Linux、`C:\vibeide` 和旧 `E:\vibeide` 路径仅用于迁移记录，不再作为当前施工目录。
-- 当前代码来源：Windows 工作区通过 `main` 维护 Qwen 视觉旁路、聊天附件、Catnip Forge 客户数据路径，以及既有 Apple 风格 Electron、目录型 Skill、共享串口助手和编辑器能力；提交号和 GitHub 跟踪状态以本地 Git 动态查询结果为准。
+- 当前代码继承既有 Qwen 视觉旁路、聊天附件、客户数据路径、目录型 Skill、共享串口和编辑器能力，并包含 `catnip-GUAGUA` 上的探索及界面更新。正常桌面启动默认进入探索，Renderer 固定深蓝主题，已实现 150% 显示缩放适配。
+- 软件功能与 Windows 包已有验证记录；真实双搜索排障、确认后的实机闭环、全新用户连接和完整人工验收仍待完成。当前进展见 [施工接力](docs/construction/HANDOFF.md)。
 
 ## 能力边界
 
@@ -54,7 +55,7 @@ cd /d E:\Agent\vibeide\vibeide
 scripts\start_electron_desktop.cmd
 ```
 
-发布给其他用户时，应压缩并分发完整的 `electron\dist-package\win-unpacked` 文件夹。接收方完整解压到普通可写目录后运行 `Catnip Forge.exe`；首次启动窗口先引导在本机保存 DeepSeek API Key，自动重启后要求用户显式选择现有工程或在随包 `resources\runtime\hardboard\projects` 下新建工程。不能只发送 exe，也不要把包含真实 `resources\apikey.txt` 的目录重新分发。当前 v2.0.0 构建证据见 [Phase 13](docs/construction/PHASE_13_EXPLORE_ENTRY_ILLUSTRATIONS.md)，v1.5.0 检查表仅作历史发布证据。
+发布给其他用户时，应压缩并分发完整的 `electron\dist-package\Catnip Forge` 文件夹。接收方完整解压到普通可写目录后运行 `Catnip Forge.exe`；首次启动窗口先引导在本机保存 DeepSeek API Key，自动重启后要求用户显式选择现有工程或在随包 `resources\runtime\hardboard\projects` 下新建工程。不能只发送 exe，也不要把包含真实 `resources\apikey.txt` 的目录重新分发。最近一次已记录的 v2.0.0 包验收为 2026-09-12，见 [测试记录](docs/construction/TEST_METRICS.md#2026-09-12--catnip-forge-windows-解压包)；该历史验收不代表切换分支后本机留存包已经重新核验。`win-unpacked` 仅为当前定制打包脚本的中间目录，Phase 13 和 v1.5.0 报告保留为历史证据。
 
 ### Linux / macOS
 
@@ -150,6 +151,7 @@ pytest tests/test_project.py
 
 ## 下一步
 
-1. 人工复测最新 `electron/dist-package/win-unpacked`：冷启动工程选择/新建、返回或切页后 Explore 保留、重启恢复、工程 A/B 的 Agent 历史/编辑器/烧录目标隔离。
+1. 人工复测 `electron/dist-package/Catnip Forge`，先核对包来源与版本：冷启动工程选择/新建、返回或切页后 Explore 保留、重启恢复、工程 A/B 的 Agent 历史/编辑器/烧录目标隔离。
 2. 经用户明确授权后执行真实“解问题”知乎＋全网双搜索验收；不把既有找灵感结果或软件门禁当作 Diagnosis 证据。
 3. 在全新 Windows 用户环境验收 Access Secret 安全连接；有真实开发板时完成用户确认后的 Build/Flash/Serial 闭环，缺实机证据继续标记 `REAL_HARDWARE_VALIDATION_PENDING`。
+4. 完成 Skill 小站到既有 Skill Manager 的安全下载安装闭环；完整待办与验收边界见 [施工接力](docs/construction/HANDOFF.md)。

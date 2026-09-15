@@ -4,8 +4,17 @@
 
 ## 必读顺序
 
+1. 用户当前指令、[AGENTS](../AGENTS.md)、[Product Truth](product/PRODUCT_REQUIREMENTS.md)。
+2. [当前施工 HANDOFF](construction/HANDOFF.md)、[主约束](construction/CODEX_MASTER_REQUIREMENTS.md)、[施工计划](construction/CONSTRUCTION_PLAN.md)。2026-09-15 用户指定在 `DWIDE` 继续开发；分支与提交需动态核对。
+3. 当前代码/Git、[带日期状态报告](construction/PROJECT_STATE_REPORT.md)、[DWIDE 文档校正记录](construction/DWIDE_DOC_SYNC_20260915.md)。
+4. [分层契约](construction/LAYER_CONTRACT.md)、[流程](construction/WORKFLOW.md)、[工具边界](construction/TOOL_POLICY.md)、[测试记录](construction/TEST_METRICS.md)。最近已记录包验收为 2026-09-12，当前交付目录为 `electron/dist-package/Catnip Forge`。
+
+## 架构与专项参考
+
+以下文档保留相应阶段的设计和验证证据；旧界面、路径、版本、模型或硬件结论不能覆盖上述当前入口。
+
 1. [README](../README.md)：GitHub 首页、快速启动、项目边界。
-2. [当前施工 HANDOFF](construction/HANDOFF.md)：`catnip-GUAGUA` 当前接力状态、已完成 Phase 和下一步；旧 [HANDOFF](HANDOFF.md) 仅保留历史证据。
+2. [当前施工 HANDOFF](construction/HANDOFF.md)：DWIDE 接力状态、已实现范围与下一步；旧 [HANDOFF](HANDOFF.md) 和 [截至 2026-09-12 的施工接力副本](construction/HANDOFF_HISTORY_THROUGH_20260912.md) 仅保留历史证据。
 3. [ARCHITECTURE](ARCHITECTURE.md)：Electron、Worker、Agent、Runtime 的模块边界。
 4. [DEVELOPMENT](DEVELOPMENT.md)：开发、验证、提交和推送流程。
 5. [GITHUB_SYNC](GITHUB_SYNC.md)：Windows 实机、Linux 本机和 GitHub 的同步方案。
@@ -20,7 +29,7 @@
 14. [AGENT_CHAT_PRESENTATION_CONSTRUCTION](AGENT_CHAT_PRESENTATION_CONSTRUCTION.md)：Agent 主回复、执行过程折叠、专业视图与安全 Markdown 渲染的施工规则。
 15. [AGENT_CONVERSATION_HISTORY_CONSTRUCTION](AGENT_CONVERSATION_HISTORY_CONSTRUCTION.md)：多历史会话、重启恢复、切换删除、旧 session 迁移和 Agent 上下文续接规则。
 16. [AGENT_SKILL_RUNTIME_CONSTRUCTION](AGENT_SKILL_RUNTIME_CONSTRUCTION.md)：目录型 Skill、脚本/参考文件整树部署、聊天正文多 `@Skill` 引用和实际调用校验规则。
-17. [PHASE_13_EXPLORE_ENTRY_ILLUSTRATIONS](construction/PHASE_13_EXPLORE_ENTRY_ILLUSTRATIONS.md)：当前 v2.0.0 / Build 7201 Windows 包及探索入口插画验收证据；[WINDOWS_V1_5_0_RELEASE_CHECKLIST](WINDOWS_V1_5_0_RELEASE_CHECKLIST.md) 为历史发布报告。
+17. [PHASE_13_EXPLORE_ENTRY_ILLUSTRATIONS](construction/PHASE_13_EXPLORE_ENTRY_ILLUSTRATIONS.md)：Phase 13 当时的 v2.0.0 / Build 7201 Windows 包及入口插画证据；当前阶段与后续包记录见施工 HANDOFF / TEST_METRICS。[WINDOWS_V1_5_0_RELEASE_CHECKLIST](WINDOWS_V1_5_0_RELEASE_CHECKLIST.md) 为历史发布报告。
 18. [WINDOWS_V1_0_0_RELEASE_CHECKLIST](WINDOWS_V1_0_0_RELEASE_CHECKLIST.md)：历史 v1.0.0 便携包版本映射与分发验收记录。
 19. [SPLASH_SCREEN_CONSTRUCTION](SPLASH_SCREEN_CONSTRUCTION.md)：品牌启动页的视觉、真实加载阶段、双窗口切换、打包路径和验收基线。
 20. [SOFTWARE_ASSISTANT_GUIDE_CONSTRUCTION](SOFTWARE_ASSISTANT_GUIDE_CONSTRUCTION.md)：猫薄荷可维护 Markdown 知识手册、动态提示词、安全降级和发布验收基线。
@@ -39,15 +48,15 @@
 - [DEV_PROGRESS](DEV_PROGRESS.md)：历史开发进度，仍有参考价值。
 - [LOG](LOG.md)：持续施工日志，记录各阶段的关键变更、验证和 Git 边界。
 - [12_Docker_Windows_Smoke](12_Docker_Windows_Smoke.md)：Docker + Wine Windows 打包 smoke 方案。
-- [WINDOWS_0_1_MIGRATION_CONSTRUCTION](WINDOWS_0_1_MIGRATION_CONSTRUCTION.md)：历史 Windows 0.1 迁移与仓库导入方案，不代表当前 1.0.0-7201 界面。
+- [WINDOWS_0_1_MIGRATION_CONSTRUCTION](WINDOWS_0_1_MIGRATION_CONSTRUCTION.md)：历史 Windows 0.1 迁移与仓库导入方案，不代表当前 v2.0.0 界面。
 - [WINDOWS_0_1_TEST_REPORT](WINDOWS_0_1_TEST_REPORT.md) / [WINDOWS_0_4_0_7161_TEST_REPORT](WINDOWS_0_4_0_7161_TEST_REPORT.md)：历史版本实测报告。
 - `../runtime/hardboard/doc/`：硬件施工文档、设备记录、ESP-IDF 调用规范。
 
 ## 文档维护规则
 
 - README 只写对外入口和最短启动路径。
-- 架构和模块边界写在 `ARCHITECTURE.md`。
-- 本机接力、Windows SSH、GitHub 同步写在 `HANDOFF.md` 和 `GITHUB_SYNC.md`。
+- 当前架构和模块边界写在 `construction/LAYER_CONTRACT.md`；`ARCHITECTURE.md` 保留旧设计参考。
+- 当前接力统一写在 `construction/HANDOFF.md`；旧 `HANDOFF.md` 冻结为历史，GitHub 同步方案参考 `GITHUB_SYNC.md` 并按实时 Git 核实。
 - 账号密码只保存在本机，不写进任何项目文档。
 - 每次重构收尾时更新 `DEV_PROGRESS.md` 和 `LOG.md`。
 - 结构性功能、跨模块修改、发布变更和高风险修复必须先建立或更新专项施工文档，再进入代码施工。

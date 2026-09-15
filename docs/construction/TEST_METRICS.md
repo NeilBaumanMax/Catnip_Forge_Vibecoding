@@ -1,5 +1,35 @@
 # 测试度量与证据
 
+> 本文件保留各次测试的日期、完整命令、首次失败及复测结果。下方旧条目中的“最新包”“当前通过”仅适用于当时目标；2026-09-15 的文档校正不重新声明历史 UI、联网、打包或实机验收成功。当前范围见 [HANDOFF](HANDOFF.md)。
+
+## 2026-09-15 — DWIDE 文档校正基线
+
+对象：业务基线 `f2449a19`，仅 Markdown 文档修改。下列 8 项 npm 检查均为本轮执行，首次通过；没有运行 Windows 打包、live layout、应用首启、知乎/模型或硬件操作。
+
+| 完整命令 | 结果 | 证据范围 |
+| --- | --- | --- |
+| `npm.cmd --prefix runtime run typecheck` | PASS | Runtime 类型检查 |
+| `npm.cmd --prefix electron run typecheck` | PASS | Main / preload / Renderer 类型检查 |
+| `npm.cmd --prefix runtime run build` | PASS | Runtime TypeScript 构建；不是硬件工程 Build |
+| `npm.cmd --prefix electron run build:main` | PASS | Main / preload 构建 |
+| `npm.cmd --prefix electron run build:renderer` | PASS | 2,824 modules，1m 23s；保留既有大于 500 kB chunk 警告 |
+| `npm.cmd --prefix electron run verify:explore-ui` | PASS | 六工作区、默认探索、现有流程/主题静态源码契约；不是界面实操或真实搜索 |
+| `npm.cmd --prefix electron run verify:zhihu-skill-package` | PASS | 官方 Skill 15 文件与 builder filter；不是重新打包或官方 CLI 调用 |
+| `npm.cmd --prefix electron run verify:version` | PASS | 版本/品牌元数据及相关文件一致性；不是本机成品核验 |
+| `git diff --check`；`git -c core.safecrlf=false diff --check` | PASS | 无 whitespace 错误；初次 Git 提示 LF 将转 CRLF，后续仅对该检查关闭 safecrlf 提示，未修改 Git 配置 |
+| 一次性 PowerShell/Node 文档审计，完整命令见 [审计记录](DWIDE_DOC_SYNC_20260915.md) | PASS（修正检查器后） | Markdown 范围、UTF-8、正文标题、相对链接目标、历史原文保留、LOG 只追加、版本/六工作区/分支核对 |
+
+首次失败与诊断：
+
+- 初版文档审计直接对全文统计 `^# `，误将 README fenced shell 示例中的注释当标题，报 `one document title: README.md`、`4 !== 1`；改为先排除 fenced code 后检查正文，复测通过。未修改正确的 README 示例迎合断言。链接检查核对文件存在，不声称验证外链、Markdown fragment 或运行态路径。
+- 只读定位首次执行 `Get-Content -Encoding UTF8 -LiteralPath version.json` 报文件不存在；沿打包脚本找到 `config/version.json`，执行 `Get-Content -Encoding UTF8 -LiteralPath config/version.json` 后成功；随后版本专项通过。
+- Renderer 构建等待期间的只读进程探针 `Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Where-Object { $_.CommandLine -like '*vite*build*' } | Select-Object ProcessId,ParentProcessId,CreationDate` 被沙箱拒绝（`0x80041003`）。未升级该诊断、未终止任何进程；使用既有命令会话等到 Renderer exit 0。
+- Review 发现 README“下一步”仍有一处旧包路径，已同步为 `Catnip Forge`；TEST_METRICS 的重复一级标题已整理，历史测试结果未删除。
+
+Git 恢复点：`git branch backup/pre-phase-doc-sync-20260915 f2449a199b1a92fb644276403a75da116c6fb586` → `git push origin refs/heads/backup/pre-phase-doc-sync-20260915:refs/heads/backup/pre-phase-doc-sync-20260915` → `git ls-remote --heads origin backup/pre-phase-doc-sync-20260915`，均成功，远端 hash 与开工基线一致。最终文档提交后动态核对 DWIDE，最终 hash 由 Git 和本轮收尾回复提供。
+
+`LIVE_DIAGNOSIS_PENDING`、`REAL_HARDWARE_VALIDATION_PENDING`、新用户完整连接和人工成品验收保持未验证。历史包和未跟踪用户现场不计入本轮验证。
+
 ## 2026-09-12 — 固定主题 / 150% 缩放矩阵
 
 | 检查 | 结果 |
@@ -660,9 +690,7 @@ Explore UI、知识 Store（含空摘要/未知卡片反例）、Electron typech
 布局专项首次失败因旧规则的浅色 `!important` 覆盖新深色画布，提升最终规则优先级后修复。第二次失败因“确认计划”的副说明包含“可执行”，旧测试按文本误点第三阶段；改为按第四个阶段按钮定位后通过。两次均完成根因修复，未绕过产品门禁。
 
 本轮未执行真实知乎请求、Windows 打包、Build/Flash/Serial 或实机动作；`REAL_HARDWARE_VALIDATION_PENDING` 保留。
-# 测试度量与证据
-
-## 2026-09-11 — Task Manager / Monitor visual gate
+## 2026-09-11 — Task Manager / Monitor visual gate（原补充记录）
 
 | Command | Result | Evidence |
 | --- | --- | --- |

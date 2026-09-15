@@ -1,6 +1,18 @@
 # Phase 施工计划
 
-顺序固定，Phase 内小闭环。无重大阻塞不形式询问；出现用户列明停工条件时停止。每项范围、证据、测试先明确再编码。不得 worktree 或开其他产品分支。
+按用户当前指令在 `DWIDE` 施工，Phase 内小闭环。无重大阻塞不形式询问；出现用户列明停工条件时停止。每项范围、证据、测试先明确再编码；不得创建 worktree 或擅自切换其他产品分支。
+
+## 2026-09-15 当前执行摘要
+
+- 本次仅修正文档漂移，范围与恢复点见 [DWIDE 文档校正](DWIDE_DOC_SYNC_20260915.md)。开工业务基线为 `f2449a19`；当前代码进展已覆盖 Phase 15 与 2026-09-12 的安全窗口、深色/缩放布局、Windows 包目录修复。
+- Phase 0–6 软件链路已实现，Phase 7–14 工程会话、历史、交接、UI/助手与文档工作已落地；这不等于 Phase 6 的真实网络/硬件最终验收或整个 MVP 完成。
+- 最近 Windows 发布验证记录为 2026-09-12，交付目录 `electron/dist-package/Catnip Forge`。此前 Phase 的版本、旧包路径、体积和未验证项仅反映当时。
+- 当前待办：完整人工体验验收；Skill 小站到既有 Skill Manager 的下载安装闭环；全新 Windows 用户安装/连接；真实双搜索 Diagnosis；经确认的工程 Agent 修改/Build/Flash/Serial/知识回写；代码签名与分发验收。
+- `LIVE_DIAGNOSIS_PENDING` 和 `REAL_HARDWARE_VALIDATION_PENDING` 保留。本轮未授权继续实现这些功能或触发真实服务/硬件；后续按用户任务推进。
+
+## 原始 Phase 0–6 范围与验收定义
+
+以下为计划和带日期执行历史；“COMPLETE”只在该条明确的软件/文档范围内成立，最新状态以本页摘要及 [HANDOFF](HANDOFF.md) 为准。
 
 | Phase | 小闭环与最小修改范围 | 验收门禁 |
 | --- | --- | --- |

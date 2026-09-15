@@ -1076,3 +1076,12 @@
 - 首次完整命令已完成 Runtime/Main/Renderer 构建，但旧打包程序占用 `dist-package` 导致清理报 `EPERM`；精确关闭该旧包进程树、为安全限定的输出清理增加重试后，继续打包成功。
 - 发布门禁通过：总计 4,502,227,001 字节，Node v22.14.0、隔离 Python/pyserial 3.5、ESP-IDF v5.4.3、Claude Code 2.1.167；DeepSeek/Qwen Key、历史、收藏、日志、录屏、截图与 `.catnip` 均未入包。
 - 官方知乎 Skill 15 文件门禁和隔离首次启动通过；测试进程及临时用户目录已清理，未调用知乎、模型服务或硬件。
+
+## 2026-09-15 — DWIDE 文档漂移校正
+
+- 用户指定从 `catnip-GUAGUA` 最新提交创建 `DWIDE`，随后要求修正文档漂移。开工本地与远端来源分支均为 `f2449a19`；`backup/pre-phase-doc-sync-20260915` 已推送到 origin 并核对为该提交。
+- 同步 AGENTS、README、INDEX、施工接力/计划/状态/约束与开发进度：当前分支 DWIDE、v2.0.0 / Build 7201、六工作区、固定深蓝主题、Phase 15 及 9 月 12 日修复、`electron/dist-package/Catnip Forge` 交付路径。
+- 原施工接力全文保留在 [历史副本](construction/HANDOFF_HISTORY_THROUGH_20260912.md)。旧报告、Phase 和开发条目保留日期；不再把 Phase 13 包、旧分支实机或新电脑安全窗口弹出当作当前完整验收。
+- A7 区分“安全配置路径历史验证”与“当前机器凭据状态”；Skill 小站本地安装桥、双搜索 Diagnosis、当前探索硬件闭环、新用户完整连接、人工验收和签名仍待完成。
+- 8 项 npm 类型/构建/离线专项通过。文档审计首次误统计 README fenced shell 注释为标题，修正检查器后通过；Review 补正 README 尾部旧包路径。版本定位错路径和 CIM 权限拒绝等完整命令/后续结果见 [TEST_METRICS](construction/TEST_METRICS.md)，本轮范围及一次性审计命令见 [校正记录](construction/DWIDE_DOC_SYNC_20260915.md)。
+- 只修改 Markdown；Product Truth、业务源码、官方 vendor 和三个未跟踪用户目录保持原样。未重打包、未请求真实服务、未触硬件。文档提交后按流程推送 DWIDE 并核远端，实际提交 hash 由 Git 动态提供，不预写自身提交号。

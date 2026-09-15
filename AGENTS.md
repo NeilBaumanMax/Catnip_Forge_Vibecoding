@@ -1,6 +1,6 @@
 # Catnip Forge 施工入口
 
-本轮仅在当前工作区、`idea_to_production` 分支施工。不要创建 worktree。开工先动态检查 Git，不能把本文件中的分支和历史提交当作实时状态。
+本轮仅在当前工作区、`DWIDE` 分支施工（用户于 2026-09-15 指定，从 `catnip-GUAGUA` 创建）。不要创建 worktree。开工先动态检查 Git，不能把本文件中的分支和历史提交当作实时状态；后续用户明确指定的分支优先。
 
 ## 必读与真相顺序
 
@@ -29,7 +29,7 @@
 
 ## 关键源码入口
 
-- UI：`electron/src/renderer/components/BrowserPanel.tsx`（五个可见工作区，含“探索”）、`ExplorePanel.tsx`、`ChatPanel.tsx`、`App.tsx`。
+- UI：`electron/src/renderer/components/BrowserPanel.tsx`（六个可见工作区，含“探索”和“Neil 的 skill 小站”）、`ExplorePanel.tsx`、`ChatPanel.tsx`、`App.tsx`。
 - IPC：`electron/src/preload/index.ts` → `electron/src/main/gateway.ts`。
 - Agent：`electron/src/main/worker/orchestrator.ts`、`context.ts`、`task-state.ts`、`electron/src/main/agent.ts`。
 - Skill：`electron/src/main/skill-manager.ts`、`agent/skills/<id>/SKILL.md`。
