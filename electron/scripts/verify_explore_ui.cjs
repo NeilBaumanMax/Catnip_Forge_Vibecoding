@@ -10,6 +10,7 @@ const exploreSourceList = fs.readFileSync(path.join(root, 'src', 'renderer', 'co
 const exploreStageNav = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreStageNav.tsx'), 'utf8');
 const exploreHistory = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreSessionHistory.tsx'), 'utf8');
 const exploreKnowledgePreview = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreKnowledgePreview.tsx'), 'utf8');
+const exploreAnalysisResults = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreAnalysisResults.tsx'), 'utf8');
 const globalStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'global.less'), 'utf8');
 const appleStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'apple.less'), 'utf8');
 const exploreStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'explore.less'), 'utf8');
@@ -86,8 +87,10 @@ assert.match(explorePanel, /onSave=\{\(source\) => void saveSource\(source\)\}/,
 assert.match(exploreSourceList, /onClick=\{\(\) => onSave\(source\)\}/, 'source save must require a user click');
 assert.doesNotMatch(explorePanel, /useEffect\([\s\S]{0,300}saveExploreKnowledge/, 'knowledge must not be saved automatically');
 assert.match(explorePanel, /不会修改文件、Build、Flash 或操作串口/, 'Explore side-effect boundary is missing');
-assert.match(explorePanel, /hypothesis\.projectEvidence/, 'diagnosis project evidence must be rendered');
-assert.match(explorePanel, /diagnosis\.sourceConflicts/, 'diagnosis source conflicts must be rendered');
+assert.match(explorePanel, /import \{ ExploreDiagnosisResults, ExploreIdeaResults \} from '\.\/explore\/ExploreAnalysisResults'/, 'analysis results must use the local presentation components');
+assert.match(explorePanel, /<ExploreIdeaResults[\s\S]*?onBeginPlan=\{beginPlan\}[\s\S]*?<ExploreDiagnosisResults[\s\S]*?onBeginPlan=\{beginPlan\}/, 'analysis result views must retain the parent plan callback');
+assert.match(exploreAnalysisResults, /hypothesis\.projectEvidence/, 'diagnosis project evidence must be rendered');
+assert.match(exploreAnalysisResults, /diagnosis\.sourceConflicts/, 'diagnosis source conflicts must be rendered');
 assert.match(exploreSourceList, /source\.type/);
 assert.match(exploreSourceList, /source\.author/);
 assert.match(exploreSourceList, /source\.excerpt/);

@@ -98,6 +98,19 @@ test('knowledge UI routes to its controlled component regression and keeps brows
   assert(plan.requirements.some(requirement => requirement.includes('verify:explore-knowledge-preview-browser')));
 });
 
+test('analysis results UI routes to its component regression and existing isolated layout evidence', () => {
+  const selected = context('explore', 'results-ui');
+  assert.deepEqual(selected.tests, ['verify:explore-analysis-results', 'verify:explore-ui']);
+  assert.deepEqual(route([selected.source[0]]).modules, ['explore']);
+  assert.deepEqual(route(selected.source).modules, ['desktop-shell', 'explore']);
+  assert.equal(stepsFor(selected.tests).some(step => step.id === 'build:main'), false);
+  assert.equal(SAFE.has('verify:explore-layout-ui'), false);
+  assert(profile('explore').steps.some(step => step.id === 'verify:explore-analysis-results'));
+  const plan = changedPlan([...selected.source, 'scripts/dev/verification.cjs']);
+  assert(plan.steps.some(step => step.id === 'verify:explore-analysis-results'));
+  assert(plan.requirements.some(requirement => requirement.includes('verify:explore-layout-ui')));
+});
+
 test('changed files include staged/unstaged/rename/delete/untracked, base history and spaces', t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'catnip-routing-'));
   t.after(() => {

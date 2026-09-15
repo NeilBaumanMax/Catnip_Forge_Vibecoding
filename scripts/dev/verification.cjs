@@ -11,13 +11,13 @@ const SAFE = new Set([
   'verify:explore-session', 'verify:explore-knowledge', 'verify:explore-context',
   'verify:explore-zhihu-connection', 'verify:project-session', 'verify:data-paths',
   'verify:serial-monitor', 'verify:task-queue', 'verify:qwen-attachments', 'verify:hardboard',
-  'verify:task-history', 'verify:explore-history', 'verify:explore-knowledge-preview',
+  'verify:task-history', 'verify:explore-history', 'verify:explore-knowledge-preview', 'verify:explore-analysis-results',
 ]);
 const CORE = ['verify:explore-request', 'verify:explore-analysis-gate', 'verify:explore-search-handoff'];
 const FAST_TESTS = ['verify:version', 'verify:explore-ui'];
 const GROUPS = {
   'explore-core': CORE,
-  explore: [...CORE, 'verify:explore-session', 'verify:explore-knowledge', 'verify:explore-context', 'verify:explore-zhihu-connection', 'verify:explore-ui', 'verify:explore-entry', 'verify:explore-history', 'verify:explore-knowledge-preview'],
+  explore: [...CORE, 'verify:explore-session', 'verify:explore-knowledge', 'verify:explore-context', 'verify:explore-zhihu-connection', 'verify:explore-ui', 'verify:explore-entry', 'verify:explore-history', 'verify:explore-knowledge-preview', 'verify:explore-analysis-results'],
   project: ['verify:project-session', 'verify:data-paths'],
   serial: ['verify:serial-monitor'],
   skills: ['verify:zhihu-skill-package', 'verify:explore-zhihu-connection'],
