@@ -13,6 +13,7 @@ const SAFE = new Set([
   'verify:serial-monitor', 'verify:task-queue', 'verify:qwen-attachments', 'verify:hardboard',
 ]);
 const CORE = ['verify:explore-request', 'verify:explore-analysis-gate', 'verify:explore-search-handoff'];
+const FAST_TESTS = ['verify:version', 'verify:explore-ui'];
 const GROUPS = {
   'explore-core': CORE,
   explore: [...CORE, 'verify:explore-session', 'verify:explore-knowledge', 'verify:explore-context', 'verify:explore-zhihu-connection', 'verify:explore-ui', 'verify:explore-entry'],
@@ -26,7 +27,12 @@ const GROUPS = {
 const make = (id, args, cwd = 'electron') => ({ id, executable: 'node', args, cwd });
 const MAIN = make('build:main', ['node_modules/typescript/lib/tsc.js']);
 const TYPECHECKS = [make('electron:typecheck', ['node_modules/typescript/lib/tsc.js', '--noEmit']), make('runtime:typecheck', ['node_modules/typescript/lib/tsc.js', '--noEmit'], 'runtime')];
-const DEV_CHECKS = [make('check:knowledge', ['scripts/dev/check-knowledge.cjs'], '.'), make('test:dev-tools', ['--test', 'scripts/dev/verification.test.cjs'], '.')];
+const DEV_CHECKS = [
+  make('check:knowledge', ['scripts/dev/check-knowledge.cjs'], '.'),
+  make('check:architecture', ['scripts/dev/check-architecture.cjs'], '.'),
+  make('check:maintainability', ['scripts/dev/check-maintainability.cjs'], '.'),
+  make('test:dev-tools', ['--test', 'scripts/dev/verification.test.cjs', 'scripts/dev/guardrails.test.cjs'], '.'),
+];
 
 function legacyStep(name, scripts = manifest().scripts) {
   if (!SAFE.has(name)) throw new Error(`Unreviewed or environment-dependent test: ${name}`);
@@ -46,7 +52,7 @@ function stepsFor(names, { fast = false } = {}) {
 }
 
 function profile(name) {
-  const fast = ['verify:version', 'verify:explore-ui'];
+  const fast = FAST_TESTS;
   if (name === 'fast') return { level: 'FAST', steps: stepsFor(fast, { fast: true }), requirements: [] };
   if (name === 'integration') return { level: 'INTEGRATION', steps: stepsFor([...fast, ...Object.values(GROUPS).flat(), ...SAFE], { fast: true }), requirements: ['Real UI geometry, deployment, network and hardware are separate evidence; offline integration is not release acceptance.'] };
   if (!GROUPS[name]) throw new Error(`Unknown verification profile: ${name}`);
@@ -78,12 +84,13 @@ function changedPlan(files, map = projectMap()) {
     const m = map.modules[id];
     if (m.status.frozen) frozen.push(id);
     for (const name of [...m.tests.fast, ...m.tests.module, ...(integration ? m.tests.integration : [])]) {
+      if (DEV_CHECKS.some(step => step.id === name)) continue; // Already included in every changed plan.
       if (SAFE.has(name)) names.push(name);
       else requirements.push(`NOT RUN automatically: ${name}; inspect isolation/environment before invoking legacy command.`);
     }
   }
   if (frozen.length) requirements.push(`Frozen module changed: explicit scope review and targeted manual validation (${frozen.join(', ')}).`);
-  const plan = integration ? profile('integration') : { level: names.length ? 'MODULE' : 'FAST', steps: stepsFor(names, { fast: true }), requirements: [] };
+  const plan = integration ? profile('integration') : { level: names.length ? 'MODULE' : 'FAST', steps: stepsFor([...FAST_TESTS, ...names], { fast: true }), requirements: [] };
   return { plan_only: true, changed_files: files, ...routed, reasons, ...plan, requirements: [...new Set([...plan.requirements, ...requirements])] };
 }
 

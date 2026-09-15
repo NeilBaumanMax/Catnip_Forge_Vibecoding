@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "baseline_commit": "71d63d5d69ef2b01fc320241f7c6c3628f43a248",
+  "baseline_date": "2026-09-15",
+  "policy": "docs/architecture/MAINTAINABILITY.md",
+  "hotspots": {
+    "electron/src/renderer/components/ExplorePanel.tsx": 1761,
+    "electron/src/renderer/components/BrowserPanel.tsx": 1518,
+    "electron/src/renderer/App.tsx": 1093,
+    "electron/src/main/worker/orchestrator.ts": 1255,
+    "electron/src/renderer/components/ChatPanel.tsx": 879
+  }
+}

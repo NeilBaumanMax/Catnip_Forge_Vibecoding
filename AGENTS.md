@@ -26,6 +26,7 @@ Explore只分析、交接先计划、用户明确确认后才允许工程修改/
 Frozen不是可删除；不擅自委派子Agent。
 
 ## 日常施工/Git
+热点增长按[维护规则](docs/architecture/MAINTAINABILITY.md)审查；新增大块业务先考虑提取，check:maintainability 输出软警报。
 动态执行git status、branch、HEAD、remote及跟踪检查；仅当前工作区DWIDE，不建worktree，保护用户修改，不stash/reset/clean/force push。
 重要阶段前建backup/pre-phase-X-YYYYMMDD、push origin并核hash；失败记REMOTE_BACKUP_PENDING。精确暂存，禁止git add -A；staged review → commit → push DWIDE → ls-remote核hash，未经合并验收不推main。
 先Task Context；大型/跨模块任务先独立提交并推送计划再实现。普通小任务可在首次实现提交中携带事先写好的Context，避免纯流程提交膨胀。

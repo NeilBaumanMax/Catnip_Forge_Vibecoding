@@ -13,6 +13,7 @@ Lifecycle: ACTIVE · Development verification，产品硬件 Build 单独记证�
 | 入口 | 内容 |
 | --- | --- |
 | verify:fast | Main/preload + Runtime typecheck、知识地图、开发工具测试、版本/Explore静态契约；零build |
+| check:architecture / check:maintainability | 四项AST导入规则 / 尺寸与增长警报；均已进入FAST |
 | verify:explore-core / verify:explore | 核心request/权限/交接三项；完整版再含session/knowledge/context/连接/静态UI |
 | verify:project / verify:serial | 工程隔离/路径；共享串口mock |
 | verify:skills-offline | vendor文件/filter与连接门禁；不执行真实部署 |

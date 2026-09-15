@@ -831,7 +831,7 @@
       ],
       "code": [
         "AGENTS.md",
-        "scripts",
+        "scripts/dev",
         "electron/package.json",
         "runtime/package.json"
       ],
@@ -861,7 +861,10 @@
       "forbidden_dependencies": [],
       "tests": {
         "fast": [
-          "verify:version"
+          "check:knowledge",
+          "check:architecture",
+          "check:maintainability",
+          "test:dev-tools"
         ],
         "module": [],
         "integration": [
@@ -871,7 +874,8 @@
         ]
       },
       "decisions": [
-        "docs/decisions/ADR-0001-development-knowledge.md"
+        "docs/decisions/ADR-0001-development-knowledge.md",
+        "docs/decisions/ADR-0002-development-verification.md"
       ],
       "status": {
         "active": true,

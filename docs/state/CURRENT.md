@@ -9,7 +9,7 @@ Lifecycle: ACTIVE · 唯一当前状态 · 2026-09-15
 
 ## Active task
 - [TASK-DEV-MAINT-001](../tasks/active/TASK-DEV-MAINT-001.md)。
-- 已完成预检、远端恢复点和独立基线提交；当前推进知识导航，随后验证与架构约束。
+- 知识导航、分层验证已提交；架构导入检查/增长警报已落地，正在最终核验与归档。
 
 ## Recently completed
 - 文档漂移校正：分支、六工作区、固定深蓝主题、包目录、历史边界。
@@ -17,6 +17,8 @@ Lifecycle: ACTIVE · 唯一当前状态 · 2026-09-15
 - 最近产品修复：知乎原生安全窗口可见性、150% 缩放布局、Windows 交付目录更名。
 
 ## Known regressions / blockers
+- 既有架构债务：App.tsx 的启动 DeepSeek/Qwen Key 输入经 preload 的 startup:save-apikey 传输，与 Layer 的 Renderer Secret 边界不一致；四项导入检查不覆盖该数据流，本轮不改业务。下一次安全边界任务单独处理。
+- 既有验证债务：electron/tsconfig.json 排除 Renderer；Main/preload typecheck 与 Vite build 不能冒充 TSX 严格类型门禁。
 - 历史 Workbench smoke 有 Windows Chromium GPU 退出失败；未在本轮复测，不能被另行 CDP 通过覆盖。
 - 当前软件验证状态仅见 [CURRENT_TEST_STATUS](../testing/CURRENT_TEST_STATUS.md)；这里不复制 PASS 表。
 - 当前施工无已知阻塞；依赖已安装，不机械 npm install。

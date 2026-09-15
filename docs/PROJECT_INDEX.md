@@ -9,6 +9,7 @@ Lifecycle: ACTIVE · Development Agent 导航（不是产品运行配置）
 | 产品要求 | [Product Truth](product/PRODUCT_REQUIREMENTS.md)，只读相关章节；冷启动一次读全篇 |
 | 现在/当前任务指针 | [CURRENT](state/CURRENT.md) |
 | 架构/全局不变量 | [原 Layer Contract](construction/LAYER_CONTRACT.md) |
+| 维护约束/未来拆分 | [MAINTAINABILITY](architecture/MAINTAINABILITY.md) / [Hotspots](refactor/HOTSPOTS.md)，相关任务才读 |
 | 普通施工循环 | [WORKFLOW](construction/WORKFLOW.md)，AGENTS 已给日常摘要 |
 | 模块定位 | [project-map](../.vibecoding/project-map.yaml)，按 module id 读取条目 |
 | 局部上下文 | [Task 模板](tasks/TASK_TEMPLATE.md)、[active](tasks/active/README.md) / [archive](tasks/archive/README.md) |

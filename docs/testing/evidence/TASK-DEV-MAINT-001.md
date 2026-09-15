@@ -1,5 +1,6 @@
 # TASK-DEV-MAINT-001 Evidence
 Lifecycle: ACTIVE（任务结束后 ARCHIVED）
+完整命令中的前缀均在仓库根目录运行；脚本子步骤的 node 命令及 cwd 由 runner 逐项输出，旧别名原文快照在 scripts/dev/fixtures/legacy-scripts.json。
 ## Baseline
 - 71d63d5d，DWIDE / origin/DWIDE一致；独立计划 bf0192da 已推送。
 - 10必读/1301行；31个verify中12个重复build:main；Explore核心组三次build。
@@ -24,3 +25,12 @@ Lifecycle: ACTIVE（任务结束后 ARCHIVED）
 - Review：verify:skills会真实部署，不能进入自动safe清单；CLI status、CDP、packaged/live均显式列为requirements。Electron typecheck实际只检查Main/preload，新文档明确Renderer类型检查缺口。
 - Repair decision：无需业务Repair；本阶段只改开发runner/config。依赖manifest仅新增scripts，依赖/lock未变，未执行npm install。
 - FAIL 首次 `npm.cmd --prefix electron run verify:fast`：26.170s，其中project-session-ui等目标20.692s后报`Error: packaged project session renderer target not found`，chat-presentation未运行。根因是开发聚合错误把CDP成品测试分类为静态；脚本需9230端口与已打开成品。Repair局限于safe清单/组/测试策略，原测试及产品不变；新增反例确保该命令始终列为环境requirement。
+
+## Phase 3/4 — Guardrails
+- PASS `node scripts/dev/check-architecture.cjs`：94 个产品 TS/TSX、4 条导入边界、0 条违规；不是完整架构/安全证明。
+- PASS `node --test scripts/dev/guardrails.test.cjs`：4 组，含静态/动态/type/require/re-export/alias越层、合法bridge和注释正例、尺寸阈值。
+- PASS `npm.cmd --prefix electron run verify:fast`：加入架构/尺寸检查后 runner 6.004s，命令工具 wall time 7.253s；8 个步骤，开发工具共12组通过，0 build。
+- `check:maintainability` 明确报告8个尺寸警报；5个已知热点growth=0，不通过删代码“消警报”。
+- 基线债务审查：App.tsx:152/194 与 preload/index.ts:10 的启动 Key 数据流不符合 Renderer Secret 边界；未提取凭据值，未调用保存接口。当前债务只在 CURRENT 维护，检查仅限直接导入规则。
+- Review后contract不再复制 tests 分类，直接调用context从地图取唯一推荐；新规则/AST依赖仅用于开发，产品源码/lock/vendor不变。
+- 工具执行细节：一次生成patch的JavaScript模板语法错误在执行前退出，未改文件；随后改正模板并成功生成。定位不存在的 startup.ts / verify_task_queue.cjs 时rg报路径不存在，已改用真实 App/preload 与 package 中 verify_agent_task_queue.cjs，不是产品测试失败。

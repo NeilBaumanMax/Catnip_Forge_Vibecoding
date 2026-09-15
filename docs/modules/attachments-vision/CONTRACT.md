@@ -15,8 +15,7 @@ attachment.* / vision.qwen_analyze；随机附件ID。
 ## Invariants
 Main掌管Key；附件绑定会话；Runtime只请求桥服务，不自行选择模型决策；不泄露路径/凭据。全局规则引用Layer §跨层不变量；不复制另一套全局契约。
 ## Relevant Tests
-FAST：相关package typecheck。
-MODULE：verify:qwen-attachments。
-以上为electron既有脚本；Runtime改动加Runtime typecheck。UI几何/真实设备/API验证按Task显式安排，不由静态通过推断。
+运行 `node scripts/dev/context.cjs attachments-vision` 获取地图中的唯一专项推荐；[分级与副作用](../../testing/TEST_STRATEGY.md)决定执行范围。
+Runtime改动加Runtime typecheck；无已审离线专项则升级集成并标明coverage gap；UI/设备/API须显式验收。
 ## Related ADRs
 [ADR-0001](../../decisions/ADR-0001-development-knowledge.md)。历史调查才加载旧施工与证据。

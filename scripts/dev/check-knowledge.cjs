@@ -45,7 +45,7 @@ function checkKnowledge(map = projectMap()) {
   const limits = { 'docs/PROJECT_INDEX.md': 80, 'docs/state/CURRENT.md': 200, 'docs/testing/CURRENT_TEST_STATUS.md': 80 };
   for (const [file, max] of Object.entries(limits)) assert(read(file).trimEnd().split(/\r?\n/).length <= max, `${file}: navigation size budget`);
   // Only links in active knowledge; legacy files remain historical references.
-  const docs = ['AGENTS.md', 'docs/PROJECT_INDEX.md', 'docs/state/CURRENT.md', 'docs/testing/TEST_STRATEGY.md', 'docs/testing/CURRENT_TEST_STATUS.md', ...ids.map(id => map.modules[id].docs.contract)];
+  const docs = [...new Set(['AGENTS.md', 'docs/PROJECT_INDEX.md', 'docs/state/CURRENT.md', 'docs/testing/TEST_STRATEGY.md', 'docs/testing/CURRENT_TEST_STATUS.md', ...ids.map(id => map.modules[id].docs.contract), ...files.filter(f => /^docs\/(tasks|decisions|architecture|refactor)\/.*\.md$/.test(f))])];
   for (const file of docs) {
     for (const [, link] of read(file).matchAll(/\[[^\]\n]*\]\(([^)\n]+)\)/g)) {
       if (/^(?:https?:|#)/.test(link)) continue;

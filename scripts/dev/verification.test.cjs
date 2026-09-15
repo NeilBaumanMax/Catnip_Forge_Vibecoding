@@ -48,6 +48,7 @@ test('unknown/deleted/frozen/boundary/config paths escalate instead of skipping'
   assert(frozen.requirements.some(r => r.includes('Frozen')));
   assert(changedPlan(['electron/electron-builder.yml']).requirements.some(r => r.includes('RELEASE')));
   assert(changedPlan([]).steps.length > 0);
+  assert.deepEqual(changedPlan([]).steps, profile('fast').steps);
   assert.equal(changedPlan([]).plan_only, true);
 });
 
