@@ -1,5 +1,7 @@
 # Phase 施工计划
 
+> Lifecycle: SUPERSEDED（全文为迁移前历史，停止追加当前状态/全局流水）。当前开发入口为 [PROJECT_INDEX](../PROJECT_INDEX.md)，状态只维护 [CURRENT](../state/CURRENT.md)，新任务及测试转入 tasks/ 与 testing/evidence/。本文件旧维护要求不再生效；历史正文保留。
+
 按用户当前指令在 `DWIDE` 施工，Phase 内小闭环。无重大阻塞不形式询问；出现用户列明停工条件时停止。每项范围、证据、测试先明确再编码；不得创建 worktree 或擅自切换其他产品分支。
 
 ## 2026-09-15 当前执行摘要

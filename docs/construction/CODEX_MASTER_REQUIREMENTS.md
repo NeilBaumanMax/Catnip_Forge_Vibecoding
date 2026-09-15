@@ -1,5 +1,7 @@
 # 探索 / 官方 Zhihu Skill MVP 施工主约束
 
+> Lifecycle: SUPERSEDED（全文为迁移前历史，停止追加当前状态/全局流水）。当前开发入口为 [PROJECT_INDEX](../PROJECT_INDEX.md)，状态只维护 [CURRENT](../state/CURRENT.md)，新任务及测试转入 tasks/ 与 testing/evidence/。本文件旧维护要求不再生效；历史正文保留。
+
 Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定索引：[D001–D041](DECISION_LOG.md)。当前接力：[HANDOFF](HANDOFF.md)。现场证据：[带日期状态报告](PROJECT_STATE_REPORT.md)。用户需求优先于旧规则；历史文档不能授权额外功能。当前用户指定分支为 `DWIDE`，开工动态核对 Git。
 
 ## 范围与完成定义

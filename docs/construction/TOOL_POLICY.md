@@ -1,5 +1,7 @@
 # 工具与安全边界
 
+Lifecycle: ACTIVE · 按任务需要加载；开发验证层级及日志方式以 [Test Strategy](../testing/TEST_STRATEGY.md) / [WORKFLOW](WORKFLOW.md) 为准。
+
 - Git：只当前工作区；只向 origin 当前施工/backup ref 推送；重要 Phase 先备份；精确暂存；禁止 worktree、reset --hard、clean -fd、force push、自动 stash/覆盖用户工作。
 - 文件：优先 rg 精确范围，不扫描全部项目/build/串口历史。避免读取凭据文件。写入只在 Phase 授权范围；官方 ZIP 安全解包要检查路径穿越/符号链接/同名覆盖，保留原字节。递归删除前核绝对边界，不能以广泛清理获得干净环境。
 - 网络：本轮已授权 origin backup/commit/push 和必要官方 Skill 检查；业务请求最小化，不为每次搜索预查额度，不读取本人数据/OAuth。不得新增云后端或绕过官方 CLI；安装遵循官方独立确认。

@@ -1,18 +1,23 @@
-# 施工循环
+# Development Workflow
+Lifecycle: ACTIVE · Canonical development procedure · supersedes prior global append-only workflow.
 
-1. 读 Product Truth、HANDOFF、当前 Phase，动态查 branch/status/remote/HEAD/upstream/tags；保护用户修改。
-2. 找最小范围，登记 Assumption/风险/验收；重要 Phase 建立 origin 备份并核 hash。
-3. 先提交施工文档基线，再写业务代码；Phase 0 不写业务实现。每个业务小闭环的 Git 历史中必须存在早于实现提交的独立文档基线提交；实现与收尾文档同处一个提交只能证明收尾，不能作为“先文档”的证据。
-4. 小步修改 → Review 查 Bug → 第一性原理核对 → 专项测试。
-5. 失败记录第一次命令/错误/根因，修根因再测；禁止更改正确测试迎合 Bug。
-6. 检查重复代码、临时补丁、掩盖问题的 fallback、heuristic 状态猜测、自由文本脆弱解析、破坏现有功能、范围扩张、Product Truth、Renderer 越权、复制 Agent/Runtime、不必要依赖、是否有更简单方案。
-7. 临时方案必须记 TEMPORARY_SOLUTION：原因、风险、移除条件。成功不能覆盖失败。
-8. 相关 typecheck/build/regression + diff check。当前数据/源码测试与硬件测试分开；真正需要才执行硬件和打包，不能机械跑所有脚本。
-9. 更新 DEV_PROGRESS、LOG（只追加）、HANDOFF、TEST_METRICS、相关契约/Assumption。
-10. 精确暂存、review staged diff、Commit、Push 当前分支、ls-remote 核 hash，再下一个小项。
+## Maintenance Mode（默认）
+1. 用户任务 → PROJECT_INDEX / project-map → CURRENT → 目标Contract；P0–P4与预算遵循根AGENTS。
+2. 建Task Context，明确读写范围、测试、风险及恢复点。普通小任务Context在实施前写好，可随首次实现提交；大型/跨模块任务先独立计划提交/push/核hash。
+3. 重要阶段前建立远端备份并核对；用户修改绕开，不stash/reset/clean。
+4. 小步实施 → Review → FAST/MODULE；公共接口/未知路由升级INTEGRATION。RELEASE只在明确发布任务。
+5. 失败先判baseline与本次归因；根因局部且不越scope/invariant才Repair。扩散/不明确/需未授权架构变化则停下重新划任务或回滚该阶段。
+6. 任务evidence保留命令、首次失败、stderr、根因、复测及Repair/Rollback决定；CURRENT_TEST_STATUS只保留当前摘要。
+7. 精确暂存 → staged diff review → commit → push origin/DWIDE → ls-remote核hash；未经验收不推main。
+8. 结束时同一Task文件从active归archive，更新CURRENT。勿复制维护第二份任务记录。
+默认不install、不读完整历史、不生产构建、不更新全局LOG/DEV_PROGRESS；依赖确有变化才评估安装。
 
-每个 Phase 后接力文档必须让没看聊天的 Agent 可继续。远端确认记录采用“已核对提交快照”，不能用一个提交的正文虚称包含它自身 hash；最终记录提交的 HEAD 用 Git 动态查询。
+## Bootstrap Mode
+仅新项目/大型新子系统：Idea → Product → Architecture → Knowledge → Construction，然后按Maintenance闭环实现。已有产品局部任务不重走全链。
+产品真相变更仍需用户授权；Development infrastructure规则调整可按用户本轮授权实施。
 
-2026-09-08 流程审计：Phase 0 有独立文档基线；Phase 2/3 虽有预先的总 Phase 计划和 Phase 备份，但若干功能小闭环把实现与收尾文档放在同一提交，未形成严格的“小闭环文档先行”提交证据。该偏差已写入 LOG。自本审计后的下一业务小闭环起，必须先提交并推送该小项的范围、允许修改文件、验收和风险，再改业务代码。
-
-用户报告仅给通过/失败/未验证数量、关键问题；完整命令和首次失败留文档。不以“测试通过”等价已交付。重大停工条件见主约束；普通实现选择自主推进。
+## Lifecycle / safety
+[ADR-0001](../decisions/ADR-0001-development-knowledge.md)定义唯一来源和旧文档生命周期。
+[TOOL_POLICY](TOOL_POLICY.md)保留Git/路径/Secret/官方Skill/硬件安全细节；普通任务按需读。
+本ACTIVE版本提交后旧“每项必须更新DEV_PROGRESS/LOG/HANDOFF/TEST_METRICS”的要求失效。
+不把文档中的历史hash当实时Git，不在提交内容中伪造自身最终hash；最终回复提供动态远端核对结果。

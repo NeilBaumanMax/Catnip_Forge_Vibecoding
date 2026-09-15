@@ -1,6 +1,6 @@
 # Layer Contract
 
-2026-09-15 按当前源码核对责任：知识 Store、安全连接、安装/Secret 向导、固定搜索桥、受限分析/计划、结果 UI、工程内会话/Handoff、有界 Context 与一次性确认执行门禁已实现。真实找灵感及 2026-09-12 Windows 包有历史通过记录；真实双搜索排障、全新用户完整连接和硬件仍待验收。Skill 小站仅打开固定站点，站点到本地安装桥仍待完成。后文按日期保留契约演进；Phase 8 的工程内路径覆盖 Phase 7 的旧会话路径。
+Lifecycle: ACTIVE · 唯一全局层契约。模块 Contract 只引用本文件并解释局部接口。当前实现/验证状态只维护 [CURRENT](../state/CURRENT.md) 与 [CURRENT_TEST_STATUS](../testing/CURRENT_TEST_STATUS.md)。下方带日期补充为契约演进参考，Phase 8 的工程内路径覆盖 Phase 7 的旧会话路径；历史“已通过/待验收”不表示实时状态。
 
 | 层 | 责任与复用入口 | 禁止 |
 | --- | --- | --- |

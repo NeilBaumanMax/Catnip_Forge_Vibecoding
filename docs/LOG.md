@@ -1,5 +1,7 @@
 # 施工日志
 
+> Lifecycle: SUPERSEDED（全文为迁移前历史，停止追加当前状态/全局流水）。当前开发入口为 [PROJECT_INDEX](PROJECT_INDEX.md)，状态只维护 [CURRENT](state/CURRENT.md)，新任务及测试转入 tasks/ 与 testing/evidence/。本文件旧维护要求不再生效；历史正文保留。
+
 ## 2026-09-12 — 仅深色主题与高缩放屏幕适配
 
 - 产品呈现改为只支持现有深蓝主题，不再提供黑白模式切换；旧浅色偏好无法在升级后恢复。

@@ -1,0 +1,885 @@
+{
+  "schema": 1,
+  "format": "YAML 1.2 JSON-compatible subset; Node built-in parser; Development-only",
+  "modules": {
+    "desktop-shell": {
+      "responsibility": [
+        "窗口生命周期、顶层组合、工作区导航和主题；大文件只承担组合"
+      ],
+      "code": [
+        "electron/src/main/index.ts",
+        "electron/src/main/bootstrap.ts",
+        "electron/src/main/tray.ts",
+        "electron/src/renderer/App.tsx",
+        "electron/src/renderer/components/BrowserPanel.tsx"
+      ],
+      "paths": [
+        "electron/src/main/index.ts",
+        "electron/src/main/bootstrap.ts",
+        "electron/src/main/tray.ts",
+        "electron/src/renderer/App.tsx",
+        "electron/src/renderer/main.tsx",
+        "electron/src/renderer/index.html",
+        "electron/src/renderer/assets/**",
+        "electron/src/renderer/styles/**",
+        "electron/src/renderer/components/BrowserPanel.tsx"
+      ],
+      "docs": {
+        "contract": "docs/modules/desktop-shell/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "project-session",
+        "chat",
+        "explore",
+        "workspace-editor",
+        "onboarding-assistant"
+      ],
+      "forbidden_dependencies": [
+        "runtime-mcp"
+      ],
+      "tests": {
+        "fast": [
+          "verify:explore-ui",
+          "verify:chat-presentation"
+        ],
+        "module": [
+          "verify:project-session-ui"
+        ],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    },
+    "project-session": {
+      "responsibility": [
+        "当前工程唯一绑定、工程内状态路径、切换与用户数据迁移"
+      ],
+      "code": [
+        "electron/src/main/project-session.ts",
+        "electron/src/common/project-session.ts",
+        "electron/src/main/paths.ts",
+        "electron/src/main/user-data-path.ts"
+      ],
+      "paths": [
+        "electron/src/main/project-session.ts",
+        "electron/src/common/project-session.ts",
+        "electron/src/main/paths.ts",
+        "electron/src/main/user-data-path.ts"
+      ],
+      "docs": {
+        "contract": "docs/modules/project-session/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "ipc"
+      ],
+      "forbidden_dependencies": [
+        "runtime-mcp"
+      ],
+      "tests": {
+        "fast": [
+          "verify:project-session-ui"
+        ],
+        "module": [
+          "verify:project-session",
+          "verify:data-paths"
+        ],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    },
+    "ipc": {
+      "responsibility": [
+        "Renderer 白名单桥、Main IPC 注册与输入验证入口"
+      ],
+      "code": [
+        "electron/src/preload/index.ts",
+        "electron/src/main/gateway.ts",
+        "electron/src/renderer/types/index.ts"
+      ],
+      "paths": [
+        "electron/src/preload/**",
+        "electron/src/main/gateway.ts",
+        "electron/src/renderer/types/**"
+      ],
+      "docs": {
+        "contract": "docs/modules/ipc/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [],
+      "forbidden_dependencies": [],
+      "tests": {
+        "fast": [
+          "verify:explore-ui",
+          "verify:project-session-ui"
+        ],
+        "module": [
+          "verify:project-session",
+          "verify:explore-search-handoff"
+        ],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    },
+    "chat": {
+      "responsibility": [
+        "工程对话展示、会话历史、消息解析与持续上下文存储"
+      ],
+      "code": [
+        "electron/src/renderer/components/ChatPanel.tsx",
+        "electron/src/renderer/components/MarkdownContent.tsx",
+        "electron/src/main/worker/session-store.ts",
+        "electron/src/main/worker/chat-buffer.ts"
+      ],
+      "paths": [
+        "electron/src/renderer/components/ChatPanel.tsx",
+        "electron/src/renderer/components/MarkdownContent.tsx",
+        "electron/src/main/worker/session-store.ts",
+        "electron/src/main/worker/chat-buffer.ts"
+      ],
+      "docs": {
+        "contract": "docs/modules/chat/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "project-session",
+        "task-engine",
+        "attachments-vision"
+      ],
+      "forbidden_dependencies": [
+        "runtime-mcp"
+      ],
+      "tests": {
+        "fast": [
+          "verify:chat-presentation"
+        ],
+        "module": [
+          "verify:session"
+        ],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    },
+    "explore": {
+      "responsibility": [
+        "找灵感/解问题、独立多历史、Context选择、知识收藏、受限分析和交接材料"
+      ],
+      "code": [
+        "electron/src/renderer/components/ExplorePanel.tsx",
+        "electron/src/renderer/components/explore",
+        "electron/src/common/explore.ts",
+        "electron/src/main/explore-session.ts",
+        "electron/src/main/explore-analysis.ts",
+        "electron/src/main/explore-request.ts",
+        "electron/src/main/explore-context.ts",
+        "electron/src/main/explore-knowledge.ts",
+        "electron/src/main/explore-zhihu-status.ts",
+        "electron/src/main/explore-zhihu-search.ts"
+      ],
+      "paths": [
+        "electron/src/renderer/components/ExplorePanel.tsx",
+        "electron/src/renderer/components/explore/**",
+        "electron/src/common/explore.ts",
+        "electron/src/main/explore-*.ts",
+        "electron/src/renderer/styles/explore.less"
+      ],
+      "docs": {
+        "contract": "docs/modules/explore/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "project-session",
+        "ipc",
+        "task-engine",
+        "skills"
+      ],
+      "forbidden_dependencies": [
+        "runtime-mcp"
+      ],
+      "tests": {
+        "fast": [
+          "verify:explore-ui",
+          "verify:explore-entry"
+        ],
+        "module": [
+          "verify:explore-request",
+          "verify:explore-analysis-gate",
+          "verify:explore-search-handoff",
+          "verify:explore-session",
+          "verify:explore-knowledge",
+          "verify:explore-context",
+          "verify:explore-zhihu-connection"
+        ],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      },
+      "focus": {
+        "history-ui": {
+          "source": [
+            "electron/src/renderer/components/ExplorePanel.tsx",
+            "electron/src/renderer/styles/explore.less",
+            "electron/src/common/project-session.ts"
+          ],
+          "read_only": [
+            "electron/src/main/explore-session.ts"
+          ],
+          "tests": [
+            "verify:explore-ui",
+            "verify:explore-session"
+          ],
+          "find": [
+            "sessionTitle",
+            "returnToExploreHome",
+            "rename",
+            "recentSessions"
+          ]
+        }
+      }
+    },
+    "browser-workbench": {
+      "responsibility": [
+        "保留的 BrowserView、网页录制/回放和 Runtime 浏览器工具"
+      ],
+      "code": [
+        "electron/src/main/browser-view.ts",
+        "electron/src/main/browser-recorder.ts",
+        "runtime/src/browser.ts",
+        "runtime/src/mcp/browser.tool.ts"
+      ],
+      "paths": [
+        "electron/src/main/browser-*.ts",
+        "electron/src/main/worker/search-preflight.ts",
+        "electron/src/main/worker/page-validator.ts",
+        "runtime/src/browser.ts",
+        "runtime/src/actions.ts",
+        "runtime/src/storage.ts",
+        "runtime/src/extract.ts",
+        "runtime/src/record.ts",
+        "runtime/src/recordings.ts",
+        "runtime/src/replay.ts",
+        "runtime/src/workflows.ts",
+        "runtime/src/mcp/browser.tool.ts",
+        "runtime/src/mcp/storage.tool.ts"
+      ],
+      "docs": {
+        "contract": "docs/modules/browser-workbench/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "ipc",
+        "runtime-mcp"
+      ],
+      "forbidden_dependencies": [],
+      "tests": {
+        "fast": [],
+        "module": [],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": false,
+        "frozen": true
+      }
+    },
+    "task-engine": {
+      "responsibility": [
+        "任务队列、追加/取消、异步事件与探索执行策略编排"
+      ],
+      "code": [
+        "electron/src/main/worker/orchestrator.ts",
+        "electron/src/main/worker/task-state.ts",
+        "electron/src/main/worker/index.ts",
+        "electron/src/main/worker/quick-tasks.ts",
+        "electron/src/renderer/components/TaskProgress.tsx"
+      ],
+      "paths": [
+        "electron/src/main/worker/orchestrator.ts",
+        "electron/src/main/worker/task-state.ts",
+        "electron/src/main/worker/index.ts",
+        "electron/src/main/worker/quick-tasks.ts",
+        "electron/src/main/worker/logger.ts",
+        "electron/src/renderer/components/TaskProgress.tsx"
+      ],
+      "docs": {
+        "contract": "docs/modules/task-engine/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "project-session",
+        "runtime-agent",
+        "skills"
+      ],
+      "forbidden_dependencies": [],
+      "tests": {
+        "fast": [],
+        "module": [
+          "verify:task-queue",
+          "verify:explore-analysis-gate",
+          "verify:explore-search-handoff"
+        ],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    },
+    "runtime-agent": {
+      "responsibility": [
+        "产品内Claude Code CLI生命周期、权限档位、模型输入上下文"
+      ],
+      "code": [
+        "electron/src/main/agent.ts",
+        "electron/src/main/worker/context.ts",
+        "agent/CLAUDE.md"
+      ],
+      "paths": [
+        "electron/src/main/agent.ts",
+        "electron/src/main/worker/context.ts",
+        "agent/CLAUDE.md",
+        "agent/package.json",
+        "agent/package-lock.json"
+      ],
+      "docs": {
+        "contract": "docs/modules/runtime-agent/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "skills",
+        "runtime-mcp"
+      ],
+      "forbidden_dependencies": [],
+      "tests": {
+        "fast": [],
+        "module": [
+          "verify:explore-analysis-gate",
+          "verify:hardboard"
+        ],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    },
+    "skills": {
+      "responsibility": [
+        "标准Skill发现、部署保真、支持文件与本地管理；官方zhihu vendor"
+      ],
+      "code": [
+        "electron/src/main/skill-manager.ts",
+        "agent/skills",
+        "agent/host-tools/configure-zhihu-secret.ps1"
+      ],
+      "paths": [
+        "electron/src/main/skill-manager.ts",
+        "agent/skills/**",
+        "agent/host-tools/**"
+      ],
+      "docs": {
+        "contract": "docs/modules/skills/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "project-session",
+        "ipc"
+      ],
+      "forbidden_dependencies": [
+        "runtime-mcp"
+      ],
+      "tests": {
+        "fast": [
+          "verify:zhihu-skill-package"
+        ],
+        "module": [
+          "verify:skills",
+          "verify:explore-zhihu-connection"
+        ],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    },
+    "runtime-mcp": {
+      "responsibility": [
+        "MCP工具注册、Runtime事件、任务/进程执行与共享运行态类型"
+      ],
+      "code": [
+        "runtime/src/index.ts",
+        "runtime/src/mcp/server.ts",
+        "runtime/src/eventbus",
+        "runtime/src/task",
+        "runtime/src/process"
+      ],
+      "paths": [
+        "runtime/src/index.ts",
+        "runtime/src/types.ts",
+        "runtime/src/paths.ts",
+        "runtime/src/mcp/server.ts",
+        "runtime/src/mcp/tool-events.ts",
+        "runtime/src/eventbus/**",
+        "runtime/src/task/**",
+        "runtime/src/process/**"
+      ],
+      "docs": {
+        "contract": "docs/modules/runtime-mcp/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [],
+      "forbidden_dependencies": [
+        "desktop-shell",
+        "runtime-agent"
+      ],
+      "tests": {
+        "fast": [],
+        "module": [],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    },
+    "hardboard": {
+      "responsibility": [
+        "ESP-IDF环境/工程/Build/Flash、硬件MCP工具及本地状态桥"
+      ],
+      "code": [
+        "runtime/src/mcp/hardboard.tool.ts",
+        "runtime/src/hardboard",
+        "runtime/src/hardboard.ts",
+        "electron/src/main/hardboard.ts"
+      ],
+      "paths": [
+        "runtime/src/mcp/hardboard.tool.ts",
+        "runtime/src/hardboard/**",
+        "runtime/src/hardboard.ts",
+        "electron/src/main/hardboard.ts",
+        "runtime/hardboard/**"
+      ],
+      "docs": {
+        "contract": "docs/modules/hardboard/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "runtime-mcp",
+        "project-session",
+        "serial"
+      ],
+      "forbidden_dependencies": [
+        "explore"
+      ],
+      "tests": {
+        "fast": [],
+        "module": [
+          "verify:hardboard"
+        ],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    },
+    "serial": {
+      "responsibility": [
+        "Main共享串口、read/wait/capture缓冲、鉴权桥与Runtime串口客户端"
+      ],
+      "code": [
+        "electron/src/main/serial-monitor-session.ts",
+        "electron/src/main/serial-monitor-controller.ts",
+        "electron/src/main/serial-monitor-bridge.ts",
+        "runtime/src/hardboard/serial-monitor-client.ts"
+      ],
+      "paths": [
+        "electron/src/main/serial-monitor-*.ts",
+        "runtime/src/hardboard/serial-monitor-client.ts"
+      ],
+      "docs": {
+        "contract": "docs/modules/serial/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "project-session",
+        "ipc"
+      ],
+      "forbidden_dependencies": [
+        "explore"
+      ],
+      "tests": {
+        "fast": [],
+        "module": [
+          "verify:serial-monitor"
+        ],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      },
+      "focus": {
+        "session": {
+          "source": [
+            "electron/src/main/serial-monitor-session.ts"
+          ],
+          "read_only": [
+            "electron/src/main/serial-monitor-controller.ts",
+            "electron/src/main/serial-monitor-bridge.ts",
+            "runtime/src/hardboard/serial-monitor-client.ts"
+          ],
+          "tests": [
+            "verify:serial-monitor"
+          ],
+          "find": [
+            "class SerialMonitorSession",
+            "read(",
+            "wait(",
+            "clear("
+          ]
+        }
+      }
+    },
+    "workspace-editor": {
+      "responsibility": [
+        "受控工程/参考/Skill目录展示、Monaco和文件编辑操作"
+      ],
+      "code": [
+        "electron/src/main/workbench.ts",
+        "electron/src/renderer/components/WorkspacePanel.tsx",
+        "electron/src/renderer/components/CodeEditor.tsx",
+        "electron/src/renderer/monaco.ts"
+      ],
+      "paths": [
+        "electron/src/main/workbench.ts",
+        "electron/src/renderer/components/WorkspacePanel.tsx",
+        "electron/src/renderer/components/CodeEditor.tsx",
+        "electron/src/renderer/monaco.ts"
+      ],
+      "docs": {
+        "contract": "docs/modules/workspace-editor/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "project-session",
+        "ipc",
+        "skills"
+      ],
+      "forbidden_dependencies": [
+        "runtime-mcp"
+      ],
+      "tests": {
+        "fast": [
+          "verify:project-session-ui"
+        ],
+        "module": [
+          "verify:project-session"
+        ],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    },
+    "attachments-vision": {
+      "responsibility": [
+        "附件受控存储和本机桥，按需Qwen视觉旁路"
+      ],
+      "code": [
+        "electron/src/main/attachment-store.ts",
+        "electron/src/main/attachment-bridge.ts",
+        "runtime/src/attachment/client.ts",
+        "runtime/src/mcp/attachment.tool.ts"
+      ],
+      "paths": [
+        "electron/src/main/attachment-*.ts",
+        "runtime/src/attachment/**",
+        "runtime/src/mcp/attachment.tool.ts"
+      ],
+      "docs": {
+        "contract": "docs/modules/attachments-vision/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "project-session",
+        "ipc",
+        "runtime-mcp"
+      ],
+      "forbidden_dependencies": [],
+      "tests": {
+        "fast": [],
+        "module": [
+          "verify:qwen-attachments"
+        ],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    },
+    "onboarding-assistant": {
+      "responsibility": [
+        "首启配置、使用助手和新手引导"
+      ],
+      "code": [
+        "electron/src/main/first-run.ts",
+        "electron/src/main/software-assistant.ts",
+        "electron/src/renderer/components/CatnipOnboarding.tsx"
+      ],
+      "paths": [
+        "electron/src/main/first-run.ts",
+        "electron/src/main/software-assistant.ts",
+        "electron/src/renderer/components/CatnipOnboarding.tsx"
+      ],
+      "docs": {
+        "contract": "docs/modules/onboarding-assistant/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "ipc",
+        "desktop-shell"
+      ],
+      "forbidden_dependencies": [
+        "runtime-mcp"
+      ],
+      "tests": {
+        "fast": [
+          "verify:onboarding"
+        ],
+        "module": [
+          "verify:software-assistant-guide"
+        ],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    },
+    "packaging-release": {
+      "responsibility": [
+        "版本、离线资源、构建与Windows交付验证"
+      ],
+      "code": [
+        "config/version.json",
+        "electron/electron-builder.yml",
+        "electron/scripts/pack_win_unpacked.cjs",
+        "electron/scripts/verify_win_unpacked_release.cjs"
+      ],
+      "paths": [
+        "config/**",
+        "electron/electron-builder.yml",
+        "electron/DISTRIBUTION_README.txt",
+        "electron/scripts/pack_win_unpacked.cjs",
+        "electron/scripts/stamp_win_exe_version.cjs",
+        "electron/scripts/verify_win_unpacked_release.cjs",
+        "electron/scripts/verify_packaged_first_run.cjs",
+        "electron/scripts/verify_first_run_restart.cjs"
+      ],
+      "docs": {
+        "contract": "docs/modules/packaging-release/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [
+        "desktop-shell",
+        "runtime-mcp",
+        "skills"
+      ],
+      "forbidden_dependencies": [],
+      "tests": {
+        "fast": [
+          "verify:version",
+          "verify:zhihu-skill-package"
+        ],
+        "module": [],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    },
+    "dev-infrastructure": {
+      "responsibility": [
+        "开发导航、Task Context、分层验证和静态维护约束；产品不依赖"
+      ],
+      "code": [
+        "AGENTS.md",
+        "scripts",
+        "electron/package.json",
+        "runtime/package.json"
+      ],
+      "paths": [
+        "AGENTS.md",
+        "README.md",
+        "CLAUDE.md",
+        ".vibecoding/**",
+        "docs/**",
+        "scripts/**",
+        "electron/scripts/**",
+        "runtime/scripts/**",
+        "electron/package.json",
+        "electron/package-lock.json",
+        "runtime/package.json",
+        "runtime/package-lock.json",
+        "electron/tsconfig.json",
+        "runtime/tsconfig.json",
+        "electron/vite.config.ts",
+        ".gitignore"
+      ],
+      "docs": {
+        "contract": "docs/modules/dev-infrastructure/CONTRACT.md",
+        "state": "docs/state/CURRENT.md"
+      },
+      "depends_on": [],
+      "forbidden_dependencies": [],
+      "tests": {
+        "fast": [
+          "verify:version"
+        ],
+        "module": [],
+        "integration": [
+          "verify:project-session",
+          "verify:explore-search-handoff",
+          "verify:serial-monitor"
+        ]
+      },
+      "decisions": [
+        "docs/decisions/ADR-0001-development-knowledge.md"
+      ],
+      "status": {
+        "active": true,
+        "frozen": false
+      }
+    }
+  }
+}

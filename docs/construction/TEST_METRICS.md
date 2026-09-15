@@ -1,5 +1,7 @@
 # 测试度量与证据
 
+> Lifecycle: SUPERSEDED（全文为迁移前历史，停止追加当前状态/全局流水）。当前开发入口为 [PROJECT_INDEX](../PROJECT_INDEX.md)，状态只维护 [CURRENT](../state/CURRENT.md)，新任务及测试转入 tasks/ 与 testing/evidence/。本文件旧维护要求不再生效；历史正文保留。
+
 > 本文件保留各次测试的日期、完整命令、首次失败及复测结果。下方旧条目中的“最新包”“当前通过”仅适用于当时目标；2026-09-15 的文档校正不重新声明历史 UI、联网、打包或实机验收成功。当前范围见 [HANDOFF](HANDOFF.md)。
 
 ## 2026-09-15 — DWIDE 文档校正基线

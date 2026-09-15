@@ -1,38 +1,35 @@
-# Catnip Forge 施工入口
+# Catnip Forge — Development Agent
+Lifecycle: ACTIVE · Maintenance Mode 默认 · 工作区 E:\Agent\vibeide\vibeide，用户指定 DWIDE。
+你维护整个产品；产品内 Runtime Agent / agent/CLAUDE.md 不限制已授权的开发源码任务。
 
-本轮仅在当前工作区、`DWIDE` 分支施工（用户于 2026-09-15 指定，从 `catnip-GUAGUA` 创建）。不要创建 worktree。开工先动态检查 Git，不能把本文件中的分支和历史提交当作实时状态；后续用户明确指定的分支优先。
+## Always Read（冷启动）
+1. 用户当前指令与本文件。
+2. [Product Truth](docs/product/PRODUCT_REQUIREMENTS.md)（首次读全篇；续接任务按相关章节）。
+3. [PROJECT_INDEX](docs/PROJECT_INDEX.md)、[CURRENT](docs/state/CURRENT.md)。
+4. CURRENT 指定的 Active Task（若有）；无任务则从[模板](docs/tasks/TASK_TEMPLATE.md)建立短 Context，再实施。
+根据 [.vibecoding/project-map.yaml](.vibecoding/project-map.yaml) 路由目标模块，按需加载 Contract / ADR / 源码 / tests；不要默认读全部地图或历史证据。
 
-## 必读与真相顺序
+## Context budget
+- P0：Current Task、Product Truth相关章节、目标Contract、Current State。
+- P1：触及接口的直接依赖Contract、相关ADR/tests。
+- P2：直接相关源码，优先按符号定位和局部读。
+- P3：只有调查才读已完成任务/evidence/Git历史。
+- P4：无关模块、frozen模块、历史LOG、无关发布史默认不读；确有依赖时在Task记录升级原因。
+默认 <=2目标模块、<=1跨层边界、<=8源码文件、0新依赖；4+模块/15+源码文件或贯穿Renderer/Main/Worker/Runtime时先拆Task或记录已授权例外。
 
-1. 用户当前指令及 [Product Truth](docs/product/PRODUCT_REQUIREMENTS.md)。
-2. [接力](docs/construction/HANDOFF.md)、[主约束与 Assumptions](docs/construction/CODEX_MASTER_REQUIREMENTS.md)、[计划](docs/construction/CONSTRUCTION_PLAN.md)。
-3. 当前真实代码与 Git；[现场报告](docs/construction/PROJECT_STATE_REPORT.md)是带日期的检查记录。
-4. [分层契约](docs/construction/LAYER_CONTRACT.md)、[流程](docs/construction/WORKFLOW.md)、[工具边界](docs/construction/TOOL_POLICY.md)、[测试](docs/construction/TEST_METRICS.md)。
+## 不变量
+原 [Layer Contract](docs/construction/LAYER_CONTRACT.md) 是唯一全局架构契约，按任务加载相关编号。产品要求不变：
+Explore只分析、交接先计划、用户明确确认后才允许工程修改/Build/Flash/Serial；程序门禁不可只靠提示词。
+复用现有Agent/Skill/任务/Runtime/Hardboard，禁止另建系统/云后端/Web版或改vendor协议。
+官方zhihu首次调用先scripts/run.* status；CLI安装升级需官方要求的授权。Secret不进源码、Renderer、Chat、日志、URL、截图、Agent输出或包。
+历史知识仅自动发现，经用户选择才加入Context；源码/Build/Flash/运行分别凭真实证据；无实机标REAL_HARDWARE_VALIDATION_PENDING。
+Frozen不是可删除；不擅自委派子Agent。
 
-`CLAUDE.md`、`docs/ARCHITECTURE.md`、`docs/HANDOFF.md`、`docs/DEV_PROGRESS.md`、`docs/LOG.md` 和旧施工文档保留为证据；它们的采集 IDE、浏览器工作台、搜索必经平台 URL 等旧描述不能覆盖本次 Product Truth。`agent/CLAUDE.md` 是产品内部 Agent 规则，不能用它禁止施工 Agent 修改已授权的产品源码。
-
-## 禁止与门禁
-
-- 新模块叫“探索”，入口只有“找灵感 / 解问题”；复用 Agent、Skill Manager、Runtime MCP、Hardboard。不得新增第二套 Agent/Skill/任务系统、云后端、OAuth 画像、搜索 Feed 或 Web 版。
-- 官方 `zhihu` 是 vendor：不得自行重建 API、鉴权或修改上游协议。首次使用先执行该 Skill 的 `scripts/run.* status`；安装/升级 CLI 需按官方 SKILL.md 取得授权。
-- Explore 只分析；交接先计划，用户确认后才允许修改、Build、Flash、Serial 验证。必须有程序门禁测试，不能只用提示词约束。
-- Secret 不进源码、Renderer、日志、URL、Agent 输出、截图或包。不得把 Secret 放进产品 Chat。
-- 源码完成、编译、烧录、运行正常分别凭真实证据判定；无实机证据记 `REAL_HARDWARE_VALIDATION_PENDING`。
-- 历史知识自动发现不等于自动加入 Context；用户主动收藏和选择，不抓取镜像。
-- 重大冲突按主约束停止；普通工程选择自主记录。不得擅自委派子 Agent。
-
-## Git 与测试
-
-禁止 `git reset --hard`、`git clean -fd`、`git push --force` 及等价破坏；保护用户修改，不擅自 stash。精确暂存，禁止 `git add -A`。重要 Phase 前建立 `backup/pre-phase-X-YYYYMMDD` 并核对 origin；失败记 `REMOTE_BACKUP_PENDING`。小闭环先文档、实现、Review、专项测试、根因修复、文档、Commit、Push、远端核对。未经合并验收不推 main。
-
-基线含 Runtime/Electron typecheck/build、相关 verify 脚本和 diff 检查。每次记录完整命令、首次失败与后续结果；不把 mock 当真机，不因旧 scaffold 测试失败删除旧代码。发布阶段才做完整包及真机验收。
-
-## 关键源码入口
-
-- UI：`electron/src/renderer/components/BrowserPanel.tsx`（六个可见工作区，含“探索”和“Neil 的 skill 小站”）、`ExplorePanel.tsx`、`ChatPanel.tsx`、`App.tsx`。
-- IPC：`electron/src/preload/index.ts` → `electron/src/main/gateway.ts`。
-- Agent：`electron/src/main/worker/orchestrator.ts`、`context.ts`、`task-state.ts`、`electron/src/main/agent.ts`。
-- Skill：`electron/src/main/skill-manager.ts`、`agent/skills/<id>/SKILL.md`。
-- 本地数据：`electron/src/main/paths.ts`、`user-data-path.ts`、`worker/session-store.ts`。
-- 硬件：`runtime/src/mcp/hardboard.tool.ts`、`runtime/src/hardboard/`、`runtime/src/eventbus/`、`electron/src/main/serial-monitor-*.ts`。
-- 打包与验证：`electron/electron-builder.yml`、`electron/scripts/`、`runtime/scripts/`。
+## 日常施工/Git
+动态执行git status、branch、HEAD、remote及跟踪检查；仅当前工作区DWIDE，不建worktree，保护用户修改，不stash/reset/clean/force push。
+重要阶段前建backup/pre-phase-X-YYYYMMDD、push origin并核hash；失败记REMOTE_BACKUP_PENDING。精确暂存，禁止git add -A；staged review → commit → push DWIDE → ls-remote核hash，未经合并验收不推main。
+先Task Context；大型/跨模块任务先独立提交并推送计划再实现。普通小任务可在首次实现提交中携带事先写好的Context，避免纯流程提交膨胀。
+按[Test Strategy](docs/testing/TEST_STRATEGY.md)选择FAST/MODULE/INTEGRATION；生产构建/打包/首启/实机属RELEASE，不作为普通小改默认门禁。记录完整命令/首次失败/根因/复测；仅在依赖缺失、manifest/lock变化或明确repair时评估install。
+根因明确、局部、不越scope/不变量才Repair；扩大到无关模块或假设错误时重新评估/回滚局部提交，禁止机械patch。
+当前状态只改CURRENT，测试摘要只改CURRENT_TEST_STATUS；过程写当前Task及一份evidence，完成归archive。不再要求追加LOG/DEV_PROGRESS/HANDOFF/TEST_METRICS。
+完整例外和Bootstrap流程见[WORKFLOW](docs/construction/WORKFLOW.md)；旧施工文件除明确ACTIVE外为REFERENCE或历史，不覆盖本规则。

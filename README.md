@@ -16,14 +16,8 @@ Electron UI -> Gateway -> Worker -> Agent -> Runtime MCP -> Electron Chromium / 
 
 ## 当前状态
 
-- 当前 GitHub remote：`origin`
-- 当前施工分支：`DWIDE`（2026-09-15 从 `catnip-GUAGUA` 的 `f2449a19` 创建）；提交、远端状态及是否合入 `main` 必须以 Git 动态查询和明确合并验收为准
-- 当前公开版本：`v2.0.0`；内部构建号 `7201`，npm 包版本 `2.0.0-7201`，Windows PE 文件版本 `2.0.0.7201`
-- 当前 Windows 源码目录：`E:\Agent\vibeide\vibeide`
-- 历史 Windows v0.1.0 unpacked 包：`E:\vibeide-0.1-win-unpacked`（仅为旧版本验证对象）
-- 历史 Linux、`C:\vibeide` 和旧 `E:\vibeide` 路径仅用于迁移记录，不再作为当前施工目录。
-- 当前代码继承既有 Qwen 视觉旁路、聊天附件、客户数据路径、目录型 Skill、共享串口和编辑器能力，并包含 `catnip-GUAGUA` 上的探索及界面更新。正常桌面启动默认进入探索，Renderer 固定深蓝主题，已实现 150% 显示缩放适配。
-- 软件功能与 Windows 包已有验证记录；真实双搜索排障、确认后的实机闭环、全新用户连接和完整人工验收仍待完成。当前进展见 [施工接力](docs/construction/HANDOFF.md)。
+当前开发线、里程碑、活动任务、外部/硬件验收和发布状态统一在 [CURRENT](docs/state/CURRENT.md)。版本元数据以 [config/version.json](config/version.json) 为准。
+Development Agent 从 [PROJECT_INDEX](docs/PROJECT_INDEX.md) 按模块定位；普通任务不再默认读全局施工/测试历史。
 
 ## 能力边界
 
@@ -154,4 +148,4 @@ pytest tests/test_project.py
 1. 人工复测 `electron/dist-package/Catnip Forge`，先核对包来源与版本：冷启动工程选择/新建、返回或切页后 Explore 保留、重启恢复、工程 A/B 的 Agent 历史/编辑器/烧录目标隔离。
 2. 经用户明确授权后执行真实“解问题”知乎＋全网双搜索验收；不把既有找灵感结果或软件门禁当作 Diagnosis 证据。
 3. 在全新 Windows 用户环境验收 Access Secret 安全连接；有真实开发板时完成用户确认后的 Build/Flash/Serial 闭环，缺实机证据继续标记 `REAL_HARDWARE_VALIDATION_PENDING`。
-4. 完成 Skill 小站到既有 Skill Manager 的安全下载安装闭环；完整待办与验收边界见 [施工接力](docs/construction/HANDOFF.md)。
+4. 完成 Skill 小站到既有 Skill Manager 的安全下载安装闭环；完整待办与验收边界见 [当前状态](docs/state/CURRENT.md)。

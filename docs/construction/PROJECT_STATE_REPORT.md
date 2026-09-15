@@ -1,5 +1,7 @@
 # 项目状态检查记录
 
+> Lifecycle: SUPERSEDED（全文为迁移前历史，停止追加当前状态/全局流水）。当前开发入口为 [PROJECT_INDEX](../PROJECT_INDEX.md)，状态只维护 [CURRENT](../state/CURRENT.md)，新任务及测试转入 tasks/ 与 testing/evidence/。本文件旧维护要求不再生效；历史正文保留。
+
 本文件按日期保留检查快照；下方旧段落中的“当前”“尚无”“最新”仅指各次检查当时。当前施工摘要以 [HANDOFF](HANDOFF.md)、Product Truth 和真实代码/Git 为准。
 
 ## 2026-09-15 DWIDE 文档校正现场

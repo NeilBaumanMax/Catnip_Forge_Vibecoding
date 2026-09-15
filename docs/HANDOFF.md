@@ -1,5 +1,7 @@
 # Catnip Forge 接力开发文档
 
+> Lifecycle: SUPERSEDED（全文为迁移前历史，停止追加当前状态/全局流水）。当前开发入口为 [PROJECT_INDEX](PROJECT_INDEX.md)，状态只维护 [CURRENT](state/CURRENT.md)，新任务及测试转入 tasks/ 与 testing/evidence/。本文件旧维护要求不再生效；历史正文保留。
+
 > 本文是 2026-08-08 历史归档，不再是当前接力入口。敏感账号、密码和连接信息不得写入项目文档。
 
 > 归档提示：本文主体冻结在 2026-08-08 的 v1.5.0 / `main` 历史现场，下方“当前”均指当时。接手请先读 [当前施工 HANDOFF](construction/HANDOFF.md)，由该入口与动态 Git 确认分支、版本、发布路径和待验收事项。

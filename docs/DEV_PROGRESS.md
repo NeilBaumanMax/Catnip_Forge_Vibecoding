@@ -1,5 +1,7 @@
 # 开发进度
 
+> Lifecycle: SUPERSEDED（全文为迁移前历史，停止追加当前状态/全局流水）。当前开发入口为 [PROJECT_INDEX](PROJECT_INDEX.md)，状态只维护 [CURRENT](state/CURRENT.md)，新任务及测试转入 tasks/ 与 testing/evidence/。本文件旧维护要求不再生效；历史正文保留。
+
 ## 2026-09-15 — DWIDE 当前摘要与文档校正
 
 - 用户指定从 `catnip-GUAGUA` 的 `f2449a19` 创建 `DWIDE`；本轮只修正文档。开工基线、恢复点和范围见 [校正记录](construction/DWIDE_DOC_SYNC_20260915.md)，实时状态见 [施工接力](construction/HANDOFF.md) 与 Git。

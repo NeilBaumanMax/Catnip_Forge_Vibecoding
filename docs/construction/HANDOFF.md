@@ -1,5 +1,7 @@
 # Catnip Forge 当前施工接力
 
+> Lifecycle: SUPERSEDED（全文为迁移前历史，停止追加当前状态/全局流水）。当前开发入口为 [PROJECT_INDEX](../PROJECT_INDEX.md)，状态只维护 [CURRENT](../state/CURRENT.md)，新任务及测试转入 tasks/ 与 testing/evidence/。本文件旧维护要求不再生效；历史正文保留。
+
 更新时间：2026-09-15（Asia/Shanghai）。本次为 DWIDE 文档校正；最近业务提交为 `f2449a19`（2026-09-12）。原接力全文保留在 [历史副本](HANDOFF_HISTORY_THROUGH_20260912.md)；历史包、测试和联调结果不等于本轮复验结果。
 
 ## 当前 Git 与现场保护
