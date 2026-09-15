@@ -269,13 +269,15 @@
           "verify:explore-knowledge",
           "verify:explore-context",
           "verify:explore-zhihu-connection",
-          "verify:explore-history"
+          "verify:explore-history",
+          "verify:explore-knowledge-preview"
         ],
         "integration": [
           "verify:project-session",
           "verify:explore-search-handoff",
           "verify:serial-monitor",
-          "verify:explore-history-browser"
+          "verify:explore-history-browser",
+          "verify:explore-knowledge-preview-browser"
         ]
       },
       "decisions": [
@@ -303,6 +305,25 @@
             "ExploreSessionHistory",
             "explore-session-rename",
             "workStatusLabel"
+          ]
+        },
+        "knowledge-ui": {
+          "source": [
+            "electron/src/renderer/components/explore/ExploreKnowledgePreview.tsx",
+            "electron/src/renderer/styles/explore.less"
+          ],
+          "read_only": [
+            "electron/src/renderer/components/ExplorePanel.tsx",
+            "electron/src/common/explore.ts"
+          ],
+          "tests": [
+            "verify:explore-knowledge-preview",
+            "verify:explore-ui"
+          ],
+          "find": [
+            "ExploreKnowledgePreview",
+            "explore-knowledge-row",
+            "verificationLabel"
           ]
         }
       }

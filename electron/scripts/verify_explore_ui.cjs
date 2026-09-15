@@ -9,6 +9,7 @@ const explorePanel = fs.readFileSync(path.join(root, 'src', 'renderer', 'compone
 const exploreSourceList = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreSourceList.tsx'), 'utf8');
 const exploreStageNav = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreStageNav.tsx'), 'utf8');
 const exploreHistory = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreSessionHistory.tsx'), 'utf8');
+const exploreKnowledgePreview = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreKnowledgePreview.tsx'), 'utf8');
 const globalStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'global.less'), 'utf8');
 const appleStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'apple.less'), 'utf8');
 const exploreStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'explore.less'), 'utf8');
@@ -64,8 +65,10 @@ assert.match(exploreHistory, /openWorkSession\(session\.mode, session\.id\)/, 'E
 assert.match(explorePanel, /saveExploreKnowledge/, 'source save must use the existing preload store');
 assert.match(explorePanel, /origin:\s*activeWorkSession[\s\S]{0,500}conversation:\s*conversation\.map/, 'saved knowledge must retain its origin Explore conversation');
 assert.match(explorePanel, /deleteExploreKnowledge\(card\.id\)/, 'saved knowledge needs an explicit delete action');
-assert.match(explorePanel, /查看原对话/, 'saved knowledge must expose its retained conversation');
-assert.match(explorePanel, /data-tour-id="explore-saved-knowledge"/, 'saved knowledge preview is missing');
+assert.match(explorePanel, /import ExploreKnowledgePreview from '\.\/explore\/ExploreKnowledgePreview'/, 'saved knowledge must use the local presentation component');
+assert.match(explorePanel, /<ExploreKnowledgePreview[\s\S]*?saveVerification=\{saveVerification\}[\s\S]*?\/>/, 'saved knowledge must retain parent-owned persistence and verification');
+assert.match(exploreKnowledgePreview, /查看原对话/, 'saved knowledge must expose its retained conversation');
+assert.match(exploreKnowledgePreview, /data-tour-id="explore-saved-knowledge"/, 'saved knowledge preview is missing');
 assert.match(explorePanel, /不会自动加入后续 Context/, 'manual context selection promise is missing');
 assert.match(explorePanel, /findRelatedExploreKnowledge\(query, 6\)/, 'related knowledge discovery is missing');
 assert.match(explorePanel, /setSelectedKnowledgeIds\(\[\]\)/, 'query changes must invalidate prior selections');
@@ -73,12 +76,12 @@ assert.match(explorePanel, /checked=\{selectedKnowledgeIds\.includes\(card\.id\)
 assert.match(explorePanel, /selectExploreKnowledgeForContext\(explicitlySelectedIds\)/, 'only explicitly selected ids may cross Main');
 assert.match(explorePanel, /kind: 'knowledge'/, 'selected history must become knowledge context');
 assert.match(explorePanel, /候选默认不加入分析/, 'default exclusion wording is missing');
-assert.match(explorePanel, /data-tour-id="explore-verification-form"/, 'verification form is missing');
+assert.match(exploreKnowledgePreview, /data-tour-id="explore-verification-form"/, 'verification form is missing');
 assert.match(explorePanel, /addExploreKnowledgeVerification/, 'verification must use the existing Main IPC');
-assert.match(explorePanel, /!verificationSummary\.trim\(\)/, 'empty verification summary must disable submission');
-assert.match(explorePanel, /saveVerification\('verified_effective'\)/, 'effective feedback action is missing');
-assert.match(explorePanel, /saveVerification\('verified_ineffective'\)/, 'ineffective feedback action is missing');
-assert.match(explorePanel, /不会声称硬件验证完成/, 'hardware evidence wording is missing');
+assert.match(exploreKnowledgePreview, /!verificationSummary\.trim\(\)/, 'empty verification summary must disable submission');
+assert.match(exploreKnowledgePreview, /saveVerification\('verified_effective'\)/, 'effective feedback action is missing');
+assert.match(exploreKnowledgePreview, /saveVerification\('verified_ineffective'\)/, 'ineffective feedback action is missing');
+assert.match(exploreKnowledgePreview, /不会声称硬件验证完成/, 'hardware evidence wording is missing');
 assert.match(explorePanel, /onSave=\{\(source\) => void saveSource\(source\)\}/, 'source save callback must remain connected to the existing store action');
 assert.match(exploreSourceList, /onClick=\{\(\) => onSave\(source\)\}/, 'source save must require a user click');
 assert.doesNotMatch(explorePanel, /useEffect\([\s\S]{0,300}saveExploreKnowledge/, 'knowledge must not be saved automatically');
