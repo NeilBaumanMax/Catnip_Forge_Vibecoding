@@ -111,6 +111,18 @@ test('analysis results UI routes to its component regression and existing isolat
   assert(plan.requirements.some(requirement => requirement.includes('verify:explore-layout-ui')));
 });
 
+test('plan UI routes to its read-only component while artifact I/O remains outside', () => {
+  const selected = context('explore', 'plan-ui');
+  assert.deepEqual(selected.tests, ['verify:explore-plan-view', 'verify:explore-ui']);
+  assert.deepEqual(route([selected.source[0]]).modules, ['explore']);
+  assert.deepEqual(route(selected.source).modules, ['desktop-shell', 'explore']);
+  assert.equal(stepsFor(selected.tests).some(step => step.id === 'build:main'), false);
+  assert(profile('explore').steps.some(step => step.id === 'verify:explore-plan-view'));
+  const plan = changedPlan([...selected.source, 'scripts/dev/verification.cjs']);
+  assert(plan.steps.some(step => step.id === 'verify:explore-plan-view'));
+  assert(plan.requirements.some(requirement => requirement.includes('verify:explore-layout-ui')));
+});
+
 test('changed files include staged/unstaged/rename/delete/untracked, base history and spaces', t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'catnip-routing-'));
   t.after(() => {

@@ -8,9 +8,10 @@ Lifecycle: ACTIVE · 唯一当前状态 · 2026-09-15
 - 里程碑：Maintenance Mode下的小步热点拆分；产品功能保持既有DWIDE行为。
 
 ## Active task
-- 无；下一项任务先建立Task Context，再按地图路由。
+- 无。最近完成任务已归档；下一项工作先建立新的 Task Context。
 
 ## Recently completed
+- Explore只读计划展示提取为67行无状态组件，原组件1613→1575行；[TASK-EXPLORE-004](../tasks/archive/TASK-EXPLORE-004.md)已归档，plan-ui focus可直接定位，artifact文件操作与执行确认仍在原边界。
 - Explore灵感候选/诊断假设结果提取为108行无状态组件，原组件1676→1613行；[TASK-EXPLORE-003](../tasks/archive/TASK-EXPLORE-003.md)已归档，results-ui focus直接定位结果/来源展示。
 - Explore知识预览/原对话/验证表单提取为106行受控组件，原组件1731→1676行；[TASK-EXPLORE-002](../tasks/archive/TASK-EXPLORE-002.md)已归档，knowledge-ui focus直接定位局部展示/测试。
 - Explore历史列表展示提取为69行受控组件，原组件1761→1731行；[TASK-EXPLORE-001](../tasks/archive/TASK-EXPLORE-001.md)已归档，history-ui focus直接定位局部展示/测试。

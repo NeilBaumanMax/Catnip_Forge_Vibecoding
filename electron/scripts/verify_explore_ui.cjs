@@ -11,6 +11,7 @@ const exploreStageNav = fs.readFileSync(path.join(root, 'src', 'renderer', 'comp
 const exploreHistory = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreSessionHistory.tsx'), 'utf8');
 const exploreKnowledgePreview = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreKnowledgePreview.tsx'), 'utf8');
 const exploreAnalysisResults = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreAnalysisResults.tsx'), 'utf8');
+const explorePlanView = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExplorePlanView.tsx'), 'utf8');
 const globalStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'global.less'), 'utf8');
 const appleStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'apple.less'), 'utf8');
 const exploreStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'explore.less'), 'utf8');
@@ -91,6 +92,11 @@ assert.match(explorePanel, /import \{ ExploreDiagnosisResults, ExploreIdeaResult
 assert.match(explorePanel, /<ExploreIdeaResults[\s\S]*?onBeginPlan=\{beginPlan\}[\s\S]*?<ExploreDiagnosisResults[\s\S]*?onBeginPlan=\{beginPlan\}/, 'analysis result views must retain the parent plan callback');
 assert.match(exploreAnalysisResults, /hypothesis\.projectEvidence/, 'diagnosis project evidence must be rendered');
 assert.match(exploreAnalysisResults, /diagnosis\.sourceConflicts/, 'diagnosis source conflicts must be rendered');
+assert.match(explorePanel, /import ExplorePlanView from '\.\/explore\/ExplorePlanView'/, 'read-only plan must use the local presentation component');
+assert.match(explorePanel, /onViewHandoff=\{\(\) => selectStage\('execute'\)\}/, 'plan view must retain the parent stage transition');
+assert.match(explorePlanView, /确认前只读/, 'plan must explain its read-only boundary');
+assert.match(explorePlanView, /disabled=\{!handoffArtifact\}/, 'handoff material cannot open before it exists');
+assert.doesNotMatch(explorePlanView, /electronAPI|confirmExecution|writeWorkbench/, 'plan presentation must not absorb artifact I/O or execution confirmation');
 assert.match(exploreSourceList, /source\.type/);
 assert.match(exploreSourceList, /source\.author/);
 assert.match(exploreSourceList, /source\.excerpt/);
