@@ -272,7 +272,8 @@
           "verify:explore-history",
           "verify:explore-knowledge-preview",
           "verify:explore-analysis-results",
-          "verify:explore-plan-view"
+          "verify:explore-plan-view",
+          "verify:explore-connection-status"
         ],
         "integration": [
           "verify:project-session",
@@ -367,6 +368,28 @@
             "ExplorePlanView",
             "planView",
             "selectStage"
+          ]
+        },
+        "connection-ui": {
+          "source": [
+            "electron/src/renderer/components/explore/ExploreConnectionStatus.tsx",
+            "electron/src/renderer/styles/explore.less"
+          ],
+          "read_only": [
+            "electron/src/renderer/components/ExplorePanel.tsx",
+            "electron/src/common/explore.ts"
+          ],
+          "tests": [
+            "verify:explore-connection-status",
+            "verify:explore-ui",
+            "verify:explore-zhihu-connection"
+          ],
+          "find": [
+            "ExploreConnectionStatus",
+            "connectionBadge",
+            "beginConnection",
+            "installConnection",
+            "refreshConnection"
           ]
         }
       }

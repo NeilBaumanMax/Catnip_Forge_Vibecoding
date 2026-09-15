@@ -39,6 +39,7 @@
     "verify:explore-knowledge-preview-browser": "node scripts/verify_explore_knowledge_preview_browser.cjs",
     "verify:explore-analysis-results": "node scripts/verify_explore_analysis_results.cjs",
     "verify:explore-plan-view": "node scripts/verify_explore_plan_view.cjs",
+    "verify:explore-connection-status": "node scripts/verify_explore_connection_status.cjs",
     "verify:explore-layout-ui": "node scripts/verify_explore_layout_ui.cjs",
     "verify:explore-zhihu-status": "npm run build:main && node node_modules/electron/cli.js scripts/verify_explore_zhihu_status.cjs",
     "verify:explore-zhihu-connection": "npm run build:main && node node_modules/electron/cli.js scripts/verify_explore_zhihu_connection.cjs",

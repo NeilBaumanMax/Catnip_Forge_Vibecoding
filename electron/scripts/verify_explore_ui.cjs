@@ -12,6 +12,7 @@ const exploreHistory = fs.readFileSync(path.join(root, 'src', 'renderer', 'compo
 const exploreKnowledgePreview = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreKnowledgePreview.tsx'), 'utf8');
 const exploreAnalysisResults = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreAnalysisResults.tsx'), 'utf8');
 const explorePlanView = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExplorePlanView.tsx'), 'utf8');
+const exploreConnectionStatus = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreConnectionStatus.tsx'), 'utf8');
 const globalStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'global.less'), 'utf8');
 const appleStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'apple.less'), 'utf8');
 const exploreStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'explore.less'), 'utf8');
@@ -47,12 +48,12 @@ assert.match(explorePanel, /explore-diagnosis-guagua\.png/, 'diagnosis entry ill
 assert.equal(ideaEntryArt[25], 6, 'idea entry illustration must use real RGBA transparency');
 assert.equal(diagnosisEntryArt[25], 6, 'diagnosis entry illustration must use real RGBA transparency');
 assert.match(explorePanel, /取消勾选后，该项不会进入分析/, 'context exclusion promise is missing');
-assert.match(explorePanel, /需要先连接知乎开放平台/, 'safe connection wording is missing');
+assert.match(exploreConnectionStatus, /需要先连接知乎开放平台/, 'safe connection wording is missing');
 assert.match(explorePanel, /getExploreZhihuStatus/, 'Explore must read connection status through preload');
 assert.match(explorePanel, /installExploreZhihuConnection/, 'fresh users need an explicit official CLI install action');
 assert.match(explorePanel, /connection\?\.state !== 'needs_secret'[\s\S]{0,220}autoConnectionPrompted\.current = true;[\s\S]{0,100}void beginConnection\(\)/, 'missing one-shot automatic Secret prompt');
-assert.match(explorePanel, /安装连接组件并继续/, 'install consent button is missing');
-assert.match(explorePanel, /不会修改 PATH/, 'official user-directory install boundary is missing');
+assert.match(exploreConnectionStatus, /安装连接组件并继续/, 'install consent button is missing');
+assert.match(exploreConnectionStatus, /不会修改 PATH/, 'official user-directory install boundary is missing');
 assert.match(explorePanel, /prepareExploreRequest/, 'Explore input must cross the validated Main request boundary');
 assert.match(explorePanel, /listExploreWorkSessions/, 'project Explore history list is missing');
 assert.match(explorePanel, /saveExploreWorkSession/, 'Explore work autosave is missing');
@@ -97,6 +98,10 @@ assert.match(explorePanel, /onViewHandoff=\{\(\) => selectStage\('execute'\)\}/,
 assert.match(explorePlanView, /确认前只读/, 'plan must explain its read-only boundary');
 assert.match(explorePlanView, /disabled=\{!handoffArtifact\}/, 'handoff material cannot open before it exists');
 assert.doesNotMatch(explorePlanView, /electronAPI|confirmExecution|writeWorkbench/, 'plan presentation must not absorb artifact I/O or execution confirmation');
+assert.match(explorePanel, /import ExploreConnectionStatus from '\.\/explore\/ExploreConnectionStatus'/, 'connection card must use its local presentation component');
+assert.match(explorePanel, /onInstall=\{installConnection\}[\s\S]*?onConnect=\{beginConnection\}[\s\S]*?onRefresh=\{refreshConnection\}/, 'connection actions must remain wired to parent functions');
+assert.match(exploreConnectionStatus, /Access Secret 只交给知乎官方连接工具/, 'connection card must retain Secret safety copy');
+assert.doesNotMatch(exploreConnectionStatus, /electronAPI|beginExploreZhihu|installExploreZhihu|autoConnectionPrompted/, 'connection presentation must not absorb IPC or automatic prompting');
 assert.match(exploreSourceList, /source\.type/);
 assert.match(exploreSourceList, /source\.author/);
 assert.match(exploreSourceList, /source\.excerpt/);

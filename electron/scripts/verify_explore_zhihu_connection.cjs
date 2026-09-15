@@ -13,6 +13,7 @@ async function main() {
   const mainSource = fs.readFileSync(path.join(root, 'electron', 'src', 'main', 'explore-zhihu-status.ts'), 'utf8');
   const preload = fs.readFileSync(path.join(root, 'electron', 'src', 'preload', 'index.ts'), 'utf8');
   const panel = fs.readFileSync(path.join(root, 'electron', 'src', 'renderer', 'components', 'ExplorePanel.tsx'), 'utf8');
+  const connectionStatus = fs.readFileSync(path.join(root, 'electron', 'src', 'renderer', 'components', 'explore', 'ExploreConnectionStatus.tsx'), 'utf8');
   const hostScript = fs.readFileSync(path.join(root, 'agent', 'host-tools', 'configure-zhihu-secret.ps1'), 'utf8');
   const vendorRun = fs.readFileSync(path.join(root, 'agent', 'skills', 'zhihu', 'scripts', 'run.ps1'), 'utf8');
   const {
@@ -68,12 +69,12 @@ async function main() {
   assert.match(preload, /installExploreZhihuConnection:\s*\(\)\s*=>/);
   assert(!/beginExploreZhihuConnection:\s*\([^)]*(secret|accessSecret)/i.test(preload));
   assert(!/installExploreZhihuConnection:\s*\([^)]*(secret|accessSecret)/i.test(preload));
-  assert.match(panel, /连接知乎开放平台/);
+  assert.match(connectionStatus, /连接知乎开放平台/);
   assert.match(panel, /autoConnectionPrompted\.current = true;[\s\S]{0,120}void beginConnection\(\)/, 'missing one-shot automatic secret prompt');
-  assert.match(panel, /安装连接组件并继续/, 'fresh installs require a visible consent action');
-  assert.match(panel, /正在从知乎官方下载并校验 CLI/, 'CLI download and verification progress must be explicit');
-  assert.match(panel, /正在等待 Access Secret 安全窗口显示/, 'native prompt startup must have a visible waiting state');
-  assert(!/<input[^>]+(?:secret|password)/i.test(panel));
+  assert.match(connectionStatus, /安装连接组件并继续/, 'fresh installs require a visible consent action');
+  assert.match(connectionStatus, /正在从知乎官方下载并校验 CLI/, 'CLI download and verification progress must be explicit');
+  assert.match(connectionStatus, /正在等待 Access Secret 安全窗口显示/, 'native prompt startup must have a visible waiting state');
+  assert(!/<input[^>]+(?:secret|password)/i.test(`${panel}\n${connectionStatus}`));
   assert.match(mainSource, /shell\.openExternal\(ZHIHU_PROFILE_URL\)/);
   assert.match(mainSource, /fs\.existsSync\(readyFile\)/, 'Main must wait for a native-dialog readiness file');
   assert.match(mainSource, /child\.once\('close'[^]*fs\.existsSync\(readyFile\)[^]*finish\(\)/, 'a promptly cancelled but rendered prompt still counts as visible');

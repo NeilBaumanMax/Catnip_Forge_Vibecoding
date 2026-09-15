@@ -23,6 +23,7 @@ Lifecycle: ACTIVE · Development verification，产品硬件 Build 单独记证�
 | verify:explore-knowledge-preview-browser | 独立React浏览器夹具：宽/窄、原对话、验证表单与空态；浏览器要求同上，不自动加入离线组 |
 | verify:explore-analysis-results | 灵感/诊断结果严格TSX、状态/来源组合与计划回调；零Main build，纳入Explore/INTEGRATION |
 | verify:explore-plan-view | 只读计划严格TSX、选择回退/进度/步骤/风险/artifact按钮；拒绝吸收IPC/确认逻辑，零Main build |
+| verify:explore-connection-status | 连接卡严格TSX、状态/文案/步骤/disabled/回调；拒绝吸收IPC/Secret输入/自动弹窗，零Main build |
 | verify:skills-offline | vendor文件/filter与连接门禁；不执行真实部署 |
 | verify:integration | 上述离线组去重组合；Main只build一次 |
 | verify:changed -- --plan | HEAD的staged/unstaged及untracked路由；--base另加merge-base至HEAD；只输出计划不执行 |

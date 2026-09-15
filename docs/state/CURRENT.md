@@ -11,6 +11,7 @@ Lifecycle: ACTIVE · 唯一当前状态 · 2026-09-15
 - 无。最近完成任务已归档；下一项工作先建立新的 Task Context。
 
 ## Recently completed
+- Explore知乎连接状态卡提取为67行无状态组件，原组件1575→1535行；[TASK-EXPLORE-005](../tasks/archive/TASK-EXPLORE-005.md)已归档，connection-ui focus可直接定位，官方CLI/Secret/轮询与自动弹窗仍在原边界。
 - Explore只读计划展示提取为67行无状态组件，原组件1613→1575行；[TASK-EXPLORE-004](../tasks/archive/TASK-EXPLORE-004.md)已归档，plan-ui focus可直接定位，artifact文件操作与执行确认仍在原边界。
 - Explore灵感候选/诊断假设结果提取为108行无状态组件，原组件1676→1613行；[TASK-EXPLORE-003](../tasks/archive/TASK-EXPLORE-003.md)已归档，results-ui focus直接定位结果/来源展示。
 - Explore知识预览/原对话/验证表单提取为106行受控组件，原组件1731→1676行；[TASK-EXPLORE-002](../tasks/archive/TASK-EXPLORE-002.md)已归档，knowledge-ui focus直接定位局部展示/测试。

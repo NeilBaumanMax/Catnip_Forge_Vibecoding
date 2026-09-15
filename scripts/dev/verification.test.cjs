@@ -123,6 +123,18 @@ test('plan UI routes to its read-only component while artifact I/O remains outsi
   assert(plan.requirements.some(requirement => requirement.includes('verify:explore-layout-ui')));
 });
 
+test('connection UI routes to presentation while Secret and install actions remain parent-owned', () => {
+  const selected = context('explore', 'connection-ui');
+  assert.deepEqual(selected.tests, ['verify:explore-connection-status', 'verify:explore-ui', 'verify:explore-zhihu-connection']);
+  assert.deepEqual(route([selected.source[0]]).modules, ['explore']);
+  assert.equal(stepsFor(['verify:explore-connection-status']).some(step => step.id === 'build:main'), false);
+  assert(profile('explore').steps.some(step => step.id === 'verify:explore-connection-status'));
+  const plan = changedPlan([...selected.source, 'scripts/dev/verification.cjs']);
+  assert(plan.steps.some(step => step.id === 'verify:explore-connection-status'));
+  assert(plan.steps.some(step => step.id === 'verify:explore-zhihu-connection'));
+  assert(plan.requirements.some(requirement => requirement.includes('verify:explore-layout-ui')));
+});
+
 test('changed files include staged/unstaged/rename/delete/untracked, base history and spaces', t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'catnip-routing-'));
   t.after(() => {
