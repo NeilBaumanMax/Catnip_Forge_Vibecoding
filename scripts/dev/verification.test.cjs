@@ -5,7 +5,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { changedFiles, route, context, relativeFile, projectMap } = require('./project.cjs');
-const { profile, changedPlan, stepsFor, legacyStep, runSteps, CORE, SAFE } = require('./verification.cjs');
+const { profile, changedPlan, summarizePlan, stepsFor, legacyStep, runSteps, CORE, SAFE } = require('./verification.cjs');
 const { checkKnowledge } = require('./check-knowledge.cjs');
 
 test('Main is built once before all dependent tests; standalone wrappers preserved', () => {
@@ -107,4 +107,16 @@ test('all original npm commands remain byte-for-byte compatible', () => {
   // Snapshot captured from 71d63d5d; checks also work in a shallow clone.
   const before = require('./fixtures/legacy-scripts.json');
   for (const [name, command] of Object.entries(before)) assert.equal(manifest().scripts[name], command, name);
+});
+
+test('large untracked trees have bounded output without dropping verification coverage', () => {
+  const plan = changedPlan(Array.from({ length: 300 }, (_, i) => `untracked/path-${i}.ts`));
+  const summary = summarizePlan(plan), full = summarizePlan(plan, true);
+  assert.equal(summary.level, 'INTEGRATION');
+  assert.equal(summary.changed_files.length, 40);
+  assert.equal(summary.unknown_count, 300);
+  assert.equal(summary.unknown_omitted_from_display, 260);
+  assert.equal(full.changed_files.length, 300);
+  assert.deepEqual(summary.selected_verification, full.selected_verification);
+  assert.equal(plan.changed_files.length, 300);
 });

@@ -1,6 +1,6 @@
 # Development Agent Maintainability Refactor
 
-Lifecycle: ACTIVE（本轮施工基线；完成后归为 REFERENCE）
+Lifecycle: REFERENCE（已完成的施工基线；结果见 docs/testing/evidence/TASK-DEV-MAINT-001.md）
 Task: TASK-DEV-MAINT-001 · 2026-09-15 · DWIDE
 
 ## Problem
@@ -72,15 +72,15 @@ Task: TASK-DEV-MAINT-001 · 2026-09-15 · DWIDE
 
 ## Acceptance Criteria
 
-- [ ] 短 PROJECT_INDEX、CURRENT（<=200 行）、有效 project-map 和核心模块 contracts；地图路径/依赖/测试可验证。
-- [ ] Task 模板、active/archive、ADR、生命周期建立；默认 Maintenance/P0–P4 上下文规则；历史退出默认必读，LOG/DEV_PROGRESS 不再重复维护。
-- [ ] Product Truth 和 LAYER 仍为唯一原资产；CURRENT 为唯一当前状态，任务/evidence 为唯一局部历史。
-- [ ] 四级验证明确，常用模块只构建一次；旧 verify 保持兼容；changed --plan 支持未知升级与安全副作用边界。
-- [ ] 架构静态检查及负例验证；大文件软预算、增长约束、拆分顺序报告；不改产品行为。
-- [ ] 测量默认文件/行数、重复构建次数、FAST/module wall time、模块/contract/check 数量、大文件尺寸。
-- [ ] 演练 Explore 历史 UI 与 Serial session 两类任务，列出局部 docs/source/tests；不默认读历史。
-- [ ] Runtime typecheck、Electron typecheck/build、相关模块回归、架构检查、工具负例、diff/scope检查通过，外部/硬件未运行明确标记。
-- [ ] 恢复点、至少五个可解释提交、每次 staged review/push/remote hash 核对；无用户修改混入。
+- [x] 短 PROJECT_INDEX、CURRENT（<=200 行）、有效 project-map 和核心模块 contracts；地图路径/依赖/测试可验证。
+- [x] Task 模板、active/archive、ADR、生命周期建立；默认 Maintenance/P0–P4 上下文规则；历史退出默认必读，LOG/DEV_PROGRESS 不再重复维护。
+- [x] Product Truth 和 LAYER 仍为唯一原资产；CURRENT 为唯一当前状态，任务/evidence 为唯一局部历史。
+- [x] 四级验证明确，常用模块只构建一次；旧 verify 保持兼容；changed --plan 支持未知升级与安全副作用边界。
+- [x] 架构静态检查及负例验证；大文件软预算、增长约束、拆分顺序报告；不改产品行为。
+- [x] 测量默认文件/行数、重复构建次数、FAST/module wall time、模块/contract/check 数量、大文件尺寸。
+- [x] 演练 Explore 历史 UI 与 Serial session 两类任务，列出局部 docs/source/tests；不默认读历史。
+- [x] Runtime typecheck、Electron typecheck/build、相关模块回归、架构检查、工具负例、diff/scope检查通过，外部/硬件未运行明确标记。
+- [x] 恢复点、至少五个可解释提交、每次 staged review/push/remote hash 核对；无用户修改混入。
 
 ## Evidence / Transition
 

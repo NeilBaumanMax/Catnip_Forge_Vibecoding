@@ -1,11 +1,11 @@
 # TASK-DEV-MAINT-001
-Lifecycle: ACTIVE · Status: implementing · Mode: Maintenance
+Lifecycle: ARCHIVED · Status: completed · Mode: Maintenance · 2026-09-15
 ## Intent
 让局部开发按模块读取上下文并选择验证；详细验收范围见[已提交基线](../../construction/DEV_AGENT_MAINTAINABILITY_REFACTOR.md)。
 ## Target Modules
 dev-infrastructure；知识导航跨模块是本任务明确例外，不改变其产品行为。
 ## Allowed Write Scope
-AGENTS、README/文档入口、.vibecoding、docs新知识/测试/任务/ADR/维护目录、scripts/dev、electron/package.json；旧文档只降级/去重。
+AGENTS、README/CLAUDE文档入口、.vibecoding、docs新知识/测试/任务/ADR/维护目录、scripts/dev、electron/package.json；旧文档只降级/去重。
 ## Read-only Dependencies
 全部产品模块仅检查入口、边界和测试副作用。
 ## Forbidden Scope

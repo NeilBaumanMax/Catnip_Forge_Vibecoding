@@ -21,6 +21,7 @@ Lifecycle: ACTIVE · Development verification，产品硬件 Build 单独记证�
 | verify:changed -- --plan | HEAD的staged/unstaged及untracked路由；--base另加merge-base至HEAD；只输出计划不执行 |
 
 `--files <repo-relative-path...>` 可模拟任务路由（须放最后）；`--plan` 也可用于各聚合组。
+计划先对全部路径路由，再将过长路径列表的显示限制为40项并列总数/省略数；`--full` 可查看全量。用户未跟踪目录不删除、不忽略，未知路径仍触发升级。
 源码静态类型范围需诚实：现有 electron/tsconfig.json 排除Renderer，Vite生产build也不是TSX严格类型检查；独立Renderer类型门禁仍属债务，不写作PASS。
 聚合每次显式Main build，不做跨运行缓存；串行子测试120秒超时/非零退出立即停止，其余标NOT RUN。
 verify:skills会真实部署，verify:explore-zhihu-status会读取当时CLI状态，verify:project-session-ui需要已启动成品CDP；这些及其他CDP/packaged/live命令不自动执行。地图保留相关原测试推荐，changed计划明确列NOT RUN requirements。新聚合的connection专项只检查参数与Windows XAML构造，无实际Secret/安装/网络请求。

@@ -94,6 +94,21 @@ function changedPlan(files, map = projectMap()) {
   return { plan_only: true, changed_files: files, ...routed, reasons, ...plan, requirements: [...new Set([...plan.requirements, ...requirements])] };
 }
 
+function summarizePlan(plan, full = false) {
+  const { steps, ...summary } = plan;
+  let truncated = false;
+  for (const key of ['changed_files', 'unknown']) {
+    if (!Array.isArray(summary[key])) continue;
+    summary[`${key}_count`] = summary[key].length;
+    if (!full && summary[key].length > 40) {
+      summary[`${key}_omitted_from_display`] = summary[key].length - 40;
+      summary[key] = summary[key].slice(0, 40);
+      truncated = true;
+    }
+  }
+  return { ...summary, selected_verification: steps.map(s => s.id), required_builds: steps.filter(s => s.id.startsWith('build:')).map(s => s.id), ...(truncated ? { display_note: 'All paths were routed; only display is limited to 40 entries per list. Use --full for the complete plan.' } : {}) };
+}
+
 function runSteps(steps, spawn = spawnSync, log = console.log) {
   const started = performance.now(), results = [];
   for (const step of steps) {
@@ -106,4 +121,4 @@ function runSteps(steps, spawn = spawnSync, log = console.log) {
   }
   return { status: results.length === steps.length && results.every(r => r.status === 'PASS') ? 'PASS' : 'FAIL', seconds: Number(((performance.now() - started) / 1000).toFixed(3)), results, not_run: steps.slice(results.length).map(s => s.id) };
 }
-module.exports = { SAFE, GROUPS, CORE, MAIN, legacyStep, stepsFor, profile, changedPlan, runSteps };
+module.exports = { SAFE, GROUPS, CORE, MAIN, legacyStep, stepsFor, profile, changedPlan, summarizePlan, runSteps };

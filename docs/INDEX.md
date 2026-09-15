@@ -1,5 +1,6 @@
 # Reference / Historical Documents
 Lifecycle: REFERENCE · 当前入口：[PROJECT_INDEX](PROJECT_INDEX.md)，当前状态：[CURRENT](state/CURRENT.md)。
+原根 CLAUDE 开发规则保存在 [CLAUDE_LEGACY](reference/CLAUDE_LEGACY.md)（ARCHIVED）；根文件仅转向 AGENTS。
 
 | 文档 | 生命周期 / 用途 |
 | --- | --- |

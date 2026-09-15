@@ -8,10 +8,11 @@ Lifecycle: ACTIVE · 唯一当前状态 · 2026-09-15
 - 里程碑：Development Agent 可维护性首次治理，产品功能保持既有 DWIDE 行为。
 
 ## Active task
-- [TASK-DEV-MAINT-001](../tasks/active/TASK-DEV-MAINT-001.md)。
-- 知识导航、分层验证已提交；架构导入检查/增长警报已落地，正在最终核验与归档。
+- 无；下一项任务从模板建立 Context，再按地图选模块。
+- 本轮治理已归档：[TASK-DEV-MAINT-001](../tasks/archive/TASK-DEV-MAINT-001.md)（P3，普通任务不必读）。
 
 ## Recently completed
+- 首次可维护性治理：17模块导航/短契约、单一状态与任务历史、构建去重、保守changed计划、4项导入检查与热点增长警报。
 - 文档漂移校正：分支、六工作区、固定深蓝主题、包目录、历史边界。
 - 产品：工程隔离/独立探索历史/计划材料/确认门禁、双流程工作页、并发模式隔离、历史重命名。
 - 最近产品修复：知乎原生安全窗口可见性、150% 缩放布局、Windows 交付目录更名。

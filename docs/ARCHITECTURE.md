@@ -1,5 +1,7 @@
 # 架构说明
 
+Lifecycle: REFERENCE · 历史设计证据；当前状态只在 [CURRENT](state/CURRENT.md)，唯一全局架构契约为 [Layer Contract](construction/LAYER_CONTRACT.md)。
+
 > 历史架构说明：保留早期浏览器工作台、搜索路由与会话路径的设计证据。当前产品要求以 [Product Truth](product/PRODUCT_REQUIREMENTS.md) 为准；六工作区、工程内会话、独立 Explore 通道及确认门禁见 [分层契约](construction/LAYER_CONTRACT.md) 和 [施工接力](construction/HANDOFF.md)。旧描述不覆盖当前契约。
 
 ## 一句话
