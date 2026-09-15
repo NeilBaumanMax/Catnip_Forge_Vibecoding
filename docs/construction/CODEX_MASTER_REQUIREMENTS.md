@@ -89,3 +89,15 @@ Product Truth：[已确认需求](../product/PRODUCT_REQUIREMENTS.md)。决定�
 - 热榜、直答、本人创作/关注/收藏、官方知识库、额度页和 OAuth 保持不接；Catnip 本地知识卡不等于知乎官方知识库。
 - Access Secret 是用户个人的开放平台 API 鉴权凭证并决定额度归属，不是普通偏好设置。页面只触发零参数连接动作；完整值在独立宿主遮蔽窗口中输入，经官方 CLI stdin 验证并写系统凭证库，不进入 Renderer、Chat、URL、日志、Agent 输出或仓库。
 - `auth status --verify`、最小本人内容请求和真实知乎搜索均已成功；update check unavailable 时仍不得宣称已是最新版。
+
+## Phase 21 电台完整移植硬约束
+
+- 当前施工分支为 `liukanshan`；基线 `ea40e011`，本地恢复点 `backup/pre-phase-21-radio-20260915`。开工仍以动态 Git 为准。
+- 来源 `E:\Agent\vibeide\小智` 只读。移植内容进入当前仓库后才允许修改；不得直接把来源目录变成运行时依赖，也不得在打包版引用固定盘符。
+- 完整移植优先：保留 3D 场景、装配/动作/GIF 屏幕、光驱电台、知乎查询与本人数据、人设、小智文字/工具/TTS、来源呈现和所有必要模型/图片资源。
+- Electron Main 是唯一生命周期所有者。一个 Python PID 同时承载 loopback HTTP 和小智 WebSocket；启动必须有超时、ready 握手、崩溃状态和重启控制，关闭应用必须先优雅终止再有界强制回收，禁止孤儿进程。
+- 用户授权电台 Python 进程直接调用知乎 HTTP；只允许 `backend/zhihu.py` 已列出的只读接口和受控分页，不扩展发帖、删除、关注变更或其他写操作。探索继续走官方 Skill，不因电台改写。
+- 电台 Secret 由 Main 安全输入/安全存储维护。不得沿用来源中“浏览器密码框 → Python 相邻 keyfile 加密”的生产路径；Fernet key 与数据库同目录不视为系统安全凭据。
+- 电台小智模型使用独立 OpenAI-compatible 配置，不与 Claude Code compatible 配置静默共用；Key 不进入 Renderer。配置变更明确提示并重启电台 PID，不重启整个 Electron，除非真实依赖要求。
+- 前端在 Electron 新标签页内完整展示。优先复用来源的独立 Vite 前端和资源，由同一 loopback 电台进程提供静态页面并嵌入受限 iframe，以降低重写造成的功能/视觉漂移；不得启用 Node integration、远程导航或任意新窗口。
+- Vendor `xiaozhi-esp32-server` 保留 MIT 许可证和第三方声明；来源副本、测试数据库、`.runtime`、Key、日志和本机依赖目录不得入包。

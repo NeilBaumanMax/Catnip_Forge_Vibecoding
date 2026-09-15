@@ -276,3 +276,14 @@ Secret 不进源码、Renderer、Chat、日志、URL、截图、Agent 输出或�
 - 当前 Windows 解压包交付根目录为 `electron/dist-package/Catnip Forge`，可执行文件为其下的 `Catnip Forge.exe`；`win-unpacked` 仅是 electron-builder 构建中的瞬时目录。
 - `pack_win_unpacked.cjs` 会拒绝清理 Electron 工作区之外的输出路径，打包前清空安全限定的输出根，避免旧包可变数据污染候选包。
 - `verify:release`、打包聊天烟测及依赖 packaged Playwright 的验证默认路径已同步至新目录。
+
+## 2026-09-15 — Phase 21 Forge 电台完整移植准备
+
+- 当前动态 Git：`liukanshan@ea40e011`，与 `origin/liukanshan` 一致；本地恢复点 `backup/pre-phase-21-radio-20260915` 已建立。来源目录 `E:\Agent\vibeide\小智` 只读。
+- 用户确认以来源代码完整移植为优先，并明确允许独立电台进程直接调用知乎 HTTP。该授权只覆盖电台的只读白名单接口；Explore 仍使用官方 `zhihu` Skill/CLI。
+- 完整范围包括 3D 测试台、光驱电台、知乎及本人数据、人设、小智文字/工具/TTS 与全部必要资源。来源已失效的旧 `/api/v1/sessions` broker 不得冒充可用功能。
+- 目标为一个由 Electron Main 管理的 Python PID，同时承载 loopback HTTP 与 Xiaozhi WebSocket。当前来源实际需要 `run.py web` 和 `run.py xiaozhi` 两个进程，必须在移植时组合。
+- 电台前端保持独立 Vite 构建并在新“电台”标签页的受限 iframe 中完整展示；RadioPanel 懒加载，避免 Three.js 抢占启动性能。
+- 当前随包 Python 3.12 缺少 FastAPI/Uvicorn/HTTPX/WebSockets/NumPy 等依赖，而来源声明 Python 3.11；先做离线兼容门禁，失败时提供隔离 3.11 runtime，客户不得联网安装依赖。
+- Secret 仍不得进入 Renderer、URL、日志或包。知乎与小智模型 Key 由 Main 原生安全输入/safeStorage 管理并注入子进程；来源 Fernet key 与数据库同目录的做法不用于生产 Secret。
+- 详细计划与 Pending 见 `docs/construction/PHASE_21_RADIO_INTEGRATION.md`。本轮只完成文档和来源审计，尚未复制或修改业务源码，也未运行真实知乎、模型、TTS 或打包。
