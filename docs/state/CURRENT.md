@@ -3,15 +3,15 @@ Lifecycle: ACTIVE · 唯一当前状态 · 2026-09-15
 
 ## Development line
 - 当前用户指定 DWIDE；origin/DWIDE；实时 HEAD/工作区/跟踪状态用 Git 查询。
-- 产品业务基线 f2449a19；文档校正 71d63d5d；本轮施工基线 bf0192da。
+- 产品功能基线 f2449a19；维护进展以当前Task与Git为准。
 - 当前版本从 [config/version.json](../../config/version.json) 读取：v2.0.0 / Build 7201。
-- 里程碑：Development Agent 可维护性首次治理，产品功能保持既有 DWIDE 行为。
+- 里程碑：Maintenance Mode下的小步热点拆分；产品功能保持既有DWIDE行为。
 
 ## Active task
-- 无；下一项任务从模板建立 Context，再按地图选模块。
-- 本轮治理已归档：[TASK-DEV-MAINT-001](../tasks/archive/TASK-DEV-MAINT-001.md)（P3，普通任务不必读）。
+- 无；下一项任务先建立Task Context，再按地图路由。
 
 ## Recently completed
+- BrowserPanel事件合并/任务历史投影提取为49行独立模块，原组件1518→1471行；[TASK-DESKTOP-001](../tasks/archive/TASK-DESKTOP-001.md)已归档，后续局部Context使用desktop-shell的task-history focus。
 - 首次可维护性治理：17模块导航/短契约、单一状态与任务历史、构建去重、保守changed计划、4项导入检查与热点增长警报。
 - 文档漂移校正：分支、六工作区、固定深蓝主题、包目录、历史边界。
 - 产品：工程隔离/独立探索历史/计划材料/确认门禁、双流程工作页、并发模式隔离、历史重命名。
@@ -37,7 +37,7 @@ Lifecycle: ACTIVE · 唯一当前状态 · 2026-09-15
 ## Temporary constraints
 - 无 worktree，无擅自委派，不改产品需求或 Runtime Agent 行为。
 - 保留用户未跟踪 docs/tutorials/、electron/radio/、hello_world_esp32s3/.catnip/，不纳入提交。
-- 四个热点当前不大拆；本轮只建设开发基础设施。
+- BrowserPanel纯计算提取已完成；后续状态/订阅/跨层与其他热点先另开Task，保持小步验证。
 - 历史证据、旧包和已配置凭据不能推断为当前机器实时状态。
 
 ## Release status

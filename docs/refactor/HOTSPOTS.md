@@ -1,5 +1,5 @@
 # Hotspots — first extraction plan
-Lifecycle: REFERENCE · 2026-09-15 · 产品源码基线 71d63d5d（本轮源码无变化）
+Lifecycle: REFERENCE · 首次分析快照：2026-09-15 / 71d63d5d；下表为当时尺寸，实时拆分进展只在CURRENT及当前Task。
 尺寸口径与实时输出：`node scripts/dev/check-maintainability.cjs`。规则只在 [MAINTAINABILITY](../architecture/MAINTAINABILITY.md)。
 
 ## Largest source files

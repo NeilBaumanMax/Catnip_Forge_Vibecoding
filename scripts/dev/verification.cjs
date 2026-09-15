@@ -11,6 +11,7 @@ const SAFE = new Set([
   'verify:explore-session', 'verify:explore-knowledge', 'verify:explore-context',
   'verify:explore-zhihu-connection', 'verify:project-session', 'verify:data-paths',
   'verify:serial-monitor', 'verify:task-queue', 'verify:qwen-attachments', 'verify:hardboard',
+  'verify:task-history',
 ]);
 const CORE = ['verify:explore-request', 'verify:explore-analysis-gate', 'verify:explore-search-handoff'];
 const FAST_TESTS = ['verify:version', 'verify:explore-ui'];

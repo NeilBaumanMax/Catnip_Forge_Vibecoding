@@ -6,6 +6,7 @@ Lifecycle: ACTIVE · Development policy；全局产品架构仍以 [Layer Contra
 允许局部 Bug 修复和组合层调整；新业务职责先考虑提取到独立模块。Task 必须解释留在热点的必要性、增长量、责任边界与保护测试。
 不得以减少行数为由压缩代码、删功能或批量迁移；“行数减少”不能代替行为验证。
 热点基线不得每轮自动调高。真正拆分后，在同一 Task 中审查新旧职责、地图、测试并更新基线。
+JSON只保存当前审查后的尺寸及reviewed_task；旧尺寸由Task evidence/Git保留，不在此重复追加历史。
 
 ## Soft size budgets
 | 类型 | normal | review | extraction preferred | no new major business logic |

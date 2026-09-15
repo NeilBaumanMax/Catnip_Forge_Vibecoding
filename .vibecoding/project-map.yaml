@@ -11,7 +11,8 @@
         "electron/src/main/bootstrap.ts",
         "electron/src/main/tray.ts",
         "electron/src/renderer/App.tsx",
-        "electron/src/renderer/components/BrowserPanel.tsx"
+        "electron/src/renderer/components/BrowserPanel.tsx",
+        "electron/src/renderer/components/task-manager/task-history.ts"
       ],
       "paths": [
         "electron/src/main/index.ts",
@@ -22,7 +23,8 @@
         "electron/src/renderer/index.html",
         "electron/src/renderer/assets/**",
         "electron/src/renderer/styles/**",
-        "electron/src/renderer/components/BrowserPanel.tsx"
+        "electron/src/renderer/components/BrowserPanel.tsx",
+        "electron/src/renderer/components/task-manager/**"
       ],
       "docs": {
         "contract": "docs/modules/desktop-shell/CONTRACT.md",
@@ -44,7 +46,8 @@
         ],
         "module": [
           "verify:project-session-ui",
-          "verify:chat-presentation"
+          "verify:chat-presentation",
+          "verify:task-history"
         ],
         "integration": [
           "verify:project-session",
@@ -58,6 +61,25 @@
       "status": {
         "active": true,
         "frozen": false
+      },
+      "focus": {
+        "task-history": {
+          "source": [
+            "electron/src/renderer/components/task-manager/task-history.ts"
+          ],
+          "read_only": [
+            "electron/src/renderer/components/BrowserPanel.tsx",
+            "electron/src/renderer/types/index.ts"
+          ],
+          "find": [
+            "mergeRuntimeEventWindow",
+            "taskHistoryFromEvents",
+            "TaskHistoryItem"
+          ],
+          "tests": [
+            "verify:task-history"
+          ]
+        }
       }
     },
     "project-session": {

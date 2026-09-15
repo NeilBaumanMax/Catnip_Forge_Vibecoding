@@ -11,6 +11,7 @@ Lifecycle: ACTIVE · Module: desktop-shell
 runtime-mcp 的直接越层访问；禁止[Layer Contract](../../construction/LAYER_CONTRACT.md)列出的跨层行为。地图依赖是导航级职责，不能代替源码导入图。
 ## Public Interfaces
 App / BrowserPanel props；Main 窗口事件。
+任务历史纯投影见[task-history.ts](../../../electron/src/renderer/components/task-manager/task-history.ts)：只接收Renderer事件快照，不拥有轮询、工程过滤或清空状态；局部上下文用context.cjs desktop-shell --focus task-history。
 入口：[index.ts](../../../electron/src/main/index.ts)、[bootstrap.ts](../../../electron/src/main/bootstrap.ts)、[tray.ts](../../../electron/src/main/tray.ts)、[App.tsx](../../../electron/src/renderer/App.tsx)、[BrowserPanel.tsx](../../../electron/src/renderer/components/BrowserPanel.tsx)。
 ## Invariants
 正常桌面默认探索；六工作区；窗口动作经 preload；保留工程切换门禁。全局规则引用Layer §跨层不变量；不复制另一套全局契约。

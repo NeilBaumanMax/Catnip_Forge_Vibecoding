@@ -61,6 +61,14 @@ test('context routing keeps history UI and serial session separate', () => {
   assert.throws(() => context('explore', 'typo'));
 });
 
+test('task history projection routes to its offline module test without a Main build', () => {
+  const selected = context('desktop-shell', 'task-history');
+  assert.deepEqual(selected.tests, ['verify:task-history']);
+  assert.deepEqual(route(selected.source).modules, ['desktop-shell']);
+  assert.equal(stepsFor(selected.tests).some(s => s.id === 'build:main'), false);
+  assert(changedPlan(selected.source).steps.some(s => s.id === 'verify:task-history'));
+});
+
 test('changed files include staged/unstaged/rename/delete/untracked, base history and spaces', t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'catnip-routing-'));
   t.after(() => {

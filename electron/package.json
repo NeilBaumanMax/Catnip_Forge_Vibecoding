@@ -51,6 +51,7 @@
     "verify:onboarding-ui": "node scripts/verify_catnip_onboarding_ui.cjs",
     "verify:task-queue": "node node_modules/electron/cli.js scripts/verify_agent_task_queue.cjs",
     "verify:serial-monitor": "npm run build:main && node scripts/verify_serial_monitor_session.cjs",
+    "verify:task-history": "node scripts/verify_task_history.cjs",
     "verify:qwen-attachments": "npm run build:main && node node_modules/electron/cli.js scripts/verify_qwen_attachments.cjs",
     "verify:data-paths": "npm run build:main && node node_modules/electron/cli.js scripts/verify_catnip_data_paths.cjs",
     "check:knowledge": "node ../scripts/dev/check-knowledge.cjs",

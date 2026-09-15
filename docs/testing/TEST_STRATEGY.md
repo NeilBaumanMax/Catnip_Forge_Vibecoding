@@ -16,6 +16,7 @@ Lifecycle: ACTIVE · Development verification，产品硬件 Build 单独记证�
 | check:architecture / check:maintainability | 四项AST导入规则 / 尺寸与增长警报；均已进入FAST |
 | verify:explore-core / verify:explore | 核心request/权限/交接三项；完整版再含session/knowledge/context/连接/静态UI |
 | verify:project / verify:serial | 工程隔离/路径；共享串口mock |
+| verify:task-history | Renderer事件合并/任务历史纯计算、相关类型严格检查；零Main build |
 | verify:skills-offline | vendor文件/filter与连接门禁；不执行真实部署 |
 | verify:integration | 上述离线组去重组合；Main只build一次 |
 | verify:changed -- --plan | HEAD的staged/unstaged及untracked路由；--base另加merge-base至HEAD；只输出计划不执行 |
