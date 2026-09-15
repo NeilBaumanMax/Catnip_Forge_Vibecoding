@@ -8,6 +8,7 @@ const browserPanel = fs.readFileSync(path.join(root, 'src', 'renderer', 'compone
 const explorePanel = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'ExplorePanel.tsx'), 'utf8');
 const exploreSourceList = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreSourceList.tsx'), 'utf8');
 const exploreStageNav = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreStageNav.tsx'), 'utf8');
+const exploreHistory = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreSessionHistory.tsx'), 'utf8');
 const globalStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'global.less'), 'utf8');
 const appleStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'apple.less'), 'utf8');
 const exploreStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'explore.less'), 'utf8');
@@ -55,9 +56,11 @@ assert.match(explorePanel, /saveExploreWorkSession/, 'Explore work autosave is m
 assert.match(explorePanel, /isPristineExploreDraft/, 'untouched Explore drafts need an explicit cleanup rule');
 assert.match(explorePanel, /returnToExploreHome[\s\S]{0,900}deleteExploreWorkSession/, 'returning from an untouched draft must remove it instead of leaving empty history');
 assert.match(explorePanel, /const renameWorkSession/, 'Explore history needs a persistent rename handler');
-assert.match(explorePanel, /className="explore-session-rename"/, 'Explore history needs an inline rename control');
+assert.match(explorePanel, /import ExploreSessionHistory from '\.\/explore\/ExploreSessionHistory'/, 'Explore history must use the local presentation component');
+assert.match(explorePanel, /<ExploreSessionHistory[\s\S]*?renameWorkSession=\{renameWorkSession\}[\s\S]*?\/>/, 'Explore history must retain parent-owned persistence');
+assert.match(exploreHistory, /className="explore-session-rename"/, 'Explore history needs an inline rename control');
 assert.match(explorePanel, /title:\s*sessionTitle\.trim\(\)/, 'autosave must preserve a user-renamed session title');
-assert.match(explorePanel, /openWorkSession\(session\.mode, session\.id\)/, 'Explore history resume action is missing');
+assert.match(exploreHistory, /openWorkSession\(session\.mode, session\.id\)/, 'Explore history resume action is missing');
 assert.match(explorePanel, /saveExploreKnowledge/, 'source save must use the existing preload store');
 assert.match(explorePanel, /origin:\s*activeWorkSession[\s\S]{0,500}conversation:\s*conversation\.map/, 'saved knowledge must retain its origin Explore conversation');
 assert.match(explorePanel, /deleteExploreKnowledge\(card\.id\)/, 'saved knowledge needs an explicit delete action');

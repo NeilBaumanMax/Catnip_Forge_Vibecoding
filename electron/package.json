@@ -33,6 +33,8 @@
     "verify:zhihu-skill-package": "node scripts/verify_zhihu_skill_package.cjs",
     "verify:explore-knowledge": "npm run build:main && node node_modules/electron/cli.js scripts/verify_explore_knowledge_store.cjs",
     "verify:explore-ui": "node scripts/verify_explore_ui.cjs",
+    "verify:explore-history": "node scripts/verify_explore_history.cjs",
+    "verify:explore-history-browser": "node scripts/verify_explore_history_browser.cjs",
     "verify:explore-layout-ui": "node scripts/verify_explore_layout_ui.cjs",
     "verify:explore-zhihu-status": "npm run build:main && node node_modules/electron/cli.js scripts/verify_explore_zhihu_status.cjs",
     "verify:explore-zhihu-connection": "npm run build:main && node node_modules/electron/cli.js scripts/verify_explore_zhihu_connection.cjs",

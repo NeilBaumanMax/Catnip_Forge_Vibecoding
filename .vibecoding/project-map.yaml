@@ -268,12 +268,14 @@
           "verify:explore-session",
           "verify:explore-knowledge",
           "verify:explore-context",
-          "verify:explore-zhihu-connection"
+          "verify:explore-zhihu-connection",
+          "verify:explore-history"
         ],
         "integration": [
           "verify:project-session",
           "verify:explore-search-handoff",
-          "verify:serial-monitor"
+          "verify:serial-monitor",
+          "verify:explore-history-browser"
         ]
       },
       "decisions": [
@@ -286,22 +288,21 @@
       "focus": {
         "history-ui": {
           "source": [
-            "electron/src/renderer/components/ExplorePanel.tsx",
-            "electron/src/renderer/styles/explore.less",
-            "electron/src/common/project-session.ts"
+            "electron/src/renderer/components/explore/ExploreSessionHistory.tsx",
+            "electron/src/renderer/styles/explore.less"
           ],
           "read_only": [
-            "electron/src/main/explore-session.ts"
+            "electron/src/renderer/components/ExplorePanel.tsx",
+            "electron/src/common/project-session.ts"
           ],
           "tests": [
-            "verify:explore-ui",
-            "verify:explore-session"
+            "verify:explore-history",
+            "verify:explore-ui"
           ],
           "find": [
-            "sessionTitle",
-            "returnToExploreHome",
-            "renameWorkSession",
-            "workSessions"
+            "ExploreSessionHistory",
+            "explore-session-rename",
+            "workStatusLabel"
           ]
         }
       }

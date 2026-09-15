@@ -11,6 +11,7 @@ Lifecycle: ACTIVE · Module: explore
 runtime-mcp 的直接越层访问；禁止[Layer Contract](../../construction/LAYER_CONTRACT.md)列出的跨层行为。地图依赖是导航级职责，不能代替源码导入图。
 ## Public Interfaces
 explore:*；ExploreWorkSessionRecord；registerExploreAnalysisIpc。
+历史列表展示入口：[ExploreSessionHistory.tsx](../../../electron/src/renderer/components/explore/ExploreSessionHistory.tsx)。只消费父组件传入的列表/重命名状态与回调；不持有另一套状态，不调用 IPC。ExplorePanel 继续管理会话/保存/恢复/状态标签。纯展示任务使用 `context.cjs explore --focus history-ui`，持久化/项目隔离变化才升级相关 session 专项。
 入口：[ExplorePanel.tsx](../../../electron/src/renderer/components/ExplorePanel.tsx)、[explore](../../../electron/src/renderer/components/explore)、[explore.ts](../../../electron/src/common/explore.ts)、[explore-session.ts](../../../electron/src/main/explore-session.ts)、[explore-analysis.ts](../../../electron/src/main/explore-analysis.ts)、[explore-request.ts](../../../electron/src/main/explore-request.ts)、[explore-context.ts](../../../electron/src/main/explore-context.ts)、[explore-knowledge.ts](../../../electron/src/main/explore-knowledge.ts)、[explore-zhihu-status.ts](../../../electron/src/main/explore-zhihu-status.ts)、[explore-zhihu-search.ts](../../../electron/src/main/explore-zhihu-search.ts)。
 ## Invariants
 分析不改工程业务源码/触硬件；确认绑定材料摘要、工程、计划且一次性；迟到结果回原会话；未选Context不注入。全局规则引用Layer §跨层不变量；不复制另一套全局契约。

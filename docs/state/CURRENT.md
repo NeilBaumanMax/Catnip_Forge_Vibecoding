@@ -11,6 +11,7 @@ Lifecycle: ACTIVE · 唯一当前状态 · 2026-09-15
 - 无；下一项任务先建立Task Context，再按地图路由。
 
 ## Recently completed
+- Explore历史列表展示提取为69行受控组件，原组件1761→1731行；[TASK-EXPLORE-001](../tasks/archive/TASK-EXPLORE-001.md)已归档，history-ui focus直接定位局部展示/测试。
 - BrowserPanel事件合并/任务历史投影提取为49行独立模块，原组件1518→1471行；[TASK-DESKTOP-001](../tasks/archive/TASK-DESKTOP-001.md)已归档，后续局部Context使用desktop-shell的task-history focus。
 - 首次可维护性治理：17模块导航/短契约、单一状态与任务历史、构建去重、保守changed计划、4项导入检查与热点增长警报。
 - 文档漂移校正：分支、六工作区、固定深蓝主题、包目录、历史边界。
@@ -37,7 +38,7 @@ Lifecycle: ACTIVE · 唯一当前状态 · 2026-09-15
 ## Temporary constraints
 - 无 worktree，无擅自委派，不改产品需求或 Runtime Agent 行为。
 - 保留用户未跟踪 docs/tutorials/、electron/radio/、hello_world_esp32s3/.catnip/，不纳入提交。
-- BrowserPanel纯计算提取已完成；后续状态/订阅/跨层与其他热点先另开Task，保持小步验证。
+- BrowserPanel纯计算与Explore历史展示提取已完成；后续状态/订阅/跨层与其他热点先另开Task，保持小步验证。
 - 历史证据、旧包和已配置凭据不能推断为当前机器实时状态。
 
 ## Release status

@@ -54,7 +54,9 @@ test('unknown/deleted/frozen/boundary/config paths escalate instead of skipping'
 
 test('context routing keeps history UI and serial session separate', () => {
   const a = context('explore', 'history-ui'), b = context('serial', 'session');
-  assert(a.source.includes('electron/src/renderer/components/ExplorePanel.tsx'));
+  assert(a.source.includes('electron/src/renderer/components/explore/ExploreSessionHistory.tsx'));
+  assert(!a.source.includes('electron/src/renderer/components/ExplorePanel.tsx'));
+  assert(a.read_only.includes('electron/src/renderer/components/ExplorePanel.tsx'));
   assert.deepEqual(b.source, ['electron/src/main/serial-monitor-session.ts']);
   assert(!a.docs.some(d => /evidence|TEST_METRICS|LOG\.md/.test(d)));
   assert(!b.source.some(d => /ExplorePanel/.test(d)));
@@ -67,6 +69,20 @@ test('task history projection routes to its offline module test without a Main b
   assert.deepEqual(route(selected.source).modules, ['desktop-shell']);
   assert.equal(stepsFor(selected.tests).some(s => s.id === 'build:main'), false);
   assert(changedPlan(selected.source).steps.some(s => s.id === 'verify:task-history'));
+});
+
+test('history UI routes to its component regression without building Main or launching a browser', () => {
+  const selected = context('explore', 'history-ui');
+  assert.deepEqual(selected.tests, ['verify:explore-history', 'verify:explore-ui']);
+  assert.deepEqual(route([selected.source[0]]).modules, ['explore']);
+  // Shared renderer styles also belong to the shell; keep this conservative routing.
+  assert.deepEqual(route(selected.source).modules, ['desktop-shell', 'explore']);
+  assert.equal(stepsFor(selected.tests).some(s => s.id === 'build:main'), false);
+  assert.equal(SAFE.has('verify:explore-history-browser'), false);
+  assert(profile('explore').steps.some(s => s.id === 'verify:explore-history'));
+  const plan = changedPlan([...selected.source, 'scripts/dev/verification.cjs']);
+  assert(plan.steps.some(s => s.id === 'verify:explore-history'));
+  assert(plan.requirements.some(r => r.includes('verify:explore-history-browser')));
 });
 
 test('changed files include staged/unstaged/rename/delete/untracked, base history and spaces', t => {
