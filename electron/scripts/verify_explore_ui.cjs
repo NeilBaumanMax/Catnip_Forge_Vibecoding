@@ -13,6 +13,7 @@ const exploreKnowledgePreview = fs.readFileSync(path.join(root, 'src', 'renderer
 const exploreAnalysisResults = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreAnalysisResults.tsx'), 'utf8');
 const explorePlanView = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExplorePlanView.tsx'), 'utf8');
 const exploreConnectionStatus = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreConnectionStatus.tsx'), 'utf8');
+const exploreOutputEmptyState = fs.readFileSync(path.join(root, 'src', 'renderer', 'components', 'explore', 'ExploreOutputEmptyState.tsx'), 'utf8');
 const globalStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'global.less'), 'utf8');
 const appleStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'apple.less'), 'utf8');
 const exploreStyles = fs.readFileSync(path.join(root, 'src', 'renderer', 'styles', 'explore.less'), 'utf8');
@@ -102,6 +103,9 @@ assert.match(explorePanel, /import ExploreConnectionStatus from '\.\/explore\/Ex
 assert.match(explorePanel, /onInstall=\{installConnection\}[\s\S]*?onConnect=\{beginConnection\}[\s\S]*?onRefresh=\{refreshConnection\}/, 'connection actions must remain wired to parent functions');
 assert.match(exploreConnectionStatus, /Access Secret 只交给知乎官方连接工具/, 'connection card must retain Secret safety copy');
 assert.doesNotMatch(exploreConnectionStatus, /electronAPI|beginExploreZhihu|installExploreZhihu|autoConnectionPrompted/, 'connection presentation must not absorb IPC or automatic prompting');
+assert.match(explorePanel, /<ExploreOutputEmptyState mode=\{isIdea \? 'idea' : 'diagnosis'\}/, 'describe output must use mode-specific local empty presentation');
+assert.match(exploreOutputEmptyState, /explore-idea-empty-shell[\s\S]*explore-diagnosis-empty-shell/, 'both existing empty output modes must remain present');
+assert.doesNotMatch(exploreOutputEmptyState, /electronAPI|useState|useEffect|onClick|onChange/, 'output empty presentation must remain static');
 assert.match(exploreSourceList, /source\.type/);
 assert.match(exploreSourceList, /source\.author/);
 assert.match(exploreSourceList, /source\.excerpt/);

@@ -273,7 +273,8 @@
           "verify:explore-knowledge-preview",
           "verify:explore-analysis-results",
           "verify:explore-plan-view",
-          "verify:explore-connection-status"
+          "verify:explore-connection-status",
+          "verify:explore-output-empty-state"
         ],
         "integration": [
           "verify:project-session",
@@ -390,6 +391,26 @@
             "beginConnection",
             "installConnection",
             "refreshConnection"
+          ]
+        },
+        "empty-ui": {
+          "source": [
+            "electron/src/renderer/components/explore/ExploreOutputEmptyState.tsx",
+            "electron/src/renderer/styles/explore.less",
+            "electron/src/renderer/assets/explore-idea-workspace.png",
+            "electron/src/renderer/assets/explore-diagnosis-workspace.png"
+          ],
+          "read_only": [
+            "electron/src/renderer/components/ExplorePanel.tsx"
+          ],
+          "tests": [
+            "verify:explore-output-empty-state",
+            "verify:explore-ui"
+          ],
+          "find": [
+            "ExploreOutputEmptyState",
+            "explore-idea-empty-shell",
+            "explore-diagnosis-empty-shell"
           ]
         }
       }

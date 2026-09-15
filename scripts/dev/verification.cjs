@@ -11,13 +11,13 @@ const SAFE = new Set([
   'verify:explore-session', 'verify:explore-knowledge', 'verify:explore-context',
   'verify:explore-zhihu-connection', 'verify:project-session', 'verify:data-paths',
   'verify:serial-monitor', 'verify:task-queue', 'verify:qwen-attachments', 'verify:hardboard',
-  'verify:task-history', 'verify:explore-history', 'verify:explore-knowledge-preview', 'verify:explore-analysis-results', 'verify:explore-plan-view', 'verify:explore-connection-status',
+  'verify:task-history', 'verify:explore-history', 'verify:explore-knowledge-preview', 'verify:explore-analysis-results', 'verify:explore-plan-view', 'verify:explore-connection-status', 'verify:explore-output-empty-state',
 ]);
 const CORE = ['verify:explore-request', 'verify:explore-analysis-gate', 'verify:explore-search-handoff'];
 const FAST_TESTS = ['verify:version', 'verify:explore-ui'];
 const GROUPS = {
   'explore-core': CORE,
-  explore: [...CORE, 'verify:explore-session', 'verify:explore-knowledge', 'verify:explore-context', 'verify:explore-zhihu-connection', 'verify:explore-ui', 'verify:explore-entry', 'verify:explore-history', 'verify:explore-knowledge-preview', 'verify:explore-analysis-results', 'verify:explore-plan-view', 'verify:explore-connection-status'],
+  explore: [...CORE, 'verify:explore-session', 'verify:explore-knowledge', 'verify:explore-context', 'verify:explore-zhihu-connection', 'verify:explore-ui', 'verify:explore-entry', 'verify:explore-history', 'verify:explore-knowledge-preview', 'verify:explore-analysis-results', 'verify:explore-plan-view', 'verify:explore-connection-status', 'verify:explore-output-empty-state'],
   project: ['verify:project-session', 'verify:data-paths'],
   serial: ['verify:serial-monitor'],
   skills: ['verify:zhihu-skill-package', 'verify:explore-zhihu-connection'],
@@ -80,6 +80,8 @@ function changedPlan(files, map = projectMap()) {
   if (!files.length) reasons.push('No changes: retain FAST checks; not an empty success.');
   const release = routed.modules.includes('packaging-release') || files.some(f => /package(-lock)?\.json$/.test(f)) || routed.modules.includes('hardboard');
   if (release) requirements.push('RELEASE review required: production builds/package/first-run or hardware tests as applicable; never auto-run external effects.');
+  const exploreVisual = routed.modules.includes('explore') && files.some(f => /^electron\/src\/renderer\/(styles\/|assets\/)/.test(f));
+  if (exploreVisual) requirements.push('NOT RUN automatically: verify:explore-layout-ui; Explore style or image changes require isolated geometry evidence.');
   const names = [], frozen = [];
   for (const id of routed.modules) {
     const m = map.modules[id];

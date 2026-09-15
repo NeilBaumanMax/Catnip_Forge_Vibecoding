@@ -135,6 +135,17 @@ test('connection UI routes to presentation while Secret and install actions rema
   assert(plan.requirements.some(requirement => requirement.includes('verify:explore-layout-ui')));
 });
 
+test('output empty UI routes to static mode-specific presentation', () => {
+  const selected = context('explore', 'empty-ui');
+  assert.deepEqual(selected.tests, ['verify:explore-output-empty-state', 'verify:explore-ui']);
+  assert.deepEqual(route([selected.source[0]]).modules, ['explore']);
+  assert.equal(stepsFor(selected.tests).some(step => step.id === 'build:main'), false);
+  assert(profile('explore').steps.some(step => step.id === 'verify:explore-output-empty-state'));
+  const plan = changedPlan(selected.source);
+  assert(plan.steps.some(step => step.id === 'verify:explore-output-empty-state'));
+  assert(plan.requirements.some(requirement => requirement.includes('verify:explore-layout-ui')));
+});
+
 test('changed files include staged/unstaged/rename/delete/untracked, base history and spaces', t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'catnip-routing-'));
   t.after(() => {

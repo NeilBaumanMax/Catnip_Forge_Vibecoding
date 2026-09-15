@@ -3,11 +3,11 @@
   "baseline_date": "2026-09-15",
   "policy": "docs/architecture/MAINTAINABILITY.md",
   "hotspots": {
-    "electron/src/renderer/components/ExplorePanel.tsx": 1535,
+    "electron/src/renderer/components/ExplorePanel.tsx": 1486,
     "electron/src/renderer/components/BrowserPanel.tsx": 1471,
     "electron/src/renderer/App.tsx": 1093,
     "electron/src/main/worker/orchestrator.ts": 1255,
     "electron/src/renderer/components/ChatPanel.tsx": 879
   },
-  "reviewed_task": "TASK-EXPLORE-005"
+  "reviewed_task": "TASK-EXPLORE-006"
 }
