@@ -210,3 +210,13 @@ electron/
 - 关闭第一轮开发 IDE 后 5173/8890/9230 全部释放，再启动取得新的独立电台 PID，证明生命周期回收路径有效。
 
 本次仍不暂存用户的 `docs/tutorials/`、工程 `.catnip/`、临时截图或开发 venv。
+
+## 9. 2026-09-15 Windows 干净包复验
+
+- 在 `liukanshan@207dac0b` 建立本地恢复点 `backup/pre-phase-21-package-20260915` 后执行全量打包；输出目录为 `electron/dist-package/Catnip Forge`。
+- `pack_win_unpacked.cjs` 已把 `radio/run_radio.py`、后端、编译后的前端、必要 vendor 与许可证复制到成品，并排除 `.runtime`、缓存、数据库、服务令牌和 vault key。
+- 项目自带 Python 3.12 已安装两份锁定 requirements 中的电台依赖；打包前与成品验证均确认 FastAPI、Uvicorn、HTTPX、WebSockets、Cryptography、OpenAI、Edge TTS、MCP 等模块只从随包 Python 加载。客户机无需联网执行 `pip install`。
+- `npm.cmd --prefix electron run pack:win`、`verify:release`、`verify:version`、`verify:zhihu-skill-package` 均通过。成品总大小 `4,643,716,919` 字节；DeepSeek Key、千问 Key、知乎 Access Secret、对话、知识库、`.catnip`、`radio.sqlite3`、`service.token` 与 `vault.key` 均未入包。
+- 成品包内 Python 实际启动 `run_radio.py` 后，首页、`/api/session` 与 `/api/status` 均返回 HTTP 200；状态为 `zhihu_configured=false`。冒烟数据使用工作区临时目录，测试后已停止进程并删除。
+- `RADIO_PYTHON_RUNTIME_PENDING` 与 `RADIO_WINDOWS_PACKAGE_PENDING` 已关闭。
+- `RADIO_NATIVE_SECRET_BRIDGE_PENDING`、`RADIO_LIVE_MODEL_PENDING`、`RADIO_LIVE_TTS_PENDING`、`RADIO_LIVE_ZHIHU_PENDING` 继续保留。因此该包是可供 UI/离线运行人工验收的干净候选包，尚不能标记为包含真实电台凭证配置闭环的客户发布版。

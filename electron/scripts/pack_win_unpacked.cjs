@@ -21,6 +21,10 @@ const requiredBundleSources = [
   path.join(electronRoot, '..', '_bundled', 'python', 'Lib', 'site-packages', 'click', 'core.py'),
   path.join(electronRoot, '..', '_bundled', 'python', 'Lib', 'site-packages', 'idf_component_manager', '__init__.py'),
   path.join(electronRoot, '..', '_bundled', 'playwright'),
+  path.join(electronRoot, 'radio', 'run_radio.py'),
+  path.join(electronRoot, 'radio', 'frontend', 'dist', 'index.html'),
+  path.join(electronRoot, 'radio', 'backend', 'app.py'),
+  path.join(electronRoot, 'radio', 'vendor', 'LICENSE'),
 ];
 const missingBundleSources = requiredBundleSources.filter((source) => !fs.existsSync(source));
 
@@ -34,9 +38,9 @@ if (missingBundleSources.length) {
 const bundledPythonRoot = path.join(electronRoot, '..', '_bundled', 'python');
 const bundledPython = path.join(bundledPythonRoot, 'python.exe');
 const pythonProbe = spawnSync(bundledPython, ['-c', [
-  'import pathlib, serial, click.core, idf_component_manager, esptool',
+  'import pathlib, serial, click.core, idf_component_manager, esptool, fastapi, uvicorn, httpx, websockets, cryptography, openai, edge_tts, mcp',
   'root = pathlib.Path(__import__("sys").executable).resolve().parent',
-  'assert all(str(pathlib.Path(module.__file__).resolve()).lower().startswith(str(root).lower()) for module in [serial, click.core, idf_component_manager, esptool])',
+  'assert all(str(pathlib.Path(module.__file__).resolve()).lower().startswith(str(root).lower()) for module in [serial, click.core, idf_component_manager, esptool, fastapi, uvicorn, httpx, websockets, cryptography, openai, edge_tts, mcp])',
 ].join('; ')], {
   cwd: electronRoot,
   encoding: 'utf-8',
@@ -131,6 +135,18 @@ copyTree(path.join(electronRoot, '..', '_bundled', 'python', 'python312.dll'), p
 copyTree(path.join(electronRoot, '..', 'runtime', 'python', 'python312-scripts._pth'), path.join(resourcesRoot, 'runtime', 'python', 'Scripts', 'python312._pth'));
 copyTree(path.join(electronRoot, '..', 'runtime', 'python', 'sitecustomize.py'), path.join(resourcesRoot, 'runtime', 'python', 'Lib', 'site-packages', 'sitecustomize.py'));
 copyTree(path.join(electronRoot, '..', '_bundled', 'playwright'), path.join(resourcesRoot, 'runtime', 'playwright'));
+copyTree(path.join(electronRoot, 'radio', 'run_radio.py'), path.join(resourcesRoot, 'radio', 'run_radio.py'));
+copyTree(path.join(electronRoot, 'radio', 'README.md'), path.join(resourcesRoot, 'radio', 'README.md'));
+copyTree(path.join(electronRoot, 'radio', 'XIAOZHI_LICENSE'), path.join(resourcesRoot, 'radio', 'XIAOZHI_LICENSE'));
+copyTree(path.join(electronRoot, 'radio', 'backend'), path.join(resourcesRoot, 'radio', 'backend'), (relative) => (
+  hasSegment(relative, new Set(['__pycache__', '.pytest_cache', '.runtime']))
+  || relative.endsWith('.pyc')
+));
+copyTree(path.join(electronRoot, 'radio', 'vendor'), path.join(resourcesRoot, 'radio', 'vendor'), (relative) => (
+  hasSegment(relative, new Set(['__pycache__', '.pytest_cache', '.runtime', '.git']))
+  || relative.endsWith('.pyc')
+));
+copyTree(path.join(electronRoot, 'radio', 'frontend', 'dist'), path.join(resourcesRoot, 'radio', 'frontend', 'dist'));
 
 for (const forbidden of ['apikey.txt', 'qwen-apikey.txt']) {
   if (fs.existsSync(path.join(resourcesRoot, forbidden))) {
@@ -150,10 +166,12 @@ const forbiddenMutableRoots = [
   path.join(resourcesRoot, 'runtime', 'attachments'),
   path.join(resourcesRoot, 'runtime', 'hardboard', 'logs'),
   path.join(resourcesRoot, 'runtime', 'hardboard', 'events'),
+  path.join(resourcesRoot, 'radio', '.runtime'),
 ];
 const forbiddenStateNames = new Set([
   '.env', '.catnip', 'apikey.txt', 'qwen-apikey.txt',
   'credentials.json', 'knowledge.json', 'conversations.json',
+  'radio.sqlite3', 'service.token', 'vault.key',
 ]);
 const leakedState = [];
 for (const mutableRoot of forbiddenMutableRoots) {

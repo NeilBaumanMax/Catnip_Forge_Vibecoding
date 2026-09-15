@@ -77,6 +77,14 @@ const required = [
   'runtime/dist/attachment/client.js',
   'runtime/playwright/chromium-1223',
   'runtime/hardboard/esptools/esp-idf-v5.4.3/esp-idf',
+  'radio/run_radio.py',
+  'radio/README.md',
+  'radio/XIAOZHI_LICENSE',
+  'radio/backend/app.py',
+  'radio/backend/store.py',
+  'radio/frontend/dist/index.html',
+  'radio/vendor/LICENSE',
+  'radio/vendor/main/xiaozhi-server/app.py',
   'config/version.json',
 ];
 for (const relative of required) {
@@ -97,6 +105,7 @@ const forbiddenMutableRoots = [
   'runtime/logs', 'runtime/chrome_profile', 'runtime/recordings',
   'runtime/workflows', 'runtime/attachments',
   'runtime/hardboard/logs', 'runtime/hardboard/events',
+  'radio/.runtime',
 ];
 for (const relative of forbiddenMutableRoots) {
   assert(!fs.existsSync(path.join(resources, relative)), `release contains mutable user-data directory: resources/${relative}`);
@@ -104,6 +113,7 @@ for (const relative of forbiddenMutableRoots) {
 const forbiddenStateNames = new Set([
   '.env', '.catnip', 'apikey.txt', 'qwen-apikey.txt',
   'credentials.json', 'knowledge.json', 'conversations.json',
+  'radio.sqlite3', 'service.token', 'vault.key',
 ]);
 const leakedState = [];
 const pendingStateScan = [resources];
@@ -164,9 +174,9 @@ const packagedPythonEnv = {
 };
 delete packagedPythonEnv.MSYSTEM;
 const pythonResult = JSON.parse(run(packagedPython, ['-c', [
-  'import json, pathlib, sys, serial, click.core, idf_component_manager, esptool',
+  'import json, pathlib, sys, serial, click.core, idf_component_manager, esptool, fastapi, uvicorn, httpx, websockets, cryptography, openai, edge_tts, mcp',
   'root = pathlib.Path(sys.executable).resolve().parent',
-  'modules = [serial, click.core, idf_component_manager, esptool]',
+  'modules = [serial, click.core, idf_component_manager, esptool, fastapi, uvicorn, httpx, websockets, cryptography, openai, edge_tts, mcp]',
   'print(json.dumps({"serial": serial.VERSION, "root": str(root), "modules": [str(pathlib.Path(module.__file__).resolve()) for module in modules]}))',
 ].join('; ')], packageRoot, packagedPythonEnv));
 const idfVersion = run(packagedPython, [path.join(packagedIdfPath, 'tools', 'idf.py'), '--version'], packageRoot, packagedPythonEnv);

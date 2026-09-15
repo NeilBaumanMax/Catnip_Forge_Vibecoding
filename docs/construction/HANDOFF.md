@@ -297,3 +297,11 @@ Secret 不进源码、Renderer、Chat、日志、URL、截图、Agent 输出或�
 - 当前随包 Python 3.12 缺少 FastAPI/Uvicorn/HTTPX/WebSockets/NumPy 等依赖，而来源声明 Python 3.11；先做离线兼容门禁，失败时提供隔离 3.11 runtime，客户不得联网安装依赖。
 - Secret 仍不得进入 Renderer、URL、日志或包。知乎与小智模型 Key 由 Main 原生安全输入/safeStorage 管理并注入子进程；来源 Fernet key 与数据库同目录的做法不用于生产 Secret。
 - 详细计划与 Pending 见 `docs/construction/PHASE_21_RADIO_INTEGRATION.md`。本轮只完成文档和来源审计，尚未复制或修改业务源码，也未运行真实知乎、模型、TTS 或打包。
+
+## 2026-09-15 — Phase 21 电台 Windows 干净包
+
+- 当前源码基线：`liukanshan@207dac0b`；打包前恢复点：`backup/pre-phase-21-package-20260915`。
+- 成品：`electron/dist-package/Catnip Forge/Catnip Forge.exe`，版本 `v2.0.0` / Build `7201`，目录总大小 `4,643,716,919` 字节。
+- 随包电台资源与 Python 3.12 依赖已补齐；成品电台 HTTP 首页、会话和状态接口均以包内 Python 实际启动通过，且报告 `zhihu_configured=false`。
+- 发布门禁通过：`pack:win`、`verify:release`、`verify:version`、`verify:zhihu-skill-package`。包内无 DeepSeek/千问 Key、知乎 Access Secret、对话、知识库、项目 `.catnip` 或电台运行态凭证/数据库。
+- 仍未关闭：`RADIO_NATIVE_SECRET_BRIDGE_PENDING`、`RADIO_LIVE_MODEL_PENDING`、`RADIO_LIVE_TTS_PENDING`、`RADIO_LIVE_ZHIHU_PENDING`。在 Main safeStorage 原生凭证桥完成并人工复验前，此包只作为干净验收候选，不宣称客户发布完成。

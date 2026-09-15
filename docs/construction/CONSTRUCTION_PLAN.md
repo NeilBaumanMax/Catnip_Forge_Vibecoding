@@ -123,3 +123,4 @@
 - Phase 19：按 [学院呱呱知识库与教学演示升级](PHASE_19_GUAGUA_GUIDE_AND_TOUR.md) 先修正文档真相，再重写软件助手手册、升级版本化教学步骤与稳定目标，最后执行助手/教程专项、类型、Renderer build 和真实教学重播。
 - Phase 20（实现完成，待人工验收/发布打包）：按 [知乎刘看山特供版前端](PHASE_20_LIUKANSHAN_ZHIHU_EDITION.md) 在独立 `liukanshan` 分支建立视觉与命名真相，完成刘看山资产、应用/EXE 图标、前端/助手/教学替换、透明与比例修正、专项构建和真实视觉回归。
 - Phase 21（施工中，21b/21d 开发闭环已运行）：按 [电台完整移植](PHASE_21_RADIO_INTEGRATION.md) 将 `E:\Agent\vibeide\小智` 的完整前端、Python API 与原生小智能力迁入 `liukanshan`。源码与必要 vendor 已进入 `electron/radio/`；Electron Main 已按需启动组合 Python 服务；“电台”位于“探索”和“模型”之间，八入口单行布局和嵌入式 UI 已通过真实 Electron 检查。下一闭环是 Main safeStorage 原生凭据桥与随包 Python runtime，完成前不得把开发态当客户发布候选。用户已明确授权该电台进程直接调用知乎 HTTP；Explore 官方 Skill 路径保持不变。
+- Phase 21 发布闭环更新（2026-09-15）：随包 Python 3.12 电台依赖、成品资源复制、无运行态/凭据门禁和 Windows 干净包已完成；包内电台首页、会话、状态接口实启通过。Main safeStorage 原生凭据桥及真实模型、TTS、知乎联调仍待完成，因此当前成品是干净人工验收候选，不是最终客户发布版。
