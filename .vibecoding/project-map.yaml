@@ -40,11 +40,11 @@
       ],
       "tests": {
         "fast": [
-          "verify:explore-ui",
-          "verify:chat-presentation"
+          "verify:explore-ui"
         ],
         "module": [
-          "verify:project-session-ui"
+          "verify:project-session-ui",
+          "verify:chat-presentation"
         ],
         "integration": [
           "verify:project-session",
@@ -87,12 +87,11 @@
         "runtime-mcp"
       ],
       "tests": {
-        "fast": [
-          "verify:project-session-ui"
-        ],
+        "fast": [],
         "module": [
           "verify:project-session",
-          "verify:data-paths"
+          "verify:data-paths",
+          "verify:project-session-ui"
         ],
         "integration": [
           "verify:project-session",
@@ -130,12 +129,12 @@
       "forbidden_dependencies": [],
       "tests": {
         "fast": [
-          "verify:explore-ui",
-          "verify:project-session-ui"
+          "verify:explore-ui"
         ],
         "module": [
           "verify:project-session",
-          "verify:explore-search-handoff"
+          "verify:explore-search-handoff",
+          "verify:project-session-ui"
         ],
         "integration": [
           "verify:project-session",
@@ -180,11 +179,10 @@
         "runtime-mcp"
       ],
       "tests": {
-        "fast": [
-          "verify:chat-presentation"
-        ],
+        "fast": [],
         "module": [
-          "verify:session"
+          "verify:session",
+          "verify:chat-presentation"
         ],
         "integration": [
           "verify:project-session",
@@ -668,11 +666,10 @@
         "runtime-mcp"
       ],
       "tests": {
-        "fast": [
-          "verify:project-session-ui"
-        ],
+        "fast": [],
         "module": [
-          "verify:project-session"
+          "verify:project-session",
+          "verify:project-session-ui"
         ],
         "integration": [
           "verify:project-session",

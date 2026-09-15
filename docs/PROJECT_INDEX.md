@@ -38,3 +38,4 @@ Lifecycle: ACTIVE · Development Agent 导航（不是产品运行配置）
 - [Development Infrastructure](modules/dev-infrastructure/CONTRACT.md) — `dev-infrastructure`
 
 优先匹配任务目标；跨层变更才加载依赖 Contract。地图的 code 是入口，不要求把列表里的文件全部读完。
+使用 `node scripts/dev/context.cjs explore --focus history-ui` 或 `node scripts/dev/context.cjs serial --focus session` 输出局部 Context；无需通读整份 project-map。

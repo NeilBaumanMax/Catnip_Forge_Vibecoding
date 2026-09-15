@@ -52,7 +52,17 @@
     "verify:task-queue": "node node_modules/electron/cli.js scripts/verify_agent_task_queue.cjs",
     "verify:serial-monitor": "npm run build:main && node scripts/verify_serial_monitor_session.cjs",
     "verify:qwen-attachments": "npm run build:main && node node_modules/electron/cli.js scripts/verify_qwen_attachments.cjs",
-    "verify:data-paths": "npm run build:main && node node_modules/electron/cli.js scripts/verify_catnip_data_paths.cjs"
+    "verify:data-paths": "npm run build:main && node node_modules/electron/cli.js scripts/verify_catnip_data_paths.cjs",
+    "check:knowledge": "node ../scripts/dev/check-knowledge.cjs",
+    "test:dev-tools": "node --test ../scripts/dev/verification.test.cjs",
+    "verify:fast": "node ../scripts/dev/verify.cjs fast",
+    "verify:explore": "node ../scripts/dev/verify.cjs explore",
+    "verify:explore-core": "node ../scripts/dev/verify.cjs explore-core",
+    "verify:project": "node ../scripts/dev/verify.cjs project",
+    "verify:serial": "node ../scripts/dev/verify.cjs serial",
+    "verify:skills-offline": "node ../scripts/dev/verify.cjs skills",
+    "verify:integration": "node ../scripts/dev/verify.cjs integration",
+    "verify:changed": "node ../scripts/dev/verify.cjs changed"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

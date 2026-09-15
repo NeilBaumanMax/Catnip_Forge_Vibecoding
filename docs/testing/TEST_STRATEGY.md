@@ -8,7 +8,21 @@ Lifecycle: ACTIVE · Development verification，产品硬件 Build 单独记证�
 | INTEGRATION | IPC/跨模块/公共类型变化、未知路径 | 更广离线组合；单次聚合按构建依赖去重 |
 | RELEASE | 明确准备发布 | Runtime/Renderer生产构建、打包、packaged首启/restart、真实环境/硬件验收 |
 
-旧 verify:* 命令保留用户语义。聚合入口在本轮 Phase 2 提供；实现前继续按原命令运行，不假称已有命令。
+旧 verify:* 命令保持原字符串/用户语义；新增入口均用 `npm.cmd --prefix electron run <name>`：
+
+| 入口 | 内容 |
+| --- | --- |
+| verify:fast | Main/preload + Runtime typecheck、知识地图、开发工具测试、版本/Explore静态契约；零build |
+| verify:explore-core / verify:explore | 核心request/权限/交接三项；完整版再含session/knowledge/context/连接/静态UI |
+| verify:project / verify:serial | 工程隔离/路径；共享串口mock |
+| verify:skills-offline | vendor文件/filter与连接门禁；不执行真实部署 |
+| verify:integration | 上述离线组去重组合；Main只build一次 |
+| verify:changed -- --plan | HEAD的staged/unstaged及untracked路由；--base另加merge-base至HEAD；只输出计划不执行 |
+
+`--files <repo-relative-path...>` 可模拟任务路由（须放最后）；`--plan` 也可用于各聚合组。
+源码静态类型范围需诚实：现有 electron/tsconfig.json 排除Renderer，Vite生产build也不是TSX严格类型检查；独立Renderer类型门禁仍属债务，不写作PASS。
+聚合每次显式Main build，不做跨运行缓存；串行子测试120秒超时/非零退出立即停止，其余标NOT RUN。
+verify:skills会真实部署，verify:explore-zhihu-status会读取当时CLI状态，verify:project-session-ui需要已启动成品CDP；这些及其他CDP/packaged/live命令不自动执行。地图保留相关原测试推荐，changed计划明确列NOT RUN requirements。新聚合的connection专项只检查参数与Windows XAML构造，无实际Secret/安装/网络请求。
 地图 tests 使用 electron/package.json 已存在的脚本名；fast/module/integration 是建议，不证明真实环境成功。
 UNKNOWN 必须扩至 INTEGRATION；发布/实机检查列为显式 requirements，不由 changed 自动执行。
 无变更时也运行 FAST；不识别不能返回空验证成功。
