@@ -26,6 +26,7 @@ Lifecycle: ACTIVE · Development verification，产品硬件 Build 单独记证�
 | verify:explore-connection-status | 连接卡严格TSX、状态/文案/步骤/disabled/回调；拒绝吸收IPC/Secret输入/自动弹窗，零Main build |
 | verify:explore-output-empty-state | 两种输出初始空态严格TSX、文案/插图/结构；拒绝吸收状态/回调/IPC，零Main build |
 | verify:task-history-panel | 任务历史表格严格TSX、空态/行/失败分析/清理回调；拒绝吸收Runtime事件或清理编排，零Main build |
+| verify:task-controls-panel | Build / Flash控制区严格TSX、门禁/状态/进度/设备/回调；拒绝吸收IPC与执行权威，零Main build |
 | verify:skills-offline | vendor文件/filter与连接门禁；不执行真实部署 |
 | verify:integration | 上述离线组去重组合；Main只build一次 |
 | verify:changed -- --plan | HEAD的staged/unstaged及untracked路由；--base另加merge-base至HEAD；只输出计划不执行 |

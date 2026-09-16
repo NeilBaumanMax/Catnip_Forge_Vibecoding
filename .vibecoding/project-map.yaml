@@ -48,7 +48,8 @@
           "verify:project-session-ui",
           "verify:chat-presentation",
           "verify:task-history",
-          "verify:task-history-panel"
+          "verify:task-history-panel",
+          "verify:task-controls-panel"
         ],
         "integration": [
           "verify:project-session",
@@ -98,6 +99,27 @@
           ],
           "tests": [
             "verify:task-history-panel",
+            "verify:task-history"
+          ]
+        },
+        "task-controls-ui": {
+          "source": [
+            "electron/src/renderer/components/task-manager/TaskControlsPanel.tsx",
+            "electron/src/renderer/styles/global.less"
+          ],
+          "read_only": [
+            "electron/src/renderer/components/BrowserPanel.tsx",
+            "electron/src/renderer/types/index.ts"
+          ],
+          "find": [
+            "TaskControlsPanel",
+            "task-build-controls",
+            "task-flash-controls",
+            "handleManualBuild",
+            "handleManualFlash"
+          ],
+          "tests": [
+            "verify:task-controls-panel",
             "verify:task-history"
           ]
         }

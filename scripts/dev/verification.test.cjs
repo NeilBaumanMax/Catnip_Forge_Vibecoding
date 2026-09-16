@@ -82,6 +82,17 @@ test('task history UI routes to its panel regression without unrelated workspace
   assert(plan.requirements.some(requirement => requirement.includes('verify:project-session-ui')));
 });
 
+test('task controls UI routes to its strict panel regression without a Main build', () => {
+  const selected = context('desktop-shell', 'task-controls-ui');
+  assert.deepEqual(selected.tests, ['verify:task-controls-panel', 'verify:task-history']);
+  assert.deepEqual(route([selected.source[0]]).modules, ['desktop-shell']);
+  assert.equal(stepsFor(selected.tests).some(step => step.id === 'build:main'), false);
+  const plan = changedPlan(selected.source);
+  assert(plan.steps.some(step => step.id === 'verify:task-controls-panel'));
+  assert(plan.steps.some(step => step.id === 'verify:task-history'));
+  assert(plan.requirements.some(requirement => requirement.includes('verify:project-session-ui')));
+});
+
 test('history UI routes to its component regression without building Main or launching a browser', () => {
   const selected = context('explore', 'history-ui');
   assert.deepEqual(selected.tests, ['verify:explore-history', 'verify:explore-ui']);

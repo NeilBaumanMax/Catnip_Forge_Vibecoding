@@ -6,11 +6,12 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), 'u
 const onboarding = read('src/renderer/components/CatnipOnboarding.tsx');
 const app = read('src/renderer/App.tsx');
 const browser = read('src/renderer/components/BrowserPanel.tsx');
+const taskControlsPanel = read('src/renderer/components/task-manager/TaskControlsPanel.tsx');
 const taskHistoryPanel = read('src/renderer/components/task-manager/TaskHistoryPanel.tsx');
 const chat = read('src/renderer/components/ChatPanel.tsx');
 const workspace = read('src/renderer/components/WorkspacePanel.tsx');
 const styles = read('src/renderer/styles/apple.less');
-const rendererSources = `${app}\n${browser}\n${taskHistoryPanel}\n${chat}\n${workspace}`;
+const rendererSources = `${app}\n${browser}\n${taskControlsPanel}\n${taskHistoryPanel}\n${chat}\n${workspace}`;
 
 const failures = [];
 const expect = (condition, message) => {

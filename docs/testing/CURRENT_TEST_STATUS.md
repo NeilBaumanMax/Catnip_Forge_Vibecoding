@@ -1,6 +1,6 @@
 # Current Test Status
 Lifecycle: ACTIVE · 更新测试结果时替换，不追加历史流水。
-对象：TASK-DESKTOP-002（任务历史表格展示提取，2026-09-15）；本表明确区分本轮复测和未运行范围。
+对象：TASK-DESKTOP-003（Build / Flash控制区展示提取，2026-09-16）；本表明确区分本轮复测和未运行范围。
 
 | Check | Status | Evidence |
 | --- | --- | --- |
@@ -9,9 +9,10 @@ Lifecycle: ACTIVE · 更新测试结果时替换，不追加历史流水。
 | Explore module | PASS | 离线聚合全部通过；含新结果展示专项 |
 | Project Session | PASS | 离线隔离/路径专项 |
 | Serial mock | PASS | 集成通过；不等同真机 |
-| Architecture / dev tooling | PASS | 四项AST、地图、21组工具测试；102个产品源文件 |
+| Architecture / dev tooling | PASS | 四项AST、地图、22组工具测试；103个产品源文件 |
 | Task history projection / strict types | PASS | 5组特征用例；严格检查新模块及直接类型依赖，零Main构建 |
-| Task history panel / strict component TSX | PASS | 4组空态/字段/失败分析/清理反馈；父文件反向还原；1.168s、零Main构建 |
+| Task history panel / strict component TSX | PASS | 4组空态/字段/失败分析/清理反馈；1.034s、零Main构建 |
+| Task controls panel / strict component TSX | PASS | 4组门禁/状态/进度/设备/回调；父文件反向还原；0.979s、零Main构建 |
 | Explore entry / onboarding targets | PASS | 抽取后父回调与子按钮分界、24个稳定引导目标均通过 |
 | Explore history / strict component TSX | PASS | 5组特征、4份原/新SSR等价；0.959s、零Main构建 |
 | Explore history isolated browser | PASS | 1280/720及保存态截图原/新一致；输入/Enter/焦点/回调；不等同成品验收 |
@@ -29,6 +30,6 @@ Lifecycle: ACTIVE · 更新测试结果时替换，不追加历史流水。
 | Packaging / packaged first run | NOT RUN | 本轮不发布 |
 | Real network / hardware | PENDING | LIVE_DIAGNOSIS_PENDING / REAL_HARDWARE_VALIDATION_PENDING |
 
-关键异常：前两次INTEGRATION分别因`verify:explore-entry`仍只查父文件、`verify:onboarding`未纳入新子组件而FAIL；均为抽取后的静态测试定位漂移，按父接线/子展示边界修正后最终34/34通过（28.088s，Main构建一次）。Electron离线专项仍有既有os_crypt/GPU stderr，但断言与退出码通过。历史Workbench/凭据真实流程仍待验。
+关键异常：本轮无断言失败；最终35/35通过（32.494s，Main构建一次）。Electron离线专项仍有既有os_crypt/GPU stderr，但断言与退出码通过。历史Workbench/凭据真实流程仍待验。
 
-本轮详细记录：[TASK-DESKTOP-002 evidence](evidence/TASK-DESKTOP-002.md)。此前构建记录：[治理 evidence](evidence/TASK-DEV-MAINT-001.md)（P3）。
+本轮详细记录：[TASK-DESKTOP-003 evidence](evidence/TASK-DESKTOP-003.md)。此前构建记录：[治理 evidence](evidence/TASK-DEV-MAINT-001.md)（P3）。

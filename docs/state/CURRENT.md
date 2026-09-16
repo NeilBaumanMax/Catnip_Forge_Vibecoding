@@ -1,5 +1,5 @@
 # Current State
-Lifecycle: ACTIVE · 唯一当前状态 · 2026-09-15
+Lifecycle: ACTIVE · 唯一当前状态 · 2026-09-16
 
 ## Development line
 - 当前用户指定 DWIDE；origin/DWIDE；实时 HEAD/工作区/跟踪状态用 Git 查询。
@@ -11,6 +11,7 @@ Lifecycle: ACTIVE · 唯一当前状态 · 2026-09-15
 - 无；下一个维护任务需从模板建立Context并经project-map路由。
 
 ## Recently completed
+- BrowserPanel Build / Flash控制区提取为61行纯展示组件，原组件1438→1410行；[TASK-DESKTOP-003](../tasks/archive/TASK-DESKTOP-003.md)已归档，task-controls-ui focus可直接定位，执行、工程门禁、端口同步与Runtime状态仍在父边界。
 - BrowserPanel任务历史表格提取为64行纯展示组件，原组件1471→1438行；[TASK-DESKTOP-002](../tasks/archive/TASK-DESKTOP-002.md)已归档，task-history-ui focus可直接定位，Runtime事件/清理、日志定位与失败分析仍在父边界。
 - Explore找灵感/解问题输出初始空态提取为65行静态组件，原组件1535→1486行；[TASK-EXPLORE-006](../tasks/archive/TASK-EXPLORE-006.md)已归档，empty-ui focus可直接定位，父组件继续拥有stage/request/result条件。
 - Explore知乎连接状态卡提取为67行无状态组件，原组件1575→1535行；[TASK-EXPLORE-005](../tasks/archive/TASK-EXPLORE-005.md)已归档，connection-ui focus可直接定位，官方CLI/Secret/轮询与自动弹窗仍在原边界。
@@ -44,7 +45,7 @@ Lifecycle: ACTIVE · 唯一当前状态 · 2026-09-15
 ## Temporary constraints
 - 无 worktree，无擅自委派，不改产品需求或 Runtime Agent 行为。
 - 保留用户未跟踪 docs/tutorials/、electron/radio/、hello_world_esp32s3/.catnip/，不纳入提交。
-- BrowserPanel纯计算/任务历史展示与Explore历史/知识/结果展示提取已完成；后续状态/订阅/跨层与其他热点先另开Task，保持小步验证。
+- BrowserPanel纯计算/任务历史/Build与Flash控制展示及Explore历史/知识/结果展示提取已完成；后续状态/订阅/跨层与其他热点先另开Task，保持小步验证。
 - 历史证据、旧包和已配置凭据不能推断为当前机器实时状态。
 
 ## Release status

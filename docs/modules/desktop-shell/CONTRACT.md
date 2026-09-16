@@ -13,6 +13,7 @@ runtime-mcp 的直接越层访问；禁止[Layer Contract](../../construction/LA
 App / BrowserPanel props；Main 窗口事件。
 任务历史纯投影见[task-history.ts](../../../electron/src/renderer/components/task-manager/task-history.ts)：只接收Renderer事件快照，不拥有轮询、工程过滤或清空状态；局部上下文用context.cjs desktop-shell --focus task-history。
 任务历史展示见[TaskHistoryPanel.tsx](../../../electron/src/renderer/components/task-manager/TaskHistoryPanel.tsx)：只消费已投影列表、格式化函数和父回调；不拥有事件订阅/清理、日志定位或失败分析。纯表格UI使用`context.cjs desktop-shell --focus task-history-ui`。
+Build / Flash控制展示见[TaskControlsPanel.tsx](../../../electron/src/renderer/components/task-manager/TaskControlsPanel.tsx)：只消费父级当前工程、设备和Runtime状态并发出操作意图；不拥有IPC、执行权威、工程门禁或端口状态。纯控制UI使用`context.cjs desktop-shell --focus task-controls-ui`。
 入口：[index.ts](../../../electron/src/main/index.ts)、[bootstrap.ts](../../../electron/src/main/bootstrap.ts)、[tray.ts](../../../electron/src/main/tray.ts)、[App.tsx](../../../electron/src/renderer/App.tsx)、[BrowserPanel.tsx](../../../electron/src/renderer/components/BrowserPanel.tsx)。
 ## Invariants
 正常桌面默认探索；六工作区；窗口动作经 preload；保留工程切换门禁。全局规则引用Layer §跨层不变量；不复制另一套全局契约。
